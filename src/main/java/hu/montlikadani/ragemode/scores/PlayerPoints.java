@@ -2,144 +2,144 @@ package hu.montlikadani.ragemode.scores;
 
 public class PlayerPoints implements Comparable<PlayerPoints> {
 
-    private String playerUUID;
-    private int kills = 0;
-    private int axeKills = 0;
-    private int directArrowKills = 0;
-    private int explosionKills = 0;
-    private int knifeKills = 0;
-    private int deaths = 0;
-    private int axeDeaths = 0;
-    private int directArrowDeaths = 0;
-    private int explosionDeaths = 0;
-    private int knifeDeaths = 0;
-    private int currentStreak = 0;
-    private int longestStreak = 0;
-    private Integer points = 0;
-    private boolean isWinner = false;
+  private String playerUUID;
+  private int kills = 0;
+  private int axeKills = 0;
+  private int directArrowKills = 0;
+  private int explosionKills = 0;
+  private int knifeKills = 0;
+  private int deaths = 0;
+  private int axeDeaths = 0;
+  private int directArrowDeaths = 0;
+  private int explosionDeaths = 0;
+  private int knifeDeaths = 0;
+  private int currentStreak = 0;
+  private int longestStreak = 0;
+  private Integer points = 0;
+  private boolean isWinner = false;
 
-    public PlayerPoints(String playerUUID) {
-        this.playerUUID = playerUUID;
-    }
+  public PlayerPoints(String playerUUID) {
+    this.playerUUID = playerUUID;
+  }
 
-    public String getPlayerUUID() {
-        return playerUUID;
-    }
+  public String getPlayerUUID() {
+    return playerUUID;
+  }
 
-    public int getKills() {
-        return kills;
-    }
+  public int getKills() {
+    return kills;
+  }
 
-    public void setKills(int kills) {
-        this.kills = kills;
-    }
+  public void setKills(int kills) {
+    this.kills = kills;
+  }
 
-    public int getAxeKills() {
-        return axeKills;
-    }
+  public int getAxeKills() {
+    return axeKills;
+  }
 
-    public void setAxeKills(int axeKills) {
-        this.axeKills = axeKills;
-    }
+  public void setAxeKills(int axeKills) {
+    this.axeKills = axeKills;
+  }
 
-    public int getDirectArrowKills() {
-        return directArrowKills;
-    }
+  public int getDirectArrowKills() {
+    return directArrowKills;
+  }
 
-    public void setDirectArrowKills(int directArrowKills) {
-        this.directArrowKills = directArrowKills;
-    }
+  public void setDirectArrowKills(int directArrowKills) {
+    this.directArrowKills = directArrowKills;
+  }
 
-    public int getExplosionKills() {
-        return explosionKills;
-    }
+  public int getExplosionKills() {
+    return explosionKills;
+  }
 
-    public void setExplosionKills(int explosionKills) {
-        this.explosionKills = explosionKills;
-    }
+  public void setExplosionKills(int explosionKills) {
+    this.explosionKills = explosionKills;
+  }
 
-    public int getKnifeKills() {
-        return knifeKills;
-    }
+  public int getKnifeKills() {
+    return knifeKills;
+  }
 
-    public void setKnifeKills(int knifeKills) {
-        this.knifeKills = knifeKills;
-    }
+  public void setKnifeKills(int knifeKills) {
+    this.knifeKills = knifeKills;
+  }
 
-    public int getDeaths() {
-        return deaths;
-    }
+  public int getDeaths() {
+    return deaths;
+  }
 
-    public void setDeaths(int deaths) {
-        this.deaths = deaths;
-    }
+  public void setDeaths(int deaths) {
+    this.deaths = deaths;
+  }
 
-    public int getAxeDeaths() {
-        return axeDeaths;
-    }
+  public int getAxeDeaths() {
+    return axeDeaths;
+  }
 
-    public void setAxeDeaths(int axeDeaths) {
-        this.axeDeaths = axeDeaths;
-    }
+  public void setAxeDeaths(int axeDeaths) {
+    this.axeDeaths = axeDeaths;
+  }
 
-    public int getDirectArrowDeaths() {
-        return directArrowDeaths;
-    }
+  public int getDirectArrowDeaths() {
+    return directArrowDeaths;
+  }
 
-    public void setDirectArrowDeaths(int directArrowDeaths) {
-        this.directArrowDeaths = directArrowDeaths;
-    }
+  public void setDirectArrowDeaths(int directArrowDeaths) {
+    this.directArrowDeaths = directArrowDeaths;
+  }
 
-    public int getExplosionDeaths() {
-        return explosionDeaths;
-    }
+  public int getExplosionDeaths() {
+    return explosionDeaths;
+  }
 
-    public void setExplosionDeaths(int explosionDeaths) {
-        this.explosionDeaths = explosionDeaths;
-    }
+  public void setExplosionDeaths(int explosionDeaths) {
+    this.explosionDeaths = explosionDeaths;
+  }
 
-    public int getKnifeDeaths() {
-        return knifeDeaths;
-    }
+  public int getKnifeDeaths() {
+    return knifeDeaths;
+  }
 
-    public void setKnifeDeaths(int knifeDeaths) {
-        this.knifeDeaths = knifeDeaths;
-    }
+  public void setKnifeDeaths(int knifeDeaths) {
+    this.knifeDeaths = knifeDeaths;
+  }
 
-    public int getCurrentStreak() {
-        return currentStreak;
-    }
+  public int getCurrentStreak() {
+    return currentStreak;
+  }
 
-    public void setCurrentStreak(int currentStreak) {
-        this.currentStreak = currentStreak;
-    }
+  public void setCurrentStreak(int currentStreak) {
+    this.currentStreak = currentStreak;
+  }
 
-    public int getLongestStreak() {
-        return longestStreak;
-    }
+  public int getLongestStreak() {
+    return longestStreak;
+  }
 
-    public void setLongestStreak(int longestStreak) {
-        this.longestStreak = longestStreak;
-    }
+  public void setLongestStreak(int longestStreak) {
+    this.longestStreak = longestStreak;
+  }
 
-    public Integer getPoints() {
-        return points;
-    }
+  public Integer getPoints() {
+    return points;
+  }
 
-    public void setPoints(Integer points) {
-        this.points = points;
-    }
+  public void setPoints(Integer points) {
+    this.points = points;
+  }
 
-    public boolean isWinner() {
-        return isWinner;
-    }
+  public boolean isWinner() {
+    return isWinner;
+  }
 
-    public void setWinner(boolean isWinner) {
-        this.isWinner = isWinner;
-    }
+  public void setWinner(boolean isWinner) {
+    this.isWinner = isWinner;
+  }
 
-    @Override
-    public int compareTo(PlayerPoints anotherPlayerPoints) {
-        return anotherPlayerPoints.getPoints().compareTo(points);
-    }
+  @Override
+  public int compareTo(PlayerPoints anotherPlayerPoints) {
+    return anotherPlayerPoints.getPoints().compareTo(points);
+  }
 }

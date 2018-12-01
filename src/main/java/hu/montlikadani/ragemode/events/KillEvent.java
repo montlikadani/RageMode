@@ -6,38 +6,38 @@ import org.bukkit.event.HandlerList;
 
 public class KillEvent extends Event {
 
-    public static final HandlerList HANDLERS = new HandlerList();
+  public static final HandlerList HANDLERS = new HandlerList();
 
-    private Player killer;
-    private Player victim;
-    private boolean firstKill;
-    private boolean firstBlood;
+  private Player killer;
+  private Player victim;
+  private boolean firstKill;
+  private boolean firstBlood;
 
-    public KillEvent(Player killer, Player victim, boolean firstKill, boolean firstBlood) {
-        this.killer = killer;
-        this.victim = victim;
-        this.firstKill = firstKill;
-        this.firstBlood = firstBlood;
-    }
+  public KillEvent(Player killer, Player victim, boolean firstKill, boolean firstBlood) {
+    this.killer = killer;
+    this.victim = victim;
+    this.firstKill = firstKill;
+    this.firstBlood = firstBlood;
+  }
 
-    public Player getKiller() {
-        return killer;
-    }
+  public Player getKiller() {
+    return killer;
+  }
 
-    public Player getVictim() {
-        return victim;
-    }
+  public Player getVictim() {
+    return victim;
+  }
 
-    public boolean isFirstKill() {
-        return firstKill;
-    }
+  public boolean isFirstKill() {
+    return firstKill;
+  }
 
-    public boolean isFirstBlood() {
-        return firstBlood;
-    }
+  public boolean isFirstBlood() {
+    return firstBlood;
+  }
 
-    @Override
-    public HandlerList getHandlers() {
-        return HANDLERS;
-    }
+  @Override
+  public HandlerList getHandlers() {
+    return HANDLERS;
+  }
 }
