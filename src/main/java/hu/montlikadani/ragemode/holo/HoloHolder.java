@@ -88,23 +88,17 @@ public class HoloHolder {
 
     final Player yamlPlayer = player;
     final Hologram yamlHologram = hologram;
-    Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), new Runnable() {
-      @Override
-      public void run() {
-        final RetPlayerPoints rpp;
-        if (RuntimeRPPManager.getRPPForPlayer(yamlPlayer.getUniqueId().toString()) == null) {
-          rpp = YAMLStats.getPlayerStatistics(yamlPlayer.getUniqueId().toString());
-        } else {
-          rpp = RuntimeRPPManager.getRPPForPlayer(yamlPlayer.getUniqueId().toString());
-        }
-        Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), new Callable<String>() {
-          @Override
-          public String call() throws Exception {
-            setHologramLines(yamlHologram, rpp);
-            return "Done";
-          }
-        });
+    Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
+      final RetPlayerPoints rpp;
+      if (RuntimeRPPManager.getRPPForPlayer(yamlPlayer.getUniqueId().toString()) == null) {
+        rpp = YAMLStats.getPlayerStatistics(yamlPlayer.getUniqueId().toString());
+      } else {
+        rpp = RuntimeRPPManager.getRPPForPlayer(yamlPlayer.getUniqueId().toString());
       }
+      Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
+        setHologramLines(yamlHologram, rpp);
+        return "Done";
+      });
     });
   }
 

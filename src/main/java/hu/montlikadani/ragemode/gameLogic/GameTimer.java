@@ -93,12 +93,7 @@ public class GameTimer {
           gameBoard.setTitle(ChatColor.GOLD + "RageMode" + ChatColor.RESET + " " + ChatColor.DARK_AQUA + minutesString + ":" + secondsString);
           if (secondsRemaining == 0) {
             this.cancel();
-            RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
-              @Override
-              public void run() {
-                StopGame.stopGame(gameName);
-              }
-            });
+            RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> StopGame.stopGame(gameName));
           }
 
           // -------ActionBar update-------
@@ -143,12 +138,7 @@ public class GameTimer {
           // -------End of ActionBar update-------
         } else {
           this.cancel();
-          RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-              StopGame.stopGame(gameName);
-            }
-          });
+          RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> StopGame.stopGame(gameName));
         }
       }
     }, 0, 1000);

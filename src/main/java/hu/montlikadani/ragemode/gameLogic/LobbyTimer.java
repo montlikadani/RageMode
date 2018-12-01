@@ -81,12 +81,7 @@ public class LobbyTimer {
           timesToSendMessage--;
         } else if (timesToSendMessage == 0 && PlayerList.getPlayersInGame(gameName).length >= 2) {
           this.cancel();
-          RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-              new GameLoader(gameName);
-            }
-          });
+          RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> new GameLoader(gameName));
         } else {
           this.cancel();
         }

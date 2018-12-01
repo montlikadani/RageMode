@@ -78,12 +78,7 @@ public class RageMode extends JavaPlugin {
     }
 
     try {
-      Thread thread = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          StopGame.stopAllGames();
-        }
-      });
+      Thread thread = new Thread(() -> StopGame.stopAllGames());
 
       thread.start();
       while (thread.isAlive()) {
@@ -102,12 +97,7 @@ public class RageMode extends JavaPlugin {
   private void initYamlStatistics() {
     YAMLStats.initS();
 
-    Bukkit.getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
-      @Override
-      public void run() {
-        RuntimeRPPManager.getRPPListFromYAML();
-      }
-    });
+    Bukkit.getServer().getScheduler().runTaskAsynchronously(this, () -> RuntimeRPPManager.getRPPListFromYAML());
   }
 
   public File getFolder() {

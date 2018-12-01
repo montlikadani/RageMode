@@ -105,13 +105,10 @@ public class StopGame extends RmCommand {
       }
 
       final String gameName = game;
-      RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
-        @Override
-        public void run() {
-          finishStopping(gameName);
-          if (EventListener.waitingGames.containsKey(gameName)) {
-            EventListener.waitingGames.remove(gameName);
-          }
+      RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
+        finishStopping(gameName);
+        if (EventListener.waitingGames.containsKey(gameName)) {
+          EventListener.waitingGames.remove(gameName);
         }
       }, 200);
     }
@@ -128,20 +125,13 @@ public class StopGame extends RmCommand {
           final PlayerPoints pP = RageScores.getPlayerPoints(players[f]);
           lPP.add(pP);
 
-          Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-              RuntimeRPPManager.updatePlayerEntry(pP);
-              Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
-
-                @Override
-                public void run() {
-                  for (String playerUUID : players) {
-                    HoloHolder.updateHolosForPlayer(Bukkit.getPlayer(UUID.fromString(playerUUID)));
-                  }
-                }
-              });
-            }
+          Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
+            RuntimeRPPManager.updatePlayerEntry(pP);
+            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
+              for (String playerUUID : players) {
+                HoloHolder.updateHolosForPlayer(Bukkit.getPlayer(UUID.fromString(playerUUID)));
+              }
+            });
           });
         }
         f++;
