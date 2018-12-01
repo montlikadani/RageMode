@@ -1,137 +1,48 @@
 name: RageMode
-main: org.kwstudios.play.ragemode.loader.PluginLoader
-version: 0.2.2
-
-softdepend: [HolographicDisplays, ProtocolLib]
+main: hu.montlikadani.RageMode.RageMode
+version: 1.0.0
+softdepend: [HolographicDisplays]
+description: A RageMode minigame plugin
+# DO NOT EDIT ANYTHING ABOVE THIS LINE!
 
 commands:
-  rm:
-    description: Main command.
-    aliases: ['ragemode']
-    permission: ragemode.rm
-    permission-message: You may not use that command!
-  rm add:
-    description: Adds a RageMode map with the given name and the maximum player count.
-    aliases: ['ragemode add']
-    permission: ragemode.admin.add
-    permission-message: You may not use that command!
-  rm lobby:
-    description: Sets the lobby for the given RageMode map to the current position.
-    aliases: ['ragemode lobby']
-    permission: ragemode.admin.lobby
-    permission-message: You may not use that command!
-  rm addspawn:
-    description: Sets a spawn location for the given RageMode map to the current position.
-    aliases: ['ragemode addspawn']
-    permission: ragemode.admin.addspawn
-    permission-message: You may not use that command!
-  rm remove:
-    description: Removes the given RageMode map.
-    aliases: ['ragemode remove']
-    permission: ragemode.admin.remove
-    permission-message: You may not use that command!
-  rm stop:
-    description: Stops the given RageMode map.
-    aliases: ['ragemode stop']
-    permission: ragemode.admin.stop
-    permission-message: You may not use that command!
-  rm join:
-    description: Joins the given RageMode game.
-    aliases: ['ragemode join']
-    permission: ragemode.rm.join
-    permission-message: You may not use that command!
-  rm leave:
-    description: Leaves the current RageMode game.
-    aliases: ['ragemode leave']
-    permission: ragemode.rm.leave
-    permission-message: You may not use that command!
-  rm list:
-    description: Lists all RageMode maps.
-    aliases: ['ragemode list']
-    permission: ragemode.rm.list
-    permission-message: You may not use that command!
-  rm stats:
-    description: Lists the statistics for the given player.
-    aliases: ['ragemode stats']
-    permission: ragemode.rm.stats
-    permission-message: You may not use that command!
-  rm reload:
-    description: Reloads the config.yml from disk.
-    aliases: ['ragemode reload']
-    permission: ragemode.admin.reload
-    permission-message: You may not use that command!
-  rm lobbydelay:
-    description: Changes the time to wait for players before starting the game.
-    aliases: ['ragemode lobbydelay']
-    permission: ragemode.admin.lobbydelay
-    permission-message: You may not use that command!
-  rm gametime:
-    description: Changes the gametime for the given game.
-    aliases: ['ragemode gametime']
-    permission: ragemode.admin.gametime
-    permission-message: You may not use that command!
-  rm globalmessages:
-    description: Activates/Deactivates the broadcast messages for the given game.
-    aliases: ['ragemode globalmessages']
-    permission: ragemode.admin.globalmessages
-    permission-message: You may not use that command!
-  rm global:
-    description: Changes the given global value (lobbydelay, gametime, deathmessages).
-    aliases: ['ragemode global']
-    permission: ragemode.admin.global
-    permission-message: You may not use that command!
-  rm bossbar:
-    description: Activates/Deactivates the bossbar status in game.
-    aliases: ['ragemode bossbar']
-    permission: ragemode.admin.bossbar
-    permission-message: You may not use that command!
-  rm actionbar:
-    description: Activates/Deactivates the actionbar status in game.
-    aliases: ['ragemode actionbar']
-    permission: ragemode.admin.actionbar
-    permission-message: You may not use that command!
-  rm holo:
-    description: Configures the holo stats.
-    aliases: ['ragemode holo']
-    permission: ragemode.admin.holo
-    permission-message: You may not use that command!
-  rm locale:
-    description: Changes the localization.
-    aliases: ['ragemode locale']
-    permission: ragemode.admin.locale
-    permission-message: You may not use that command!
+  ragemode:
+    description: Main command for RageMode plugin.
+    usage: <command>
+    aliases: [rm]
 
 permissions:
-    ragemode.rm:
-        description: Gives access to the main command.
-        default: true
-    ragemode.rm.*:
-        description: Gives access to all basic commands.
-        default: true
-        children:
-            ragemode.rm.join: true
-            ragemode.rm.leave: true
-            ragemode.rm.list: true
-            ragemode.rm.stats: true
-    ragemode.admin.*:
-        description: Gives access to all game-setup commands.
-        default: op
-        children:
-            ragemode.admin.add: true
-            ragemode.admin.lobby: true
-            ragemode.admin.addspawn: true
-            ragemode.admin.remove: true
-            ragemode.admin.reload: true
-            ragemode.admin.stop: true
-            ragemode.admin.lobbydelay: true
-            ragemode.admin.gametime: true
-            ragemode.admin.globalmessages: true
-            ragemode.admin.global: true
-            ragemode.admin.bossbar: true
-            ragemode.admin.actionbar: true
-            ragemode.admin.holo: true
-            ragemode.admin.locale: true
-            ragemode.admin.signs: true
-    ragemode.vip:
-        description: Gives access to the VIP functions.
-        default: op
+  ragemode.help.playercommands:
+    description: Gives access to player commands.
+    default: true
+    children:
+      ragemode.join: true
+      ragemode.leave: true
+      ragemode.list: true
+      ragemode.stats: true
+  ragemode.admin.*:
+    description: Gives access to all game-setup commands.
+    default: op
+    children:
+      ragemode.admin.addgame: true
+      ragemode.admin.setlobby: true
+      ragemode.admin.addspawn: true
+      ragemode.admin.removegame: true
+      ragemode.admin.reload: true
+      ragemode.admin.stats.reset: true
+      ragemode.admin.stopgame: true
+      ragemode.admin.setlobbydelay: true
+      ragemode.admin.setgametime: true
+      ragemode.admin.setglobalmessages: true
+      ragemode.admin.setbossbar: true
+      ragemode.admin.setactionbar: true
+      ragemode.admin.kick: true
+      ragemode.admin.forcestart: true
+      ragemode.admin.holo: true
+      ragemode.admin.signs: true
+  ragemode.commands.tabcomplete:
+    description: Gives access to use tab complete for commands.
+    default: false
+  ragemode.vip:
+    description: Gives access to the VIP functions.
+    default: op

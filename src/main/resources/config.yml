@@ -1,0 +1,30 @@
+# Default language. Example: en, hu, de etc.
+# You can find all supported languages on: 
+language: en
+
+# YAML statistic, currently this supported.
+statistics: true
+
+# Global settings for game.
+game:
+  global:
+    # Death messages
+    death-messages: true
+    bossbar: true
+    # Actionbar
+    actionbar: true
+    # Lobby delay in seconds.
+    lobbydelay: 10
+    # Game time in minutes.
+    gametime: 30
+    # In-game commands, to use a player the specified commands in-game.
+    commands:
+    - "rm leave"
+    - "ragemode leave"
+    - "ragemode stop"
+    # Execute commands when the player left the game while playing. (Only console commands)
+    run-commands-for-player-left-while-playing:
+      enable: false
+      # Use %player%, %player-ip% placeholder.
+      commands:
+      - "kick %player% &cWhy you left from the game while playing?"
