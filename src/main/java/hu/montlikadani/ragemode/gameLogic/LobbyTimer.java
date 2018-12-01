@@ -35,7 +35,7 @@ public class LobbyTimer {
     private void sendTimerMessages() {
         t = new Timer();
 
-        int totalTimerMillis = ((int) (((secondsRemaining * 1000) + 5000) / 10000)) * (10000);
+        int totalTimerMillis = (((secondsRemaining * 1000) + 5000) / 10000) * (10000);
         if(totalTimerMillis == 0)
             totalTimerMillis = 10000;
         final int timeMillisForLoop = totalTimerMillis;

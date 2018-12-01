@@ -206,7 +206,7 @@ public class EventListener implements Listener {
         // Player autorespawn
         Player deceased;
         if(event.getEntity() instanceof Player && event.getEntity() != null)
-            deceased = (Player) event.getEntity();
+            deceased = event.getEntity();
         else {
             deceased = null;
             return;
@@ -221,7 +221,7 @@ public class EventListener implements Listener {
                 if(plugin.getConfiguration().getArenasCfg().isSet("arenas." + PlayerList.getPlayersGame(deceased) + ".death-messages")) {
                     String gameBroadcast = plugin.getConfiguration().getArenasCfg().getString("arenas." + PlayerList.getPlayersGame(deceased)
                             + ".death-messages");
-                    if(gameBroadcast != null && gameBroadcast != "") {
+                    if(gameBroadcast != null && !gameBroadcast.equals("")) {
                         if(gameBroadcast.equals("true") || gameBroadcast.equals("false"))
                             doDeathBroadcast = Boolean.parseBoolean(gameBroadcast);
                     }

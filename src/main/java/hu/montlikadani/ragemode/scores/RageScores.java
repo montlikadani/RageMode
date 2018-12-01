@@ -156,16 +156,12 @@ public class RageScores {
 
     public static void removePointsForPlayers(String[] playerUUIDs) {
         for(String playerUUID : playerUUIDs) {
-            if(playerpoints.containsKey(playerUUID))
-                playerpoints.remove(playerUUID);
+            playerpoints.remove(playerUUID);
         }
     }
 
     public static PlayerPoints getPlayerPoints(String playerUUID) {
-        if(playerpoints.containsKey(playerUUID))
-            return playerpoints.get(playerUUID);
-        else
-            return null;
+        return playerpoints.getOrDefault(playerUUID, null);
     }
 
     public static void resetPlayerStats(String playerUUID) {
@@ -268,7 +264,7 @@ public class RageScores {
 
         }
 
-        if(goy == highest) {
+        if(goy.equals(highest)) {
             i = 0;
             while(i < imax) {
                 Bukkit.getPlayer(UUID.fromString(players[i])).sendMessage(RageMode.getLang().get("game.message.player-won", "%player%",

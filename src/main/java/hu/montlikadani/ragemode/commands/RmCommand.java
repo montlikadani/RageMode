@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
+import java.util.Collections;
 import java.util.List;
 
 public class RmCommand implements CommandExecutor, TabCompleter {
@@ -171,18 +172,14 @@ public class RmCommand implements CommandExecutor, TabCompleter {
                     String[] sub = new String[]{"addgame", "setlobby", "addspawn", "holostats", "listgames", "join", "leave", "reload",
                             "removegame", "actionbar", "bossbar", "resetstats", "gametime", "globalmessages", "lobbydelay", "forcestart",
                             "showstats", "stop", "kickplayer"};
-                    for(String com : sub) {
-                        cmds.add(com);
-                    }
+                    Collections.addAll(cmds, sub);
                 }
                 if(args.length < 3) {
                     if(args[0].equals("addspawn") || args[0].equals("forcestart") || args[0].equals("kick") || args[0].equals("kickplayer") ||
                             args[0].equals("join") || args[0].equals("removegame") || args[0].equals("remove") || args[0].equals("actionbar") ||
                             args[0].equals("bossbar") || args[0].equals("globalmessages") || args[0].equals("globalmsgs") || args[0].equals("setlobby") ||
                             args[0].equals("lobbydelay") || args[0].equals("stop")) {
-                        for(String scmd : GetGames.getGameNames()) {
-                            cmds.add(scmd);
-                        }
+                        Collections.addAll(cmds, GetGames.getGameNames());
                     }
                 }
             }

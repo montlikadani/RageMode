@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 
 public class ShowStats extends RmCommand {
 
@@ -65,7 +66,7 @@ public class ShowStats extends RmCommand {
             CharSequence sUUID_SEQ_3 = sUUID.subSequence(12, 16);
             CharSequence sUUID_SEQ_4 = sUUID.subSequence(16, 20);
             CharSequence sUUID_SEQ_5 = sUUID.subSequence(20, 32);
-            sUUID = new String(sUUID_SEQ_1 + "-" + sUUID_SEQ_2 + "-" + sUUID_SEQ_3 + "-" + sUUID_SEQ_4 + "-" + sUUID_SEQ_5);
+            sUUID = sUUID_SEQ_1 + "-" + sUUID_SEQ_2 + "-" + sUUID_SEQ_3 + "-" + sUUID_SEQ_4 + "-" + sUUID_SEQ_5;
 
             //Player statsPlayer = Bukkit.getPlayer(UUID.fromString(sUUID));
             RetPlayerPoints rpp = null;
@@ -145,7 +146,7 @@ public class ShowStats extends RmCommand {
                 URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + name);
                 URLConnection con = url.openConnection();
                 InputStream in = con.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF8"));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
                 try {
                     com.google.gson.Gson gson = new com.google.gson.Gson();
                     UUIDStrings data = gson.fromJson(reader, UUIDStrings.class);

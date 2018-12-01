@@ -9,6 +9,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -194,7 +195,7 @@ public class Language {
             ls = colorsArray(getCurrentLangConf().getStringList(key), true);
         else
             ls = !defL.getStringList(key).isEmpty() && defL.getStringList(key) != null ? colorsArray(defL.getStringList(key), true)
-                    : java.util.Arrays.asList(missing);
+                    : Collections.singletonList(missing);
 
         if(variables != null && variables.length > 0) {
             for(int i = 0; i < ls.size(); i++) {
