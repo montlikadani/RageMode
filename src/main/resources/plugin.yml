@@ -1,6 +1,6 @@
 name: RageMode
-main: hu.montlikadani.RageMode.RageMode
-version: 1.0.0
+main: hu.montlikadani.ragemode.RageMode
+version: ${project.version}
 softdepend: [HolographicDisplays]
 description: A RageMode minigame plugin
 # DO NOT EDIT ANYTHING ABOVE THIS LINE!
