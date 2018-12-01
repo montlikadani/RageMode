@@ -7,11 +7,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class RageArrow {
 
-	public static ItemStack getRageArrow() {
-		ItemStack arrow = new ItemStack(Material.ARROW);
-		ItemMeta meta = arrow.getItemMeta();
-		meta.setDisplayName(ChatColor.GOLD + "RageArrow");
-		arrow.setItemMeta(meta);
-		return arrow;
-	}
+    public static ItemStack getRageArrow() {
+        ItemStack arrow = new ItemStack(Material.ARROW);
+        ItemMeta meta = arrow.getItemMeta();
+        meta.setDisplayName(ChatColor.GOLD + "RageArrow");
+        arrow.setItemMeta(meta);
+        return arrow;
+    }
 }

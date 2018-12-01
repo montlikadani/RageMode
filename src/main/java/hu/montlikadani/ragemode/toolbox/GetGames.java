@@ -1,69 +1,68 @@
 package hu.montlikadani.ragemode.toolbox;
 
-import org.bukkit.configuration.file.FileConfiguration;
-
 import hu.montlikadani.ragemode.RageMode;
+import org.bukkit.configuration.file.FileConfiguration;
 
 public class GetGames {
 
-	private static FileConfiguration fi = RageMode.getInstance().getConfiguration().getArenasCfg();
+    private static FileConfiguration fi = RageMode.getInstance().getConfiguration().getArenasCfg();
 
-	public static int getConfigGamesCount() {
-		int n = 0;
-		if (!RageMode.getInstance().getConfiguration().getArenasFile().exists())
-			return 0;
+    public static int getConfigGamesCount() {
+        int n = 0;
+        if(!RageMode.getInstance().getConfiguration().getArenasFile().exists())
+            return 0;
 
-		if (fi.get("arenas") == null)
-			return 0;
+        if(fi.get("arenas") == null)
+            return 0;
 
-		if (fi.getConfigurationSection("arenas").getKeys(false) == null)
-			return 0;
-		n = fi.getConfigurationSection("arenas").getKeys(false).size();
-		return n;
-	}
+        if(fi.getConfigurationSection("arenas").getKeys(false) == null)
+            return 0;
+        n = fi.getConfigurationSection("arenas").getKeys(false).size();
+        return n;
+    }
 
-	public static int getMaxPlayers(String game) {
-		if (!fi.isSet("arenas." + game + ".maxplayers"))
-			return -1;
-		else
-			return fi.getInt("arenas." + game + ".maxplayers");
-	}
+    public static int getMaxPlayers(String game) {
+        if(!fi.isSet("arenas." + game + ".maxplayers"))
+            return -1;
+        else
+            return fi.getInt("arenas." + game + ".maxplayers");
+    }
 
-	public static String[] getGameNames() {
-		String[] names = new String[getConfigGamesCount()];
+    public static String[] getGameNames() {
+        String[] names = new String[getConfigGamesCount()];
 
-		if (fi.get("arenas") == null)
-			return new String[] { "" };
+        if(fi.get("arenas") == null)
+            return new String[]{""};
 
-		if (fi.getConfigurationSection("arenas").getKeys(false) != null)
-			fi.getConfigurationSection("arenas").getKeys(false).toArray(names);
-		return names;
-	}
+        if(fi.getConfigurationSection("arenas").getKeys(false) != null)
+            fi.getConfigurationSection("arenas").getKeys(false).toArray(names);
+        return names;
+    }
 
-	public static int getOverallMaxPlayers() {
-		int i = 0;
-		int n = 0;
-		int x;
-		String[] names = getGameNames();
-		while (i < names.length) {
-			x = fi.getInt("arenas." + names[i] + ".maxplayers");
-			if (n < x)
-				n = x;
-			i++;
-		}
-		return n;
-	}
+    public static int getOverallMaxPlayers() {
+        int i = 0;
+        int n = 0;
+        int x;
+        String[] names = getGameNames();
+        while(i < names.length) {
+            x = fi.getInt("arenas." + names[i] + ".maxplayers");
+            if(n < x)
+                n = x;
+            i++;
+        }
+        return n;
+    }
 
-	public static boolean isGameExistent(String game) {
-		int i = 0;
-		int imax = getConfigGamesCount();
-		String[] games = getGameNames();
-		while (i < imax) {
-			if (games[i].equals(game))
-				return true;
-			i++;
-		}
-		return false;
+    public static boolean isGameExistent(String game) {
+        int i = 0;
+        int imax = getConfigGamesCount();
+        String[] games = getGameNames();
+        while(i < imax) {
+            if(games[i].equals(game))
+                return true;
+            i++;
+        }
+        return false;
 
-	}
+    }
 }

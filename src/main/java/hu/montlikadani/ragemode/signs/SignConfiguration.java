@@ -1,63 +1,62 @@
 package hu.montlikadani.ragemode.signs;
 
-import java.io.File;
-import java.io.IOException;
-
+import hu.montlikadani.ragemode.RageMode;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import hu.montlikadani.ragemode.RageMode;
+import java.io.File;
+import java.io.IOException;
 
 public class SignConfiguration {
 
-	private static boolean inited = false;
-	private static File yamlSignsFile;
-	private static FileConfiguration signConfiguration;
+    private static boolean inited = false;
+    private static File yamlSignsFile;
+    private static FileConfiguration signConfiguration;
 
-	public static void initSignConfiguration() {
-		if (inited)
-			return;
-		else
-			inited = true;
+    public static void initSignConfiguration() {
+        if(inited)
+            return;
+        else
+            inited = true;
 
-		File file = new File(RageMode.getInstance().getFolder(), "signs.yml");
-		YamlConfiguration config = null;
-		yamlSignsFile = file;
+        File file = new File(RageMode.getInstance().getFolder(), "signs.yml");
+        YamlConfiguration config = null;
+        yamlSignsFile = file;
 
-		if (!file.exists()) {
-			if (!file.getParentFile().exists())
-				file.getParentFile().mkdirs();
+        if(!file.exists()) {
+            if(!file.getParentFile().exists())
+                file.getParentFile().mkdirs();
 
-			try {
-				file.createNewFile();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
+            try {
+                file.createNewFile();
+            } catch(IOException e1) {
+                e1.printStackTrace();
+            }
 
-			config = new YamlConfiguration();
-			config.createSection("data");
+            config = new YamlConfiguration();
+            config.createSection("data");
 
-			try {
-				config.save(file);
-			} catch (IOException e2) {
-				e2.printStackTrace();
-			}
-		} else
-			config = YamlConfiguration.loadConfiguration(file);
+            try {
+                config.save(file);
+            } catch(IOException e2) {
+                e2.printStackTrace();
+            }
+        } else
+            config = YamlConfiguration.loadConfiguration(file);
 
-		signConfiguration = config;
-		try {
-			config.save(file);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+        signConfiguration = config;
+        try {
+            config.save(file);
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-	public static File getYamlSignsFile() {
-		return yamlSignsFile;
-	}
+    public static File getYamlSignsFile() {
+        return yamlSignsFile;
+    }
 
-	public static FileConfiguration getSignConfiguration() {
-		return signConfiguration;
-	}
+    public static FileConfiguration getSignConfiguration() {
+        return signConfiguration;
+    }
 }
