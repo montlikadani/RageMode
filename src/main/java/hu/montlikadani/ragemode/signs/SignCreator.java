@@ -71,9 +71,7 @@ public class SignCreator {
           ? ChatColor.GOLD.toString() + ChatColor.ITALIC.toString() + "Running..."
           : ChatColor.DARK_GREEN.toString() + "Waiting...";
       sign.setLine(3, running);
-      if (sign.getBlock().getState().update()) {
-        return true;
-      }
+      return sign.getBlock().getState().update();
     }
     return false;
   }

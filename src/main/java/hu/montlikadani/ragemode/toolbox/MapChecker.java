@@ -50,11 +50,8 @@ public class MapChecker {
     }
 
     String worldName = RageMode.getInstance().getConfiguration().getArenasCfg().getString("arenas." + gameName + ".lobby.world");
-    if (worldName.trim().equals(world.getName().trim())) {
-      return true;
-    }
+    return worldName.trim().equals(world.getName().trim());
 
-    return false;
   }
 
   private void checkMapName() {

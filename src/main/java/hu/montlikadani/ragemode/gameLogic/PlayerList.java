@@ -407,10 +407,7 @@ public class PlayerList {
       i++;
     }
 
-    if (vipsInGame == players.length) {
-      return false;
-    }
-    return true;
+    return vipsInGame != players.length;
   }
 
   public static void addGameToList(String game, int maxPlayers) {

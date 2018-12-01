@@ -179,10 +179,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
   }
 
   private boolean hasPerm(CommandSender sender, String perm) {
-    if (sender.hasPermission(perm)) {
-      return true;
-    }
-    return false;
+    return sender.hasPermission(perm);
   }
 
   @Override

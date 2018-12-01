@@ -44,11 +44,7 @@ public class RageMode extends JavaPlugin {
       lang = new Language(this, conf.getCfg().getString("language"));
       lang.loadLanguage();
 
-      if (Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays")) {
-        hologram = true;
-      } else {
-        hologram = false;
-      }
+      hologram = Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays");
 
       playerList = new PlayerList();
       getServer().getPluginManager().registerEvents(new EventListener(this), this);
