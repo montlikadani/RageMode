@@ -118,6 +118,5 @@ public class RageMode extends JavaPlugin {
 
   public void throwMsg() {
     Bukkit.getLogger().warning("There was an error. Please report it here:\nhttps://github.com/montlikadani/RageMode/issues");
-    return;
   }
 }

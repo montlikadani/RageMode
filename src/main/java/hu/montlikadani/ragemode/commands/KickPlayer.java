@@ -47,6 +47,5 @@ public class KickPlayer extends RmCommand {
         p.sendMessage(RageMode.getLang().get("commands.kick.player-not-play-currently"));
       }
     }
-    return;
   }
 }

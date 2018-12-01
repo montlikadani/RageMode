@@ -40,7 +40,6 @@ public class SetGameTime extends RmCommand {
     } else {
       p.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm gametime <gameName> <minutes>"));
     }
-    return;
   }
 
   private boolean isInt(String string) {

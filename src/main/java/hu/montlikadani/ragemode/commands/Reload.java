@@ -39,6 +39,5 @@ public class Reload extends RmCommand {
     }
 
     sender.sendMessage(RageMode.getLang().get("commands.reload.success"));
-    return;
   }
 }

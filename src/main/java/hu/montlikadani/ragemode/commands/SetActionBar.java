@@ -35,6 +35,5 @@ public class SetActionBar extends RmCommand {
     } else {
       p.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm actionbar <gameName> <true|false>"));
     }
-    return;
   }
 }

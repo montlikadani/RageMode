@@ -38,6 +38,5 @@ public class ListGames extends RmCommand {
     } else {
       p.sendMessage(RageMode.getLang().get("commands.listgames.no-games-available"));
     }
-    return;
   }
 }

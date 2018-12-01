@@ -33,6 +33,5 @@ public class ForceStart extends RmCommand {
     } else {
       p.sendMessage(RageMode.getLang().get("commands.forcestart.not-enough-players"));
     }
-    return;
   }
 }

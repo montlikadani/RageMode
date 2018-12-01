@@ -32,7 +32,6 @@ public class SetLobbyDelay extends RmCommand {
     } else {
       p.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm lobbydelay <gameName> <seconds>"));
     }
-    return;
   }
 
   private boolean isInt(String string) {

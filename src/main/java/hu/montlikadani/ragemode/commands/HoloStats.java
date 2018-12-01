@@ -36,7 +36,6 @@ public class HoloStats extends RmCommand {
     } else {
       p.sendMessage(RageMode.getLang().get("missing-dependencies", "%depend%", "HolographicDisplays"));
     }
-    return;
   }
 
   private void addHolo(Player p) {

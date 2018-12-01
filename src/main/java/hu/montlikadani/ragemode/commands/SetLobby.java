@@ -45,6 +45,5 @@ public class SetLobby extends RmCommand {
     } else {
       p.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm setlobby <gameName>"));
     }
-    return;
   }
 }

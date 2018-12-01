@@ -35,6 +35,5 @@ public class SetBossBar extends RmCommand {
     } else {
       p.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm bossbar <gameName> <true|false>"));
     }
-    return;
   }
 }

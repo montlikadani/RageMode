@@ -36,6 +36,5 @@ public class SetGlobalMessages extends RmCommand {
     } else {
       p.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm globalmessages <gameName> <true|false>"));
     }
-    return;
   }
 }

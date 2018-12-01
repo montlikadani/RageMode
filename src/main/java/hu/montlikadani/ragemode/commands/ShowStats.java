@@ -29,7 +29,6 @@ public class ShowStats extends RmCommand {
     } else {
       constructMessage(p, p.getName());
     }
-    return;
   }
 
   private void constructMessage(Player player, String playerName) {
@@ -157,7 +156,6 @@ public class ShowStats extends RmCommand {
             // Bukkit.broadcastMessage(data.id + data.name);
             this.sUUID = data.id;
           } else {
-            return;
           }
         } catch (NullPointerException i) {
           this.sUUID = null;

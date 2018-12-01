@@ -106,7 +106,6 @@ public class MapChecker {
           } else {
             message = RageMode.getLang().get("game.lobby-coords-not-set");
             isValid = false;
-            return;
           }
         } else {
           message = RageMode.getLang().get("game.worldname-not-set");

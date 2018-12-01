@@ -55,6 +55,5 @@ public class AddGame extends RmCommand {
     }
 
     p.sendMessage(RageMode.getLang().get("setup.success-added", "%game%", args[1]));
-    return;
   }
 }

@@ -23,6 +23,5 @@ public class PlayerLeave extends RmCommand {
     PlayerList.removePlayerSynced(p);
     PlayerList.removePlayer(p);
     SignCreator.updateAllSigns(PlayerList.getPlayersGame(p));
-    return;
   }
 }

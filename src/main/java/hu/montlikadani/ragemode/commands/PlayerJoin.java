@@ -67,6 +67,5 @@ public class PlayerJoin extends RmCommand {
     } else {
       p.sendMessage(mapChecker.getMessage());
     }
-    return;
   }
 }

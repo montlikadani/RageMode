@@ -44,7 +44,6 @@ public class ResetPlayerStats extends RmCommand {
     Player p = (Player) sender;
     reset(p);
     p.sendMessage(RageMode.getLang().get("commands.stats.reseted"));
-    return;
   }
 
   private void reset(Player p) {

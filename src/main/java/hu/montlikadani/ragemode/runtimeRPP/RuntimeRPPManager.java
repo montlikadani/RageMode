@@ -72,7 +72,6 @@ public class RuntimeRPPManager {
 
       RuntimeRPPList.add(i + 1, newRPP);
     } else if (pp.getPoints() == oldRPP.getPoints()) {
-      return;// TODO kills&deaths...
     } else if (pp.getPoints() > oldRPP.getPoints()) {
       boolean norankchange = false;
       int i = oldRPP.getRank() - 2;

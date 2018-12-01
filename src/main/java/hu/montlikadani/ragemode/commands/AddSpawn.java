@@ -53,6 +53,5 @@ public class AddSpawn extends RmCommand {
       RageMode.getInstance().throwMsg();
     }
     p.sendMessage(RageMode.getLang().get("setup.spawn-set-success", "%number%", num, "%game%", args[1]));
-    return;
   }
 }

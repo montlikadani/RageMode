@@ -241,7 +241,6 @@ public class YAMLStats {
         e.printStackTrace();
       }
     } else {
-      return;
     }
   }
 

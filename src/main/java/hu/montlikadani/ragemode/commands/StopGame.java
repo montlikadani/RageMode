@@ -60,7 +60,6 @@ public class StopGame extends RmCommand {
     } else {
       sender.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm stopgame <gameName>"));
     }
-    return;
   }
 
   public static void stopGame(String game) {
