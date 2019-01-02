@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.gameLogic;
+package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,16 +6,20 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 
-import hu.montlikadani.RageMode.RageMode;
-import hu.montlikadani.RageMode.commands.StopGame;
-import hu.montlikadani.RageMode.scoreboard.ScoreBoard;
-import hu.montlikadani.RageMode.scores.PlayerPoints;
-import hu.montlikadani.RageMode.scores.RageScores;
-import hu.montlikadani.RageMode.toolbox.ActionBar;
+import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.StopGame;
+import hu.montlikadani.ragemode.gameUtils.ActionBar;
+import hu.montlikadani.ragemode.scoreboard.ScoreBoard;
+import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.scores.RageScores;
 
 public class GameTimer {
 
@@ -97,7 +101,7 @@ public class GameTimer {
 						});
 					}
 
-					// -------ActionBar update-------
+					// -------ActionBar & BossBar update-------
 					if (secondsRemaining % 2 == 0) {
 						String[] playerUUIDs = PlayerList.getPlayersInGame(gameName);
 						List<PlayerPoints> playerPoints = new ArrayList<>();
@@ -115,15 +119,50 @@ public class GameTimer {
 									+ ChatColor.GOLD + Integer.toString(points.getPoints()) + ChatColor.DARK_AQUA
 									+ " points. " + ChatColor.GOLD + Integer.toString(points.getKills()) + " / "
 									+ Integer.toString(points.getDeaths()) + ChatColor.DARK_AQUA + " K/D.";
+							String ver = RageMode.getVer();
 							for (String playerUUID : playerUUIDs) {
-								/** TODO Create bossbar
-								 * if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("settings.global.bossbar")) {
-									Bukkit.createBossBar(message);
-								}*/
+								if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName + ".bossbar")
+										&& RageMode.getInstance().getConfiguration().getCfg().getBoolean("settings.global.bossbar")) {
+									if (!(ver.equals("1_8_R1") || ver.equals("1_8_R2") || ver.equals("1_8_R3"))) {
+										BossBar bar = Bukkit.createBossBar(message, BarColor.RED, BarStyle.SOLID);
+										bar.addPlayer(Bukkit.getPlayer(UUID.fromString(playerUUID)));
+
+										for (int i = 1; i <= 6; ++i) {
+											Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
+												@Override
+												public void run() {
+													if (bar.getProgress() >= 0.2D)
+														bar.setProgress(bar.getProgress() - 0.2D);
+													else
+														bar.removeAll();
+												}
+											}, (long) (20 * i));
+										}
+									} else
+										RageMode.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
+								} else if (RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + gameName + ".bossbar")) {
+									if (!(ver.equals("1_8_R1") || ver.equals("1_8_R2") || ver.equals("1_8_R3"))) {
+										BossBar bar = Bukkit.createBossBar(message, BarColor.RED, BarStyle.SOLID);
+										bar.addPlayer(Bukkit.getPlayer(UUID.fromString(playerUUID)));
+
+										for (int i = 1; i <= 6; ++i) {
+											Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
+												@Override
+												public void run() {
+													if (bar.getProgress() >= 0.2D)
+														bar.setProgress(bar.getProgress() - 0.2D);
+													else
+														bar.removeAll();
+												}
+											}, (long) (20 * i));
+										}
+									} else
+										RageMode.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
+								}
 								if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName + ".actionbar")) {
 									if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game.global.actionbar"))
 										ActionBar.sendActionBar(Bukkit.getPlayer(UUID.fromString(playerUUID)), message);
-								} else if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("arenas." + gameName + ".actionbar"))
+								} else if (RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + gameName + ".actionbar"))
 									ActionBar.sendActionBar(Bukkit.getPlayer(UUID.fromString(playerUUID)), message);
 							}
 							pointer++;
@@ -132,7 +171,7 @@ public class GameTimer {
 								pointer = 0;
 						}
 					}
-					// -------End of ActionBar update-------
+					// -------End of ActionBar & BossBar update-------
 				} else {
 					this.cancel();
 					RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {

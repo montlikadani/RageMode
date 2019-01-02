@@ -1,7 +1,7 @@
 name: RageMode
-main: hu.montlikadani.RageMode.RageMode
-version: 1.0.0
-softdepend: [HolographicDisplays]
+main: hu.montlikadani.ragemode.RageMode
+version: 1.0.0.001
+softdepend: [HolographicDisplays, PlaceholderAPI]
 description: A RageMode minigame plugin
 # DO NOT EDIT ANYTHING ABOVE THIS LINE!
 
@@ -18,7 +18,7 @@ permissions:
     children:
       ragemode.join: true
       ragemode.leave: true
-      ragemode.list: true
+      ragemode.listgames: true
       ragemode.stats: true
   ragemode.admin.*:
     description: Gives access to all game-setup commands.
@@ -29,7 +29,7 @@ permissions:
       ragemode.admin.addspawn: true
       ragemode.admin.removegame: true
       ragemode.admin.reload: true
-      ragemode.admin.stats.reset: true
+      ragemode.admin.resetstats: true
       ragemode.admin.stopgame: true
       ragemode.admin.setlobbydelay: true
       ragemode.admin.setgametime: true
@@ -40,9 +40,6 @@ permissions:
       ragemode.admin.forcestart: true
       ragemode.admin.holo: true
       ragemode.admin.signs: true
-  ragemode.commands.tabcomplete:
-    description: Gives access to use tab complete for commands.
-    default: false
   ragemode.vip:
     description: Gives access to the VIP functions.
-    default: op
+    default: false

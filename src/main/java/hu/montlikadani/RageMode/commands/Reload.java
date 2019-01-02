@@ -1,15 +1,15 @@
-package hu.montlikadani.RageMode.commands;
+package hu.montlikadani.ragemode.commands;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import hu.montlikadani.RageMode.RageMode;
-import hu.montlikadani.RageMode.gameLogic.PlayerList;
-import hu.montlikadani.RageMode.holo.HoloHolder;
-import hu.montlikadani.RageMode.signs.SignConfiguration;
-import hu.montlikadani.RageMode.signs.SignCreator;
-import hu.montlikadani.RageMode.toolbox.GameBroadcast;
-import hu.montlikadani.RageMode.toolbox.GetGames;
+import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameUtils.GameBroadcast;
+import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.holo.HoloHolder;
+import hu.montlikadani.ragemode.signs.SignConfiguration;
+import hu.montlikadani.ragemode.signs.SignCreator;
 
 public class Reload extends RmCommand {
 
@@ -21,19 +21,21 @@ public class Reload extends RmCommand {
 		String[] games = GetGames.getGameNames();
 		for (String game : games) {
 			if (PlayerList.isGameRunning(game))
-				GameBroadcast.broadcastToGame(game, "&cThe game has stopped because we reloading the plugin and need to stop the game. Sorry!");
+				GameBroadcast.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
 		}
 		StopGame.stopAllGames();
 
 		RageMode.getInstance().getConfiguration().loadConfig();
 		RageMode.getLang().loadLanguage();
 
-		SignConfiguration.initSignConfiguration();
+		if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable")) {
+			SignConfiguration.initSignConfiguration();
 
-		for (String game : games) {
-			SignCreator.updateAllSigns(game);
+			for (String game : games) {
+				SignCreator.updateAllSigns(game);
+			}
 		}
-		if (RageMode.getInstance().getHologramAvailabe())
+		if (RageMode.getInstance().getHologramAvailable())
 			HoloHolder.initHoloHolder();
 
 		sender.sendMessage(RageMode.getLang().get("commands.reload.success"));

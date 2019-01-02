@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.commands;
+package hu.montlikadani.ragemode.commands;
 
 import java.io.IOException;
 
@@ -6,7 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.RageMode.RageMode;
+import hu.montlikadani.ragemode.RageMode;
 
 public class SetGlobalMessages extends RmCommand {
 
@@ -34,7 +34,7 @@ public class SetGlobalMessages extends RmCommand {
 			}
 			p.sendMessage(RageMode.getLang().get("setup.success"));
 		} else
-			p.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm globalmessages <gameName> <true|false>"));
+			p.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName> <true|false>"));
 		return;
 	}
 }

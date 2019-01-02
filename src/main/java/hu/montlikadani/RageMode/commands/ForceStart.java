@@ -1,11 +1,12 @@
-package hu.montlikadani.RageMode.commands;
+package hu.montlikadani.ragemode.commands;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.RageMode.RageMode;
-import hu.montlikadani.RageMode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.gameLogic.GameLoader;
+import hu.montlikadani.ragemode.gameLogic.PlayerList;
 
 public class ForceStart extends RmCommand {
 
@@ -23,9 +24,9 @@ public class ForceStart extends RmCommand {
 			p.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm forcestart <gameName>"));
 			return;
 		}
-		if (PlayerList.getPlayersGame(p) != null) {
+		if (PlayerList.getPlayersGame(p) != null && PlayerList.getPlayersGame(p).length() > 2) {
 			if (!PlayerList.isGameRunning(args[1])) {
-				PlayerList.setGameRunning(args[1]);
+				new GameLoader(args[1]);
 				p.sendMessage(RageMode.getLang().get("commands.forcestart.game-start", "%game%", args[1]));
 			} else
 				p.sendMessage(RageMode.getLang().get("game.running"));

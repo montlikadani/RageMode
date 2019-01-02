@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.gameLogic;
+package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 
-import hu.montlikadani.RageMode.RageMode;
+import hu.montlikadani.ragemode.RageMode;
 
 public class LobbyTimer {
 
@@ -23,13 +23,11 @@ public class LobbyTimer {
 
 	private void getSecondsToWait() {
 		if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName + ".lobbydelay")) {
-			if (RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobbydelay") > 0)
-				secondsRemaining = RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobbydelay");
+			if (RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.delay") > 0)
+				secondsRemaining = RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.delay");
 			else
 				secondsRemaining = 30;
-		}
-
-		if (RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName + ".lobbydelay"))
+		} else
 			secondsRemaining = RageMode.getInstance().getConfiguration().getArenasCfg().getInt("arenas." + gameName + ".lobbydelay");
 	}
 
@@ -64,11 +62,15 @@ public class LobbyTimer {
 
 	private void startTimer() {
 		t.scheduleAtFixedRate(new TimerTask() {
-			private int timesToSendMessage = 9;
+			private int timesToSendMessage = RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.time-to-send-message");
 
 			@Override
 			public void run() {
 				if (timesToSendMessage > 0 && PlayerList.getPlayersInGame(gameName).length >= 2) {
+					if (PlayerList.isGameRunning(gameName)) {
+						this.cancel();
+						return;
+					}
 					String[] playerUUIDs = PlayerList.getPlayersInGame(gameName);
 					for (int i = 0; i < playerUUIDs.length; i++) {
 						Bukkit.getPlayer(UUID.fromString(playerUUIDs[i])).sendMessage(RageMode.getLang().get("game.lobby-message", "%time%",

@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.gameLogic;
+package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,8 +7,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import hu.montlikadani.RageMode.RageMode;
-import hu.montlikadani.RageMode.toolbox.MapChecker;
+import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.gameUtils.MapChecker;
 
 public class GameSpawnGetter {
 

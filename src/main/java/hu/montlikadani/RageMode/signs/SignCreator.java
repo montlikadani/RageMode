@@ -1,75 +1,80 @@
-package hu.montlikadani.RageMode.signs;
+package hu.montlikadani.ragemode.signs;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.block.SignChangeEvent;
 
-import hu.montlikadani.RageMode.gameLogic.PlayerList;
-import hu.montlikadani.RageMode.toolbox.GetGames;
+import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class SignCreator {
 
 	private static FileConfiguration fileConf = SignConfiguration.getSignConfiguration();
+	private static SignPlaceholder signPlaceholder;
 
 	public synchronized static boolean createNewSign(Sign sign, String game) {
-		Set<String> signs = fileConf.getConfigurationSection("signs").getKeys(false);
-		if (signs != null) {
-			if (signs.contains(sign.getWorld().getName()))
-				return false;
-		}
+		List<String> signs = fileConf.getStringList("signs");
+		String index = locationSignToString(sign.getLocation(), game);
 
-		String path = "signs." + sign.getWorld().getName() + ".";
-
-		fileConf.set(path + "game", game);
-		fileConf.set(path + "x", sign.getX());
-		fileConf.set(path + "y", sign.getY());
-		fileConf.set(path + "z", sign.getZ());
-
+		signs.add(index);
+		fileConf.set("signs", signs);
 		try {
 			fileConf.save(SignConfiguration.getYamlSignsFile());
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
+			RageMode.getInstance().throwMsg();
 			return false;
 		}
 	}
 
 	public synchronized static boolean removeSign(Sign sign) {
-		String path = "signs." + sign.getWorld().getName();
+		List<String> signs = fileConf.getStringList("signs");
 
-		if (fileConf.contains(path)) {
-			fileConf.set(path, null);
+		for (String game : GetGames.getGameNames()) {
+			String index = locationSignToString(sign.getLocation(), game);
+
+			signs.remove(index);
+			fileConf.set("signs", signs);
 			try {
 				fileConf.save(SignConfiguration.getYamlSignsFile());
 				return true;
 			} catch (IOException e) {
 				e.printStackTrace();
+				RageMode.getInstance().throwMsg();
 				return false;
 			}
 		}
 		return false;
 	}
 
+	/**
+	 * Updates a JoinSigns for the given game which are properly configured.
+	 * 
+	 * @param event Event that are called.
+	 * @return True if a sign is found on the set location.
+	 */
 	public static boolean updateSign(SignChangeEvent sign) {
-		String path = "signs." + sign.getBlock().getState().getWorld().getName();
+		List<String> signs = fileConf.getStringList("signs");
+		if (signs == null || signs.isEmpty())
+			return false;
 
-		if (fileConf.contains(path)) {
-			String game = fileConf.getString(path + ".game");
-			sign.setLine(0, ChatColor.DARK_AQUA + "[" + ChatColor.DARK_PURPLE + "RageMode" + ChatColor.DARK_AQUA + "]");
-			sign.setLine(1, game);
-			sign.setLine(2,
-					"Players " + ChatColor.DARK_AQUA + "[" + Integer.toString(PlayerList.getPlayersInGame(game).length)
-							+ " / " + GetGames.getMaxPlayers(game) + "]");
-			String running = (PlayerList.isGameRunning(game))
-					? ChatColor.GOLD.toString() + ChatColor.ITALIC.toString() + "Running..."
-					: ChatColor.DARK_GREEN.toString() + "Waiting...";
-			sign.setLine(3, running);
+		for (String list : signs) {
+			String game = getGameFromString(list);
+
+			if (signPlaceholder == null)
+				signPlaceholder = new SignPlaceholder(RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list"));
+			else {
+				List<String> lines = signPlaceholder.parsePlaceholder(game);
+				for (int i = 0; i < 4; i++) {
+					sign.setLine(i, (String) lines.get(i));
+				}
+			}
 			if (sign.getBlock().getState().update())
 				return true;
 		}
@@ -83,36 +88,24 @@ public class SignCreator {
 	 * @return True if at least one sign was updated successfully for the given game.
 	 */
 	public static boolean updateAllSigns(String gameName) {
-		if (fileConf.get("signs") == null) return true;
-
-		Set<String> signs = fileConf.getConfigurationSection("signs").getKeys(false);
-		if (signs != null) {
+		List<String> signs = fileConf.getStringList("signs");
+		if (signs != null && !signs.isEmpty()) {
 			for (String signString : signs) {
-				String path = "signs." + signString;
-				String game = fileConf.getString(path + ".game");
+				String game = getGameFromString(signString);
 				if (game != null && gameName != null) {
 					if (game.trim().equalsIgnoreCase(gameName.trim())) {
-						int x = fileConf.getInt(path + ".x");
-						int y = fileConf.getInt(path + ".y");
-						int z = fileConf.getInt(path + ".z");
-						String world = fileConf.getString(path + ".world");
-						Location signLocation = new Location(Bukkit.getWorld(world), x, y, z);
+						Location signLocation = stringToLocationSign(signString);
 						if (signLocation.getBlock().getState() instanceof Sign) {
 							Sign sign = (Sign) signLocation.getBlock().getState();
-							sign.setLine(0, ChatColor.DARK_AQUA + "[" + ChatColor.DARK_PURPLE + "RageMode"
-									+ ChatColor.DARK_AQUA + "]");
-							sign.setLine(1, game);
-							sign.setLine(2, "Players " + ChatColor.DARK_AQUA + "["
-									+ Integer.toString(PlayerList.getPlayersInGame(game).length) + " / "
-									+ GetGames.getMaxPlayers(game) + "]");
-							String running = (PlayerList.isGameRunning(game))
-									? ChatColor.GOLD.toString() + ChatColor.ITALIC.toString() + "Running..."
-									: ChatColor.DARK_GREEN.toString() + "Waiting...";
-							sign.setLine(3, running);
+							if (signPlaceholder == null)
+								signPlaceholder = new SignPlaceholder(RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list"));
+							else {
+								List<String> lines = signPlaceholder.parsePlaceholder(game);
+								for (int i = 0; i < 4; i++) {
+									sign.setLine(i, (String) lines.get(i));
+								}
+							}
 							sign.update();
-						} else {
-							Bukkit.getConsoleSender().sendMessage("A funny jester tried to modify the signs.yml without commands.");
-							Bukkit.getConsoleSender().sendMessage("Skipping update of " + ChatColor.DARK_PURPLE + "(1)" + ChatColor.RESET + " sign...");
 						}
 					}
 				} else
@@ -124,31 +117,21 @@ public class SignCreator {
 	}
 
 	/**
-	 * Checks whether the given Sign is properly configured to be an JoinSign or
-	 * not.
+	 * Checks whether the given sign is properly configured to be an JoinSign or not.
 	 * 
 	 * @param sign The Sign for which the check should be done.
-	 * @return True if the signs.yml contains a correct value for the given Sign instance.
+	 * @return True if the block found in the specified location.
 	 */
 	public static boolean isJoinSign(Sign sign) {
-		Location signPosition = sign.getLocation();
-
-		Set<String> signs = fileConf.getConfigurationSection("signs").getKeys(false);
-		if (signs != null) {
+		List<String> signs = fileConf.getStringList("signs");
+		if (signs != null && !signs.isEmpty()) {
 			for (String signString : signs) {
-				String path = "signs." + signString;
-				String game = fileConf.getString(path + ".game");
+				String game = getGameFromString(signString);
 				for (String gameName : GetGames.getGameNames()) {
 					if (game.trim().equalsIgnoreCase(gameName.trim())) {
-						int x = fileConf.getInt(path + ".x");
-						int y = fileConf.getInt(path + ".y");
-						int z = fileConf.getInt(path + ".z");
-						String world = fileConf.getString(path + ".world");
-						Location signLocation = new Location(Bukkit.getWorld(world), x, y, z);
-						if (signPosition.getBlockX() == x && signPosition.getBlockY() == y && signPosition.getBlockZ() == z) {
-							if (signLocation.getBlock().getState() instanceof Sign)
-								return true;
-						}
+						Location signLocation = stringToLocationSign(signString);
+						if (signLocation.getBlock().getState() instanceof Sign)
+							return true;
 					}
 				}
 			}
@@ -156,18 +139,44 @@ public class SignCreator {
 		return false;
 	}
 
-	public static String getGameFromSign(Sign sign) {
-		int x = sign.getX();
-		int y = sign.getY();
-		int z = sign.getZ();
-		String world = sign.getWorld().getName();
-		String signString = Integer.toString(x) + Integer.toString(y) + Integer.toString(z) + world;
-		String path = "signs." + signString;
-		String game = fileConf.getString(path + ".game");
-		for (String gameName : GetGames.getGameNames()) {
-			if (game.trim().equalsIgnoreCase(gameName.trim()))
-				return game;
+	/**
+	 * Checks whether the sign is properly configured to get the game from the sign.
+	 * 
+	 * @param sign The Sign for which the check should be done.
+	 * @return True if the block found in the specified game.
+	 */
+	public static String getGameFromString(Sign sign) {
+		List<String> signs = fileConf.getStringList("signs");
+		if (signs != null && !signs.isEmpty()) {
+			for (String signString : signs) {
+				String game = getGameFromString(signString);
+				for (String gameName : GetGames.getGameNames()) {
+					if (game.trim().equalsIgnoreCase(gameName.trim()))
+						return game;
+				}
+			}
 		}
 		return "";
+	}
+
+	private static String getGameFromString(String raw) {
+		String[] splited = raw.split(",");
+		String returnGame = splited[4];
+		return returnGame;
+	}
+
+	private static String locationSignToString(Location loc, String game) {
+		String returnString = loc.getWorld().getName() + "," + loc.getX() + "," + loc.getY() + "," + loc.getZ() + "," + game;
+		return returnString;
+	}
+
+	private static Location stringToLocationSign(String raw) {
+		String[] splited = raw.split(",");
+		String world = splited[0];
+		double x = Double.parseDouble(splited[1]);
+		double y = Double.parseDouble(splited[2]);
+		double z = Double.parseDouble(splited[3]);
+
+		return new Location(Bukkit.getWorld(world), x, y, z);
 	}
 }

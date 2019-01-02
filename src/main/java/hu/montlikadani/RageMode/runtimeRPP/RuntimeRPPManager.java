@@ -1,15 +1,22 @@
-package hu.montlikadani.RageMode.runtimeRPP;
+package hu.montlikadani.ragemode.runtimeRPP;
 
 import java.util.List;
 
-import hu.montlikadani.RageMode.scores.PlayerPoints;
-import hu.montlikadani.RageMode.scores.RetPlayerPoints;
-import hu.montlikadani.RageMode.statistics.YAMLStats;
-import hu.montlikadani.RageMode.toolbox.MergeSort;
+import hu.montlikadani.ragemode.gameUtils.MergeSort;
+import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.scores.RetPlayerPoints;
+import hu.montlikadani.ragemode.statistics.MySQLStats;
+import hu.montlikadani.ragemode.statistics.YAMLStats;
 
 public class RuntimeRPPManager {
 
 	public static List<RetPlayerPoints> RuntimeRPPList;
+
+	public static void getRPPListFromMySQL() {
+		RuntimeRPPList = MySQLStats.getAllPlayerStatistics();
+		MergeSort ms = new MergeSort();
+		ms.sort(RuntimeRPPList);
+	}
 
 	public static void getRPPListFromYAML() {
 		RuntimeRPPList = YAMLStats.getAllPlayerStatistics();
@@ -37,7 +44,7 @@ public class RuntimeRPPManager {
 	public synchronized static void updatePlayerEntry(PlayerPoints pp) {
 		RetPlayerPoints oldRPP = getRPPForPlayer(pp.getPlayerUUID());
 		if (oldRPP == null) {
-			int i = RuntimeRPPList.size() - 1;
+			int i = RuntimeRPPList != null ? RuntimeRPPList.size() - 1 : null;
 			while (RuntimeRPPList.get(i).getPoints() < pp.getPoints()) {
 				i--;
 			}

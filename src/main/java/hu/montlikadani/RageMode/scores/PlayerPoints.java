@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.scores;
+package hu.montlikadani.ragemode.scores;
 
 public class PlayerPoints implements Comparable<PlayerPoints> {
 

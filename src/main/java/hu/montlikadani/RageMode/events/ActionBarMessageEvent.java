@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.events;
+package hu.montlikadani.ragemode.events;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;

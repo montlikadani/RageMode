@@ -1,30 +1,149 @@
 # Default language. Example: en, hu, de etc.
-# You can find all supported languages on: 
+# You can find all supported languages on: https://github.com/montlikadani/RageMode/wiki/Languages
 language: en
 
-# YAML statistic, currently this supported.
-statistics: true
+# Statistic types: yaml, mysql (not tested)
+statistics: yaml
+
+# bStats metrics for sending some statistic.
+metrics: true
+
+# MySQL database to save the players statistic.
+MySQL:
+  username: accountname
+  password: password
+  database: database
+  host: localhost
+  port: "3306"
+
+# Sign texts
+signs:
+  # Enables the signs creates.
+  enable: false
+  # Sign text when the game running or waiting for players.
+  game:
+    running: "&6&oRunning..."
+    waiting: "&cWaiting..."
+  # Sign text list (max. 4 line)
+  # Use %game%, %current-players%, %max-players%, %running% placeholder.
+  list:
+  - "&3[&5RageMode&3]"
+  - "&a%game%"
+  - "&ePlayers&3 [%current-players%/%max-players%&3]"
+  - "%running%"
+
+titles:
+  # When a player join to the game, and send title for him.
+  join-game:
+    title: "&e%game%"
+    subtitle: "&3by yourname"
+    # The time it takes for the title to fade into the screen. (In ticks)
+    fade-in: 20
+    # The time it takes for the title to stay on the screen. (In ticks)
+    stay: 50
+    # The time it takes for the title to fade out of the screen. (In ticks)
+    fade-out: 20
+  # When a player won a game, and send title for all players that in the game currently.
+  player-won:
+    title: "&2Congratulations!"
+    subtitle: "&e%winner%&6 won this round!"
+    fade-in: 20
+    stay: 200
+    fade-out: 20
+  # When you won a game, and send title for him that in the game currently.
+  you-won:
+    title: "&aCongratulations!"
+    subtitle: "&2You won this round!"
+    fade-in: 20
+    stay: 200
+    fade-out: 20
 
 # Global settings for game.
 game:
   global:
+    # Lobby settings
+    lobby:
+      # Minimum players to start the lobby timer.
+      # If this is less than 1, then 2 defaults.
+      min-players-to-start-lobby-timer: 2
+      # Lobby delay to start the game in seconds.
+      delay: 30
+      # Sending lobby waiting message to start game in seconds.
+      time-to-send-message: 9
+    # Disable player achievements award event when player plays in game?
+    disable-player-achievement-award: true
     # Death messages
     death-messages: true
+    # Keeps player inventory when died.
+    # true - keep inventory
+    # false - clears the player inventory
+    keep-inventory-on-death: true
+    # Bossbar messages when a player killed someone.
     bossbar: true
-    # Actionbar
+    # Actionbar messages when a player get points or killed someone.
     actionbar: true
-    # Lobby delay in seconds.
-    lobbydelay: 10
     # Game time in minutes.
-    gametime: 30
+    gametime: 10
+    # Switch the game mode to spectator when the game is end?
+    # Ignores the winner player.
+    switch-gamemode-to-spectator-at-end-of-game: true
+    chat-format:
+      enable: false
+      format: "&e[%points%]&r %player%&7:&r %message%"
     # In-game commands, to use a player the specified commands in-game.
     commands:
-    - "rm leave"
-    - "ragemode leave"
-    - "ragemode stop"
+    - "/rm leave"
+    - "/ragemode leave"
+    - "/ragemode stop"
     # Execute commands when the player left the game while playing. (Only console commands)
+    # # Use %player%, %player-ip% placeholder.
     run-commands-for-player-left-while-playing:
-      enable: false
-      # Use %player%, %player-ip% placeholder.
-      commands:
-      - "kick %player% &cWhy you left from the game while playing?"
+    #- "tell %player% &cWhy you left from the game while playing?"
+
+points:
+  bowkill: 25
+  axekill: 30
+  axedeath: -50
+  knifekill: 15
+  explosionkill: 25
+
+achievements:
+  first-kill:
+    reward:
+      points: 80
+      command:
+      - "eco give %player% 30"
+  win:
+    reward:
+      command:
+      - "eco give %player% 50"
+  kills:
+    amount: 35
+    points: 150
+
+# Item editing (name, lore, slot)
+# Inventory positions here: http://redditpublic.com/images/b/b2/Items_slot_number.png
+items:
+  rageBow:
+    name: "&4Rage Bow"
+    lore:
+    - "&7One shot, headshot & explosion"
+    slot: 0
+  rageKnife:
+    name: "&6Rage&4 Knife"
+    lore:
+    - "&7One hit, dead."
+    slot: 1
+  combatAxe:
+    name: "&6CombatAxe"
+    lore:
+    - "&7Right click, throws a axe and dead"
+    slot: 2
+  rageArrow:
+    name: "&7Rage Arrow"
+    slot: 9
+  grenade:
+    name: "&7Grenade"
+    lore:
+    - "&7Right click, throws a grenade and boom!"
+    slot: 5

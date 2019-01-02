@@ -1,13 +1,12 @@
-package hu.montlikadani.RageMode.config;
+package hu.montlikadani.ragemode.config;
 
 import java.io.File;
 import java.util.logging.Level;
 
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import hu.montlikadani.RageMode.RageMode;
+import hu.montlikadani.ragemode.RageMode;
 
 public class Configuration {
 
@@ -30,7 +29,7 @@ public class Configuration {
 			} else {
 				plugin.saveResource("config.yml", false);
 				config = YamlConfiguration.loadConfiguration(config_file);
-				Bukkit.getLogger().log(Level.INFO, "The 'config.yml' file successfully created!");
+				RageMode.logConsole(Level.INFO, "[RageMode] The 'config.yml' file successfully created!");
 			}
 			if (arenas_file.exists()) {
 				arenas = YamlConfiguration.loadConfiguration(arenas_file);
@@ -39,7 +38,7 @@ public class Configuration {
 			} else {
 				arenas_file.createNewFile();
 				arenas = YamlConfiguration.loadConfiguration(arenas_file);
-				Bukkit.getLogger().log(Level.INFO, "The 'arenas.yml' file successfully created!");
+				RageMode.logConsole(Level.INFO, "[RageMode] The 'arenas.yml' file successfully created!");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

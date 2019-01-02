@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.config;
+package hu.montlikadani.ragemode.config;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import hu.montlikadani.RageMode.RageMode;
+import hu.montlikadani.ragemode.RageMode;
 
 public class Language {
 
@@ -33,13 +33,13 @@ public class Language {
 			File langFile = null;
 			YamlConfiguration lf = new YamlConfiguration();
 			if (lang == null || lang.equals("")) {
-				langFile = new File(localeFolder + File.separator + "locale_en.yml");
+				langFile = new File(localeFolder, "locale_en.yml");
 				if (!langFile.exists())
 					plugin.saveResource("locale/locale_en.yml", false);
 				else
 					lf = YamlConfiguration.loadConfiguration(langFile);
 			} else {
-				langFile = new File(localeFolder + File.separator + "locale_" + lang + ".yml");
+				langFile = new File(localeFolder, "locale_" + lang + ".yml");
 				if (!langFile.exists())
 					plugin.saveResource("locale/locale_" + lang + ".yml", false);
 				else
@@ -75,8 +75,10 @@ public class Language {
 		l.get("commands.forcestart.not-enough-players", "&cNot enough player to run this game!");
 		l.get("commands.holostats.no-holo-found", "&cThere is no hologram saved.");
 		l.get("commands.stats.player-not-null", "&cThe player couldn't be null!");
+		l.get("commands.stats.player-not-found", "&cThis player not found.");
 		l.get("commands.stats.reseted", "&2Your stats has been reseted!");
 		l.get("commands.stats.target-stats-reseted", "&7%player%&2 stats has been reseted!");
+		l.get("commands.stats.player-currently-in-game", "&cThis player is currently playing! Please wait while the game end.");
 		l.get("commands.kick.game-not-null", "&cThe game name can not be null!");
 		l.get("commands.kick.player-not-null", "&cThe player name can not be null!");
 		l.get("commands.player-kicked", "&2The player&e %player%&2 successfully kicked from&e %game%&2 game!");
@@ -96,26 +98,28 @@ public class Language {
 		l.get("setup.removed-non-existent-game", "&cDon't remove non-existent games!");
 		l.get("setup.success-removed", "&cThe game&e %game%&c was removed successfully.");
 
-		String[] statList = new String[] { "&6Knife kills/deaths:&a %knife-kills%&7/&6%knife-deaths%",
+		String[] statList = new String[] { "&e--------&2 %player%&e --------", "", "&6Knife kills/deaths:&a %knife-kills%&7/&6%knife-deaths%",
 				"&6Explosion kills/deaths:&a %explosion-kills%&7/&6%explosion-deaths%", "&6Axe kills/deaths:&a %axe-kills%&7/&6%axe-deaths%",
 				"&6Direct arrow kills/deaths:&a %direct-arrow-kills%&7/%direct-arrow-deaths%", "", "&cKills:&2 %kills%",
 				"&cDeaths:&2 %deaths%", "&cKd:&2 %kd%", "&cGames:&2 %games%", "&cWins:&2 %games%", "&cPoints:&2 %points%", "&cRank:&2 %rank%" };
 		l.get("statistic-list", Arrays.asList(statList));
 
-		l.get("game.lobby-not-set", "&cThe lobby was not set yet for&3 %game%&c. Set it with&e /rm addlobby <gameName>&c command.");
-		l.get("game.lobby-coors-not-set", "&cThe lobby coordinates were not set properly. Ask an Admin to check the config.yml.");
+		l.get("game.lobby-not-set", "&cThe lobby was not set yet for&3 %game%&c. Set it with&e /rm setlobby <gameName>&c command.");
+		l.get("game.lobby-coords-not-set", "&cThe lobby coordinates were not set properly. Ask an Admin to check the config.yml.");
 		l.get("game.worldname-not-set", "&cThe world key can't be empty! Ask an Admin to check the config.yml.");
 		l.get("game.spawns-not-set-properly", "&cOne or more spawns are not set properly!");
 		l.get("game.no-spawns-configured", "&cIn&e %game%&c are no spawns configured!");
 		l.get("game.too-few-spawns", "&4The number of spawns must be greater than or equal the maxplayers value!");
 		l.get("game.player-could-not-join", "&e%player%&4 couldn't join the RageMode game&e %game%.");
-		l.get("game.broadcast-axe-kill", "&a%victim%&3 was killed by&a %killer%&3 with a&6 CombatAxe&3.");
-		l.get("game.broadcast-arrow-kill", "&a%victim%&3 was killed by a&6 direct arrow hit&3 from&a %killer%&3.");
-		l.get("game.broadcast-knife-kill", "&a%victim%&3 was killed by&a %killer%&3 with a&6 RageKnife&3.");
-		l.get("game.broadcast-explosion-kill", "&a%victim%&3 was&6 blown up&3 by&a %killer%&3.");
-		l.get("game.broadcast-error-kill", "&cWhoops, that shouldn't happen normally...");
+		l.get("game.game-stopped-for-reload", "&cThe game has stopped because we reloading the plugin and need to stop the game. Sorry!");
+		l.get("game.broadcast.axe-kill", "&a%victim%&3 was killed by&a %killer%&3 with a&6 CombatAxe&3.");
+		l.get("game.broadcast.arrow-kill", "&a%victim%&3 was killed by a&6 direct arrow hit&3 from&a %killer%&3.");
+		l.get("game.broadcast.knife-kill", "&a%victim%&3 was killed by&a %killer%&3 with a&6 RageKnife&3.");
+		l.get("game.broadcast.explosion-kill", "&a%victim%&3 was&6 blown up&3 by&a %killer%&3.");
+		l.get("game.broadcast.error-kill", "&cWhoops, that shouldn't happen normally...");
 		l.get("game.unknown-killer", "&cDo you know who killed you? Because we don't know it...");
 		l.get("game.unknown-weapon", "&a%victim%&3 was killed by something unexpected.");
+		l.get("game.void-fall", "&c%player%&2 has void fall from the game.");
 		l.get("game.not-set-up", "&4The game is not set up correctly. Please contact an Admin.");
 		l.get("game.lobby-not-set-properly", "&4The lobby was not set properly. Ask an Admin to check the config.yml.");
 		l.get("game.lobby-message", "&9This round will start in&e %time%&9 seconds.");
@@ -134,6 +138,7 @@ public class Language {
 		l.get("game.player-already-in-game", "&cYou are already in a game. You can leave it by typing&e %usage%");
 		l.get("game.player-not-ingame", "&cThe fact that you are not in a game caused a Problem while trying to remove you from that game.");
 		l.get("game.player-left", "&cYou left your current Game.");
+		l.get("game.no-won", "&cNo one won this game.");
 		l.get("game.message.arrow-kill", "&3You killed&6&l %victim%&3 with a direct arrow hit.&6&l %points%");
 		l.get("game.message.axe-kill", "&3You killed&6&l %victim%&3 with your CombatAxe.&6&l %points%");
 		l.get("game.message.knife-kill", "&3You killed&6&l %victim%&3 with your RageKnife.&6&l %points%");
@@ -163,7 +168,7 @@ public class Language {
 	public String get(String key, Object... variables) {
 		YamlConfiguration lf = getCurrentLangConf();
 
-		String missing = "MLF " + key;
+		String missing = "BADF " + key;
 		String msg = "";
 		try {
 			if (lf == null || !lf.contains(key))
@@ -188,14 +193,14 @@ public class Language {
 	public List<String> getList(String key, Object... variables) {
 		YamlConfiguration defL = getDefaultLangConf();
 
-		String missing = "MLF " + key + " ";
+		String missing = "BADF " + key + " ";
 
 		List<String> ls;
 		if (getCurrentLangConf().isList(key))
 			ls = colorsArray(getCurrentLangConf().getStringList(key), true);
 		else
 			ls = !defL.getStringList(key).isEmpty() && defL.getStringList(key) != null ? colorsArray(defL.getStringList(key), true)
-					: java.util.Arrays.asList(missing);
+					: Arrays.asList(missing);
 
 		if (variables != null && variables.length > 0) {
 			for (int i = 0; i < ls.size(); i++) {
@@ -210,7 +215,7 @@ public class Language {
 		return ls;
 	}
 
-	public String filterNewLine(String msg) {
+	private String filterNewLine(String msg) {
 		Pattern patern = Pattern.compile("([ ]?[\\/][n][$|\\s])");
 		Matcher match = patern.matcher(msg);
 		while (match.find()) {
@@ -235,12 +240,12 @@ public class Language {
 
 	public File getCurrentLangFile() {
 		File localeFolder = new File(plugin.getFolder(), "locale");
-		return new File(localeFolder + File.separator + "locale_" + lang + ".yml");
+		return new File(localeFolder, "locale_" + lang + ".yml");
 	}
 
 	public File getDefaultLangFile() {
 		File localeFolder = new File(plugin.getFolder(), "locale");
-		return new File(localeFolder + File.separator + "locale_en.yml");
+		return new File(localeFolder, "locale_en.yml");
 	}
 
 	public YamlConfiguration getCurrentLangConf() {

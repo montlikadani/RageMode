@@ -1,16 +1,18 @@
-package hu.montlikadani.RageMode.scores;
+package hu.montlikadani.ragemode.scores;
 
 import java.util.HashMap;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.RageMode.RageMode;
-import hu.montlikadani.RageMode.gameLogic.PlayerList;
-import hu.montlikadani.RageMode.scoreboard.ScoreBoard;
-import hu.montlikadani.RageMode.scoreboard.ScoreBoardHolder;
+import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.events.KillEvent;
+import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.scoreboard.ScoreBoard;
+import hu.montlikadani.ragemode.scoreboard.ScoreBoardHolder;
 
 public class RageScores {
 
@@ -29,7 +31,7 @@ public class RageScores {
 
 			switch (killCause.toLowerCase().trim()) {
 			case "ragebow":
-				int bowPoints = 25;
+				int bowPoints = RageMode.getInstance().getConfiguration().getCfg().getInt("points.bowkill");
 				totalPoints = addPoints(killer, PlayerList.getPlayersGame(killer), bowPoints, true);
 				addPoints(victim, PlayerList.getPlayersGame(victim), 0, false);
 
@@ -50,8 +52,8 @@ public class RageScores {
 				killer.sendMessage(RageMode.getLang().get("game.message.current-points", "%points%", Integer.toString(totalPoints)));
 				break;
 			case "combataxe":
-				int axePoints = 30;
-				int axeMinusPoints = -50;
+				int axePoints = RageMode.getInstance().getConfiguration().getCfg().getInt("points.axekill");
+				int axeMinusPoints = RageMode.getInstance().getConfiguration().getCfg().getInt("points.axedeath");
 				totalPoints = addPoints(killer, PlayerList.getPlayersGame(killer), axePoints, true);
 				addPoints(victim, PlayerList.getPlayersGame(victim), axeMinusPoints, false);
 
@@ -72,7 +74,7 @@ public class RageScores {
 				killer.sendMessage(RageMode.getLang().get("game.message.current-points", "%points%", Integer.toString(totalPoints)));
 				break;
 			case "rageknife":
-				int knifePoints = 15;
+				int knifePoints = RageMode.getInstance().getConfiguration().getCfg().getInt("points.knifekill");
 				totalPoints = addPoints(killer, PlayerList.getPlayersGame(killer), knifePoints, true);
 				addPoints(victim, PlayerList.getPlayersGame(victim), 0, false);
 
@@ -93,7 +95,7 @@ public class RageScores {
 				killer.sendMessage(RageMode.getLang().get("game.message.current-points", "%points%", Integer.toString(totalPoints)));
 				break;
 			case "explosion":
-				int explosionPoints = 25;
+				int explosionPoints = RageMode.getInstance().getConfiguration().getCfg().getInt("points.explosionkill");
 				totalPoints = addPoints(killer, PlayerList.getPlayersGame(killer), explosionPoints, true);
 				addPoints(victim, PlayerList.getPlayersGame(victim), 0, false);
 
@@ -118,8 +120,7 @@ public class RageScores {
 				break;
 			}
 
-			// -------KillStreak messages-------
-
+			// KillStreak
 			PlayerPoints currentPoints = playerpoints.get(killerUUID);
 			int currentStreak = currentPoints.getCurrentStreak();
 			if (currentStreak == 3 || currentStreak % 5 == 0) {
@@ -128,7 +129,20 @@ public class RageScores {
 				killer.sendMessage(RageMode.getLang().get("game.message.streak", "%number%", Integer.toString(currentStreak), "%points%",
 						"+" + Integer.toString(currentStreak * 10)));
 			}
-			// -------End of KillStreak messages-------
+
+			// Achievement event
+			ConfigurationSection list = RageMode.getInstance().getConfiguration().getCfg().getConfigurationSection("achievements");
+			for (String acm : list.getKeys(false)) {
+				ConfigurationSection section = list.getConfigurationSection(acm);
+				KillEvent event = null;
+				if (currentPoints.getKills() == 1)
+					event = new KillEvent(PlayerList.getPlayersGame(killer), killer, victim, true);
+				else if (currentPoints.getKills() == section.getInt("kills.amount"))
+					event = new KillEvent(PlayerList.getPlayersGame(killer), killer, victim, false);
+
+				if (event != null)
+					Bukkit.getPluginManager().callEvent(event);
+			}
 
 			ScoreBoard board = ScoreBoard.allScoreBoards.get(PlayerList.getPlayersGame(killer));
 			updateScoreBoard(killer, board);
@@ -162,32 +176,17 @@ public class RageScores {
 		}
 	}
 
+	/**
+	 * Gets the specified player points
+	 * 
+	 * @param string Player uuid
+	 * @return playerPoints Player current points
+	 */
 	public static PlayerPoints getPlayerPoints(String playerUUID) {
-		if (playerpoints.containsKey(playerUUID))
-			return playerpoints.get(playerUUID);
-		else
-			return null;
-	}
-
-	public static void resetPlayerStats(String playerUUID) {
-		PlayerPoints points = playerpoints.get(playerUUID);
-		if (points.getAxeDeaths() > 0 || points.getAxeKills() > 0 || points.getCurrentStreak() > 0 || points.getDeaths() > 0 ||
-				points.getDirectArrowDeaths() > 0 || points.getDirectArrowKills() > 0 || points.getExplosionDeaths() > 0 ||
-				points.getExplosionKills() > 0 || points.getKills() > 0 || points.getKnifeDeaths() > 0 || points.getKnifeKills() > 0 ||
-				points.getLongestStreak() > 0 || points.getPoints() > 0)
-			points.setAxeDeaths(0);
-			points.setAxeKills(0);
-			points.setCurrentStreak(0);
-			points.setDeaths(0);
-			points.setDirectArrowDeaths(0);
-			points.setDirectArrowKills(0);
-			points.setExplosionDeaths(0);
-			points.setExplosionKills(0);
-			points.setKills(0);
-			points.setKnifeDeaths(0);
-			points.setKnifeKills(0);
-			points.setLongestStreak(0);
-			points.setPoints(0);
+		if (playerUUID == null) {
+			throw new IllegalArgumentException("player uuid is null");
+		}
+		return playerpoints.containsKey(playerUUID) ? playerpoints.get(playerUUID) : null;
 	}
 
 	private static int addPoints(Player player, String gameName, int points, boolean killer) {
@@ -292,9 +291,4 @@ public class RageScores {
 		}
 		return highest;
 	}
-
-	// TODO Statistics for games and for the server globally. (Maybe also for
-	// each map separately) (Total Axe kills, total bow kills,..., best axe
-	// killer, best total killer,..., best victim,...
-
 }

@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.commands;
+package hu.montlikadani.ragemode.commands;
 
 import java.io.IOException;
 
@@ -8,7 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.RageMode.RageMode;
+import hu.montlikadani.ragemode.RageMode;
 
 public class AddSpawn extends RmCommand {
 
@@ -34,25 +34,23 @@ public class AddSpawn extends RmCommand {
 			return;
 		}
 
-		String num = Integer.toString(i);
-		while (aFile.isSet(path + ".spawns." + num)) {
+		while (aFile.isSet(path + ".spawns." + i))
 			i++;
-		}
+
 		Location loc = p.getLocation();
-		aFile.set(path + ".spawns", num);
-		aFile.set(path + ".spawns." + num + ".world", p.getWorld().getName());
-		aFile.set(path + ".spawns." + num + ".x", loc.getX());
-		aFile.set(path + ".spawns." + num + ".y", loc.getY());
-		aFile.set(path + ".spawns." + num + ".z", loc.getZ());
-		aFile.set(path + ".spawns." + num + ".yaw", loc.getYaw());
-		aFile.set(path + ".spawns." + num + ".pitch", loc.getPitch());
+		aFile.set(path + ".spawns." + i + ".world", p.getWorld().getName());
+		aFile.set(path + ".spawns." + i + ".x", loc.getX());
+		aFile.set(path + ".spawns." + i + ".y", loc.getY());
+		aFile.set(path + ".spawns." + i + ".z", loc.getZ());
+		aFile.set(path + ".spawns." + i + ".yaw", loc.getYaw());
+		aFile.set(path + ".spawns." + i + ".pitch", loc.getPitch());
 		try {
 			aFile.save(RageMode.getInstance().getConfiguration().getArenasFile());
 		} catch (IOException e) {
 			e.printStackTrace();
 			RageMode.getInstance().throwMsg();
 		}
-		p.sendMessage(RageMode.getLang().get("setup.spawn-set-success", "%number%", num, "%game%", args[1]));
+		p.sendMessage(RageMode.getLang().get("setup.spawn-set-success", "%number%", i, "%game%", args[1]));
 		return;
 	}
 }

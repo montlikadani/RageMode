@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.scoreboard;
+package hu.montlikadani.ragemode.scoreboard;
 
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;

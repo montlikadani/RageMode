@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.commands;
+package hu.montlikadani.ragemode.commands;
 
 import java.io.IOException;
 
@@ -7,7 +7,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.RageMode.RageMode;
+import hu.montlikadani.ragemode.RageMode;
 
 public class SetLobby extends RmCommand {
 

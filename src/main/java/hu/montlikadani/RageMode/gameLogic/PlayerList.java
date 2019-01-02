@@ -1,6 +1,7 @@
-package hu.montlikadani.RageMode.gameLogic;
+package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Random;
 import java.util.UUID;
 
@@ -10,12 +11,14 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.potion.PotionEffect;
 
-import hu.montlikadani.RageMode.RageMode;
-import hu.montlikadani.RageMode.scoreboard.ScoreBoard;
-import hu.montlikadani.RageMode.scores.RageScores;
-import hu.montlikadani.RageMode.toolbox.GetGames;
-import hu.montlikadani.RageMode.toolbox.TableList;
+import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.gameUtils.TableList;
+import hu.montlikadani.ragemode.scoreboard.ScoreBoard;
+import hu.montlikadani.ragemode.scores.RageScores;
+import hu.montlikadani.ragemode.tablist.TabTitles;
 
 public class PlayerList {
 
@@ -24,7 +27,10 @@ public class PlayerList {
 	public static TableList<Player, ItemStack[]> oldArmor = new TableList<>();
 	public static TableList<Player, Double> oldHealth = new TableList<>();
 	public static TableList<Player, Integer> oldHunger = new TableList<>();
+	public static TableList<Player, Collection<PotionEffect>> oldEffects = new TableList<>();
 	public static TableList<Player, GameMode> oldGameMode = new TableList<>();
+	public static TableList<Player, String> oldDisplayName = new TableList<>();
+	public static TableList<Player, String> oldListName = new TableList<>();
 
 	private static String[] list = new String[1]; // [Gamename,Playername x overallMaxPlayers,Gamename,...]
 	private static String[] runningGames = new String[1];
@@ -177,6 +183,16 @@ public class PlayerList {
 
 						n = 0;
 
+						while (n < oldEffects.getFirstLength()) { // Give him his potion effects back.
+							if (oldEffects.getFromFirstObject(n) == playerToKick) {
+								playerToKick.addPotionEffects(oldEffects.getFromSecondObject(n));
+								oldEffects.removeFromBoth(n);
+							}
+							n++;
+						}
+
+						n = 0;
+
 						while (n < oldGameMode.getFirstLength()) { // Give him his gamemode back.
 							if (oldGameMode.getFromFirstObject(n) == playerToKick) {
 								playerToKick.setGameMode(oldGameMode.getFromSecondObject(n));
@@ -185,11 +201,37 @@ public class PlayerList {
 							n++;
 						}
 
+						n = 0;
+
+						while (n < oldListName.getFirstLength()) { // Give him his list name back.
+							if (oldListName.getFromFirstObject(n) == playerToKick) {
+								playerToKick.setPlayerListName(oldListName.getFromSecondObject(n));
+								oldListName.removeFromBoth(n);
+							}
+							n++;
+						}
+
+						n = 0;
+
+						while (n < oldDisplayName.getFirstLength()) { // Give him his display name back.
+							if (oldDisplayName.getFromFirstObject(n) == playerToKick) {
+								playerToKick.setDisplayName(oldDisplayName.getFromSecondObject(n));
+								oldDisplayName.removeFromBoth(n);
+							}
+							n++;
+						}
+
 						list[kickposition] = player.getUniqueId().toString();
 						playerToKick.sendMessage(RageMode.getLang().get("game.player-kicked-for-vip"));
 
-						if (getPlayersInGame(game).length == 2)
-							new LobbyTimer(game);
+						if (RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.min-players-to-start-lobby-timer") > 1) {
+							if (getPlayersInGame(game).length == RageMode.getInstance().getConfiguration().getCfg()
+									.getInt("game.global.lobby.min-players-to-start-lobby-timer"))
+								new LobbyTimer(game);
+						} else {
+							if (getPlayersInGame(game).length == 2)
+								new LobbyTimer(game);
+						}
 						player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", game));
 						return true;
 					} else {
@@ -216,17 +258,10 @@ public class PlayerList {
 			while (i < imax) {
 				if (list[i] != null) {
 					if (list[i].equals(player.getUniqueId().toString())) {
-						// TabGuiUpdater.removeTabForPlayer(player);
 
-						// org.mcsg.double0negative.tabapi.TabAPI.disableTabForPlayer(player);
-						// org.mcsg.double0negative.tabapi.TabAPI.updatePlayer(player);
-
-						// if(ScoreBoard.allScoreBoards.containsKey(PlayerList.getPlayersGame(player)))
-						// ScoreBoard.allScoreBoards.get(PlayerList.getPlayersGame(player)).removeScoreBoard(player);
+						removePlayerSynced(player);
 
 						RageScores.removePointsForPlayers(new String[] { player.getUniqueId().toString() });
-
-						// BossbarLib.getHandler().clearBossbar(player);
 
 						player.getInventory().clear();
 						player.sendMessage(RageMode.getLang().get("game.player-left"));
@@ -282,6 +317,46 @@ public class PlayerList {
 							n++;
 						}
 
+						n = 0;
+
+						while (n < oldEffects.getFirstLength()) { // Give him his potion effects back.
+							if (oldEffects.getFromFirstObject(n) == player) {
+								player.addPotionEffects(oldEffects.getFromSecondObject(n));
+								oldEffects.removeFromBoth(n);
+							}
+							n++;
+						}
+
+						n = 0;
+
+						while (n < oldGameMode.getFirstLength()) { // Give him his gamemode back.
+							if (oldGameMode.getFromFirstObject(n) == player) {
+								player.setGameMode(oldGameMode.getFromSecondObject(n));
+								oldGameMode.removeFromBoth(n);
+							}
+							n++;
+						}
+
+						n = 0;
+
+						while (n < oldListName.getFirstLength()) { // Give him his list name back.
+							if (oldListName.getFromFirstObject(n) == player) {
+								player.setPlayerListName(oldListName.getFromSecondObject(n));
+								oldListName.removeFromBoth(n);
+							}
+							n++;
+						}
+
+						n = 0;
+
+						while (n < oldDisplayName.getFirstLength()) { // Give him his display name back.
+							if (oldDisplayName.getFromFirstObject(n) == player) {
+								player.setDisplayName(oldDisplayName.getFromSecondObject(n));
+								oldDisplayName.removeFromBoth(n);
+							}
+							n++;
+						}
+
 						list[i] = null;
 
 						player.removeMetadata("leavingRageMode", RageMode.getInstance());
@@ -301,14 +376,8 @@ public class PlayerList {
 		if (ScoreBoard.allScoreBoards.containsKey(PlayerList.getPlayersGame(player)))
 			ScoreBoard.allScoreBoards.get(PlayerList.getPlayersGame(player)).removeScoreBoard(player);
 
-		int n = 0;
-		while (n < oldGameMode.getFirstLength()) { // Give him his gamemode back.
-			if (oldGameMode.getFromFirstObject(n) == player) {
-				player.setGameMode(oldGameMode.getFromSecondObject(n));
-				oldGameMode.removeFromBoth(n);
-			}
-			n++;
-		}
+		if (TabTitles.allTabLists.containsKey(PlayerList.getPlayersGame(player)))
+			TabTitles.allTabLists.get(PlayerList.getPlayersGame(player)).removeTabList(player);
 	}
 
 	public static boolean isGameRunning(String game) {

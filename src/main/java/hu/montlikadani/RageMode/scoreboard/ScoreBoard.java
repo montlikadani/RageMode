@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.scoreboard;
+package hu.montlikadani.ragemode.scoreboard;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +26,7 @@ public class ScoreBoard {
 	 * 
 	 * @param player The List of player, the ScoreBoard should be set to later.
 	 */
+	@Deprecated
 	public ScoreBoard(List<Player> player) {
 		this.player = player;
 		for (Player loopPlayer : player) {
@@ -45,6 +46,7 @@ public class ScoreBoard {
 	 * @param isList Set it to whatever you want, it won't be used. Just to be able to create a new
 	 * constructor with the List parameter.
 	 */
+	@Deprecated
 	public ScoreBoard(List<String> playerString, boolean isList) {
 		for (String player : playerString) {
 			this.player.add(Bukkit.getPlayer(UUID.fromString(player)));
@@ -171,9 +173,9 @@ public class ScoreBoard {
 	 * @return The ScoreBoard element which was saved for the given String.
 	 */
 	public ScoreBoard getScoreBoard(String gameName) {
-		if (allScoreBoards.containsKey(gameName)) {
+		if (allScoreBoards.containsKey(gameName))
 			return allScoreBoards.get(gameName);
-		} else
+		else
 			return null;
 	}
 }

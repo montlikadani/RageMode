@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.scoresGuiListOverlay;
+package hu.montlikadani.ragemode.scoresGuiListOverlay;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +20,7 @@ public class ScoreAPI {
 	private ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
 	private HashMap<Player, ScoreHolder> scoreboards = new HashMap<>();
 
+	@Deprecated
 	public ScoreAPI(List<Player> player) {
 		this.player = player;
 
@@ -32,6 +33,7 @@ public class ScoreAPI {
 		}
 	}
 
+	@Deprecated
 	public ScoreAPI(List<String> playerString, boolean isList) {
 		for (String player : playerString) {
 			this.player.add(Bukkit.getPlayer(UUID.fromString(player)));

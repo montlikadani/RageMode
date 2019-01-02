@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.statistics;
+package hu.montlikadani.ragemode.statistics;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,9 +11,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import hu.montlikadani.RageMode.RageMode;
-import hu.montlikadani.RageMode.scores.PlayerPoints;
-import hu.montlikadani.RageMode.scores.RetPlayerPoints;
+import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
+import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 
 public class YAMLStats {
 
@@ -42,6 +43,7 @@ public class YAMLStats {
 				file.createNewFile();
 			} catch (IOException e1) {
 				e1.printStackTrace();
+				RageMode.getInstance().throwMsg();
 			}
 
 			config = new YamlConfiguration();
@@ -51,6 +53,7 @@ public class YAMLStats {
 				config.save(file);
 			} catch (IOException e2) {
 				e2.printStackTrace();
+				RageMode.getInstance().throwMsg();
 			}
 		} else
 			config = YamlConfiguration.loadConfiguration(file);
@@ -60,6 +63,7 @@ public class YAMLStats {
 			config.save(file);
 		} catch (IOException e) {
 			e.printStackTrace();
+			RageMode.getInstance().throwMsg();
 		}
 	}
 
@@ -68,7 +72,7 @@ public class YAMLStats {
 
 		int i = 0;
 		int imax = pP.size();
-		String uuid = pP.get(i).getPlayerUUID();
+		String uuid = pP.size() > 0 ? pP.get(i).getPlayerUUID() : null; // Fixes IndexOutOfBoundsException
 		while (i < imax) {
 			Set<String> contents = statsConf.getConfigurationSection("data").getKeys(false);
 			if (contents.contains(uuid)) {
@@ -83,7 +87,7 @@ public class YAMLStats {
 				int deaths = statsConf.getInt("data." + uuid + ".deaths");
 				int axeDeaths = statsConf.getInt("data." + uuid + ".axe-deaths");
 				int directArrowDeaths = statsConf.getInt("data." + uuid + ".direct-arrow-deaths");
-				int explosionDeaths = statsConf.getInt("data." + uuid+ ".explosion-deaths");
+				int explosionDeaths = statsConf.getInt("data." + uuid + ".explosion-deaths");
 				int knifeDeaths = statsConf.getInt("data." + uuid + ".knife-deaths");
 
 				int wins = statsConf.getInt("data." + uuid + ".wins");
@@ -116,8 +120,6 @@ public class YAMLStats {
 					statsConf.set("data." + uuid + ".KD", 1.0d);
 
 			} else {
-				statsConf.set("data." + uuid, "");
-
 				statsConf.set("data." + uuid + ".name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
 
 				statsConf.set("data." + uuid + ".kills", pP.get(i).getKills());
@@ -152,10 +154,20 @@ public class YAMLStats {
 			statsConf.save(yamlStatsFile);
 		} catch (IOException e) {
 			e.printStackTrace();
+			RageMode.getInstance().throwMsg();
 		}
 	}
 
+	/**
+	 * Gets the specified uuid of player statistic
+	 * 
+	 * @param string Player uuid
+	 * @return playerStats Player statistic from file
+	 */
 	public static RetPlayerPoints getPlayerStatistics(String sUUID) {
+		if (sUUID == null) {
+			throw new IllegalArgumentException("player uuid is null");
+		}
 		// returns a RetPlayerPoints object containing the GLOBAL statistics of a player
 		if (!inited) return null;
 
@@ -184,6 +196,11 @@ public class YAMLStats {
 		return plPo;
 	}
 
+	/**
+	 * Gets all player statistic
+	 * 
+	 * @return playerStats Player statistic from file
+	 */
 	public static List<RetPlayerPoints> getAllPlayerStatistics() {
 		// returns a List of all RetPlayerPoints that are stored
 		if (!inited) return null;
@@ -201,29 +218,35 @@ public class YAMLStats {
 	public static void resetPlayerStatistic(String uuid) {
 		if (!inited) return;
 
+		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(uuid);
+
 		if (statsConf.getConfigurationSection("data").getKeys(false).contains(uuid)) {
-			statsConf.set("data." + uuid + ".kills", 0);
-			statsConf.set("data." + uuid + ".axe_kills", 0);
-			statsConf.set("data." + uuid + ".direct_arrow_kills", 0);
-			statsConf.set("data." + uuid + ".explosion_kills", 0);
-			statsConf.set("data." + uuid + ".knife_kills", 0);
+			rpp.setDeaths(0);
+			rpp.setAxeDeaths(0);
+			rpp.setDirectArrowDeaths(0);
+			rpp.setExplosionDeaths(0);
+			rpp.setKnifeDeaths(0);
 
-			statsConf.set("data." + uuid + ".deaths", 0);
-			statsConf.set("data." + uuid + ".axe_deaths", 0);
-			statsConf.set("data." + uuid + ".direct_arrow_deaths", 0);
-			statsConf.set("data." + uuid + ".explosion_deaths", 0);
-			statsConf.set("data." + uuid + ".knife_deaths", 0);
+			rpp.setKills(0);
+			rpp.setAxeKills(0);
+			rpp.setDirectArrowKills(0);
+			rpp.setExplosionKills(0);
+			rpp.setKnifeKills(0);
 
-			statsConf.set("data." + uuid + ".wins", 0);
-			statsConf.set("data." + uuid + ".score", 0);
-			statsConf.set("data." + uuid + ".games", 0);
-
-			statsConf.set("data." + uuid + ".KD", 0);
+			rpp.setCurrentStreak(0);
+			rpp.setGames(0);
+			rpp.setKD(0);
+			rpp.setLongestStreak(0);
+			rpp.setPoints(0);
+			rpp.setRank(0);
+			rpp.setWins(0);
+			statsConf.set("data." + uuid, null);
 
 			try {
 				statsConf.save(yamlStatsFile);
 			} catch (IOException e) {
 				e.printStackTrace();
+				RageMode.getInstance().throwMsg();
 			}
 		} else
 			return;
@@ -244,6 +267,7 @@ public class YAMLStats {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
+					RageMode.getInstance().throwMsg();
 				}
 			}
 			working = true;

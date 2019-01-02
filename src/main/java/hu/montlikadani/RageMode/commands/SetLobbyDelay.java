@@ -1,10 +1,12 @@
-package hu.montlikadani.RageMode.commands;
+package hu.montlikadani.ragemode.commands;
+
+import java.io.IOException;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.RageMode.RageMode;
+import hu.montlikadani.ragemode.RageMode;
 
 public class SetLobbyDelay extends RmCommand {
 
@@ -23,8 +25,18 @@ public class SetLobbyDelay extends RmCommand {
 				p.sendMessage(RageMode.getLang().get("setup.not-set-yet", "%usage%", "/rm addgame <gameName> <maxPlayers>"));
 				return;
 			}
+			if (!RageMode.getInstance().getConfiguration().getArenasCfg().contains("arenas." + args[1] + ".lobby")) {
+				p.sendMessage(RageMode.getLang().get("game.lobby-not-set", "%game%", args[1]));
+				return;
+			}
 			if (isInt(args[2])) {
 				RageMode.getInstance().getConfiguration().getArenasCfg().set("arenas." + args[1] + ".lobbydelay", Integer.parseInt(args[2]));
+				try {
+					RageMode.getInstance().getConfiguration().getArenasCfg().save(RageMode.getInstance().getConfiguration().getArenasFile());
+				} catch (IOException e) {
+					e.printStackTrace();
+					RageMode.getInstance().throwMsg();
+				}
 				p.sendMessage(RageMode.getLang().get("setup.success"));
 			} else
 				p.sendMessage(RageMode.getLang().get("not-a-number", "%number%", args[2]));

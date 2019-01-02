@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.commands;
+package hu.montlikadani.ragemode.commands;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,23 +6,26 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.RageMode.RageMode;
-import hu.montlikadani.RageMode.events.EventListener;
-import hu.montlikadani.RageMode.gameLogic.PlayerList;
-import hu.montlikadani.RageMode.holo.HoloHolder;
-import hu.montlikadani.RageMode.runtimeRPP.RuntimeRPPManager;
-import hu.montlikadani.RageMode.scores.PlayerPoints;
-import hu.montlikadani.RageMode.scores.RageScores;
-import hu.montlikadani.RageMode.signs.SignCreator;
-import hu.montlikadani.RageMode.statistics.YAMLStats;
-import hu.montlikadani.RageMode.toolbox.GameBroadcast;
-import hu.montlikadani.RageMode.toolbox.GetGames;
-import hu.montlikadani.RageMode.toolbox.Titles;
+import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.events.EventListener;
+import hu.montlikadani.ragemode.events.WinEvent;
+import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameUtils.GameBroadcast;
+import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.gameUtils.Titles;
+import hu.montlikadani.ragemode.holo.HoloHolder;
+import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
+import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.scores.RageScores;
+import hu.montlikadani.ragemode.signs.SignCreator;
+import hu.montlikadani.ragemode.statistics.MySQLThread;
+import hu.montlikadani.ragemode.statistics.YAMLStats;
 
 public class StopGame extends RmCommand {
 
@@ -33,9 +36,10 @@ public class StopGame extends RmCommand {
 		}
 		if (args.length >= 2) {
 			if (PlayerList.isGameRunning(args[1])) {
-				String[] players = PlayerList.getPlayersInGame(args[1]);
+				String game = args[1];
+				String[] players = PlayerList.getPlayersInGame(game);
 
-				RageScores.calculateWinner(args[1], players);
+				RageScores.calculateWinner(game, players);
 
 				if (players != null) {
 					int i = 0;
@@ -49,15 +53,16 @@ public class StopGame extends RmCommand {
 						i++;
 					}
 				}
-				GameBroadcast.broadcastToGame(args[1], RageMode.getLang().get("game.stopped", "%game%", args[1]));
+				GameBroadcast.broadcastToGame(game, RageMode.getLang().get("game.stopped", "%game%", game));
 
 				RageScores.removePointsForPlayers(players);
-				PlayerList.setGameNotRunning(args[1]);
-				SignCreator.updateAllSigns(args[1]);
+				PlayerList.setGameNotRunning(game);
+				if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable"))
+					SignCreator.updateAllSigns(game);
 			} else
 				sender.sendMessage(RageMode.getLang().get("game.not-running"));
 		} else
-			sender.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm stopgame <gameName>"));
+			sender.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName>"));
 		return;
 	}
 
@@ -73,16 +78,44 @@ public class StopGame extends RmCommand {
 						Player winner = Bukkit.getPlayer(UUID.fromString(winnerUUID));
 						for (String playerUUID : players) {
 							Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
-							String title = ChatColor.DARK_GREEN + winner.getName() + ChatColor.GOLD + " won this round!";
-							String subtitle = ChatColor.GOLD + "He has got " + ChatColor.DARK_PURPLE
-									+ Integer.toString(RageScores.getPlayerPoints(winnerUUID).getPoints()) + ChatColor.GOLD
-									+ " points and his K/D is " + ChatColor.DARK_PURPLE
-									+ Integer.toString(RageScores.getPlayerPoints(winnerUUID).getKills()) + " / "
-									+ Integer.toString(RageScores.getPlayerPoints(winnerUUID).getDeaths()) + ChatColor.GOLD
-									+ ".";
+							FileConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
+							String title = conf.getString("titles.player-won.title");
+							String subtitle = conf.getString("titles.player-won.subtitle");
+							String title2 = conf.getString("titles.you-won.title");
+							String subtitle2 = conf.getString("titles.you-won.subtitle");
+
+							title = title.replace("%winner%", winner.getName());
+							replaceVariables(title, winnerUUID);
+
+							replaceVariables(title2, winnerUUID);
+
+							subtitle = subtitle.replace("%winner%", winner.getName());
+							replaceVariables(subtitle, winnerUUID);
+
+							replaceVariables(subtitle2, winnerUUID);
+
+							if (title != null && !title.equals("") && subtitle != null && !subtitle.equals(""))
+								Titles.sendTitle(player, conf.getInt("titles.player-won.fade-in"), conf.getInt("titles.player-won.stay"),
+										conf.getInt("titles.player-won.fade-out"), title, subtitle);
+
+							if (title2 != null && !title2.equals("") && subtitle2 != null && !subtitle2.equals(""))
+								Titles.sendTitle(winner, conf.getInt("titles.you-won.fade-in"), conf.getInt("titles.you-won.stay"),
+										conf.getInt("titles.you-won.fade-out"), title2, subtitle2);
+
+							if (conf.getBoolean("game.global.switch-gamemode-to-spectator-at-end-of-game"))
+								player.setGameMode(GameMode.SPECTATOR);
+
+							// TODO First win event
+							/**if (winnervalid == true) {
+								WinEvent event = new WinEvent(game, winner, true);
+								Bukkit.getPluginManager().callEvent(event);
+							}*/
+							if (winnervalid == true) {
+								WinEvent event = new WinEvent(game, winner, false);
+								Bukkit.getPluginManager().callEvent(event);
+							}
+
 							PlayerList.removePlayerSynced(player);
-							Titles.sendTitle(player, 20, 200, 20, title, subtitle);
-							//player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 200, 5, false, false), true);
 						}
 					}
 				}
@@ -90,7 +123,8 @@ public class StopGame extends RmCommand {
 			if (winnervalid == false) {
 				for (String playerUUID : players) {
 					Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
-					GameBroadcast.broadcastToGame(game, "&cNo one won this game.");
+					GameBroadcast.broadcastToGame(game, RageMode.getLang().get("game.no-won"));
+					player.setGameMode(GameMode.SPECTATOR);
 					PlayerList.removePlayerSynced(player);
 				}
 			}
@@ -125,6 +159,11 @@ public class StopGame extends RmCommand {
 					final PlayerPoints pP = RageScores.getPlayerPoints(players[f]);
 					lPP.add(pP);
 
+					if (RageMode.getInstance().getConfiguration().getCfg().getString("statistics").equals("mysql")) {
+						Thread sthread = new Thread(new MySQLThread(pP));
+						sthread.start();
+					}
+
 					Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), new Runnable() {
 						@Override
 						public void run() {
@@ -151,8 +190,9 @@ public class StopGame extends RmCommand {
 				int imax = players.length;
 
 				while (i < imax) {
-					if (players[i] != null)
+					if (players[i] != null) {
 						PlayerList.removePlayer(Bukkit.getPlayer(UUID.fromString(players[i])));
+					}
 					i++;
 				}
 			}
@@ -160,12 +200,13 @@ public class StopGame extends RmCommand {
 
 			GameBroadcast.broadcastToGame(game, RageMode.getLang().get("game.stopped", "%game%", game));
 			PlayerList.setGameNotRunning(game);
-			SignCreator.updateAllSigns(game);
+			if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable"))
+				SignCreator.updateAllSigns(game);
 		}
 	}
 
 	public static void stopAllGames() {
-		Bukkit.getLogger().log(Level.INFO, "Searching games to stop...");
+		RageMode.logConsole(Level.INFO, "Searching games to stop...");
 
 		String[] games = GetGames.getGameNames();
 
@@ -175,7 +216,7 @@ public class StopGame extends RmCommand {
 		while (i < imax) {
 			if (PlayerList.isGameRunning(games[i])) {
 
-				Bukkit.getLogger().log(Level.INFO, "Stopping " + games[i] + " ...");
+				RageMode.logConsole(Level.INFO, "Stopping " + games[i] + " ...");
 
 				String[] players = PlayerList.getPlayersInGame(games[i]);
 				RageScores.calculateWinner(games[i], players);
@@ -192,11 +233,25 @@ public class StopGame extends RmCommand {
 				}
 				RageScores.removePointsForPlayers(players);
 				PlayerList.setGameNotRunning(games[i]);
-				SignCreator.updateAllSigns(games[i]);
-				Bukkit.getLogger().log(Level.INFO, games[i] + " has been stopped.");
+				if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable"))
+					SignCreator.updateAllSigns(games[i]);
+				RageMode.logConsole(Level.INFO, games[i] + " has been stopped.");
 			}
 			i++;
 		}
-		Bukkit.getLogger().log(Level.INFO, "RageMode: All games stopped!");
+	}
+
+	private static String replaceVariables(String s, String uuid) {
+		String points = Integer.toString(RageScores.getPlayerPoints(uuid).getPoints());
+		String kills = Integer.toString(RageScores.getPlayerPoints(uuid).getKills());
+		String deaths = Integer.toString(RageScores.getPlayerPoints(uuid).getDeaths());
+
+		if (s.contains("%points%"))
+			s = s.replace("%points%", points);
+		if (s.contains("%kills%"))
+			s = s.replace("%kills%", kills);
+		if (s.contains("%deaths%"))
+			s = s.replace("%deaths%", deaths);
+		return s;
 	}
 }

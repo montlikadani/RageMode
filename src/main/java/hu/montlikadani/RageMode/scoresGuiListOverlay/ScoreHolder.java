@@ -1,4 +1,4 @@
-package hu.montlikadani.RageMode.scoresGuiListOverlay;
+package hu.montlikadani.ragemode.scoresGuiListOverlay;
 
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
