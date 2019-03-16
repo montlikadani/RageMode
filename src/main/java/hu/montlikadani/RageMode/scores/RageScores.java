@@ -4,22 +4,14 @@ import java.util.HashMap;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.events.KillEvent;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
-import hu.montlikadani.ragemode.scoreboard.ScoreBoard;
-import hu.montlikadani.ragemode.scoreboard.ScoreBoardHolder;
 
 public class RageScores {
 
 	private static HashMap<String, PlayerPoints> playerpoints = new HashMap<>();
-	// private static TableList<String, String> playergame = new
-	// TableList<String, String>(); ----> User PlayerList.getPlayersInGame
-	// instead
 	private static int totalPoints = 0;
 
 	public static void addPointsToPlayer(Player killer, Player victim, String killCause) {
@@ -129,44 +121,23 @@ public class RageScores {
 				killer.sendMessage(RageMode.getLang().get("game.message.streak", "%number%", Integer.toString(currentStreak), "%points%",
 						"+" + Integer.toString(currentStreak * 10)));
 			}
+		} else {
+			killer.sendMessage(RageMode.getLang().get("game.message.suicide"));
 
-			// Achievement event
-			ConfigurationSection list = RageMode.getInstance().getConfiguration().getCfg().getConfigurationSection("achievements");
-			for (String acm : list.getKeys(false)) {
-				ConfigurationSection section = list.getConfigurationSection(acm);
-				KillEvent event = null;
-				if (currentPoints.getKills() == 1)
-					event = new KillEvent(PlayerList.getPlayersGame(killer), killer, victim, true);
-				else if (currentPoints.getKills() == section.getInt("kills.amount"))
-					event = new KillEvent(PlayerList.getPlayersGame(killer), killer, victim, false);
+			PlayerPoints killerPoints = playerpoints.get(killer.getUniqueId().toString());
+			if (killerPoints == null) return;
 
-				if (event != null)
-					Bukkit.getPluginManager().callEvent(event);
+			int pointLoss = RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.point-loss-when-suicide");
+			if (pointLoss > 0) {
+				int oldPoints = killerPoints.getPoints();
+				int newPoints = oldPoints - pointLoss;
+				killerPoints.setPoints(newPoints);
 			}
 
-			ScoreBoard board = ScoreBoard.allScoreBoards.get(PlayerList.getPlayersGame(killer));
-			updateScoreBoard(killer, board);
-			updateScoreBoard(victim, board);
-		} else
-			killer.sendMessage(RageMode.getLang().get("game.message.suicide"));
-		// TabGuiUpdater.updateTabGui(PlayerList.getPlayersGame(killer));
-		// TabAPI.updateTabGuiListOverlayForGame(PlayerList.getPlayersGame(killer));
-	}
-
-	private static void updateScoreBoard(Player player, ScoreBoard scoreBoard) {
-		PlayerPoints points = playerpoints.get(player.getUniqueId().toString());
-		ScoreBoardHolder holder = scoreBoard.getScoreboards().get(player);
-
-		String oldKD = holder.getOldKdLine();
-		String newKD = ChatColor.YELLOW + Integer.toString(points.getKills()) + " / "
-				+ Integer.toString(points.getDeaths()) + " " + ChatColor.GREEN + "K/D" + ChatColor.RESET;
-		holder.setOldKdLine(newKD);
-		scoreBoard.updateLine(player, oldKD, newKD, 0);
-
-		String oldPoints = holder.getOldPointsLine();
-		String newPoints = ChatColor.YELLOW + Integer.toString(points.getPoints()) + " " + ChatColor.GREEN + "Points" + ChatColor.RESET;
-		holder.setOldPointsLine(newPoints);
-		scoreBoard.updateLine(player, oldPoints, newPoints, 1);
+			int oldDeaths = killerPoints.getDeaths();
+			int newDeaths = oldDeaths + 1;
+			killerPoints.setDeaths(newDeaths);
+		}
 	}
 
 	public static void removePointsForPlayers(String[] playerUUIDs) {

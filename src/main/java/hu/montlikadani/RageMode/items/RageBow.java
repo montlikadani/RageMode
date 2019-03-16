@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.items;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Material;
@@ -19,20 +18,12 @@ public class RageBow {
 
 		List<String> lore = RageMode.getInstance().getConfiguration().getCfg().getStringList("items.rageBow.lore");
 		if (lore != null && !lore.isEmpty())
-			meta.setLore(color(lore));
+			meta.setLore(ItemUtil.color(lore));
 
 		Enchantment infinity = Enchantment.ARROW_INFINITE;
 		meta.addEnchant(infinity, 1, false);
 		bow.setItemMeta(meta);
 		return bow;
-	}
-
-	private static List<String> color(List<String> lore) {
-		List<String> clore = new ArrayList<>();
-		for (String s : lore) {
-			clore.add(RageMode.getLang().colors(s));
-		}
-		return clore;
 	}
 
 	public static String getRageBowName() {

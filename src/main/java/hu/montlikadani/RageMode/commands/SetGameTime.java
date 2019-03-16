@@ -44,7 +44,7 @@ public class SetGameTime extends RmCommand {
 	private boolean isInt(String string) {
 		try {
 			Integer.parseInt(string);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			return false;
 		}
 		return true;

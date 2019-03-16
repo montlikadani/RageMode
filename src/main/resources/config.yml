@@ -10,16 +10,23 @@ metrics: true
 
 # MySQL database to save the players statistic.
 MySQL:
+  auto-reconnect: false
+  use-SSL: true
   username: accountname
   password: password
   database: database
   host: localhost
   port: "3306"
+  use-unicode: true
+  verify-server-certificate: false
+  character-encoding: "UTF-8"
 
 # Sign texts
 signs:
   # Enables the signs creates.
   enable: false
+  # Sign refresh time in ticks.
+  update-time: 360
   # Sign text when the game running or waiting for players.
   game:
     running: "&6&oRunning..."
@@ -31,7 +38,39 @@ signs:
   - "&a%game%"
   - "&ePlayers&3 [%current-players%/%max-players%&3]"
   - "%running%"
+  background:
+    enable: false
+    type: glass
 
+# Actionbar messages
+actionbar-messages:
+  join:
+   # Actionbar message when started the game and sends to player.
+    # This be ignored, when empty or not found.
+    message: ""
+  player-actions:
+    # Actionbar message when someone killed a player in the game and sends to player.
+    # This be ignored, when empty or not found.
+    message: "&2%pointer%:&3 %player% -&6 %points%&3 points,&6 %kills%&7/&6%deaths%&3 KD"
+
+# Bossbar messages
+bossbar-messages:
+  join:
+    # Bossbar message when started the game and sends to player.
+    # This be ignored, when empty or not found.
+    message: "&bWelcome&a %player%&b to the&c %game%&b game!"
+    # Bossbar style
+    # Styles: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarStyle.html
+    style: "SEGMENTED_6"
+  player-actions:
+    # Bossbar message when someone killed a player in the game and sends to player.
+    # This be ignored, when empty or not found.
+    message: "&2%pointer%:&3 %player% -&6 %points%&3 points,&6 %kills%&7/&6%deaths%&3 KD"
+    # Bossbar style
+    # Styles: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarStyle.html
+    style: "SEGMENTED_12"
+
+# Title texts
 titles:
   # When a player join to the game, and send title for him.
   join-game:
@@ -70,23 +109,76 @@ game:
       delay: 30
       # Sending lobby waiting message to start game in seconds.
       time-to-send-message: 9
+      # Should be enable chat in lobby?
+      # This ignores with ragemode.bypass.lobby.lockchat permission.
+      enable-chat-in-lobby: true
+      # Does count the player's level with the start time of the game in the lobby?
+      player-level-as-time-counter: false
     # Disable player achievements award event when player plays in game?
     disable-player-achievement-award: true
     # Death messages
+    # This ignores, when the boolean is contains in the arenas file.
     death-messages: true
-    # Keeps player inventory when died.
-    # true - keep inventory
-    # false - clears the player inventory
-    keep-inventory-on-death: true
-    # Bossbar messages when a player killed someone.
-    bossbar: true
-    # Actionbar messages when a player get points or killed someone.
-    actionbar: true
-    # Game time in minutes.
-    gametime: 10
+    # Removes arrows from player body.
+    remove-arrows-from-player-body: false
+    # How many points should a player lose if kills himself?
+    # If 0 ignoring the loss.
+    point-loss-when-suicide: 3
+    # If this false if player has fallen to ground then not damage.
+    damage-player-fall: false
+    # Should be enable chat in the game?
+    # This ignores with ragemode.bypass.game.lockchat permission.
+    enable-chat-in-game: true
+    # Defaults values when in the setup not specify e.g bossbar.
+    defaults:
+      # Bossbar messages when a player killed someone.
+      # This ignores, when the boolean is contains in the arenas file.
+      bossbar: true
+      # Actionbar messages when a player get points or killed someone.
+      # This ignores, when the boolean is contains in the arenas file.
+      actionbar: true
+      # Game time in minutes.
+      # This ignores, when the integer is contains in the arenas file.
+      gametime: 10
     # Switch the game mode to spectator when the game is end?
     # Ignores the winner player.
     switch-gamemode-to-spectator-at-end-of-game: true
+    # Enables the chat after end of game.
+    enable-chat-after-end: true
+    # Arrow trail when you shoot the arrow.
+    # Effect will be cancelled when the arrow is dead or in ground.
+    arrow-trail:
+      enable: false
+      # Effect types: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html
+      effect-type: SMOKE_NORMAL
+    # Tablist formatting.
+    tablist:
+      # Player prefix/suffix format to show example the player kills, deaths etc.
+      player-format:
+        enable: false
+        prefix: ""
+        suffix: "&e %kills%"
+      # Tablist header/footer formats.
+      list:
+        enable: false
+        header:
+        - "&cRage&bMode&e minigame stats"
+        - "&aYour kills/deaths:&e %kd%"
+        footer:
+        - "&6Points:&e %points%"
+    # Displays the score board on the right screen.
+    scoreboard:
+      enable: true
+      title: "&6RageMode"
+      content:
+      - ""
+      - "&7------"
+      - "&aPoints:&e %points%"
+      - ""
+      - "&5Wins:&e %wins%"
+      - "&7------"
+      - ""
+    # Chat format.
     chat-format:
       enable: false
       format: "&e[%points%]&r %player%&7:&r %message%"
@@ -107,23 +199,15 @@ points:
   knifekill: 15
   explosionkill: 25
 
-achievements:
-  first-kill:
-    reward:
-      points: 80
-      command:
-      - "eco give %player% 30"
-  win:
-    reward:
-      command:
-      - "eco give %player% 50"
-  kills:
-    amount: 35
-    points: 150
-
 # Item editing (name, lore, slot)
 # Inventory positions here: http://redditpublic.com/images/b/b2/Items_slot_number.png
 items:
+  leavegameitem:
+    item: BARRIER
+    name: "&cExit from the game"
+    lore:
+    - "&7&oLeft/rigth click"
+    slot: 5
   rageBow:
     name: "&4Rage Bow"
     lore:

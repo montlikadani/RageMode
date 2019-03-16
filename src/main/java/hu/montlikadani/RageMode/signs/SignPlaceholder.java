@@ -15,6 +15,10 @@ public class SignPlaceholder {
 		this.lines = lines;
 	}
 
+	public SignPlaceholder() {
+		lines = RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list");
+	}
+
 	public List<String> getLines() {
 		return lines;
 	}

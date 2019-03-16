@@ -4,119 +4,101 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
-import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.API.event.GameStartEvent;
+import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.ActionBar;
+import hu.montlikadani.ragemode.gameUtils.BossUtils;
 import hu.montlikadani.ragemode.gameUtils.GameBroadcast;
+import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
+import hu.montlikadani.ragemode.gameUtils.TabTitles;
 import hu.montlikadani.ragemode.items.CombatAxe;
 import hu.montlikadani.ragemode.items.Grenade;
 import hu.montlikadani.ragemode.items.RageArrow;
 import hu.montlikadani.ragemode.items.RageBow;
 import hu.montlikadani.ragemode.items.RageKnife;
-import hu.montlikadani.ragemode.scoreboard.ScoreBoard;
 import hu.montlikadani.ragemode.scoreboard.ScoreBoardHolder;
 import hu.montlikadani.ragemode.signs.SignCreator;
-import hu.montlikadani.ragemode.tablist.TabTitles;
 
 public class GameLoader {
 
 	private String gameName;
 	private List<Location> gameSpawns = new ArrayList<>();
+	public static BukkitTask task, task2;
+
+	private Configuration conf;
+	private GameTimer gameTimer;
 
 	public GameLoader(String gameName) {
 		this.gameName = gameName;
+		conf = RageMode.getInstance().getConfiguration();
+
+		GameStartEvent gameStartEvent = new GameStartEvent(gameName);
+		Bukkit.getPluginManager().callEvent(gameStartEvent);
 
 		PlayerList.setGameRunning(gameName);
+		PlayerList.setStatus(GameStatus.RUNNING);
 		checkTeleport();
 		setInventories();
 
 		List<String> players = Arrays.asList(PlayerList.getPlayersInGame(gameName));
+		setGameTab(players);
+		setGameScoreboard(players);
 
-		@SuppressWarnings("deprecation")
-		ScoreBoard gameBoard = new ScoreBoard(players, true);
-		TabTitles gameTab = new TabTitles(3, ChatColor.GOLD + "RageMode", ChatColor.YELLOW + "0 / 0 " + ChatColor.GREEN + "K/D" + ChatColor.RESET
-				+ "\n" + ChatColor.YELLOW + "0 " + ChatColor.GREEN + "Points");
+		int time = 0;
+		if (!conf.getArenasCfg().isSet("arenas." + gameName + ".gametime")) {
+			if (conf.getCfg().getInt("game.global.defaults.gametime") > 0)
+				time = conf.getCfg().getInt("game.global.defaults.gametime") * 60;
+			else
+				time = 300;
+		} else
+			time = conf.getArenasCfg().getInt("arenas." + gameName + ".gametime") * 60;
+		gameTimer = new GameTimer(gameName, time);
+		gameTimer.startCounting();
 
-		gameBoard.setTitle(ChatColor.GOLD + "RageMode" + ChatColor.RESET);
-		String kdLine = ChatColor.YELLOW + "0 / 0 " + ChatColor.GREEN + "K/D" + ChatColor.RESET;
-		gameBoard.setLine(kdLine, 0);
-		String pointsLine = ChatColor.YELLOW + "0 " + ChatColor.GREEN + "Points" + ChatColor.RESET;
-		gameBoard.setLine(pointsLine, 1);
-		gameBoard.setScoreBoard();
-		gameBoard.addToScoreBoards(gameName, true);
-		gameTab.addToTabList(gameName, true);
-		for (String player : players) {
-			ScoreBoardHolder sHolder = gameBoard.getScoreboards().get(Bukkit.getPlayer(UUID.fromString(player)));
-			sHolder.setOldKdLine(kdLine);
-			sHolder.setOldPointsLine(pointsLine);
-		}
-		new GameTimer(gameName);
-		if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable"))
-			SignCreator.updateAllSigns(gameName);
+		SignCreator.updateAllSigns(gameName);
 
-		String ver = RageMode.getVer();
-		String initialMessage = ChatColor.DARK_AQUA + "Welcome to " + ChatColor.DARK_PURPLE + gameName + ChatColor.DARK_AQUA + " game!";
-		if (RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName + ".bossbar")
-				&& RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + gameName + ".bossbar")) {
-			if (!(ver.equals("1_8_R1") || ver.equals("1_8_R2") || ver.equals("1_8_R3"))) {
-				for (String player : players) {
-					BossBar boss = Bukkit.createBossBar(initialMessage, BarColor.RED, BarStyle.SOLID);
-					boss.addPlayer(Bukkit.getPlayer(UUID.fromString(player)));
+		String bossMessage = conf.getCfg().getString("bossbar-messages.join.message");
+		if (bossMessage != null && !bossMessage.equals("")) {
+			for (String player : players) {
+				bossMessage = bossMessage.replace("%game%", gameName);
+				bossMessage = bossMessage.replace("%player%", Bukkit.getPlayer(UUID.fromString(player)).getName());
+				bossMessage = RageMode.getLang().colors(bossMessage);
 
-					for (int i = 1; i <= 6; ++i) {
-						Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
-							@Override
-							public void run() {
-								if (boss.getProgress() >= 0.2D)
-									boss.setProgress(boss.getProgress() - 0.2D);
-								else
-									boss.removeAll();
-							}
-						}, (long) (20 * i));
-					}
+				if (conf.getArenasCfg().isSet("arenas." + gameName + ".bossbar")) {
+					if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".bossbar"))
+						new BossUtils(bossMessage).sendBossBar(gameName, player,
+								BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")));
+				} else {
+					if (conf.getCfg().getBoolean("game.global.defaults.bossbar"))
+						new BossUtils(bossMessage).sendBossBar(gameName, player,
+								BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")));
 				}
-			} else
-				RageMode.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
-		} else {
-			if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("settings.global.bossbar")) {
-				if (!(ver.equals("1_8_R1") || ver.equals("1_8_R2") || ver.equals("1_8_R3"))) {
-					for (String player : players) {
-						BossBar boss = Bukkit.createBossBar(initialMessage, BarColor.RED, BarStyle.SOLID);
-						boss.addPlayer(Bukkit.getPlayer(UUID.fromString(player)));
-
-						for (int i = 1; i <= 6; ++i) {
-							Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
-								@Override
-								public void run() {
-									if (boss.getProgress() >= 0.2D)
-										boss.setProgress(boss.getProgress() - 0.2D);
-									else
-										boss.removeAll();
-								}
-							}, (long) (20 * i));
-						}
-					}
-				} else
-					RageMode.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
 			}
 		}
 
-		for (String player : players) {
-			if (RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName + ".actionbar")) {
-				if (RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + gameName + ".actionbar"))
-					ActionBar.sendActionBar(Bukkit.getPlayer(UUID.fromString(player)), initialMessage);
-			} else if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game.global.actionbar"))
-				ActionBar.sendActionBar(Bukkit.getPlayer(UUID.fromString(player)), initialMessage);
+		String actionbarMsg = conf.getCfg().getString("actionbar-messages.join.message");
+		if (actionbarMsg != null && !actionbarMsg.equals("")) {
+			for (String player : players) {
+				actionbarMsg = actionbarMsg.replace("%game%", gameName);
+				actionbarMsg = actionbarMsg.replace("%player%", Bukkit.getPlayer(UUID.fromString(player)).getName());
+				actionbarMsg = RageMode.getLang().colors(actionbarMsg);
+
+				if (conf.getArenasCfg().isSet("arenas." + gameName + ".actionbar")) {
+					if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".actionbar"))
+						ActionBar.sendActionBar(Bukkit.getPlayer(UUID.fromString(player)), actionbarMsg);
+				} else if (conf.getCfg().getBoolean("game.global.defaults.actionbar"))
+					ActionBar.sendActionBar(Bukkit.getPlayer(UUID.fromString(player)), actionbarMsg);
+			}
 		}
 	}
 
@@ -148,12 +130,104 @@ public class GameLoader {
 		String[] players = PlayerList.getPlayersInGame(gameName);
 		for (String playerUUID : players) {
 			Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
-			FileConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
-			player.getInventory().setItem(conf.getInt("items.rageBow.slot"), RageBow.getRageBow());
-			player.getInventory().setItem(conf.getInt("items.rageKnife.slot"), RageKnife.getRageKnife());
-			player.getInventory().setItem(conf.getInt("items.combatAxe.slot"), CombatAxe.getCombatAxe());
-			player.getInventory().setItem(conf.getInt("items.rageArrow.slot"), RageArrow.getRageArrow());
-			player.getInventory().setItem(conf.getInt("items.grenade.slot"), Grenade.getGrenade());
+			FileConfiguration f = conf.getCfg();
+			player.getInventory().setItem(f.getInt("items.rageBow.slot"), RageBow.getRageBow());
+			player.getInventory().setItem(f.getInt("items.rageKnife.slot"), RageKnife.getRageKnife());
+			player.getInventory().setItem(f.getInt("items.combatAxe.slot"), CombatAxe.getCombatAxe());
+			player.getInventory().setItem(f.getInt("items.rageArrow.slot"), RageArrow.getRageArrow());
+			player.getInventory().setItem(f.getInt("items.grenade.slot"), Grenade.getGrenade());
+		}
+	}
+
+	private void setGameScoreboard(List<String> listPlayers) {
+		if (!conf.getCfg().getBoolean("game.global.scoreboard.enable")) return;
+
+		String[] players = PlayerList.getPlayersInGame(gameName);
+		for (String playerUUID : players) {
+			Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
+			ScoreBoard gameBoard = new ScoreBoard(listPlayers, false);
+
+			task = Bukkit.getScheduler().runTaskTimerAsynchronously(RageMode.getInstance(), new Runnable() {
+				@Override
+				public void run() {
+					String boardTitle = conf.getCfg().getString("game.global.scoreboard.title");
+					if (boardTitle != null && !boardTitle.equals(""))
+						gameBoard.setTitle(RageMode.getLang().colors(boardTitle));
+
+					List<String> rows = conf.getCfg().getStringList("game.global.scoreboard.content");
+					if (rows != null && !rows.isEmpty()) {
+						int rowMax = rows.size();
+
+						for (String row : rows) {
+							if (row.trim().equals("")) {
+								for (int i = 0; i <= rowMax; i++) {
+									row = row + " ";
+								}
+							}
+
+							row = Utils.setPlaceholders(row, player);
+							row = row.replace("%game-time%", Integer.toString(gameTimer.getGameTime()));
+
+							gameBoard.setLine(row, rowMax);
+							rowMax--;
+
+							gameBoard.setScoreBoard();
+							gameBoard.addToScoreBoards(gameName, true);
+
+							ScoreBoardHolder sHolder = gameBoard.getScoreboards().get(player);
+							sHolder.setOldKdLine(row);
+							sHolder.setOldPointsLine(row);
+						}
+					}
+				}
+			}, 3 * 20L, 3 * 20L);
+		}
+	}
+
+	private void setGameTab(List<String> listPlayers) {
+		if (!conf.getCfg().getBoolean("game.global.tablist.list.enable")) return;
+
+		String[] players = PlayerList.getPlayersInGame(gameName);
+		for (String playerUUID : players) {
+			Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
+			TabTitles gameTab = new TabTitles(listPlayers);
+
+			task2 = Bukkit.getScheduler().runTaskTimerAsynchronously(RageMode.getInstance(), new Runnable() {
+				@Override
+				public void run() {
+					List<String> tabHeader = conf.getCfg().getStringList("game.global.tablist.list.header");
+					List<String> tabFooter = conf.getCfg().getStringList("game.global.tablist.list.footer");
+
+					String he = "";
+					String fo = "";
+					int s = 0;
+					for (String line : tabHeader) {
+						s++;
+						if (s > 1)
+							he = he + "\n\u00a7r";
+
+						he = he + line;
+					}
+					s = 0;
+					for (String line : tabFooter) {
+						s++;
+						if (s > 1)
+							fo = fo + "\n\u00a7r";
+
+						fo = fo + line;
+					}
+
+					he = Utils.setPlaceholders(he, player);
+					he = he.replace("%game-time%", Integer.toString(gameTimer.getGameTime()));
+
+					fo = Utils.setPlaceholders(fo, player);
+					fo = fo.replace("%game-time%", Integer.toString(gameTimer.getGameTime()));
+
+					gameTab.sendTabTitle(he, fo);
+
+					gameTab.addToTabList(gameName, true);
+				}
+			}, 3 * 20L, 3 * 20L);
 		}
 	}
 }

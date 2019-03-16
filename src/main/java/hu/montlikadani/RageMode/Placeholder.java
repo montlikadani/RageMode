@@ -35,57 +35,57 @@ public class Placeholder extends PlaceholderExpansion {
 		RetPlayerPoints rpp = new RetPlayerPoints(p.getUniqueId().toString());
 		// Player kill stats
 		if (var.equals("kills"))
-			return String.valueOf(pP.getKills());
+			return Integer.toString(pP.getKills());
 
 		if (var.equals("axe_kills"))
-			return String.valueOf(pP.getAxeKills());
+			return Integer.toString(pP.getAxeKills());
 
 		if (var.equals("direct_arrow_kills"))
-			return String.valueOf(pP.getDirectArrowKills());
+			return Integer.toString(pP.getDirectArrowKills());
 
 		if (var.equals("explosion_kills"))
-			return String.valueOf(pP.getExplosionKills());
+			return Integer.toString(pP.getExplosionKills());
 
 		if (var.equals("knife_kills"))
-			return String.valueOf(pP.getKnifeKills());
+			return Integer.toString(pP.getKnifeKills());
 
 		// Player death stats
 		if (var.equals("deaths"))
-			return String.valueOf(pP.getDeaths());
+			return Integer.toString(pP.getDeaths());
 
 		if (var.equals("axe_deaths"))
-			return String.valueOf(pP.getAxeDeaths());
+			return Integer.toString(pP.getAxeDeaths());
 
 		if (var.equals("direct_arrow_deaths"))
-			return String.valueOf(pP.getDirectArrowDeaths());
+			return Integer.toString(pP.getDirectArrowDeaths());
 
 		if (var.equals("explosion_deaths"))
-			return String.valueOf(pP.getExplosionDeaths());
+			return Integer.toString(pP.getExplosionDeaths());
 
 		if (var.equals("knife_deaths"))
-			return String.valueOf(pP.getKnifeDeaths());
+			return Integer.toString(pP.getKnifeDeaths());
 
 		// Other stats
 		if (var.equals("current_streak"))
-			return String.valueOf(pP.getCurrentStreak());
+			return Integer.toString(pP.getCurrentStreak());
 
 		if (var.equals("longest_streak"))
-			return String.valueOf(pP.getLongestStreak());
+			return Integer.toString(pP.getLongestStreak());
 
 		if (var.equals("points"))
-			return String.valueOf(pP.getPoints());
+			return Integer.toString(pP.getPoints());
 
 		if (var.equals("games"))
-			return String.valueOf(rpp.getGames());
+			return Integer.toString(rpp.getGames());
 
 		if (var.equals("wins"))
-			return String.valueOf(rpp.getWins());
+			return Integer.toString(rpp.getWins());
 
 		if (var.equals("kd"))
 			return String.valueOf(rpp.getKD());
 
 		if (var.equals("rank"))
-			return String.valueOf(rpp.getRank());
+			return Integer.toString(rpp.getRank());
 
 		return null;
 	}

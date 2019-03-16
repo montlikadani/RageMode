@@ -28,12 +28,11 @@ public class Reload extends RmCommand {
 		RageMode.getInstance().getConfiguration().loadConfig();
 		RageMode.getLang().loadLanguage();
 
-		if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable")) {
+		if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable"))
 			SignConfiguration.initSignConfiguration();
 
-			for (String game : games) {
-				SignCreator.updateAllSigns(game);
-			}
+		for (String game : games) {
+			SignCreator.updateAllSigns(game);
 		}
 		if (RageMode.getInstance().getHologramAvailable())
 			HoloHolder.initHoloHolder();

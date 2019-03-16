@@ -7,34 +7,33 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.ForceStart;
 
 public class LobbyTimer {
 
 	private String gameName;
-	private int secondsRemaining;
+	private int time;
 	private Timer t;
 
-	public LobbyTimer(String gameName) {
+	public LobbyTimer(String gameName, int time) {
 		this.gameName = gameName;
+		this.time = time;
 
-		getSecondsToWait();
-		sendTimerMessages();
+		PlayerList.setStatus(GameStatus.WAITING);
 	}
 
-	private void getSecondsToWait() {
-		if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName + ".lobbydelay")) {
-			if (RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.delay") > 0)
-				secondsRemaining = RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.delay");
-			else
-				secondsRemaining = 30;
-		} else
-			secondsRemaining = RageMode.getInstance().getConfiguration().getArenasCfg().getInt("arenas." + gameName + ".lobbydelay");
+	public String getGame() {
+		return gameName;
 	}
 
-	private void sendTimerMessages() {
+	public int getLobbyTime() {
+		return time;
+	}
+
+	public void sendTimerMessages() {
 		t = new Timer();
 
-		int totalTimerMillis = ((int) (((secondsRemaining * 1000) + 5000) / 10000)) * (10000);
+		int totalTimerMillis = ((int) (((time * 1000) + 5000) / 10000)) * (10000);
 		if (totalTimerMillis == 0)
 			totalTimerMillis = 10000;
 		final int timeMillisForLoop = totalTimerMillis;
@@ -44,18 +43,27 @@ public class LobbyTimer {
 
 			public void run() {
 				if (totalMessagesBeforeTen > 0 && PlayerList.getPlayersInGame(gameName).length >= 2) {
-					String[] playerUUIDs = PlayerList.getPlayersInGame(gameName);
-					for (int i = 0; i < playerUUIDs.length; i++) {
-						Bukkit.getPlayer(UUID.fromString(playerUUIDs[i])).sendMessage(RageMode.getLang().get("game.lobby-message", "%time%",
-								Integer.toString(totalMessagesBeforeTen * 10)));
-					}
-					totalMessagesBeforeTen--;
-					if (totalMessagesBeforeTen == 0) {
-						this.cancel();
-						startTimer();
+					if (ForceStart.toStopTask.contains(gameName)) {
+						cancel();
+						ForceStart.toStopTask.remove(gameName);
+					} else {
+						String[] playerUUIDs = PlayerList.getPlayersInGame(gameName);
+						for (int i = 0; i < playerUUIDs.length; i++) {
+							Bukkit.getPlayer(UUID.fromString(playerUUIDs[i])).sendMessage(RageMode.getLang().get("game.lobby.start-message", "%time%",
+									Integer.toString(totalMessagesBeforeTen * 10)));
+
+							setLevelCounter(playerUUIDs[i], totalMessagesBeforeTen * 10);
+						}
+
+						totalMessagesBeforeTen--;
+
+						if (totalMessagesBeforeTen == 0) {
+							cancel();
+							startTimer();
+						}
 					}
 				} else if (PlayerList.getPlayersInGame(gameName).length < 2)
-					this.cancel();
+					cancel();
 			}
 		}, 0, 10000);
 	}
@@ -67,18 +75,28 @@ public class LobbyTimer {
 			@Override
 			public void run() {
 				if (timesToSendMessage > 0 && PlayerList.getPlayersInGame(gameName).length >= 2) {
-					if (PlayerList.isGameRunning(gameName)) {
-						this.cancel();
-						return;
+					if (ForceStart.toStopTask.contains(gameName)) {
+						cancel();
+						ForceStart.toStopTask.remove(gameName);
+					} else {
+						String[] playerUUIDs = PlayerList.getPlayersInGame(gameName);
+						for (int i = 0; i < playerUUIDs.length; i++) {
+							Bukkit.getPlayer(UUID.fromString(playerUUIDs[i])).sendMessage(RageMode.getLang().get("game.lobby.start-message", "%time%",
+									Integer.toString(timesToSendMessage)));
+
+							setLevelCounter(playerUUIDs[i], timesToSendMessage);
+						}
+						timesToSendMessage--;
 					}
+				} else if (timesToSendMessage == 0 && PlayerList.getPlayersInGame(gameName).length >= 2) {
+					cancel();
 					String[] playerUUIDs = PlayerList.getPlayersInGame(gameName);
 					for (int i = 0; i < playerUUIDs.length; i++) {
-						Bukkit.getPlayer(UUID.fromString(playerUUIDs[i])).sendMessage(RageMode.getLang().get("game.lobby-message", "%time%",
-								Integer.toString(timesToSendMessage)));
+						Bukkit.getPlayer(UUID.fromString(playerUUIDs[i])).getInventory().clear();
+
+						setLevelCounter(playerUUIDs[i], 0);
 					}
-					timesToSendMessage--;
-				} else if (timesToSendMessage == 0 && PlayerList.getPlayersInGame(gameName).length >= 2) {
-					this.cancel();
+
 					RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
 						@Override
 						public void run() {
@@ -86,8 +104,13 @@ public class LobbyTimer {
 						}
 					});
 				} else
-					this.cancel();
+					cancel();
 			}
 		}, 0, 1000);
+	}
+
+	private void setLevelCounter(String player, int timer) {
+		if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game.global.lobby.player-level-as-time-counter"))
+			Bukkit.getPlayer(UUID.fromString(player)).setLevel(timer);
 	}
 }

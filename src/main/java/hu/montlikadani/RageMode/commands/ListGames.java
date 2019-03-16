@@ -20,7 +20,7 @@ public class ListGames extends RmCommand {
 				int i = 0;
 				int imax = games.length;
 
-				sender.sendMessage(RageMode.getLang().get("commands.listgames.listing-games"));
+				sender.sendMessage(RageMode.getLang().get("commands.listgames.listing-games", "%games%", imax));
 
 				while (i < imax) {
 					if (PlayerList.isGameRunning(games[i]))

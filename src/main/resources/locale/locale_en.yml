@@ -2,6 +2,7 @@ in-game-only: "&cThis command can only be in-game."
 not-a-player: "&cThis player not a player."
 wrong-command: "&cThis is not the command you are looking for!"
 no-permission: "&cYou don't have permission for that!"
+no-permission-to-interact-sign: "&cYou don't have permission to interact signs!"
 missing-arguments: "&cMissing arguments! Usage:&e %usage%"
 missing-dependencies: "&e%depend%&c must be installed to use this!"
 not-a-number: "&e%number%&c is not a number."
@@ -11,7 +12,7 @@ not-played-yet: "&cThat player hasn't played on this server yet."
 
 commands:
   listgames:
-    listing-games: "&6Listing all available ragemode games..."
+    listing-games: "&6Listing all available ragemode games... There are&a %games%&6 available."
     no-games-available: "&cThere are currently no RageMode maps on this server."
     game-running: "%number%.) %game%&6&o running"
     game-stopped: "%number%.) %game%&7 idle"
@@ -20,6 +21,7 @@ commands:
   forcestart:
     game-start: "&aStarting the&e %game%&a game..."
     not-enough-players: "&cNot enough player to run this game!"
+    game-not-exist: "&cThis game not exists. Please add correctly name."
   holostats:
     no-holo-found: "&cThere is no hologram saved."
   stats:
@@ -32,7 +34,10 @@ commands:
     game-not-null: "&cThe game name can not be null!"
     player-not-null: "&cThe player name can not be null!"
     player-kicked: "&2The player&e %player%&2 successfully kicked from&e %game%&2 game!"
-    player-not-play-currently: "&cThis player currently not playing."
+    player-currently-not-playing: "&cThis player currently not playing."
+  signupdate:
+    usage: "&cUsage:&7 '/rm signupdate <gameName>'&c."
+    game-not-exist: "&cThis game not exists. Please add correctly name."
 
 hologram-list:
 - "&6Rank:&a %rank%"
@@ -45,7 +50,12 @@ hologram-list:
 
 setup:
   not-set-yet: "&cThis game was not set yet! Set it with&e %usage%"
-  lobby-set-success: "&2The lobby for the game&3 %game%&2 was set successfully!"
+  lobby:
+    set-success: "&2The lobby for the game&3 %game%&2 was set successfully!"
+    not-set: "&cThe lobby was not set yet for&3 %game%&c. Set it with&e /rm setlobby <gameName>&c command."
+    coords-not-set: "&cThe lobby coordinates were not set properly. Ask an Admin to check the config.yml."
+    not-set-properly: "&4The lobby was not set properly. Ask an Admin to check the config.yml."
+    worldname-not-set: "&cThe world key can't be empty! Ask an Admin to check the config.yml."
   success-added: "&2The game &3%game%&2 was added successfully!"
   already-exists: "&cThis &e%game%&c game already exists."
   at-least-two: "&cThe maxplayers value must be at least two."
@@ -71,21 +81,19 @@ statistic-list:
 - "&cRank:&2 %rank%"
 
 game:
+  lobby:
+    start-message: "&9This round will start in&e %time%&9 seconds."
+    chat-is-disabled: "&cThe chat currently is disabled in lobby!"
   already-exists: "&cThis &e%game%&c game already exists."
   success-added: "&2The game &3%game%&2 was added successfully!"
   at-least-two: "&cThe maxplayers value must be at least two."
   not-set-yet: "&cThis game was not set yet! Set it with&e %usage%"
-  lobby-set-success: "&2The lobby for the game&3 %game%&2 was set successfully!"
-  lobby-not-set: "&cThe lobby was not set yet for&3 %game%&c. Set it with&e /rm setlobby <gameName>&c command."
   spawn-set-success: "&2Spawn&e %number%&2 for the game&3 %game%&2 was set successfully!"
-  lobby-coords-not-set: "&cThe lobby coordinates were not set properly. Ask an Admin to check the config.yml."
   success-removed: "&cThe game&e %game%&c was removed successfully."
   removed-non-existent-game: "&cDon't remove non-existent games!"
-  worldname-not-set: "&cThe world key can't be empty! Ask an Admin to check the config.yml."
   spawns-not-set-properly: "&cOne or more spawns are not set properly!"
   no-spawns-configured: "&cIn&e %game%&c are no spawns configured!"
   too-few-spawns: "&4The number of spawns must be greater than or equal the maxplayers value!"
-  success: "&2Success!"
   player-could-not-join: "&e%player%&4 couldn't join the RageMode game&e %game%."
   game-stopped-for-reload: "&cThe game has stopped because we reloading the plugin and need to stop the game. Sorry!"
   broadcast:
@@ -98,11 +106,12 @@ game:
   unknown-weapon: "&a%victim%&3 was killed by something unexpected."
   void-fall: "&c%player%&2 has void fall from the game."
   not-set-up: "&4The game is not set up correctly. Please contact an Admin."
-  lobby-not-set-properly: "&4The lobby was not set properly. Ask an Admin to check the config.yml."
-  lobby-message: "&9This round will start in&e %time%&9 seconds."
   stopped: "&3%game%&2 has been stopped."
   running: "&4This game is running at the moment. Please wait until it is over."
   not-running: "&cThis game isn't running."
+  chat-is-disabled: "&cThe chat currently is disabled!"
+  game-freeze:
+    chat-is-disabled: "&cThe chat currently is disabled!"
   name-or-maxplayers-not-set: "&4The worldname or the maxplayers are not set. Please contact an Admin for further information."
   maxplayers-not-set: "&cThe maxplayers value for&e %game%&c is not set properly."
   worldname-not-set: "&4The world key can't be empty! Ask an Admin to check the config.yml."
@@ -114,7 +123,7 @@ game:
   player-kicked-for-vip: "&cYou were kicked out of the Game to make room for a VIP players."
   player-already-in-game: "&cYou are already in a game. You can leave it by typing&e %usage%"
   player-not-ingame: "&cThe fact that you are not in a game caused a Problem while trying to remove you from that game."
-  player-left: "&cYou left your current Game."
+  player-left: "&cYou left from the current game."
   no-won: "&cNo one won this game."
   message:
     arrow-kill: "&3You killed&6&l %victim%&3 with a direct arrow hit.&6&l %points%"

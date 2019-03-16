@@ -30,7 +30,7 @@ public class HoloHolder {
 
 	@SuppressWarnings("unchecked")
 	public static void addHolo(Location loc) {
-		if (!Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays"))
+		if (!RageMode.getInstance().getHologramAvailable())
 			return;
 
 		loc.add(0d, 2d, 0d);
@@ -59,7 +59,7 @@ public class HoloHolder {
 	}
 
 	public static void loadHolos() {
-		if (!Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays"))
+		if (!RageMode.getInstance().getHologramAvailable())
 			return;
 
 		Collection<Hologram> holos = HologramsAPI.getHolograms(RageMode.getInstance());
@@ -73,7 +73,7 @@ public class HoloHolder {
 	}
 
 	public static void displayHoloToPlayer(Player player, Location loc) {
-		if (!Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays"))
+		if (!RageMode.getInstance().getHologramAvailable())
 			return;
 
 		Hologram hologram = HologramsAPI.createHologram(RageMode.getInstance(), loc);
@@ -81,8 +81,6 @@ public class HoloHolder {
 		VisibilityManager visibilityManager = hologram.getVisibilityManager();
 		visibilityManager.showTo(player);
 		visibilityManager.setVisibleByDefault(false);
-
-		// RetPlayerPoints rpp = null;
 
 		if (RageMode.getInstance().getConfiguration().getCfg().getString("statistics").equals("mysql")) {
 			final Player mySQLPlayer = player;
@@ -99,7 +97,8 @@ public class HoloHolder {
 
 						@Override
 						public String call() throws Exception {
-							setHologramLines(mySQLHologram, rpp);
+							if (rpp != null)
+								setHologramLines(mySQLHologram, rpp);
 							return "Done";
 						}
 					});
@@ -119,7 +118,8 @@ public class HoloHolder {
 					Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), new Callable<String>() {
 						@Override
 						public String call() throws Exception {
-							setHologramLines(yamlHologram, rpp);
+							if (rpp != null)
+								setHologramLines(yamlHologram, rpp);
 							return "Done";
 						}
 					});
@@ -152,7 +152,7 @@ public class HoloHolder {
 	}
 
 	public static void deleteHoloObjectsOfPlayer(Player player) {
-		if (!Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays"))
+		if (!RageMode.getInstance().getHologramAvailable())
 			return;
 
 		Collection<Hologram> holos = HologramsAPI.getHolograms(RageMode.getInstance());
@@ -163,7 +163,7 @@ public class HoloHolder {
 	}
 
 	public static void deleteHologram(Player p, Hologram holo) {
-		if (!Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays"))
+		if (!RageMode.getInstance().getHologramAvailable())
 			return;
 
 		if (holo == null)
@@ -204,7 +204,7 @@ public class HoloHolder {
 	}*/
 
 	public static Hologram getClosest(Player player) {
-		if (!Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays"))
+		if (!RageMode.getInstance().getHologramAvailable())
 			return null;
 
 		Collection<Hologram> holos = HologramsAPI.getHolograms(RageMode.getInstance());
@@ -260,7 +260,7 @@ public class HoloHolder {
 
 	@SuppressWarnings("unchecked")
 	public static void showAllHolosToPlayer(Player player) {
-		if (!Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays"))
+		if (!RageMode.getInstance().getHologramAvailable())
 			return;
 
 		List<Location> holoList;
@@ -278,7 +278,7 @@ public class HoloHolder {
 	}
 
 	public static void updateHolosForPlayer(Player player) {
-		if (!Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays"))
+		if (!RageMode.getInstance().getHologramAvailable())
 			return;
 
 		deleteHoloObjectsOfPlayer(player);

@@ -6,49 +6,40 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
-import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
-import org.bukkit.boss.BossBar;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.StopGame;
 import hu.montlikadani.ragemode.gameUtils.ActionBar;
-import hu.montlikadani.ragemode.scoreboard.ScoreBoard;
+import hu.montlikadani.ragemode.gameUtils.BossUtils;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
 
 public class GameTimer {
 
 	private String gameName;
-	private int secondsRemaining;
+	private int time;
 	private Timer t;
 
-	public GameTimer(String gameName) {
+	public GameTimer(String gameName, int time) {
 		this.gameName = gameName;
-
-		PlayerList.setGameRunning(gameName);
-		getMinutesToGo();
-		startCounting();
+		this.time = time;
 	}
 
-	private void getMinutesToGo() {
-		if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName + ".gametime")) {
-			if (RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.gametime") > 0)
-				secondsRemaining = RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.gametime") * 60;
-			else
-				secondsRemaining = 300;
-		} else
-			secondsRemaining = RageMode.getInstance().getConfiguration().getArenasCfg().getInt("arenas." + gameName + ".gametime") * 60;
+	public String getGame() {
+		return gameName;
 	}
 
-	private void startCounting() {
+	public int getGameTime() {
+		return time;
+	}
+
+	public void startCounting() {
 		t = new Timer();
 
-		int totalTimerMillis = ((int) (((secondsRemaining * 1000) + 5000) / 10000)) * (10000);
+		int totalTimerMillis = ((int) (((time * 1000) + 5000) / 10000)) * (10000);
 		if (totalTimerMillis == 0)
 			totalTimerMillis = 10000;
 		final int timeMillisForLoop = totalTimerMillis;
@@ -79,20 +70,19 @@ public class GameTimer {
 					// }
 					// totalMessages--;
 					// }
-					double minutes = Math.floor(secondsRemaining / 60);
-					double seconds = secondsRemaining % 60;
+					/*double minutes = Math.floor(secondsRemaining / 60);
+					double seconds = secondsRemaining % 60;*/
 					secondsRemaining--;
-					String minutesString;
+					/*String minutesString;
 					String secondsString;
 					if (minutes < 10)
 						minutesString = "0" + Integer.toString((int) minutes);
 					else
 						minutesString = Integer.toString((int) minutes);
-					secondsString = (seconds < 10) ? "0" + Integer.toString((int) seconds) : Integer.toString((int) seconds);
-					ScoreBoard gameBoard = ScoreBoard.allScoreBoards.get(gameName);
-					gameBoard.setTitle(ChatColor.GOLD + "RageMode" + ChatColor.RESET + " " + ChatColor.DARK_AQUA + minutesString + ":" + secondsString);
+					secondsString = (seconds < 10) ? "0" + Integer.toString((int) seconds) : Integer.toString((int) seconds);*/
+
 					if (secondsRemaining == 0) {
-						this.cancel();
+						cancel();
 						RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
 							@Override
 							public void run() {
@@ -101,7 +91,6 @@ public class GameTimer {
 						});
 					}
 
-					// -------ActionBar & BossBar update-------
 					if (secondsRemaining % 2 == 0) {
 						String[] playerUUIDs = PlayerList.getPlayersInGame(gameName);
 						List<PlayerPoints> playerPoints = new ArrayList<>();
@@ -110,60 +99,49 @@ public class GameTimer {
 							if (points != null)
 								playerPoints.add(points);
 						}
+
+						if (playerPoints == null || playerPoints.isEmpty())
+							return;
+
 						Collections.sort(playerPoints);
+
 						if (playerPoints.size() > pointer) {
 							PlayerPoints points = playerPoints.get(pointer);
-							String message = ChatColor.DARK_GREEN + Integer.toString(pointer + 1) + ": "
-									+ ChatColor.DARK_AQUA
-									+ Bukkit.getPlayer(UUID.fromString(points.getPlayerUUID())).getName() + " - "
-									+ ChatColor.GOLD + Integer.toString(points.getPoints()) + ChatColor.DARK_AQUA
-									+ " points. " + ChatColor.GOLD + Integer.toString(points.getKills()) + " / "
-									+ Integer.toString(points.getDeaths()) + ChatColor.DARK_AQUA + " K/D.";
-							String ver = RageMode.getVer();
+
 							for (String playerUUID : playerUUIDs) {
-								if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName + ".bossbar")
-										&& RageMode.getInstance().getConfiguration().getCfg().getBoolean("settings.global.bossbar")) {
-									if (!(ver.equals("1_8_R1") || ver.equals("1_8_R2") || ver.equals("1_8_R3"))) {
-										BossBar bar = Bukkit.createBossBar(message, BarColor.RED, BarStyle.SOLID);
-										bar.addPlayer(Bukkit.getPlayer(UUID.fromString(playerUUID)));
+								String bossMessage = RageMode.getInstance().getConfiguration().getCfg().getString("bossbar-messages.player-actions.message");
+								if (bossMessage != null && !bossMessage.equals("")) {
+									bossMessage = bossMessage.replace("%pointer%", Integer.toString(pointer + 1));
+									bossMessage = bossMessage.replace("%player%", Bukkit.getPlayer(UUID.fromString(points.getPlayerUUID())).getName());
+									bossMessage = bossMessage.replace("%points%", Integer.toString(points.getPoints()));
+									bossMessage = bossMessage.replace("%kills%", Integer.toString(points.getKills()));
+									bossMessage = bossMessage.replace("%deaths%", Integer.toString(points.getDeaths()));
+									bossMessage = RageMode.getLang().colors(bossMessage);
 
-										for (int i = 1; i <= 6; ++i) {
-											Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
-												@Override
-												public void run() {
-													if (bar.getProgress() >= 0.2D)
-														bar.setProgress(bar.getProgress() - 0.2D);
-													else
-														bar.removeAll();
-												}
-											}, (long) (20 * i));
-										}
-									} else
-										RageMode.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
-								} else if (RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + gameName + ".bossbar")) {
-									if (!(ver.equals("1_8_R1") || ver.equals("1_8_R2") || ver.equals("1_8_R3"))) {
-										BossBar bar = Bukkit.createBossBar(message, BarColor.RED, BarStyle.SOLID);
-										bar.addPlayer(Bukkit.getPlayer(UUID.fromString(playerUUID)));
-
-										for (int i = 1; i <= 6; ++i) {
-											Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
-												@Override
-												public void run() {
-													if (bar.getProgress() >= 0.2D)
-														bar.setProgress(bar.getProgress() - 0.2D);
-													else
-														bar.removeAll();
-												}
-											}, (long) (20 * i));
-										}
-									} else
-										RageMode.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
+									if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName + ".bossbar")) {
+										if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game.global.defaults.bossbar"))
+											new BossUtils(bossMessage).sendBossBar(gameName, playerUUID,
+													BarStyle.valueOf(RageMode.getInstance().getConfiguration().getCfg().getString("bossbar-messages.player-actions.style")));
+									} else if (RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + gameName + ".bossbar"))
+										new BossUtils(bossMessage).sendBossBar(gameName, playerUUID,
+												BarStyle.valueOf(RageMode.getInstance().getConfiguration().getCfg().getString("bossbar-messages.player-actions.style")));
 								}
-								if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName + ".actionbar")) {
-									if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game.global.actionbar"))
-										ActionBar.sendActionBar(Bukkit.getPlayer(UUID.fromString(playerUUID)), message);
-								} else if (RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + gameName + ".actionbar"))
-									ActionBar.sendActionBar(Bukkit.getPlayer(UUID.fromString(playerUUID)), message);
+
+								String actionbarMsg = RageMode.getInstance().getConfiguration().getCfg().getString("actionbar-messages.player-actions.message");
+								if (actionbarMsg != null && !actionbarMsg.equals("")) {
+									actionbarMsg = actionbarMsg.replace("%pointer%", Integer.toString(pointer + 1));
+									actionbarMsg = actionbarMsg.replace("%player%", Bukkit.getPlayer(UUID.fromString(points.getPlayerUUID())).getName());
+									actionbarMsg = actionbarMsg.replace("%points%", Integer.toString(points.getPoints()));
+									actionbarMsg = actionbarMsg.replace("%kills%", Integer.toString(points.getKills()));
+									actionbarMsg = actionbarMsg.replace("%deaths%", Integer.toString(points.getDeaths()));
+									actionbarMsg = RageMode.getLang().colors(actionbarMsg);
+
+									if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName + ".actionbar")) {
+										if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game.global.defaults.actionbar"))
+											ActionBar.sendActionBar(Bukkit.getPlayer(UUID.fromString(playerUUID)), actionbarMsg);
+									} else if (RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + gameName + ".actionbar"))
+										ActionBar.sendActionBar(Bukkit.getPlayer(UUID.fromString(playerUUID)), actionbarMsg);
+								}
 							}
 							pointer++;
 						} else {
@@ -171,9 +149,13 @@ public class GameTimer {
 								pointer = 0;
 						}
 					}
-					// -------End of ActionBar & BossBar update-------
 				} else {
-					this.cancel();
+					if (PlayerList.getPlayersInGame(gameName).length < 0) {
+						cancel();
+						return;
+					}
+
+					cancel();
 					RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
 						@Override
 						public void run() {

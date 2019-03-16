@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -70,82 +69,85 @@ public class YAMLStats {
 	public static void addPlayerStatistics(List<PlayerPoints> pP) {
 		if (!inited) return;
 
+		// Fixes IndexOutOfBoundsException
+		if (pP.isEmpty()) return;
+
 		int i = 0;
 		int imax = pP.size();
-		String uuid = pP.size() > 0 ? pP.get(i).getPlayerUUID() : null; // Fixes IndexOutOfBoundsException
+		String uuid = pP.get(i).getPlayerUUID();
 		while (i < imax) {
-			Set<String> contents = statsConf.getConfigurationSection("data").getKeys(false);
-			if (contents.contains(uuid)) {
-				statsConf.set("data." + uuid + ".name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
+			String path = "data." + uuid + ".";
+			if (statsConf.getConfigurationSection("data").getKeys(false).contains(uuid)) {
+				statsConf.set(path + "name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
 
-				int kills = statsConf.getInt("data." + uuid + ".kills");
-				int axeKills = statsConf.getInt("data." + uuid + ".axe-kills");
-				int directArrowKills = statsConf.getInt("data." + uuid + ".direct-arrow-kills");
-				int explosionKills = statsConf.getInt("data." + uuid + ".explosion-kills");
-				int knifeKills = statsConf.getInt("data." + uuid + ".knife-kills");
+				int kills = statsConf.getInt(path + "kills");
+				int axeKills = statsConf.getInt(path + "axe-kills");
+				int directArrowKills = statsConf.getInt(path + "direct-arrow-kills");
+				int explosionKills = statsConf.getInt(path + "explosion-kills");
+				int knifeKills = statsConf.getInt(path + "knife-kills");
 
-				int deaths = statsConf.getInt("data." + uuid + ".deaths");
-				int axeDeaths = statsConf.getInt("data." + uuid + ".axe-deaths");
-				int directArrowDeaths = statsConf.getInt("data." + uuid + ".direct-arrow-deaths");
-				int explosionDeaths = statsConf.getInt("data." + uuid + ".explosion-deaths");
-				int knifeDeaths = statsConf.getInt("data." + uuid + ".knife-deaths");
+				int deaths = statsConf.getInt(path + "deaths");
+				int axeDeaths = statsConf.getInt(path + "axe-deaths");
+				int directArrowDeaths = statsConf.getInt(path + "direct-arrow-deaths");
+				int explosionDeaths = statsConf.getInt(path + "explosion-deaths");
+				int knifeDeaths = statsConf.getInt(path + "knife-deaths");
 
-				int wins = statsConf.getInt("data." + uuid + ".wins");
-				int score = statsConf.getInt("data." + uuid + ".score");
-				int games = statsConf.getInt("data." + uuid + ".games");
+				int wins = statsConf.getInt(path + "wins");
+				int score = statsConf.getInt(path + "score");
+				int games = statsConf.getInt(path + "games");
 
-				statsConf.set("data." + uuid + ".kills", (kills + pP.get(i).getKills()));
-				statsConf.set("data." + uuid + ".axe_kills", (axeKills + pP.get(i).getAxeKills()));
-				statsConf.set("data." + uuid + ".direct_arrow_kills", (directArrowKills + pP.get(i).getDirectArrowKills()));
-				statsConf.set("data." + uuid + ".explosion_kills", (explosionKills + pP.get(i).getExplosionKills()));
-				statsConf.set("data." + uuid + ".knife_kills", (knifeKills + pP.get(i).getKnifeKills()));
+				statsConf.set(path + "kills", (kills + pP.get(i).getKills()));
+				statsConf.set(path + "axe_kills", (axeKills + pP.get(i).getAxeKills()));
+				statsConf.set(path + "direct_arrow_kills", (directArrowKills + pP.get(i).getDirectArrowKills()));
+				statsConf.set(path + "explosion_kills", (explosionKills + pP.get(i).getExplosionKills()));
+				statsConf.set(path + "knife_kills", (knifeKills + pP.get(i).getKnifeKills()));
 
-				statsConf.set("data." + uuid + ".deaths", (deaths + pP.get(i).getDeaths()));
-				statsConf.set("data." + uuid + ".axe_deaths", (axeDeaths + pP.get(i).getAxeDeaths()));
-				statsConf.set("data." + uuid + ".direct_arrow_deaths", (directArrowDeaths + pP.get(i).getDirectArrowDeaths()));
-				statsConf.set("data." + uuid + ".explosion_deaths", (explosionDeaths + pP.get(i).getExplosionDeaths()));
-				statsConf.set("data." + uuid + ".knife_deaths", (knifeDeaths + pP.get(i).getKnifeDeaths()));
+				statsConf.set(path + "deaths", (deaths + pP.get(i).getDeaths()));
+				statsConf.set(path + "axe_deaths", (axeDeaths + pP.get(i).getAxeDeaths()));
+				statsConf.set(path + "direct_arrow_deaths", (directArrowDeaths + pP.get(i).getDirectArrowDeaths()));
+				statsConf.set(path + "explosion_deaths", (explosionDeaths + pP.get(i).getExplosionDeaths()));
+				statsConf.set(path + "knife_deaths", (knifeDeaths + pP.get(i).getKnifeDeaths()));
 
 				if (pP.get(i).isWinner())
-					statsConf.set("data." + uuid + ".wins", (wins + 1));
+					statsConf.set(path + "wins", (wins + 1));
 				else
-					statsConf.set("data." + uuid + ".wins", wins);
+					statsConf.set(path + "wins", wins);
 
-				statsConf.set("data." + uuid + ".score", (score + pP.get(i).getPoints()));
-				statsConf.set("data." + uuid + ".games", (games + 1));
+				statsConf.set(path + "score", (score + pP.get(i).getPoints()));
+				statsConf.set(path + "games", (games + 1));
 				if ((deaths + pP.get(i).getDeaths()) != 0)
-					statsConf.set("data." + uuid + ".KD", ((double) ((kills + pP.get(i).getKills())) / ((double)
+					statsConf.set(path + "KD", ((double) ((kills + pP.get(i).getKills())) / ((double)
 							(deaths + pP.get(i).getDeaths()))));
 				else
-					statsConf.set("data." + uuid + ".KD", 1.0d);
+					statsConf.set(path + "KD", 1.0d);
 
 			} else {
-				statsConf.set("data." + uuid + ".name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
+				statsConf.set(path + "name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
 
-				statsConf.set("data." + uuid + ".kills", pP.get(i).getKills());
-				statsConf.set("data." + uuid + ".axe_kills", pP.get(i).getAxeKills());
-				statsConf.set("data." + uuid + ".direct_arrow_kills", pP.get(i).getDirectArrowKills());
-				statsConf.set("data." + uuid + ".explosion_kills", pP.get(i).getExplosionKills());
-				statsConf.set("data." + uuid + ".knife_kills", pP.get(i).getKnifeKills());
+				statsConf.set(path + "kills", pP.get(i).getKills());
+				statsConf.set(path + "axe_kills", pP.get(i).getAxeKills());
+				statsConf.set(path + "direct_arrow_kills", pP.get(i).getDirectArrowKills());
+				statsConf.set(path + "explosion_kills", pP.get(i).getExplosionKills());
+				statsConf.set(path + "knife_kills", pP.get(i).getKnifeKills());
 
-				statsConf.set("data." + uuid + ".deaths", pP.get(i).getDeaths());
-				statsConf.set("data." + uuid + ".axe_deaths", pP.get(i).getAxeDeaths());
-				statsConf.set("data." + uuid + ".direct_arrow_deaths", pP.get(i).getDirectArrowDeaths());
-				statsConf.set("data." + uuid + ".explosion_deaths", pP.get(i).getExplosionDeaths());
-				statsConf.set("data." + uuid + ".knife_deaths", pP.get(i).getKnifeDeaths());
+				statsConf.set(path + "deaths", pP.get(i).getDeaths());
+				statsConf.set(path + "axe_deaths", pP.get(i).getAxeDeaths());
+				statsConf.set(path + "direct_arrow_deaths", pP.get(i).getDirectArrowDeaths());
+				statsConf.set(path + "explosion_deaths", pP.get(i).getExplosionDeaths());
+				statsConf.set(path + "knife_deaths", pP.get(i).getKnifeDeaths());
 
 				if (pP.get(i).isWinner())
-					statsConf.set("data." + uuid + ".wins", 1);
+					statsConf.set(path + "wins", 1);
 				else
-					statsConf.set("data." + uuid + ".wins", 0);
+					statsConf.set(path + "wins", 0);
 
-				statsConf.set("data." + uuid + ".score", pP.get(i).getPoints());
-				statsConf.set("data." + uuid + ".games", 1);
+				statsConf.set(path + "score", pP.get(i).getPoints());
+				statsConf.set(path + "games", 1);
 				if (pP.get(i).getDeaths() != 0)
-					statsConf.set("data." + uuid + ".KD",
+					statsConf.set(path + "KD",
 							((double) pP.get(i).getKills()) / ((double) pP.get(i).getDeaths()));
 				else
-					statsConf.set("data." + uuid + ".KD", 1.0d);
+					statsConf.set(path + "KD", 1.0d);
 			}
 			i++;
 		}
@@ -174,23 +176,24 @@ public class YAMLStats {
 		RetPlayerPoints plPo = new RetPlayerPoints(sUUID);
 
 		if (statsConf.getConfigurationSection("data").getKeys(false).contains(sUUID)) {
-			plPo.setKills(statsConf.getInt("data." + sUUID + ".kills"));
-			plPo.setAxeKills(statsConf.getInt("data." + sUUID + ".axe_kills"));
-			plPo.setDirectArrowKills(statsConf.getInt("data." + sUUID + ".direct_arrow_kills"));
-			plPo.setExplosionKills(statsConf.getInt("data." + sUUID + ".explosion_kills"));
-			plPo.setKnifeKills(statsConf.getInt("data." + sUUID + ".knife_kills"));
+			String path = "data." + sUUID + ".";
+			plPo.setKills(statsConf.getInt(path + "kills"));
+			plPo.setAxeKills(statsConf.getInt(path + "axe_kills"));
+			plPo.setDirectArrowKills(statsConf.getInt(path + "direct_arrow_kills"));
+			plPo.setExplosionKills(statsConf.getInt(path + "explosion_kills"));
+			plPo.setKnifeKills(statsConf.getInt(path + "knife_kills"));
 
-			plPo.setDeaths(statsConf.getInt("data." + sUUID + ".deaths"));
-			plPo.setAxeDeaths(statsConf.getInt("data." + sUUID + ".axe_deaths"));
-			plPo.setDirectArrowDeaths(statsConf.getInt("data." + sUUID + ".direct_arrow_deaths"));
-			plPo.setExplosionDeaths(statsConf.getInt("data." + sUUID + ".explosion_deaths"));
-			plPo.setKnifeDeaths(statsConf.getInt("data." + sUUID + ".knife_deaths"));
+			plPo.setDeaths(statsConf.getInt(path + "deaths"));
+			plPo.setAxeDeaths(statsConf.getInt(path + "axe_deaths"));
+			plPo.setDirectArrowDeaths(statsConf.getInt(path + "direct_arrow_deaths"));
+			plPo.setExplosionDeaths(statsConf.getInt(path + "explosion_deaths"));
+			plPo.setKnifeDeaths(statsConf.getInt(path + "knife_deaths"));
 
-			plPo.setWins(statsConf.getInt("data." + sUUID + ".wins"));
-			plPo.setPoints(statsConf.getInt("data." + sUUID + ".score"));
-			plPo.setGames(statsConf.getInt("data." + sUUID + ".games"));
+			plPo.setWins(statsConf.getInt(path + "wins"));
+			plPo.setPoints(statsConf.getInt(path + "score"));
+			plPo.setGames(statsConf.getInt(path + "games"));
 
-			plPo.setKD(statsConf.getDouble("data." + sUUID + ".KD"));
+			plPo.setKD(statsConf.getDouble(path + "KD"));
 		} else
 			return null;
 		return plPo;
@@ -207,9 +210,7 @@ public class YAMLStats {
 
 		List<RetPlayerPoints> allRPPs = new ArrayList<>();
 
-		Set<String> allUUIDs = statsConf.getConfigurationSection("data").getKeys(false);
-
-		for (String UUID : allUUIDs) {
+		for (String UUID : statsConf.getConfigurationSection("data").getKeys(false)) {
 			allRPPs.add(getPlayerStatistics(UUID));
 		}
 		return allRPPs;

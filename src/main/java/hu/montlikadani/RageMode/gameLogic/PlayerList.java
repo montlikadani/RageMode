@@ -12,13 +12,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.API.event.GameJoinAttemptEvent;
+import hu.montlikadani.ragemode.API.event.GameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
+import hu.montlikadani.ragemode.gameUtils.TabTitles;
 import hu.montlikadani.ragemode.gameUtils.TableList;
-import hu.montlikadani.ragemode.scoreboard.ScoreBoard;
 import hu.montlikadani.ragemode.scores.RageScores;
-import hu.montlikadani.ragemode.tablist.TabTitles;
 
 public class PlayerList {
 
@@ -31,9 +36,12 @@ public class PlayerList {
 	public static TableList<Player, GameMode> oldGameMode = new TableList<>();
 	public static TableList<Player, String> oldDisplayName = new TableList<>();
 	public static TableList<Player, String> oldListName = new TableList<>();
+	public static TableList<Player, Integer> oldFire = new TableList<>();
 
 	private static String[] list = new String[1]; // [Gamename,Playername x overallMaxPlayers,Gamename,...]
 	private static String[] runningGames = new String[1];
+
+	private static GameStatus status = GameStatus.STOPPED;
 
 	public PlayerList() {
 		int i = 0;
@@ -106,13 +114,34 @@ public class PlayerList {
 				if (list[i].equals(game)) {
 					n = i;
 					n++; // should increase performance because the game name in the list isn't checked for null
+
+					int time = 0;
+					if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + game + ".lobbydelay")) {
+						if (RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.delay") > 0)
+							time = RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.delay");
+						else
+							time = 30;
+					} else
+						time = RageMode.getInstance().getConfiguration().getArenasCfg().getInt("arenas." + game + ".lobbydelay");
+
 					while (n <= (GetGames.getMaxPlayers(game) + i)) {
 						if (list[n] == null) {
 							list[n] = player.getUniqueId().toString();
 							player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", game));
 
-							if (getPlayersInGame(game).length == 2)
-								new LobbyTimer(game);
+							GameJoinAttemptEvent event = new GameJoinAttemptEvent(player, game);
+							Bukkit.getPluginManager().callEvent(event);
+							if (event.isCancelled())
+								return false;
+
+							if (RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.min-players-to-start-lobby-timer") > 1) {
+								if (getPlayersInGame(game).length == RageMode.getInstance().getConfiguration().getCfg()
+										.getInt("game.global.lobby.min-players-to-start-lobby-timer"))
+									new LobbyTimer(game, time).sendTimerMessages();
+							} else {
+								if (getPlayersInGame(game).length == 2)
+									new LobbyTimer(game, time).sendTimerMessages();
+							}
 							return true;
 						}
 						n++;
@@ -221,16 +250,26 @@ public class PlayerList {
 							n++;
 						}
 
+						n = 0;
+
+						while (n < oldFire.getFirstLength()) { // Give him his fire back.
+							if (oldFire.getFromFirstObject(n) == playerToKick) {
+								playerToKick.setFireTicks(oldFire.getFromSecondObject(n));
+								oldFire.removeFromBoth(n);
+							}
+							n++;
+						}
+
 						list[kickposition] = player.getUniqueId().toString();
 						playerToKick.sendMessage(RageMode.getLang().get("game.player-kicked-for-vip"));
 
 						if (RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.min-players-to-start-lobby-timer") > 1) {
 							if (getPlayersInGame(game).length == RageMode.getInstance().getConfiguration().getCfg()
 									.getInt("game.global.lobby.min-players-to-start-lobby-timer"))
-								new LobbyTimer(game);
+								new LobbyTimer(game, time).sendTimerMessages();
 						} else {
 							if (getPlayersInGame(game).length == 2)
-								new LobbyTimer(game);
+								new LobbyTimer(game, time).sendTimerMessages();
 						}
 						player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", game));
 						return true;
@@ -259,6 +298,9 @@ public class PlayerList {
 				if (list[i] != null) {
 					if (list[i].equals(player.getUniqueId().toString())) {
 
+						GameLeaveAttemptEvent gameLeaveEvent = new GameLeaveAttemptEvent(player, PlayerList.getPlayersGame(player));
+						Bukkit.getPluginManager().callEvent(gameLeaveEvent);
+
 						removePlayerSynced(player);
 
 						RageScores.removePointsForPlayers(new String[] { player.getUniqueId().toString() });
@@ -280,7 +322,6 @@ public class PlayerList {
 
 						while (n < oldInventories.getFirstLength()) { // Give him his inventory back
 							if (oldInventories.getFromFirstObject(n) == player) {
-								player.getInventory().clear();
 								player.getInventory().setContents(oldInventories.getFromSecondObject(n));
 								oldInventories.removeFromBoth(n);
 							}
@@ -357,6 +398,16 @@ public class PlayerList {
 							n++;
 						}
 
+						n = 0;
+
+						while (n < oldFire.getFirstLength()) { // Give him his fire back.
+							if (oldFire.getFromFirstObject(n) == player) {
+								player.setFireTicks(oldFire.getFromSecondObject(n));
+								oldFire.removeFromBoth(n);
+							}
+							n++;
+						}
+
 						list[i] = null;
 
 						player.removeMetadata("leavingRageMode", RageMode.getInstance());
@@ -378,6 +429,8 @@ public class PlayerList {
 
 		if (TabTitles.allTabLists.containsKey(PlayerList.getPlayersGame(player)))
 			TabTitles.allTabLists.get(PlayerList.getPlayersGame(player)).removeTabList(player);
+
+		removeScoreboard(player, true);
 	}
 
 	public static boolean isGameRunning(String game) {
@@ -592,5 +645,45 @@ public class PlayerList {
 			i++;
 		}
 		return null;
+	}
+
+	public static void setPlayerGroup(Player player, String prefix, String suffix, boolean external) {
+		if (player == null) {
+			throw new NullPointerException("player is null");
+		}
+		Scoreboard board = external ? player.getScoreboard() : Bukkit.getScoreboardManager().getNewScoreboard();
+		Team team = getScoreboardTeam(board, player.getName());
+
+		team.addEntry(player.getName());
+
+		prefix = Utils.setPlaceholders(prefix, player);
+		suffix = Utils.setPlaceholders(suffix, player);
+
+		team.setPrefix(prefix);
+		team.setSuffix(suffix);
+		if (RageMode.getVersion().contains("1.13"))
+			team.setColor(Utils.fromPrefix(prefix));
+
+		player.setScoreboard(board);
+	}
+
+	public static void removeScoreboard(Player player, boolean external) {
+		Scoreboard board = external ? player.getScoreboard() : Bukkit.getScoreboardManager().getNewScoreboard();
+		if (getScoreboardTeam(board, player.getName()) != null) {
+			getScoreboardTeam(board, player.getName()).unregister();
+			player.setScoreboard(board);
+		}
+	}
+
+	public static Team getScoreboardTeam(Scoreboard board, String name) {
+		return board.getTeam(name) == null ? board.registerNewTeam(name) : board.getTeam(name);
+	}
+
+	public static GameStatus getStatus() {
+		return status;
+	}
+
+	public static void setStatus(GameStatus status) {
+		PlayerList.status = status;
 	}
 }

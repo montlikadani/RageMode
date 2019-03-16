@@ -26,7 +26,7 @@ public class SetLobbyDelay extends RmCommand {
 				return;
 			}
 			if (!RageMode.getInstance().getConfiguration().getArenasCfg().contains("arenas." + args[1] + ".lobby")) {
-				p.sendMessage(RageMode.getLang().get("game.lobby-not-set", "%game%", args[1]));
+				p.sendMessage(RageMode.getLang().get("setup.lobby.not-set", "%game%", args[1]));
 				return;
 			}
 			if (isInt(args[2])) {

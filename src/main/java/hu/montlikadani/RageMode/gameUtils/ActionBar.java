@@ -3,26 +3,18 @@ package hu.montlikadani.ragemode.gameUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
-
-import hu.montlikadani.ragemode.events.ActionBarMessageEvent;
 
 public class ActionBar {
 
 	public static String nmsver;
 	public static boolean useOldMethods = false;
-	public static Plugin plugin;
 
 	public static void sendActionBar(Player player, String message) {
 		if (!player.isOnline())
 			return;
 
-		ActionBarMessageEvent actionBarMessageEvent = new ActionBarMessageEvent(player, message);
-		Bukkit.getPluginManager().callEvent(actionBarMessageEvent);
-		if (actionBarMessageEvent.isCancelled()) return;
+		if (message == null) message = "";
 
 		try {
 			Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + nmsver + ".entity.CraftPlayer");
@@ -60,41 +52,8 @@ public class ActionBar {
 			Object playerConnection = playerConnectionField.get(craftPlayerHandle);
 			Method sendPacketMethod = playerConnection.getClass().getDeclaredMethod("sendPacket", packetClass);
 			sendPacketMethod.invoke(playerConnection, packet);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
-		}
-	}
-
-	public static void sendActionBar(final Player player, final String message, int duration) {
-		sendActionBar(player, message);
-
-		if (duration >= 0) {
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-					sendActionBar(player, "");
-				}
-			}.runTaskLater(plugin, duration + 1);
-		}
-
-		while (duration > 40) {
-			duration -= 40;
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-					sendActionBar(player, message);
-				}
-			}.runTaskLater(plugin, (long) duration);
-		}
-	}
-
-	public static void sendActionBarToAllPlayers(String message) {
-		sendActionBarToAllPlayers(message, -1);
-	}
-
-	public static void sendActionBarToAllPlayers(String message, int duration) {
-		for (Player p : Bukkit.getOnlinePlayers()) {
-			sendActionBar(p, message, duration);
 		}
 	}
 }

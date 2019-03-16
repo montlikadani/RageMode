@@ -11,10 +11,9 @@ public class GetGames {
 	public static int getConfigGamesCount() {
 		int n = 0;
 
-		if (!RageMode.getInstance().getConfiguration().getArenasFile().exists() ||
-				!fi.contains("arenas") || fi.getConfigurationSection("arenas").getKeys(false) == null)
-			return 0;
-		n = fi.getConfigurationSection("arenas").getKeys(false).size();
+		if (RageMode.getInstance().getConfiguration().getArenasFile().exists() && fi.contains("arenas"))
+			n = fi.getConfigurationSection("arenas").getKeys(false).size();
+
 		return n;
 	}
 
@@ -28,8 +27,9 @@ public class GetGames {
 	public static String[] getGameNames() {
 		String[] names = new String[getConfigGamesCount()];
 
-		if (fi.contains("arenas") && fi.getConfigurationSection("arenas").getKeys(false) != null)
+		if (fi.contains("arenas"))
 			fi.getConfigurationSection("arenas").getKeys(false).toArray(names);
+
 		return names;
 	}
 

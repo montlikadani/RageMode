@@ -44,10 +44,10 @@ public class RuntimeRPPManager {
 	public synchronized static void updatePlayerEntry(PlayerPoints pp) {
 		RetPlayerPoints oldRPP = getRPPForPlayer(pp.getPlayerUUID());
 		if (oldRPP == null) {
-			int i = RuntimeRPPList != null ? RuntimeRPPList.size() - 1 : null;
-			while (RuntimeRPPList.get(i).getPoints() < pp.getPoints()) {
+			int i = RuntimeRPPList.size();
+			while (RuntimeRPPList.get(i).getPoints() < pp.getPoints())
 				i--;
-			}
+
 			RetPlayerPoints newRPP = new RetPlayerPoints(pp.getPlayerUUID());
 			newRPP.setAxeDeaths(pp.getAxeDeaths());
 			newRPP.setAxeKills(pp.getAxeKills());

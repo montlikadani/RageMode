@@ -6,7 +6,6 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
-import hu.montlikadani.ragemode.signs.SignCreator;
 
 public class PlayerLeave extends RmCommand {
 
@@ -22,8 +21,6 @@ public class PlayerLeave extends RmCommand {
 		}
 		PlayerList.removePlayerSynced(p);
 		PlayerList.removePlayer(p);
-		if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable"))
-			SignCreator.updateAllSigns(PlayerList.getPlayersGame(p));
 		return;
 	}
 }

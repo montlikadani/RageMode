@@ -12,29 +12,32 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerAchievementAwardedEvent;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -42,17 +45,20 @@ import org.bukkit.event.player.PlayerEggThrowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
+import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameBroadcast;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
@@ -61,13 +67,13 @@ import hu.montlikadani.ragemode.gameUtils.Titles;
 import hu.montlikadani.ragemode.holo.HoloHolder;
 import hu.montlikadani.ragemode.items.CombatAxe;
 import hu.montlikadani.ragemode.items.Grenade;
+import hu.montlikadani.ragemode.items.LeaveGame;
 import hu.montlikadani.ragemode.items.RageArrow;
-import hu.montlikadani.ragemode.items.RageBow;
 import hu.montlikadani.ragemode.items.RageKnife;
+import hu.montlikadani.ragemode.libs.Sounds;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
 
-@SuppressWarnings("deprecation")
 public class EventListener implements Listener {
 
 	private RageMode plugin;
@@ -88,17 +94,17 @@ public class EventListener implements Listener {
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
 
-		if (PlayerList.isPlayerPlaying(player.getUniqueId().toString())) {
+		if (PlayerList.getStatus() == GameStatus.RUNNING && PlayerList.isPlayerPlaying(player.getUniqueId().toString())) {
 			if (PlayerList.removePlayer(player)) {
 				RageMode.logConsole(Level.INFO, "Player " + player.getName() + " left the server while playing.");
 
 				List<String> list = plugin.getConfiguration().getCfg().getStringList("game.global.run-commands-for-player-left-while-playing");
-				if (list == null || list.isEmpty()) return;
-
-				for (String cmds : list) {
-					cmds = cmds.replace("%player%", player.getName());
-					cmds = cmds.replace("%player-ip%", player.getAddress().getAddress().getHostAddress());
-					Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), RageMode.getLang().colors(cmds));
+				if (list != null && !list.isEmpty()) {
+					for (String cmds : list) {
+						cmds = cmds.replace("%player%", player.getName());
+						cmds = cmds.replace("%player-ip%", player.getAddress().getAddress().getHostAddress());
+						Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), RageMode.getLang().colors(cmds));
+					}
 				}
 			}
 		}
@@ -107,33 +113,56 @@ public class EventListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerChatFormat(AsyncPlayerChatEvent event) {
-		if (event.getPlayer() == null || !event.getPlayer().isOnline()) return;
+		if (event.isCancelled() || event.getPlayer() == null || !event.getPlayer().isOnline()) return;
 
 		Player p = event.getPlayer();
 
-		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString()) && plugin.getConfiguration().getCfg().getBoolean("game.chat-format.enable")) {
-			String game = PlayerList.getPlayersGame(p);
+		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+			if (PlayerList.getStatus() == GameStatus.WAITING) {
+				if (!plugin.getConfiguration().getCfg().getBoolean("game.global.lobby.enable-chat-in-lobby")
+						&& !p.hasPermission("ragemode.bypass.lobby.lockchat")) {
+					event.setCancelled(true);
+					p.sendMessage(RageMode.getLang().get("game.lobby.chat-is-disabled"));
+				} else event.setCancelled(false);
+			}
 
-			String[] players = PlayerList.getPlayersInGame(game);
-			String format = plugin.getConfiguration().getCfg().getString("game.chat-format.format");
-			format = format.replace("%player%", p.getName());
-			format = format.replace("%player-displayname%", p.getDisplayName());
-			format = format.replace("%game%", game);
-			format = format.replace("%online-ingame-players%", String.valueOf(players.length));
-			format = format.replace("%points%", Integer.toString(RageScores.getPlayerPoints(p.getUniqueId().toString()).getPoints()));
-			format = format.replace("%message%", event.getMessage());
+			if (PlayerList.getStatus() == GameStatus.RUNNING) {
+				if (!plugin.getConfiguration().getCfg().getBoolean("game.global.enable-chat-in-game")
+						&& !p.hasPermission("ragemode.bypass.game.lockchat")) {
+					event.setCancelled(true);
+					p.sendMessage(RageMode.getLang().get("game.chat-is-disabled"));
+					return;
+				}
 
-			event.setFormat(RageMode.getLang().colors(format));
-			/*for (String playerUUID : players) {
-				Bukkit.getPlayer(UUID.fromString(playerUUID)).sendMessage(format);
-			}*/
+				if (plugin.getConfiguration().getCfg().getBoolean("game.global.chat-format.enable")) {
+					String game = PlayerList.getPlayersGame(p);
+
+					String[] players = PlayerList.getPlayersInGame(game);
+					String format = plugin.getConfiguration().getCfg().getString("game.global.chat-format.format");
+					format = format.replace("%player%", p.getName());
+					format = format.replace("%player-displayname%", p.getDisplayName());
+					format = format.replace("%game%", game);
+					format = format.replace("%online-ingame-players%", Integer.toString(players.length));
+					format = format.replace("%message%", event.getMessage());
+					format = Utils.setPlaceholders(format, p);
+
+					event.setFormat(RageMode.getLang().colors(format));
+				}
+			}
+
+			if (PlayerList.getStatus() == GameStatus.GAMEFREEZE) {
+				if (!plugin.getConfiguration().getCfg().getBoolean("game.global.enable-chat-after-end")) {
+					event.setCancelled(true);
+					p.sendMessage(RageMode.getLang().get("game.game-freeze.chat-is-disabled"));
+				} else event.setCancelled(false);
+			}
 		}
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onProjectileHit(ProjectileHitEvent event) {
 		// RageArrow explosion event
-		if (event.getEntity() instanceof Arrow) {
+		if (PlayerList.getStatus() == GameStatus.RUNNING && event.getEntity() instanceof Arrow) {
 			Arrow arrow = (Arrow) event.getEntity();
 			if (arrow.getShooter() != null && arrow.getShooter() instanceof Player) {
 				Player shooter = (Player) arrow.getShooter();
@@ -150,7 +179,7 @@ public class EventListener implements Listener {
 
 					List<Entity> nears = arrow.getNearbyEntities(10, 10, 10);
 
-					arrow.getWorld().createExplosion(x, y, z, 2f, false, false); // original 4f
+					arrow.getWorld().createExplosion(x, y, z, 2f, false, false);
 					arrow.remove();
 
 					int i = 0;
@@ -171,6 +200,14 @@ public class EventListener implements Listener {
 								}
 							}
 							explosionVictims.put(near.getUniqueId(), shooter.getUniqueId());
+
+							// Remove arrows from player body
+							if (plugin.getConfiguration().getCfg().getBoolean("game.global.remove-arrows-from-player-body")) {
+								for (Entity e : near.getNearbyEntities(1, 1, 1)) {
+									if (e instanceof Arrow)
+										e.remove();
+								}
+							}
 						}
 						i++;
 					}
@@ -182,7 +219,7 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void onRageKnifeHit(EntityDamageByEntityEvent event) {
 		// RageKnife hit event
-		if (event.getDamager() instanceof Player && event.getEntity() instanceof Player) {
+		if (PlayerList.getStatus() == GameStatus.RUNNING && event.getDamager() instanceof Player && event.getEntity() instanceof Player) {
 			Player killer = (Player) event.getDamager();
 			Player victim = (Player) event.getEntity();
 			if (PlayerList.isPlayerPlaying(killer.getUniqueId().toString())
@@ -193,22 +230,20 @@ public class EventListener implements Listener {
 						return;
 					}
 				}
-				ItemStack hand = Bukkit.getVersion().equals("1.8") ? killer.getItemInHand() : killer.getInventory().getItemInMainHand();
+				ItemStack hand = NMS.getItemInHand(killer);
 				ItemMeta meta = hand.getItemMeta();
 				if (meta != null && meta.getDisplayName() != null) {
-					if (meta.getDisplayName().equals(RageKnife.getRageKnifeName()))
+					if (meta.getDisplayName().contains(RageKnife.getRageKnifeName()))
 						event.setDamage(25);
 				}
 			}
-			if (PlayerList.isPlayerPlaying(victim.getUniqueId().toString())) {
-				if (!PlayerList.isGameRunning(PlayerList.getPlayersGame(victim)))
-					event.setDamage(0);
-			}
+			if (!PlayerList.isGameRunning(PlayerList.getPlayersGame(victim)))
+				event.setDamage(0);
 		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onItemSpawn(PlayerDropItemEvent event) {
+	public void onItemDrop(PlayerDropItemEvent event) {
 		if (PlayerList.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
 			event.setCancelled(true);
 	}
@@ -216,7 +251,7 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void onHitPlayer(EntityDamageEvent event) {
 		// Hit player event
-		if (event.getEntity() instanceof Player) {
+		if (PlayerList.getStatus() == GameStatus.RUNNING && event.getEntity() instanceof Player) {
 			if (PlayerList.isPlayerPlaying(event.getEntity().getUniqueId().toString())) {
 				if (event.getCause().equals(DamageCause.PROJECTILE)) {
 					Player victim = (Player) event.getEntity();
@@ -228,61 +263,62 @@ public class EventListener implements Listener {
 								return;
 							}
 						}
-						ItemStack hand = Bukkit.getVersion().equals("1.8") ? victim.getItemInHand() : victim.getInventory().getItemInMainHand();
-						ItemMeta meta = hand.getItemMeta();
-						if (meta != null && meta.getDisplayName() != null) {
-							if (hand.getItemMeta().getDisplayName().equals(Grenade.getGrenadeName()))
-								event.setDamage(5d);
+						if (event.getEntity() instanceof Projectile && event.getEntity() instanceof org.bukkit.entity.Egg
+								&& event.getEntity().getCustomName().contains(Grenade.getGrenadeName()))
+							event.setDamage(0.22d);
 
-							if (hand.getItemMeta().getDisplayName().equals(RageArrow.getRageArrowName()))
-								if (event.getDamage() == 0.0d)
-									event.setDamage(28.34d);
-								else
-									event.setDamage(27.114);
+						if (event.getEntity() instanceof Projectile && event.getEntity() instanceof Arrow
+								&& event.getEntity().getCustomName().contains(RageArrow.getRageArrowName())) {
+							if (event.getDamage() == 0.0d)
+								event.setDamage(2.12d);
+							else
+								event.setDamage(2.35d);
 						}
 					}
 				}
-				if (event.getCause().equals(DamageCause.FALL)) {
+				if (event.getCause().equals(DamageCause.FALL) && !plugin.getConfiguration().getCfg().getBoolean("game.global.damage-player-fall"))
+					event.setDamage(0);
+
+				if (event.getCause().equals(DamageCause.VOID)) {
 					Player p = (Player) event.getEntity();
-					if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
-						p.getInventory().clear();
-						event.setDamage(100d);
 
-						GameBroadcast.broadcastToGame(PlayerList.getPlayersGame(p), RageMode.getLang().get("game.void-fall", "%player%", p.getName()));
-
-						playerVars(p);
-					}
+					GameBroadcast.broadcastToGame(PlayerList.getPlayersGame(p), RageMode.getLang().get("game.void-fall", "%player%", p.getName()));
+					playerVars(p);
 				}
 			}
 		}
 	}
-
-	//private ArrayList<String> listPlayers = new ArrayList<>();
 
 	@EventHandler
 	public void onEntityShootBow(EntityShootBowEvent event) {
-		if (event.isCancelled()) return;
-
-		if (event.getEntity() != null && event.getEntity() instanceof Player) {
-			final Player p = (Player) event.getEntity();
+		if (!event.isCancelled() && PlayerList.getStatus() == GameStatus.RUNNING && event.getEntity() != null && event.getEntity() instanceof Player
+				&& plugin.getConfiguration().getCfg().getBoolean("game.global.arrow-trail.enable")) {
 			final Arrow arrow = (Arrow) event.getProjectile();
 
-			if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+			if (PlayerList.isPlayerPlaying(((Player) event.getEntity()).getUniqueId().toString())) {
 				new BukkitRunnable() {
 					@Override
 					public void run() {
-						if (!arrow.isOnGround() && !arrow.isDead()) {
-							arrow.getWorld().spawnParticle(Particle.SMOKE_NORMAL, arrow.getLocation(), 0, 0, 10, 1);
-						} else {
+						try {
+							if (!arrow.isOnGround() && !arrow.isDead()) {
+								for (int i = 0; i < 3; i++) {
+									arrow.getWorld().spawnParticle(Particle.valueOf(plugin.getConfiguration().getCfg().getString("game.global.arrow-trail.effect-type")),
+											arrow.getLocation(), 4 * i / 2, 0.0, 0.0, 0.0);
+								}
+							} else
+								cancel();
+						} catch (IllegalArgumentException e) {
+							RageMode.logConsole(Level.WARNING, "[RageMode] Unknown particle effect type: "
+						+ plugin.getConfiguration().getCfg().getString("game.global.arrow-trail.effect-type"));
 							cancel();
 						}
 					}
-				}.runTaskTimer(plugin, 0, 1);
+				}.runTaskTimer(plugin, 0, 2);
 			}
 		}
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		// Player autorespawn
 		Player deceased;
@@ -292,7 +328,7 @@ public class EventListener implements Listener {
 			deceased = null;
 			return;
 		}
-		if (deceased != null && PlayerList.isPlayerPlaying(deceased.getUniqueId().toString())) {
+		if (deceased != null && PlayerList.getStatus() == GameStatus.RUNNING && PlayerList.isPlayerPlaying(deceased.getUniqueId().toString())) {
 			if ((deceased.getKiller() != null && PlayerList.isPlayerPlaying(deceased.getKiller().getUniqueId().toString()))
 					|| deceased.getKiller() == null) {
 				String game = PlayerList.getPlayersGame(deceased);
@@ -358,8 +394,9 @@ public class EventListener implements Listener {
 						RageScores.addPointsToPlayer(Bukkit.getPlayer(explosionVictims.get(deceased.getUniqueId())),
 								deceased, "explosion");
 					} else if (grenadeExplosionVictims.containsKey(deceased.getUniqueId())) {
-						GameBroadcast.broadcastToGame(game, RageMode.getLang().get("game.broadcast.explosion-kill", "%victim%", deceased.getName(),
-								"%killer%", Bukkit.getPlayer(grenadeExplosionVictims.get(deceased.getUniqueId())).getName()));
+						if (doDeathBroadcast)
+							GameBroadcast.broadcastToGame(game, RageMode.getLang().get("game.broadcast.explosion-kill", "%victim%", deceased.getName(),
+									"%killer%", Bukkit.getPlayer(grenadeExplosionVictims.get(deceased.getUniqueId())).getName()));
 
 					RageScores.addPointsToPlayer(Bukkit.getPlayer(grenadeExplosionVictims.get(deceased.getUniqueId())),
 							deceased, "explosion");
@@ -373,15 +410,11 @@ public class EventListener implements Listener {
 					if (doDeathBroadcast)
 						GameBroadcast.broadcastToGame(game, RageMode.getLang().get("game.unknown-weapon", "%victim%", deceased.getName()));
 				}
+				event.setDroppedExp(0);
 				event.setDeathMessage("");
+				event.setKeepInventory(true);
 			}
 
-			if (plugin.getConfiguration().getCfg().getBoolean("game.keep-inventory-on-death"))
-				event.setKeepInventory(true);
-			else {
-				event.setKeepInventory(false);
-				deceased.getInventory().clear();
-			}
 			playerVars(deceased);
 		}
 	}
@@ -389,22 +422,22 @@ public class EventListener implements Listener {
 	private void playerVars(Player deceased) {
 		GameSpawnGetter gameSpawnGetter = new GameSpawnGetter(PlayerList.getPlayersGame(deceased));
 		List<Location> spawns = gameSpawnGetter.getSpawnLocations();
-		// Location[] aSpawns = (Location[]) spawns.toArray(); ----> performance optimization
 
 		Random rand = new Random();
-		int x = rand.nextInt(spawns.size() - 1); // ----> performance optimization
+		int x = rand.nextInt(spawns.size() - 1);
 
 		deceased.setHealth(20);
 
-		deceased.teleport(spawns.get(x)); // ----> performance optimization
+		deceased.teleport(spawns.get(x));
 
 		// give him a new set of items
-		// deceased.getInventory().clear();
+		//deceased.getInventory().clear();
+
 		FileConfiguration conf = plugin.getConfiguration().getCfg();
-		deceased.getInventory().setItem(conf.getInt("items.rageBow.slot"), RageBow.getRageBow());
+		deceased.getInventory().setItem(conf.getInt("items.rageBow.slot"), hu.montlikadani.ragemode.items.RageBow.getRageBow());
 		deceased.getInventory().setItem(conf.getInt("items.rageKnife.slot"), RageKnife.getRageKnife());
 		deceased.getInventory().setItem(conf.getInt("items.combatAxe.slot"), CombatAxe.getCombatAxe());
-		deceased.getInventory().setItem(conf.getInt("items.rageArrow.slot"), RageArrow.getRageArrow());
+		//deceased.getInventory().setItem(conf.getInt("items.rageArrow.slot"), RageArrow.getRageArrow());
 		deceased.getInventory().setItem(conf.getInt("items.grenade.slot"), Grenade.getGrenade());
 	}
 
@@ -418,16 +451,40 @@ public class EventListener implements Listener {
 	}
 
 	@EventHandler
+	public void onBlockPlace(BlockPlaceEvent ev) {
+		Player p = ev.getPlayer();
+		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+			ItemStack hand = NMS.getItemInHand(p);
+			ItemMeta meta = hand.getItemMeta();
+			if (meta != null && meta.getDisplayName() != null) {
+				if (meta.getDisplayName().equals(LeaveGame.getLeaveGameItemName())) {
+					ev.setCancelled(true);
+				}
+			}
+		}
+	}
+
+	@EventHandler(priority = EventPriority.NORMAL)
 	public void onBlockBreak(BlockBreakEvent event) {
 		if (PlayerList.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
 			event.setCancelled(true);
 	}
 
-	@EventHandler(priority = EventPriority.MONITOR)
+	@EventHandler
 	public void onSignBreak(BlockBreakEvent event) {
-		if (plugin.getConfiguration().getCfg().getBoolean("signs.enable") && event.getBlock().getState() instanceof Sign
-				&& !event.isCancelled())
-			SignCreator.removeSign((Sign) event.getBlock().getState());
+		if (event.isCancelled() || !plugin.getConfiguration().getCfg().getBoolean("signs.enable")) return;
+
+		org.bukkit.block.BlockState blockState = event.getBlock().getState();
+		if (blockState instanceof Sign) {
+			if (((Sign) blockState).getLine(0).contains(RageMode.getLang().colors(plugin.getConfiguration()
+					.getCfg().getStringList("signs.list").get(0)))) {
+				if (!event.getPlayer().hasPermission("ragemode.admin.signs")) {
+					event.getPlayer().sendMessage(RageMode.getLang().get("no-permission-to-interact-sign"));
+					event.setCancelled(true);
+					return;
+				} else SignCreator.removeSign((Sign) blockState);
+			}
+		}
 	}
 
 	@EventHandler
@@ -436,17 +493,18 @@ public class EventListener implements Listener {
 		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString()) && !p.hasPermission("ragemode.admin.cmd")) {
 			if (event.getMessage() != null) {
 				List<String> cmds = plugin.getConfiguration().getCfg().getStringList("game.global.commands");
-				if (cmds == null || cmds.isEmpty()) return;
-
 				String arg = event.getMessage().trim().toLowerCase();
-				if (cmds.contains(arg)) {
-					if (waitingGames.containsKey(PlayerList.getPlayersGame(p))) {
-						if (waitingGames.get(PlayerList.getPlayersGame(p)))
-							event.setCancelled(true);
+
+				if (cmds != null && !cmds.isEmpty()) {
+					if (cmds.contains(arg)) {
+						if (waitingGames.containsKey(PlayerList.getPlayersGame(p))) {
+							if (waitingGames.get(PlayerList.getPlayersGame(p)))
+								event.setCancelled(true);
+						}
+					} else {
+						p.sendMessage(RageMode.getLang().get("game.this-command-is-disabled-in-game"));
+						event.setCancelled(true);
 					}
-				} else {
-					p.sendMessage(RageMode.getLang().get("game.this-command-is-disabled-in-game"));
-					event.setCancelled(true);
 				}
 			}
 		}
@@ -457,22 +515,28 @@ public class EventListener implements Listener {
 		if (event.getPlayer() == null || !event.getPlayer().isOnline()) return;
 
 		Player p = event.getPlayer();
-		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (PlayerList.getStatus() == GameStatus.RUNNING && PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
 			event.setHatching(false); // no baby chickens
 
-			ItemStack hand = Bukkit.getVersion().equals("1.8") ? p.getItemInHand() : p.getInventory().getItemInMainHand();
+			ItemStack hand = NMS.getItemInHand(p);
 			hand.setAmount(hand.getAmount() - 1);
 
 			final Item grenade = p.getWorld().dropItem(event.getEgg().getLocation(), new ItemStack(Material.EGG));
+
+			// Cancel egg pick up
+			grenade.setPickupDelay(41);
+
 			grenade.setVelocity(p.getEyeLocation().getDirection());
 			// move egg from land location to simulate bounce
 			grenade.getLocation().add(event.getEgg().getVelocity());
-			List<Entity> nears = grenade.getNearbyEntities(10, 10, 10);
-			if (!Bukkit.getVersion().equals("1.8"))
-				/**grenade.getWorld().playSound(grenade.getLocation(), org.bukkit.Sound.EXPLODE, 1, 1);
-			else*/
-				grenade.getWorld().playSound(grenade.getLocation(), Sound.ENTITY_CREEPER_PRIMED, 1, 1);
-			grenade.setPickupDelay(41);
+
+			List<Entity> nears = grenade.getNearbyEntities(13, 13, 13);
+
+			if (RageMode.getVersion().contains("1.8"))
+				Sounds.CREEPER_HISS.playSound(grenade.getLocation(), 1, 1);
+			else
+				Sounds.ENTITY_CREEPER_PRIMED.playSound(grenade.getLocation(), 1, 1);
+
 			new BukkitRunnable() {
 				@Override
 				public void run() {
@@ -499,55 +563,61 @@ public class EventListener implements Listener {
 						}
 						i++;
 					}
-
-					if (getTaskId() == 0)
-						cancel();
 				}
 			}.runTaskLater(plugin, 40);
 		}
 	}
 
 	@EventHandler
-	public void onCombatAxeThrow(PlayerInteractEvent event) {
-		if (PlayerList.isPlayerPlaying(event.getPlayer().getUniqueId().toString())) {
-			Player thrower = event.getPlayer();
-			if (waitingGames.containsKey(PlayerList.getPlayersGame(thrower))) {
-				if (waitingGames.get(PlayerList.getPlayersGame(thrower)))
-					return;
-			}
-			ItemStack hand = Bukkit.getVersion().equals("1.8") ? thrower.getItemInHand() : thrower.getInventory().getItemInMainHand();
+	public void onMaterialEvents(PlayerInteractEvent event) {
+		Player p = event.getPlayer();
 
+		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+			if (PlayerList.getStatus() == GameStatus.RUNNING) {
+				Player thrower = event.getPlayer();
+				if (waitingGames.containsKey(PlayerList.getPlayersGame(thrower))) {
+					if (waitingGames.get(PlayerList.getPlayersGame(thrower)))
+						return;
+				}
+				ItemStack hand = NMS.getItemInHand(thrower);
+
+				ItemMeta meta = hand.getItemMeta();
+				if (meta != null && meta.getDisplayName() != null) {
+					if (meta.getDisplayName().equals(CombatAxe.getCombatAxeName())) {
+						thrower.launchProjectile(org.bukkit.entity.Snowball.class);
+						NMS.setItemInHand(thrower, null);
+					}
+				}
+			}
+
+			ItemStack hand = NMS.getItemInHand(p);
 			ItemMeta meta = hand.getItemMeta();
 			if (meta != null && meta.getDisplayName() != null) {
-				if (meta.getDisplayName().equals(CombatAxe.getCombatAxeName())) {
-					thrower.launchProjectile(org.bukkit.entity.Snowball.class);
-					if (Bukkit.getVersion().equals("1.8"))
-						thrower.setItemInHand(null);
-					else
-						thrower.getInventory().setItemInMainHand(null);
-				}
+				if (meta.getDisplayName().equals(LeaveGame.getLeaveGameItemName()))
+					p.performCommand("rm leave");
 			}
 		}
 
 		if (plugin.getConfiguration().getCfg().getBoolean("signs.enable") && event.getClickedBlock() != null
-				&& event.getClickedBlock().getState() != null) {
+				&& event.getClickedBlock().getState() != null && event.getAction() != Action.LEFT_CLICK_BLOCK) {
 			if (event.getClickedBlock().getState() instanceof Sign) {
 				if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					Sign sign = (Sign) event.getClickedBlock().getState();
-					if (SignCreator.isJoinSign(sign)) {
+					if (sign.getLine(0).contains(RageMode.getLang().colors(plugin.getConfiguration()
+							.getCfg().getStringList("signs.list").get(0))) && SignCreator.isJoinSign()) {
 						Player player = event.getPlayer();
-						if (player.hasPermission("ragemode.join")) {
-							String arena = SignCreator.getGameFromString(sign);
+						if (player.hasPermission("ragemode.join.sign")) {
+							String arena = SignCreator.getGameFromString();
 							MapChecker mapChecker = new MapChecker(arena);
 							if (mapChecker.isValid()) {
 								String path = "arenas." + arena + ".lobby";
 								Configuration conf = plugin.getConfiguration();
 								String world = conf.getArenasCfg().getString(path + ".world");
-								double lobbyX = conf.getArenasCfg().getDouble(path + ".lobby.x");
-								double lobbyY = conf.getArenasCfg().getDouble(path + ".lobby.y");
-								double lobbyZ = conf.getArenasCfg().getDouble(path + ".lobby.z");
-								double lobbyYaw = conf.getArenasCfg().getDouble(path + ".lobby.yaw");
-								double lobbyPitch = conf.getArenasCfg().getDouble(path + ".lobby.pitch");
+								double lobbyX = conf.getArenasCfg().getDouble(path + ".x");
+								double lobbyY = conf.getArenasCfg().getDouble(path + ".y");
+								double lobbyZ = conf.getArenasCfg().getDouble(path + ".z");
+								double lobbyYaw = conf.getArenasCfg().getDouble(path + ".yaw");
+								double lobbyPitch = conf.getArenasCfg().getDouble(path + ".pitch");
 
 								Location lobbyLocation = new Location(Bukkit.getWorld(world), lobbyX, lobbyY, lobbyZ);
 								lobbyLocation.setYaw((float) lobbyYaw);
@@ -564,16 +634,31 @@ public class EventListener implements Listener {
 									PlayerList.oldGameMode.addToBoth(player, player.getGameMode());
 									PlayerList.oldDisplayName.addToBoth(player, player.getDisplayName());
 									PlayerList.oldListName.addToBoth(player, player.getPlayerListName());
+									PlayerList.oldFire.addToBoth(p, p.getFireTicks());
 
 									inv.clear();
 									player.teleport(lobbyLocation);
 									player.setGameMode(GameMode.SURVIVAL);
 									player.setHealth(20);
 									player.setFoodLevel(20);
+									player.setFireTicks(0);
+									for (PotionEffect e : player.getActivePotionEffects()) {
+										player.removePotionEffect(e.getType());
+									}
 									inv.setHelmet(null);
 									inv.setChestplate(null);
 									inv.setLeggings(null);
 									inv.setBoots(null);
+									player.setDisplayName(player.getName());
+									player.setPlayerListName(player.getName());
+
+									if (conf.getCfg().contains("items.leavegameitem"))
+										inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getLeaveGameItem());
+
+									if (conf.getCfg().getBoolean("game.global.tablist.player-format.enable"))
+										PlayerList.setPlayerGroup(p, conf.getCfg().getString("game.global.tablist.player-format.prefix"),
+												conf.getCfg().getString("game.global.tablist.player-format.suffix"), true);
+
 									GameBroadcast.broadcastToGame(arena, RageMode.getLang().get("game.player-joined", "%player%", player.getName()));
 									String title = conf.getCfg().getString("titles.join-game.title");
 									String subtitle = conf.getCfg().getString("titles.join-game.subtitle");
@@ -597,23 +682,33 @@ public class EventListener implements Listener {
 	}
 
 	@EventHandler
-	public void onAchivement(PlayerAchievementAwardedEvent event) {
-		if (PlayerList.isPlayerPlaying(event.getPlayer().getUniqueId().toString()) &&
-				plugin.getConfiguration().getCfg().getBoolean("game.global.disable-player-achievement-award"))
-			event.setCancelled(true);
+	public void onInventoryOpen(InventoryOpenEvent e) {
+		if (PlayerList.isPlayerPlaying(e.getPlayer().getUniqueId().toString())) {
+			InventoryType type = e.getInventory().getType();
+
+			if (type == InventoryType.ENCHANTING
+					|| type == InventoryType.CRAFTING
+					|| type == InventoryType.ANVIL
+					|| type == InventoryType.BREWING
+					|| type == InventoryType.FURNACE
+					|| type == InventoryType.WORKBENCH
+					|| type == InventoryType.CHEST
+					|| type == InventoryType.DROPPER
+					|| type == InventoryType.ENDER_CHEST
+					|| type == InventoryType.HOPPER)
+				e.setCancelled(true);
+		}
 	}
 
 	@EventHandler
-	public void onInventoryInteractEvent(InventoryClickEvent event) {
+	public void onInventoryInteract(InventoryClickEvent event) {
 		if (PlayerList.isPlayerPlaying(event.getWhoClicked().getUniqueId().toString()))
 			event.setCancelled(true);
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onFly(PlayerToggleFlightEvent event) {
-		if (event.isCancelled()) return;
-
-		if (PlayerList.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
+		if (!event.isCancelled() && PlayerList.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
 			event.setCancelled(true);
 	}
 
@@ -623,29 +718,40 @@ public class EventListener implements Listener {
 			event.setCancelled(true);
 	}
 
+	// For 1.8
+	@SuppressWarnings("deprecation")
 	@EventHandler
-	public void onItemPickedUpEvent(PlayerPickupItemEvent event) {
+	public void onItemPickedUpEvent(org.bukkit.event.player.PlayerPickupItemEvent event) {
 		if (PlayerList.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
 			event.setCancelled(true);
 	}
 
+	// For 1.12
+	@EventHandler
+	public void onItemPickUpEvent(EntityPickupItemEvent e) {
+		if (e.isCancelled() || !(e.getEntity() instanceof Player))
+			return;
+
+		if (PlayerList.isPlayerPlaying(((Player) e.getEntity()).getUniqueId().toString()))
+			e.setCancelled(true);
+	}
+
 	@EventHandler
 	public void onSignChange(SignChangeEvent event) {
-		if (event.getBlock() == null) return;
-
-		Sign sign = (Sign) event.getBlock().getState();
+		if (event.isCancelled() || event.getPlayer() == null || event.getBlock() == null) return;
 
 		if (plugin.getConfiguration().getCfg().getBoolean("signs.enable")
-				&& event.getLine(0).equalsIgnoreCase("[rm]") || event.getLine(0).equalsIgnoreCase("[ragemode]")) {
+				&& event.getLine(0).contains("[rm]") || event.getLine(0).contains("[ragemode]")) {
 			if (!event.getPlayer().hasPermission("ragemode.admin.signs")) {
 				event.setCancelled(true);
+				event.getPlayer().sendMessage(RageMode.getLang().get("no-permission-to-interact-sign"));
 				return;
 			}
 
 			for (String game : GetGames.getGameNames()) {
-				if (event.getLine(1).equalsIgnoreCase(game)) {
-					SignCreator.createNewSign(sign, game);
-					SignCreator.updateSign(event);
+				if (event.getLine(1).contains(game)) {
+					SignCreator.createNewSign((Sign) event.getBlock().getState(), game);
+					SignCreator.updateSign((Sign) event.getBlock().getState());
 				}
 			}
 		}
@@ -653,22 +759,31 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent event) {
-		if (PlayerList.isPlayerPlaying(event.getPlayer().getUniqueId().toString())) {
+		if (PlayerList.getStatus() == GameStatus.RUNNING && PlayerList.isPlayerPlaying(event.getPlayer().getUniqueId().toString())) {
 			Player p = event.getPlayer();
-			if (waitingGames != null) {
-				if (waitingGames.containsKey(PlayerList.getPlayersGame(p))) {
-					if (waitingGames.get(PlayerList.getPlayersGame(p))) {
-						Location from = event.getFrom();
-						Location to = event.getTo();
-						double x = Math.floor(from.getX());
-						double z = Math.floor(from.getZ());
-						if (Math.floor(to.getX()) != x || Math.floor(to.getZ()) != z) {
-							x += .5;
-							z += .5;
-							p.teleport(new Location(from.getWorld(), x, from.getY(), z, from.getYaw(), from.getPitch()));
-						}
+			if (waitingGames != null && waitingGames.containsKey(PlayerList.getPlayersGame(p))) {
+				if (waitingGames.get(PlayerList.getPlayersGame(p))) {
+					Location from = event.getFrom();
+					Location to = event.getTo();
+					double x = Math.floor(from.getX());
+					double z = Math.floor(from.getZ());
+					if (Math.floor(to.getX()) != x || Math.floor(to.getZ()) != z) {
+						x += .5;
+						z += .5;
+						p.teleport(new Location(from.getWorld(), x, from.getY(), z, from.getYaw(), from.getPitch()));
 					}
 				}
+			}
+
+			if (p.getLocation().getY() < 0) {
+				GameSpawnGetter gameSpawnGetter = new GameSpawnGetter(PlayerList.getPlayersGame(p));
+				List<Location> spawns = gameSpawnGetter.getSpawnLocations();
+
+				Random rand = new Random();
+				int x = rand.nextInt(spawns.size() - 1);
+
+				p.teleport(spawns.get(x));
+				GameBroadcast.broadcastToGame(PlayerList.getPlayersGame(p), RageMode.getLang().get("game.void-fall", "%player%", p.getName()));
 			}
 		}
 	}

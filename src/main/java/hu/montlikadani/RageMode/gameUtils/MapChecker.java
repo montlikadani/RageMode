@@ -64,7 +64,7 @@ public class MapChecker {
 		FileConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
 
 		if (!aFile.isSet("arenas." + gameName + ".lobby")) {
-			message = RageMode.getLang().get("game.lobby-not-set", "%game%", gameName);
+			message = RageMode.getLang().get("setup.lobby.not-set", "%game%", gameName);
 			isValid = false;
 		} else {
 			String thisPath = "arenas." + gameName + ".lobby";
@@ -78,16 +78,16 @@ public class MapChecker {
 							&& isDouble(aFile.getString(thisPath + ".pitch")))
 						isValid = true;
 					else {
-						message = RageMode.getLang().get("game.lobby-coords-not-set");
+						message = RageMode.getLang().get("setup.lobby.coords-not-set");
 						isValid = false;
 						return;
 					}
 				} else {
-					message = RageMode.getLang().get("game.worldname-not-set");
+					message = RageMode.getLang().get("setup.lobby.worldname-not-set");
 					isValid = false;
 				}
 			} else {
-				message = RageMode.getLang().get("game.lobby-not-set-properly");
+				message = RageMode.getLang().get("setup.lobby.not-set-properly");
 				isValid = false;
 			}
 		}
@@ -103,7 +103,8 @@ public class MapChecker {
 					World world = null;
 					try {
 						world = org.bukkit.Bukkit.getWorld(aFile.getString(path + ".spawns." + s + ".world"));
-					} catch (Exception e) {
+					} catch (Throwable e) {
+						isValid = false;
 						world = null;
 					}
 					if (world != null
@@ -132,7 +133,7 @@ public class MapChecker {
 	private boolean isDouble(String str) {
 		try {
 			Double.parseDouble(str);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			return false;
 		}
 		return true;

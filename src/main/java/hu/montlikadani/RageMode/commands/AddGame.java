@@ -28,7 +28,7 @@ public class AddGame extends RmCommand {
 		int x;
 		try {
 			x = Integer.parseInt(args[2]);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			p.sendMessage(RageMode.getLang().get("not-a-number", "%wrong-number%", args[2]));
 			return;
 		}

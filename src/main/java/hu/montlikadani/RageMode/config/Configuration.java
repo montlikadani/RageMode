@@ -40,7 +40,7 @@ public class Configuration {
 				arenas = YamlConfiguration.loadConfiguration(arenas_file);
 				RageMode.logConsole(Level.INFO, "[RageMode] The 'arenas.yml' file successfully created!");
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 			plugin.throwMsg();
 		}

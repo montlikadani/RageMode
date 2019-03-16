@@ -41,11 +41,10 @@ public class KickPlayer extends RmCommand {
 			if (PlayerList.isPlayerPlaying(target.getName())) {
 				PlayerList.removePlayerSynced(target);
 				PlayerList.removePlayer(target);
-				if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable"))
-					SignCreator.updateAllSigns(game);
+				SignCreator.updateAllSigns(game);
 				p.sendMessage(RageMode.getLang().get("commands.kick.player-kicked", "%player%", target.getName(), "%game%", game));
 			} else
-				p.sendMessage(RageMode.getLang().get("commands.kick.player-not-play-currently"));
+				p.sendMessage(RageMode.getLang().get("commands.kick.player-currently-not-playing"));
 		}
 		return;
 	}

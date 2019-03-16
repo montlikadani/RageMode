@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>hu.montlikadani</groupId>
 	<artifactId>ragemode</artifactId>
-	<version>1.0.0.001</version>
+	<version>1.0.0.002</version>
 	<packaging>jar</packaging>
 	<name>ragemode</name>
 	<url>http://maven.apache.org</url>
@@ -25,11 +25,10 @@
 	<dependencies>
 		<!-- Spigot APIs -->
 		<dependency>
-			<groupId>1.13_R2</groupId>
-			<artifactId>spigot_1_13_R2</artifactId>
-			<version>1.13.2</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/libs/spigot-latest.jar</systemPath>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>spigot-api</artifactId>
+			<version>1.13.2-R0.1-SNAPSHOT</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>1.12_R1</groupId>
@@ -60,8 +59,8 @@
 			<systemPath>${project.basedir}/libs/spigot-1.9.4-R0.1-SNAPSHOT.jar</systemPath>
 		</dependency>
 		<dependency>
-			<groupId>1.8_R4</groupId>
-			<artifactId>spigot_1_8_R4</artifactId>
+			<groupId>1.8_R3</groupId>
+			<artifactId>spigot_1_8_R3</artifactId>
 			<version>1.8.8</version>
 			<scope>system</scope>
 			<systemPath>${project.basedir}/libs/spigot-1.8.8-R0.1-SNAPSHOT.jar</systemPath>
@@ -74,7 +73,7 @@
 		</dependency>
 		<dependency>
 			<groupId>me.clip</groupId>
-			<artifactId>PlaceholderAPI</artifactId>
+			<artifactId>placeholderapi</artifactId>
 			<version>2.9.2</version>
 			<scope>provided</scope>
 		</dependency>

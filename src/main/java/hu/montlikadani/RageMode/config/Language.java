@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -32,12 +31,13 @@ public class Language {
 
 			File langFile = null;
 			YamlConfiguration lf = new YamlConfiguration();
-			if (lang == null || lang.equals("")) {
+			if (lang == null || lang.equals("") || lang.equals("en")) {
 				langFile = new File(localeFolder, "locale_en.yml");
 				if (!langFile.exists())
 					plugin.saveResource("locale/locale_en.yml", false);
 				else
 					lf = YamlConfiguration.loadConfiguration(langFile);
+				loadMessages(langFile, new YamlConfig(lf));
 			} else {
 				langFile = new File(localeFolder, "locale_" + lang + ".yml");
 				if (!langFile.exists())
@@ -45,20 +45,20 @@ public class Language {
 				else
 					lf = YamlConfiguration.loadConfiguration(langFile);
 			}
-			loadMessages(langFile, lf);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 			plugin.throwMsg();
 		}
 	}
 
-	private void loadMessages(File f, YamlConfiguration l) {
-		l.options().copyDefaults(true);
+	private void loadMessages(File f, YamlConfig l) {
+		l.getYC().options().copyDefaults(true);
 
 		l.get("in-game-only", "&cThis command can only be in-game.");
 		l.get("not-a-player", "&cThis player not a player.");
 		l.get("wrong-command", "&cThis is not the command you are looking for!");
 		l.get("no-permission", "&cYou don't have permission for that!");
+		l.get("no-permission-to-interact-sign", "&cYou don't have permission to interact signs!");
 		l.get("missing-arguments", "&cMissing arguments! Usage:&e %usage%");
 		l.get("missing-dependencies", "&e%depend%&c must be installed to use this!");
 		l.get("not-a-number", "&e%number%&c is not a number.");
@@ -66,13 +66,14 @@ public class Language {
 		l.get("player-non-existent", "&cThat player doesn't even exist.");
 		l.get("not-played-yet", "&cThat player hasn't played on this server yet.");
 
-		l.get("commands.listgames.listing-games", "&6Listing all available ragemode games...");
+		l.get("commands.listgames.listing-games", "&6Listing all available ragemode games... There are&a %games%&6 available.");
 		l.get("commands.listgames.no-games-available", "&cThere are currently no RageMode maps on this server.");
 		l.get("commands.listgames.game-running", "%number%.) %game%&6&o running");
 		l.get("commands.listgames.game-stopped", "%number%.) %game%&7 idle");
 		l.get("commands.reload.success", "&aRageMode was reloaded successfully!");
 		l.get("commands.forcestart.game-start", "&aStarting the&e %game%&a game...");
 		l.get("commands.forcestart.not-enough-players", "&cNot enough player to run this game!");
+		l.get("commands.forcestart.game-not-exist", "&cThis game not exists. Please add correctly name.");
 		l.get("commands.holostats.no-holo-found", "&cThere is no hologram saved.");
 		l.get("commands.stats.player-not-null", "&cThe player couldn't be null!");
 		l.get("commands.stats.player-not-found", "&cThis player not found.");
@@ -81,15 +82,21 @@ public class Language {
 		l.get("commands.stats.player-currently-in-game", "&cThis player is currently playing! Please wait while the game end.");
 		l.get("commands.kick.game-not-null", "&cThe game name can not be null!");
 		l.get("commands.kick.player-not-null", "&cThe player name can not be null!");
-		l.get("commands.player-kicked", "&2The player&e %player%&2 successfully kicked from&e %game%&2 game!");
-		l.get("commands.player-not-play-currently", "&cThis player currently not playing.");
+		l.get("commands.kick.player-kicked", "&2The player&e %player%&2 successfully kicked from&e %game%&2 game!");
+		l.get("commands.kick.player-currently-not-playing", "&cThis player currently not playing.");
+		l.get("commands.signupdate.usage", "&cUsage:&7 '/rm signupdate <gameName>'&c.");
+		l.get("commands.signupdate.game-not-exist", "&cThis game not exists. Please add correctly name.");
 
 		String[] holoList = new String[] { "&6Rank:&a %rank%", "&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
 				"&5KD:&a %kd%", "&4Kills:&a %kills%", "&7Deaths:&a %deaths%" };
 		l.get("hologram-list", Arrays.asList(holoList));
 
 		l.get("setup.not-set-yet", "&cThis game was not set yet! Set it with&e %usage%");
-		l.get("setup.lobby-set-success", "&2The lobby for the game&3 %game%&2 was set successfully!");
+		l.get("setup.lobby.set-success", "&2The lobby for the game&3 %game%&2 was set successfully!");
+		l.get("setup.lobby.not-set", "&cThe lobby was not set yet for&3 %game%&c. Set it with&e /rm setlobby <gameName>&c command.");
+		l.get("setup.lobby.coords-not-set", "&cThe lobby coordinates were not set properly. Ask an Admin to check the config.yml.");
+		l.get("setup.lobby.not-set-properly", "&4The lobby was not set properly. Ask an Admin to check the config.yml.");
+		l.get("setup.lobby.worldname-not-set", "&cThe world key can't be empty! Ask an Admin to check the config.yml.");
 		l.get("setup.success-added", "&2The game &3%game%&2 was added successfully!");
 		l.get("setup.already-exists", "&cThis &e%game%&c game already exists.");
 		l.get("setup.at-least-two", "&cThe maxplayers value must be at least two.");
@@ -104,9 +111,8 @@ public class Language {
 				"&cDeaths:&2 %deaths%", "&cKd:&2 %kd%", "&cGames:&2 %games%", "&cWins:&2 %games%", "&cPoints:&2 %points%", "&cRank:&2 %rank%" };
 		l.get("statistic-list", Arrays.asList(statList));
 
-		l.get("game.lobby-not-set", "&cThe lobby was not set yet for&3 %game%&c. Set it with&e /rm setlobby <gameName>&c command.");
-		l.get("game.lobby-coords-not-set", "&cThe lobby coordinates were not set properly. Ask an Admin to check the config.yml.");
-		l.get("game.worldname-not-set", "&cThe world key can't be empty! Ask an Admin to check the config.yml.");
+		l.get("game.lobby.start-message", "&9This round will start in&e %time%&9 seconds.");
+		l.get("game.lobby.chat-is-disabled", "&cThe chat currently is disabled in lobby!");
 		l.get("game.spawns-not-set-properly", "&cOne or more spawns are not set properly!");
 		l.get("game.no-spawns-configured", "&cIn&e %game%&c are no spawns configured!");
 		l.get("game.too-few-spawns", "&4The number of spawns must be greater than or equal the maxplayers value!");
@@ -121,11 +127,11 @@ public class Language {
 		l.get("game.unknown-weapon", "&a%victim%&3 was killed by something unexpected.");
 		l.get("game.void-fall", "&c%player%&2 has void fall from the game.");
 		l.get("game.not-set-up", "&4The game is not set up correctly. Please contact an Admin.");
-		l.get("game.lobby-not-set-properly", "&4The lobby was not set properly. Ask an Admin to check the config.yml.");
-		l.get("game.lobby-message", "&9This round will start in&e %time%&9 seconds.");
 		l.get("game.stopped", "&3%game%&2 has been stopped.");
 		l.get("game.running", "&4This game is running at the moment. Please wait until it is over.");
 		l.get("game.not-running", "&cThis game isn't running.");
+		l.get("game.chat-is-disabled", "&cThe chat currently is disabled!");
+		l.get("game.game-freeze.chat-is-disabled", "&cThe chat currently is disabled!");
 		l.get("game.name-or-maxplayers-not-set", "&4The worldname or the maxplayers are not set. Please contact an Admin for further information.");
 		l.get("game.maxplayers-not-set", "&cThe maxplayers value for&e %game%&c is not set properly.");
 		l.get("game.worldname-not-set", "&4The world key can't be empty! Ask an Admin to check the config.yml.");
@@ -137,7 +143,7 @@ public class Language {
 		l.get("game.player-kicked-for-vip", "&cYou were kicked out of the Game to make room for a VIP players.");
 		l.get("game.player-already-in-game", "&cYou are already in a game. You can leave it by typing&e %usage%");
 		l.get("game.player-not-ingame", "&cThe fact that you are not in a game caused a Problem while trying to remove you from that game.");
-		l.get("game.player-left", "&cYou left your current Game.");
+		l.get("game.player-left", "&cYou left from the current game.");
 		l.get("game.no-won", "&cNo one won this game.");
 		l.get("game.message.arrow-kill", "&3You killed&6&l %victim%&3 with a direct arrow hit.&6&l %points%");
 		l.get("game.message.axe-kill", "&3You killed&6&l %victim%&3 with your CombatAxe.&6&l %points%");
@@ -154,8 +160,8 @@ public class Language {
 		l.get("game.message.you-won", "&dYou won the&6 %game%&d game!");
 
 		try {
-			l.load(f);
-		} catch (IOException | InvalidConfigurationException e) {
+			l.getYC().save(f);
+		} catch (IOException e) {
 			e.printStackTrace();
 			plugin.throwMsg();
 		}
@@ -175,7 +181,7 @@ public class Language {
 				msg = getDefaultLangConf().isString(key) ? colors(getDefaultLangConf().getString(key)) : missing;
 			else
 				msg = lf.isString(key) ? colors(lf.getString(key)) : missing;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 			Bukkit.getConsoleSender().sendMessage(colors("&c[RageMode] Can't read language file for: " + key));
 			throw e;

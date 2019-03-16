@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
@@ -15,6 +16,7 @@ import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameBroadcast;
 import hu.montlikadani.ragemode.gameUtils.MapChecker;
 import hu.montlikadani.ragemode.gameUtils.Titles;
+import hu.montlikadani.ragemode.items.LeaveGame;
 import hu.montlikadani.ragemode.signs.SignCreator;
 
 public class PlayerJoin extends RmCommand {
@@ -59,16 +61,31 @@ public class PlayerJoin extends RmCommand {
 				PlayerList.oldGameMode.addToBoth(p, p.getGameMode());
 				PlayerList.oldDisplayName.addToBoth(p, p.getDisplayName());
 				PlayerList.oldListName.addToBoth(p, p.getPlayerListName());
+				PlayerList.oldFire.addToBoth(p, p.getFireTicks());
 
 				inv.clear();
 				p.teleport(lobbyLocation);
 				p.setGameMode(GameMode.ADVENTURE);
 				p.setHealth(20);
 				p.setFoodLevel(20);
+				p.setFireTicks(0);
+				for (PotionEffect e : p.getActivePotionEffects()) {
+					p.removePotionEffect(e.getType());
+				}
 				inv.setHelmet(null);
 				inv.setChestplate(null);
 				inv.setLeggings(null);
 				inv.setBoots(null);
+				p.setDisplayName(p.getName());
+				p.setPlayerListName(p.getName());
+
+				if (conf.getCfg().contains("items.leavegameitem"))
+					inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getLeaveGameItem());
+
+				if (conf.getCfg().getBoolean("game.global.tablist.player-format.enable"))
+					PlayerList.setPlayerGroup(p, conf.getCfg().getString("game.global.tablist.player-format.prefix"),
+							conf.getCfg().getString("game.global.tablist.player-format.suffix"), true);
+
 				GameBroadcast.broadcastToGame(map, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
 				String title = conf.getCfg().getString("titles.join-game.title");
 				String subtitle = conf.getCfg().getString("titles.join-game.subtitle");
@@ -78,8 +95,7 @@ public class PlayerJoin extends RmCommand {
 					Titles.sendTitle(p, conf.getCfg().getInt("titles.join-game.fade-in"), conf.getCfg().getInt("titles.join-game.stay"),
 							conf.getCfg().getInt("titles.join-game.fade-out"), title, subtitle);
 				}
-				if (conf.getCfg().getBoolean("signs.enable"))
-					SignCreator.updateAllSigns(map);
+				SignCreator.updateAllSigns(map);
 			} else
 				RageMode.logConsole(Level.INFO, RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", map));
 		} else
