@@ -42,7 +42,7 @@ public class GameLoader {
 		this.gameName = gameName;
 		conf = RageMode.getInstance().getConfiguration();
 
-		GameStartEvent gameStartEvent = new GameStartEvent(gameName);
+		GameStartEvent gameStartEvent = new GameStartEvent(gameName, PlayerList.getPlayersInGame(gameName));
 		Bukkit.getPluginManager().callEvent(gameStartEvent);
 
 		PlayerList.setGameRunning(gameName);

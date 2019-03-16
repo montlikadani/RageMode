@@ -7,9 +7,11 @@ public class GameStopEvent extends Event {
 
 	private static final HandlerList HANDLERS = new HandlerList();
 	private String game;
+	private String[] players;
 
-	public GameStopEvent(String game) {
+	public GameStopEvent(String game, String[] players) {
 		this.game = game;
+		this.players = players;
 	}
 
 	public static HandlerList getHandlerList() {
@@ -18,6 +20,10 @@ public class GameStopEvent extends Event {
 
 	public String getGame() {
 		return game;
+	}
+
+	public String[] getPlayers() {
+		return players;
 	}
 
 	public HandlerList getHandlers() {

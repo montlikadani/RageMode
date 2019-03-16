@@ -71,10 +71,11 @@ public class StopGame extends RmCommand {
 		if (PlayerList.isGameRunning(game)) {
 			PlayerList.setStatus(GameStatus.GAMEFREEZE);
 
-			GameStopEvent gameStopEvent = new GameStopEvent(game);
+			String[] players = PlayerList.getPlayersInGame(game);
+
+			GameStopEvent gameStopEvent = new GameStopEvent(game, players);
 			Bukkit.getPluginManager().callEvent(gameStopEvent);
 
-			String[] players = PlayerList.getPlayersInGame(game);
 			String winnerUUID = RageScores.calculateWinner(game, players);
 			if (winnerUUID != null) {
 				if (UUID.fromString(winnerUUID) != null) {
