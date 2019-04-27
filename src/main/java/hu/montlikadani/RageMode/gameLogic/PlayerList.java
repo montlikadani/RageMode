@@ -1,22 +1,24 @@
 package hu.montlikadani.ragemode.gameLogic;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.Timer;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.GameJoinAttemptEvent;
 import hu.montlikadani.ragemode.API.event.GameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
@@ -37,11 +39,22 @@ public class PlayerList {
 	public static TableList<Player, String> oldDisplayName = new TableList<>();
 	public static TableList<Player, String> oldListName = new TableList<>();
 	public static TableList<Player, Integer> oldFire = new TableList<>();
+	public static TableList<Player, Float> oldExp = new TableList<>();
+	public static TableList<Player, Integer> oldExpLevel = new TableList<>();
+	public static TableList<Player, Entity> oldVehicle = new TableList<>();
+
+	public static Map<UUID, Player> specPlayer = new HashMap<>();
+	static Location loc;
+	static GameMode gMode = GameMode.SURVIVAL;
+	static boolean fly = false;
+	static boolean allowFly = false;
 
 	private static String[] list = new String[1]; // [Gamename,Playername x overallMaxPlayers,Gamename,...]
 	private static String[] runningGames = new String[1];
 
 	private static GameStatus status = GameStatus.STOPPED;
+
+	private static LobbyTimer lobbyTimer;
 
 	public PlayerList() {
 		int i = 0;
@@ -59,6 +72,7 @@ public class PlayerList {
 		int maxPlayers = GetGames.getMaxPlayers(game);
 		if (maxPlayers == -1)
 			return null;
+
 		String[] players = new String[maxPlayers];
 
 		int i = 0;
@@ -88,6 +102,10 @@ public class PlayerList {
 	}
 
 	public static boolean addPlayer(Player player, String game) {
+		if (status == GameStatus.NOTREADY) {
+			player.sendMessage(RageMode.getLang().get("commands.join.game-locked"));
+			return false;
+		}
 		if (isGameRunning(game)) {
 			player.sendMessage(RageMode.getLang().get("game.running"));
 			return false;
@@ -117,10 +135,9 @@ public class PlayerList {
 
 					int time = 0;
 					if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + game + ".lobbydelay")) {
-						if (RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.delay") > 0)
-							time = RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.delay");
-						else
-							time = 30;
+						time = RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.delay") > 0
+								? RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.delay")
+								: 30;
 					} else
 						time = RageMode.getInstance().getConfiguration().getArenasCfg().getInt("arenas." + game + ".lobbydelay");
 
@@ -134,13 +151,20 @@ public class PlayerList {
 							if (event.isCancelled())
 								return false;
 
-							if (RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.min-players-to-start-lobby-timer") > 1) {
+							if (RageMode.getInstance().getConfiguration().getCfg()
+									.getInt("game.global.lobby.min-players-to-start-lobby-timer") > 1) {
 								if (getPlayersInGame(game).length == RageMode.getInstance().getConfiguration().getCfg()
-										.getInt("game.global.lobby.min-players-to-start-lobby-timer"))
-									new LobbyTimer(game, time).sendTimerMessages();
+										.getInt("game.global.lobby.min-players-to-start-lobby-timer")) {
+									lobbyTimer = new LobbyTimer(game, time);
+									lobbyTimer.loadTimer();
+									new Timer().scheduleAtFixedRate(lobbyTimer, 0, 60 * 20L);
+								}
 							} else {
-								if (getPlayersInGame(game).length == 2)
-									new LobbyTimer(game, time).sendTimerMessages();
+								if (getPlayersInGame(game).length == 2) {
+									lobbyTimer = new LobbyTimer(game, time);
+									lobbyTimer.loadTimer();
+									new Timer().scheduleAtFixedRate(lobbyTimer, 0, 60 * 20L);
+								}
 							}
 							return true;
 						}
@@ -260,16 +284,60 @@ public class PlayerList {
 							n++;
 						}
 
+						n = 0;
+
+						while (n < oldExp.getFirstLength()) { // Give him his exp back.
+							if (oldExp.getFromFirstObject(n) == playerToKick) {
+								playerToKick.setExp(oldExp.getFromSecondObject(n));
+								oldExp.removeFromBoth(n);
+							}
+							n++;
+						}
+
+						n = 0;
+
+						while (n < oldExpLevel.getFirstLength()) { // Give him his exp level back.
+							if (oldExpLevel.getFromFirstObject(n) == playerToKick) {
+								playerToKick.setLevel(oldExpLevel.getFromSecondObject(n));
+								oldExpLevel.removeFromBoth(n);
+							}
+							n++;
+						}
+
+						n = 0;
+
+						while (n < oldVehicle.getFirstLength()) { // Give him his vehicle back.
+							if (oldVehicle.getFromFirstObject(n) == playerToKick) {
+								oldVehicle.getFromSecondObject(n).getVehicle().teleport(playerToKick);
+								oldVehicle.removeFromBoth(n);
+							}
+							n++;
+						}
+
+						RageMode.getInstance().getConfiguration().getDatasCfg().set("datas." + playerToKick.getName(), null);
+						try {
+							RageMode.getInstance().getConfiguration().getDatasCfg().save(RageMode.getInstance().getConfiguration().getDatasFile());
+						} catch (IOException e) {
+							e.printStackTrace();
+							RageMode.getInstance().throwMsg();
+						}
+
 						list[kickposition] = player.getUniqueId().toString();
 						playerToKick.sendMessage(RageMode.getLang().get("game.player-kicked-for-vip"));
 
 						if (RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.min-players-to-start-lobby-timer") > 1) {
 							if (getPlayersInGame(game).length == RageMode.getInstance().getConfiguration().getCfg()
-									.getInt("game.global.lobby.min-players-to-start-lobby-timer"))
-								new LobbyTimer(game, time).sendTimerMessages();
+									.getInt("game.global.lobby.min-players-to-start-lobby-timer")) {
+								lobbyTimer = new LobbyTimer(game, time);
+								lobbyTimer.loadTimer();
+								new Timer().scheduleAtFixedRate(lobbyTimer, 0, 60 * 20L);
+							}
 						} else {
-							if (getPlayersInGame(game).length == 2)
-								new LobbyTimer(game, time).sendTimerMessages();
+							if (getPlayersInGame(game).length == 2) {
+								lobbyTimer = new LobbyTimer(game, time);
+								lobbyTimer.loadTimer();
+								new Timer().scheduleAtFixedRate(lobbyTimer, 0, 60 * 20L);
+							}
 						}
 						player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", game));
 						return true;
@@ -283,6 +351,28 @@ public class PlayerList {
 		}
 
 		player.sendMessage(RageMode.getLang().get("game.does-not-exist"));
+		return false;
+	}
+
+	public static boolean addSpectatorPlayer(Player player) {
+		loc = player.getLocation();
+		gMode = player.getGameMode();
+		fly = player.isFlying();
+		allowFly = player.getAllowFlight();
+		specPlayer.put(player.getUniqueId(), player);
+		return specPlayer.containsKey(player.getUniqueId());
+	}
+
+	public static boolean removeSpectatorPlayer(Player player) {
+		if (specPlayer.containsKey(player.getUniqueId())) {
+			player.teleport(loc);
+			player.setGameMode(gMode);
+			player.setFlying(fly);
+			player.setAllowFlight(allowFly);
+
+			specPlayer.remove(player.getUniqueId());
+			return true;
+		}
 		return false;
 	}
 
@@ -408,7 +498,45 @@ public class PlayerList {
 							n++;
 						}
 
+						n = 0;
+
+						while (n < oldExp.getFirstLength()) { // Give him his exp back.
+							if (oldExp.getFromFirstObject(n) == player) {
+								player.setExp(oldExp.getFromSecondObject(n));
+								oldExp.removeFromBoth(n);
+							}
+							n++;
+						}
+
+						n = 0;
+
+						while (n < oldExpLevel.getFirstLength()) { // Give him his exp level back.
+							if (oldExpLevel.getFromFirstObject(n) == player) {
+								player.setLevel(oldExpLevel.getFromSecondObject(n));
+								oldExpLevel.removeFromBoth(n);
+							}
+							n++;
+						}
+
+						n = 0;
+
+						while (n < oldVehicle.getFirstLength()) { // Give him his vehicle back.
+							if (oldVehicle.getFromFirstObject(n) == player) {
+								oldVehicle.getFromSecondObject(n).teleport(player);
+								oldVehicle.removeFromBoth(n);
+							}
+							n++;
+						}
+
 						list[i] = null;
+
+						RageMode.getInstance().getConfiguration().getDatasCfg().set("datas." + player.getName(), null);
+						try {
+							RageMode.getInstance().getConfiguration().getDatasCfg().save(RageMode.getInstance().getConfiguration().getDatasFile());
+						} catch (IOException e) {
+							e.printStackTrace();
+							RageMode.getInstance().throwMsg();
+						}
 
 						player.removeMetadata("leavingRageMode", RageMode.getInstance());
 						return true;
@@ -424,13 +552,14 @@ public class PlayerList {
 	}
 
 	public static void removePlayerSynced(Player player) {
-		if (ScoreBoard.allScoreBoards.containsKey(PlayerList.getPlayersGame(player)))
-			ScoreBoard.allScoreBoards.get(PlayerList.getPlayersGame(player)).removeScoreBoard(player);
+		String game = getPlayersGame(player);
+		if (ScoreBoard.allScoreBoards.containsKey(game))
+			ScoreBoard.allScoreBoards.get(game).removeScoreBoard(player);
 
-		if (TabTitles.allTabLists.containsKey(PlayerList.getPlayersGame(player)))
-			TabTitles.allTabLists.get(PlayerList.getPlayersGame(player)).removeTabList(player);
+		if (TabTitles.allTabLists.containsKey(game))
+			TabTitles.allTabLists.get(game).removeTabList(player);
 
-		removeScoreboard(player, true);
+		hu.montlikadani.ragemode.gameLogic.GameLoader.removeScoreboard(player);
 	}
 
 	public static boolean isGameRunning(String game) {
@@ -489,14 +618,14 @@ public class PlayerList {
 		return false;
 	}
 
-	public static boolean isPlayerPlaying(String player) {
-		if (player != null) {
+	public static boolean isPlayerPlaying(String playerUUID) {
+		if (playerUUID != null) {
 			int i = 0;
 			int imax = list.length;
 
 			while (i < imax) {
 				if (list[i] != null) {
-					if (list[i].equals(player))
+					if (list[i].equals(playerUUID))
 						return true;
 				}
 				i++;
@@ -645,38 +774,6 @@ public class PlayerList {
 			i++;
 		}
 		return null;
-	}
-
-	public static void setPlayerGroup(Player player, String prefix, String suffix, boolean external) {
-		if (player == null) {
-			throw new NullPointerException("player is null");
-		}
-		Scoreboard board = external ? player.getScoreboard() : Bukkit.getScoreboardManager().getNewScoreboard();
-		Team team = getScoreboardTeam(board, player.getName());
-
-		team.addEntry(player.getName());
-
-		prefix = Utils.setPlaceholders(prefix, player);
-		suffix = Utils.setPlaceholders(suffix, player);
-
-		team.setPrefix(prefix);
-		team.setSuffix(suffix);
-		if (RageMode.getVersion().contains("1.13"))
-			team.setColor(Utils.fromPrefix(prefix));
-
-		player.setScoreboard(board);
-	}
-
-	public static void removeScoreboard(Player player, boolean external) {
-		Scoreboard board = external ? player.getScoreboard() : Bukkit.getScoreboardManager().getNewScoreboard();
-		if (getScoreboardTeam(board, player.getName()) != null) {
-			getScoreboardTeam(board, player.getName()).unregister();
-			player.setScoreboard(board);
-		}
-	}
-
-	public static Team getScoreboardTeam(Scoreboard board, String name) {
-		return board.getTeam(name) == null ? board.registerNewTeam(name) : board.getTeam(name);
 	}
 
 	public static GameStatus getStatus() {

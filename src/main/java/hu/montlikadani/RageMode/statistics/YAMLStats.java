@@ -3,11 +3,11 @@ package hu.montlikadani.ragemode.statistics;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -19,7 +19,7 @@ public class YAMLStats {
 
 	private static boolean inited = false;
 	private static File yamlStatsFile;
-	private static FileConfiguration statsConf;
+	private static YamlConfiguration statsConf;
 
 	protected static boolean working = false;
 
@@ -68,9 +68,6 @@ public class YAMLStats {
 
 	public static void addPlayerStatistics(List<PlayerPoints> pP) {
 		if (!inited) return;
-
-		// Fixes IndexOutOfBoundsException
-		if (pP.isEmpty()) return;
 
 		int i = 0;
 		int imax = pP.size();
@@ -206,7 +203,8 @@ public class YAMLStats {
 	 */
 	public static List<RetPlayerPoints> getAllPlayerStatistics() {
 		// returns a List of all RetPlayerPoints that are stored
-		if (!inited) return null;
+		if (!inited)
+			return Collections.emptyList();
 
 		List<RetPlayerPoints> allRPPs = new ArrayList<>();
 
@@ -249,8 +247,15 @@ public class YAMLStats {
 				e.printStackTrace();
 				RageMode.getInstance().throwMsg();
 			}
-		} else
-			return;
+		}
+	}
+
+	public static File getFile() {
+		return yamlStatsFile;
+	}
+
+	public static YamlConfiguration getConf() {
+		return statsConf;
 	}
 
 	private static class AddToPlayersStats implements Runnable {

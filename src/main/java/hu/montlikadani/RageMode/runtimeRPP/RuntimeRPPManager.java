@@ -10,7 +10,7 @@ import hu.montlikadani.ragemode.statistics.YAMLStats;
 
 public class RuntimeRPPManager {
 
-	public static List<RetPlayerPoints> RuntimeRPPList;
+	private static List<RetPlayerPoints> RuntimeRPPList;
 
 	public static void getRPPListFromMySQL() {
 		RuntimeRPPList = MySQLStats.getAllPlayerStatistics();
@@ -41,7 +41,7 @@ public class RuntimeRPPManager {
 		return rpp;
 	}
 
-	public synchronized static void updatePlayerEntry(PlayerPoints pp) {
+	public synchronized static void updatePlayerEntry(PlayerPoints pp) throws IndexOutOfBoundsException {
 		RetPlayerPoints oldRPP = getRPPForPlayer(pp.getPlayerUUID());
 		if (oldRPP == null) {
 			int i = RuntimeRPPList.size();
@@ -94,8 +94,8 @@ public class RuntimeRPPManager {
 					i = 0;
 				break;
 			}
-			RetPlayerPoints newRPP = new RetPlayerPoints(pp.getPlayerUUID());
 
+			RetPlayerPoints newRPP = new RetPlayerPoints(pp.getPlayerUUID());
 			newRPP.setAxeDeaths(pp.getAxeDeaths());
 			newRPP.setAxeKills(pp.getAxeKills());
 			newRPP.setCurrentStreak(pp.getCurrentStreak());
@@ -146,8 +146,8 @@ public class RuntimeRPPManager {
 					break;
 				}
 			}
-			RetPlayerPoints newRPP = new RetPlayerPoints(pp.getPlayerUUID());
 
+			RetPlayerPoints newRPP = new RetPlayerPoints(pp.getPlayerUUID());
 			newRPP.setAxeDeaths(pp.getAxeDeaths());
 			newRPP.setAxeKills(pp.getAxeKills());
 			newRPP.setCurrentStreak(pp.getCurrentStreak());

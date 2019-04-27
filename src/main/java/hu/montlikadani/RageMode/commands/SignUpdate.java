@@ -11,24 +11,29 @@ public class SignUpdate extends RmCommand {
 
 	public SignUpdate(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!sender.hasPermission("ragemode.admin.signupdate")) {
-			sender.sendMessage(RageMode.getLang().get("no-permission"));
+			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return;
 		}
 		if (!RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable"))
 			return;
 
 		if (args.length != 2) {
-			sender.sendMessage(RageMode.getLang().get("commands.signupdate.usage"));
+			sendMessage(sender, RageMode.getLang().get("commands.signupdate.usage"));
 			return;
 		}
 
-		String gameName = args[1];
-		if (!GetGames.isGameExistent(gameName)) {
-			sender.sendMessage(RageMode.getLang().get("commands.signupdate.game-not-exist"));
-			return;
+		String name = null;
+		if (args[1].equalsIgnoreCase("all"))
+			name = GetGames.getGameNames()[GetGames.getConfigGamesCount() - 1];
+		else {
+			name = args[1];
+			if (!GetGames.isGameExistent(name)) {
+				sendMessage(sender, RageMode.getLang().get("invalid-game"));
+				return;
+			}
 		}
 
-		SignCreator.updateAllSigns(gameName);
+		SignCreator.updateAllSigns(name);
 		return;
 	}
 }

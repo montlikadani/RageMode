@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -30,7 +29,7 @@ public class HoloHolder {
 
 	@SuppressWarnings("unchecked")
 	public static void addHolo(Location loc) {
-		if (!RageMode.getInstance().getHologramAvailable())
+		if (!RageMode.getInstance().isHologramEnabled())
 			return;
 
 		loc.add(0d, 2d, 0d);
@@ -59,7 +58,7 @@ public class HoloHolder {
 	}
 
 	public static void loadHolos() {
-		if (!RageMode.getInstance().getHologramAvailable())
+		if (!RageMode.getInstance().isHologramEnabled())
 			return;
 
 		Collection<Hologram> holos = HologramsAPI.getHolograms(RageMode.getInstance());
@@ -73,7 +72,7 @@ public class HoloHolder {
 	}
 
 	public static void displayHoloToPlayer(Player player, Location loc) {
-		if (!RageMode.getInstance().getHologramAvailable())
+		if (!RageMode.getInstance().isHologramEnabled())
 			return;
 
 		Hologram hologram = HologramsAPI.createHologram(RageMode.getInstance(), loc);
@@ -85,45 +84,32 @@ public class HoloHolder {
 		if (RageMode.getInstance().getConfiguration().getCfg().getString("statistics").equals("mysql")) {
 			final Player mySQLPlayer = player;
 			final Hologram mySQLHologram = hologram;
-			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), new Runnable() {
-				@Override
-				public void run() {
-					final RetPlayerPoints rpp;
-					if (RuntimeRPPManager.getRPPForPlayer(mySQLPlayer.getUniqueId().toString()) == null)
-						rpp = MySQLStats.getPlayerStatistics(mySQLPlayer.getUniqueId().toString(), RageMode.getMySQL());
-					else
-						rpp = RuntimeRPPManager.getRPPForPlayer(mySQLPlayer.getUniqueId().toString());
-					Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), new Callable<String>() {
-
-						@Override
-						public String call() throws Exception {
-							if (rpp != null)
-								setHologramLines(mySQLHologram, rpp);
-							return "Done";
-						}
-					});
-				}
+			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
+				final RetPlayerPoints rpp;
+				if (RuntimeRPPManager.getRPPForPlayer(mySQLPlayer.getUniqueId().toString()) == null)
+					rpp = MySQLStats.getPlayerStatistics(mySQLPlayer.getUniqueId().toString(), RageMode.getMySQL());
+				else
+					rpp = RuntimeRPPManager.getRPPForPlayer(mySQLPlayer.getUniqueId().toString());
+				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
+					if (rpp != null)
+						setHologramLines(mySQLHologram, rpp);
+					return "Done";
+				});
 			});
 		} else if (RageMode.getInstance().getConfiguration().getCfg().getString("statistics").equals("yaml")) {
 			final Player yamlPlayer = player;
 			final Hologram yamlHologram = hologram;
-			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), new Runnable() {
-				@Override
-				public void run() {
-					final RetPlayerPoints rpp;
-					if (RuntimeRPPManager.getRPPForPlayer(yamlPlayer.getUniqueId().toString()) == null)
-						rpp = YAMLStats.getPlayerStatistics(yamlPlayer.getUniqueId().toString());
-					else
-						rpp = RuntimeRPPManager.getRPPForPlayer(yamlPlayer.getUniqueId().toString());
-					Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), new Callable<String>() {
-						@Override
-						public String call() throws Exception {
-							if (rpp != null)
-								setHologramLines(yamlHologram, rpp);
-							return "Done";
-						}
-					});
-				}
+			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
+				final RetPlayerPoints rpp;
+				if (RuntimeRPPManager.getRPPForPlayer(yamlPlayer.getUniqueId().toString()) == null)
+					rpp = YAMLStats.getPlayerStatistics(yamlPlayer.getUniqueId().toString());
+				else
+					rpp = RuntimeRPPManager.getRPPForPlayer(yamlPlayer.getUniqueId().toString());
+				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
+					if (rpp != null)
+						setHologramLines(yamlHologram, rpp);
+					return "Done";
+				});
 			});
 		}
 	}
@@ -152,7 +138,7 @@ public class HoloHolder {
 	}
 
 	public static void deleteHoloObjectsOfPlayer(Player player) {
-		if (!RageMode.getInstance().getHologramAvailable())
+		if (!RageMode.getInstance().isHologramEnabled())
 			return;
 
 		Collection<Hologram> holos = HologramsAPI.getHolograms(RageMode.getInstance());
@@ -163,7 +149,7 @@ public class HoloHolder {
 	}
 
 	public static void deleteHologram(Player p, Hologram holo) {
-		if (!RageMode.getInstance().getHologramAvailable())
+		if (!RageMode.getInstance().isHologramEnabled())
 			return;
 
 		if (holo == null)
@@ -204,7 +190,7 @@ public class HoloHolder {
 	}*/
 
 	public static Hologram getClosest(Player player) {
-		if (!RageMode.getInstance().getHologramAvailable())
+		if (!RageMode.getInstance().isHologramEnabled())
 			return null;
 
 		Collection<Hologram> holos = HologramsAPI.getHolograms(RageMode.getInstance());
@@ -260,7 +246,7 @@ public class HoloHolder {
 
 	@SuppressWarnings("unchecked")
 	public static void showAllHolosToPlayer(Player player) {
-		if (!RageMode.getInstance().getHologramAvailable())
+		if (!RageMode.getInstance().isHologramEnabled())
 			return;
 
 		List<Location> holoList;
@@ -278,7 +264,7 @@ public class HoloHolder {
 	}
 
 	public static void updateHolosForPlayer(Player player) {
-		if (!RageMode.getInstance().getHologramAvailable())
+		if (!RageMode.getInstance().isHologramEnabled())
 			return;
 
 		deleteHoloObjectsOfPlayer(player);

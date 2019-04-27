@@ -2,7 +2,7 @@ package hu.montlikadani.ragemode;
 
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
@@ -19,7 +19,7 @@ public class Placeholder extends PlaceholderExpansion {
 	}
 
 	public String getPlugin() {
-		return null;
+		return "";
 	}
 
 	@Override
@@ -29,51 +29,50 @@ public class Placeholder extends PlaceholderExpansion {
 
 	public String onPlaceholderRequest(Player p, String var) {
 		if (p == null)
-			return null;
+			return "";
 
-		PlayerPoints pP = new PlayerPoints(p.getUniqueId().toString());
-		RetPlayerPoints rpp = new RetPlayerPoints(p.getUniqueId().toString());
+		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(p.getUniqueId().toString());
 		// Player kill stats
 		if (var.equals("kills"))
-			return Integer.toString(pP.getKills());
+			return Integer.toString(rpp.getKills());
 
 		if (var.equals("axe_kills"))
-			return Integer.toString(pP.getAxeKills());
+			return Integer.toString(rpp.getAxeKills());
 
 		if (var.equals("direct_arrow_kills"))
-			return Integer.toString(pP.getDirectArrowKills());
+			return Integer.toString(rpp.getDirectArrowKills());
 
 		if (var.equals("explosion_kills"))
-			return Integer.toString(pP.getExplosionKills());
+			return Integer.toString(rpp.getExplosionKills());
 
 		if (var.equals("knife_kills"))
-			return Integer.toString(pP.getKnifeKills());
+			return Integer.toString(rpp.getKnifeKills());
 
 		// Player death stats
 		if (var.equals("deaths"))
-			return Integer.toString(pP.getDeaths());
+			return Integer.toString(rpp.getDeaths());
 
 		if (var.equals("axe_deaths"))
-			return Integer.toString(pP.getAxeDeaths());
+			return Integer.toString(rpp.getAxeDeaths());
 
 		if (var.equals("direct_arrow_deaths"))
-			return Integer.toString(pP.getDirectArrowDeaths());
+			return Integer.toString(rpp.getDirectArrowDeaths());
 
 		if (var.equals("explosion_deaths"))
-			return Integer.toString(pP.getExplosionDeaths());
+			return Integer.toString(rpp.getExplosionDeaths());
 
 		if (var.equals("knife_deaths"))
-			return Integer.toString(pP.getKnifeDeaths());
+			return Integer.toString(rpp.getKnifeDeaths());
 
 		// Other stats
 		if (var.equals("current_streak"))
-			return Integer.toString(pP.getCurrentStreak());
+			return Integer.toString(rpp.getCurrentStreak());
 
 		if (var.equals("longest_streak"))
-			return Integer.toString(pP.getLongestStreak());
+			return Integer.toString(rpp.getLongestStreak());
 
 		if (var.equals("points"))
-			return Integer.toString(pP.getPoints());
+			return Integer.toString(rpp.getPoints());
 
 		if (var.equals("games"))
 			return Integer.toString(rpp.getGames());
@@ -82,11 +81,11 @@ public class Placeholder extends PlaceholderExpansion {
 			return Integer.toString(rpp.getWins());
 
 		if (var.equals("kd"))
-			return String.valueOf(rpp.getKD());
+			return Double.toString(rpp.getKD());
 
 		if (var.equals("rank"))
 			return Integer.toString(rpp.getRank());
 
-		return null;
+		return "";
 	}
 }

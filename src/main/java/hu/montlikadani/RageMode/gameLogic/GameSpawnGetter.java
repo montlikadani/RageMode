@@ -2,10 +2,13 @@ package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.MapChecker;
@@ -19,11 +22,11 @@ public class GameSpawnGetter {
 	public GameSpawnGetter(String gameName) {
 		this.gameName = gameName;
 
-		getSpawns();
+		loadSpawns();
 	}
 
-	private void getSpawns() {
-		FileConfiguration aCfg = RageMode.getInstance().getConfiguration().getArenasCfg();
+	public void loadSpawns() {
+		YamlConfiguration aCfg = RageMode.getInstance().getConfiguration().getArenasCfg();
 		if (new MapChecker(gameName).isValid()) {
 			String path = "arenas." + gameName + ".spawns";
 			for (String spawnName : aCfg.getConfigurationSection(path).getKeys(false)) {
@@ -41,6 +44,16 @@ public class GameSpawnGetter {
 			isGameReady = true;
 		} else
 			isGameReady = false;
+	}
+
+	public void randomSpawn(Player player) {
+		Random rand = new Random();
+		int x = rand.nextInt(spawnLocations.size() - 1);
+
+		if (!player.getGameMode().equals(GameMode.SPECTATOR))
+			player.setHealth(20);
+
+		player.teleport(spawnLocations.get(x));
 	}
 
 	public boolean isGameReady() {

@@ -13,33 +13,33 @@ public class AddGame extends RmCommand {
 
 	public AddGame(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player)) {
-			sender.sendMessage(RageMode.getLang().get("in-game-only"));
+			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return;
 		}
 		Player p = (Player) sender;
 		if (!p.hasPermission("ragemode.admin.addgame")) {
-			p.sendMessage(RageMode.getLang().get("no-permission"));
+			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return;
 		}
 		if (args.length < 3) {
-			p.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm addgame <gameName> <maxPlayers>"));
+			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm addgame <gameName> <maxPlayers>"));
 			return;
 		}
 		int x;
 		try {
 			x = Integer.parseInt(args[2]);
 		} catch (Throwable e) {
-			p.sendMessage(RageMode.getLang().get("not-a-number", "%wrong-number%", args[2]));
+			sendMessage(p, RageMode.getLang().get("not-a-number", "%wrong-number%", args[2]));
 			return;
 		}
 
 		if (RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + args[1])) {
-			p.sendMessage(RageMode.getLang().get("setup.already-exists", "%game%", args[1]));
+			sendMessage(p, RageMode.getLang().get("setup.already-exists", "%game%", args[1]));
 			return;
 		}
 
 		if (x < 2) {
-			p.sendMessage(RageMode.getLang().get("setup.at-least-two"));
+			sendMessage(p, RageMode.getLang().get("setup.at-least-two"));
 			return;
 		}
 
@@ -54,7 +54,7 @@ public class AddGame extends RmCommand {
 			RageMode.getInstance().throwMsg();
 		}
 
-		p.sendMessage(RageMode.getLang().get("setup.success-added", "%game%", args[1]));
+		sendMessage(p, RageMode.getLang().get("setup.success-added", "%game%", args[1]));
 		return;
 	}
 }

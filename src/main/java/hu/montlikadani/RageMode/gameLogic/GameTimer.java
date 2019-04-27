@@ -1,27 +1,30 @@
 package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.boss.BarStyle;
+import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.commands.StopGame;
-import hu.montlikadani.ragemode.gameUtils.ActionBar;
-import hu.montlikadani.ragemode.gameUtils.BossUtils;
-import hu.montlikadani.ragemode.scores.PlayerPoints;
-import hu.montlikadani.ragemode.scores.RageScores;
+import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
+import hu.montlikadani.ragemode.gameUtils.TabTitles;
+import hu.montlikadani.ragemode.scoreboard.ScoreBoardHolder;
 
-public class GameTimer {
+public class GameTimer extends TimerTask {
+
+	private List<String> listPlayers = new ArrayList<>();
+	private TabTitles gameTab = null;
+	private ScoreBoard gameBoard = null;
 
 	private String gameName;
 	private int time;
-	private Timer t;
 
 	public GameTimer(String gameName, int time) {
 		this.gameName = gameName;
@@ -36,134 +39,104 @@ public class GameTimer {
 		return time;
 	}
 
-	public void startCounting() {
-		t = new Timer();
+	public void loadBoards() {
+		listPlayers = Arrays.asList(PlayerList.getPlayersInGame(gameName));
+		Configuration conf = RageMode.getInstance().getConfiguration();
 
-		int totalTimerMillis = ((int) (((time * 1000) + 5000) / 10000)) * (10000);
-		if (totalTimerMillis == 0)
-			totalTimerMillis = 10000;
-		final int timeMillisForLoop = totalTimerMillis;
+		if (conf.getCfg().getBoolean("game.global.scoreboard.enable")) {
+			gameBoard = new ScoreBoard(listPlayers, false);
+			gameBoard.setScoreBoard();
+			gameBoard.addToScoreBoards(gameName, true);
+		}
 
-		t.scheduleAtFixedRate(new TimerTask() {
-			private int totalMessages = timeMillisForLoop / 60000;
-			private int secondsRemaining = timeMillisForLoop / 1000;
-			private int pointer = 0;
-			// private int totalTimesLooped = 0;
-			// private final long startTimeMillis = System.currentTimeMillis();
+		if (conf.getCfg().getBoolean("game.global.tablist.list.enable")) {
+			gameTab = new TabTitles(listPlayers);
+			gameTab.addToTabList(gameName, true);
+		}
+	}
 
-			public void run() {
-				if (totalMessages > 0 && PlayerList.getPlayersInGame(gameName).length >= 2) {
+	@Override
+	public void run() {
+		if (!PlayerList.isGameRunning(gameName)) {
+			cancel();
+			return;
+		}
+		if (PlayerList.getPlayersInGame(gameName).length < 2)
+			cancel();
 
-					// long timeMillisNow = System.currentTimeMillis();
-					// long timeMillisPassed = timeMillisNow - startTimeMillis;
+		time--;
 
-					// if (fullMinute % 1 == 0) {
-					// String[] playerUUIDs =
-					// PlayerList.getPlayersInGame(gameName);
-					// for (int i = 0; i < playerUUIDs.length; i++) {
-					// Bukkit.getPlayer(UUID.fromString(playerUUIDs[i]))
-					// .sendMessage(ConstantHolder.RAGEMODE_PREFIX +
-					// ChatColor.BLUE
-					// + "This round will end in " + ChatColor.YELLOW
-					// + Integer.toString(totalMessages) + ChatColor.BLUE + "
-					// minutes.");
-					// }
-					// totalMessages--;
-					// }
-					/*double minutes = Math.floor(secondsRemaining / 60);
-					double seconds = secondsRemaining % 60;*/
-					secondsRemaining--;
-					/*String minutesString;
-					String secondsString;
-					if (minutes < 10)
-						minutesString = "0" + Integer.toString((int) minutes);
-					else
-						minutesString = Integer.toString((int) minutes);
-					secondsString = (seconds < 10) ? "0" + Integer.toString((int) seconds) : Integer.toString((int) seconds);*/
+		for (String playerUUID : listPlayers) {
+			Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
+			String tFormat = Utils.getFormattedTime(time);
+			Configuration conf = RageMode.getInstance().getConfiguration();
 
-					if (secondsRemaining == 0) {
-						cancel();
-						RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
-							@Override
-							public void run() {
-								StopGame.stopGame(gameName);
+			if (gameBoard != null) {
+				String boardTitle = conf.getCfg().getString("game.global.scoreboard.title");
+				if (boardTitle != null && !boardTitle.equals(""))
+					gameBoard.setTitle(RageMode.getLang().colors(boardTitle));
+
+				List<String> rows = conf.getCfg().getStringList("game.global.scoreboard.content");
+				if (rows != null && !rows.isEmpty()) {
+					int rowMax = rows.size();
+
+					for (String row : rows) {
+						if (row.trim().equals("")) {
+							for (int i = 0; i <= rowMax; i++) {
+								row = row + " ";
 							}
-						});
-					}
-
-					if (secondsRemaining % 2 == 0) {
-						String[] playerUUIDs = PlayerList.getPlayersInGame(gameName);
-						List<PlayerPoints> playerPoints = new ArrayList<>();
-						for (String playerUUID : playerUUIDs) {
-							PlayerPoints points = RageScores.getPlayerPoints(playerUUID);
-							if (points != null)
-								playerPoints.add(points);
 						}
 
-						if (playerPoints == null || playerPoints.isEmpty())
-							return;
+						row = Utils.setPlaceholders(row, player);
+						row = row.replace("%game-time%", tFormat);
 
-						Collections.sort(playerPoints);
+						gameBoard.setLine(row, rowMax);
+						rowMax--;
 
-						if (playerPoints.size() > pointer) {
-							PlayerPoints points = playerPoints.get(pointer);
-
-							for (String playerUUID : playerUUIDs) {
-								String bossMessage = RageMode.getInstance().getConfiguration().getCfg().getString("bossbar-messages.player-actions.message");
-								if (bossMessage != null && !bossMessage.equals("")) {
-									bossMessage = bossMessage.replace("%pointer%", Integer.toString(pointer + 1));
-									bossMessage = bossMessage.replace("%player%", Bukkit.getPlayer(UUID.fromString(points.getPlayerUUID())).getName());
-									bossMessage = bossMessage.replace("%points%", Integer.toString(points.getPoints()));
-									bossMessage = bossMessage.replace("%kills%", Integer.toString(points.getKills()));
-									bossMessage = bossMessage.replace("%deaths%", Integer.toString(points.getDeaths()));
-									bossMessage = RageMode.getLang().colors(bossMessage);
-
-									if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName + ".bossbar")) {
-										if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game.global.defaults.bossbar"))
-											new BossUtils(bossMessage).sendBossBar(gameName, playerUUID,
-													BarStyle.valueOf(RageMode.getInstance().getConfiguration().getCfg().getString("bossbar-messages.player-actions.style")));
-									} else if (RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + gameName + ".bossbar"))
-										new BossUtils(bossMessage).sendBossBar(gameName, playerUUID,
-												BarStyle.valueOf(RageMode.getInstance().getConfiguration().getCfg().getString("bossbar-messages.player-actions.style")));
-								}
-
-								String actionbarMsg = RageMode.getInstance().getConfiguration().getCfg().getString("actionbar-messages.player-actions.message");
-								if (actionbarMsg != null && !actionbarMsg.equals("")) {
-									actionbarMsg = actionbarMsg.replace("%pointer%", Integer.toString(pointer + 1));
-									actionbarMsg = actionbarMsg.replace("%player%", Bukkit.getPlayer(UUID.fromString(points.getPlayerUUID())).getName());
-									actionbarMsg = actionbarMsg.replace("%points%", Integer.toString(points.getPoints()));
-									actionbarMsg = actionbarMsg.replace("%kills%", Integer.toString(points.getKills()));
-									actionbarMsg = actionbarMsg.replace("%deaths%", Integer.toString(points.getDeaths()));
-									actionbarMsg = RageMode.getLang().colors(actionbarMsg);
-
-									if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName + ".actionbar")) {
-										if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game.global.defaults.actionbar"))
-											ActionBar.sendActionBar(Bukkit.getPlayer(UUID.fromString(playerUUID)), actionbarMsg);
-									} else if (RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + gameName + ".actionbar"))
-										ActionBar.sendActionBar(Bukkit.getPlayer(UUID.fromString(playerUUID)), actionbarMsg);
-								}
-							}
-							pointer++;
-						} else {
-							if (pointer >= PlayerList.getPlayersInGame(gameName).length)
-								pointer = 0;
-						}
+						ScoreBoardHolder sHolder = gameBoard.getScoreboards().get(player);
+						sHolder.setOldKdLine(row);
+						sHolder.setOldPointsLine(row);
 					}
-				} else {
-					if (PlayerList.getPlayersInGame(gameName).length < 0) {
-						cancel();
-						return;
-					}
-
-					cancel();
-					RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
-						@Override
-						public void run() {
-							StopGame.stopGame(gameName);
-						}
-					});
 				}
 			}
-		}, 0, 1000);
+
+			if (gameTab != null) {
+				List<String> tabHeader = conf.getCfg().getStringList("game.global.tablist.list.header");
+				List<String> tabFooter = conf.getCfg().getStringList("game.global.tablist.list.footer");
+
+				String he = "";
+				String fo = "";
+				int s = 0;
+				for (String line : tabHeader) {
+					s++;
+					if (s > 1)
+						he = he + "\n\u00a7r";
+
+					he = he + line;
+				}
+				s = 0;
+				for (String line : tabFooter) {
+					s++;
+					if (s > 1)
+						fo = fo + "\n\u00a7r";
+
+					fo = fo + line;
+				}
+
+				he = Utils.setPlaceholders(he, player);
+				he = he.replace("%game-time%", tFormat);
+
+				fo = Utils.setPlaceholders(fo, player);
+				fo = fo.replace("%game-time%", tFormat);
+
+				gameTab.sendTabTitle(he, fo);
+			}
+		}
+
+		if (time == 0) {
+			cancel();
+			RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
+					() -> StopGame.stopGame(gameName));
+		}
 	}
 }

@@ -11,7 +11,7 @@ public class ListGames extends RmCommand {
 
 	public ListGames(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!sender.hasPermission("ragemode.listgames")) {
-			sender.sendMessage(RageMode.getLang().get("no-permission"));
+			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return;
 		}
 		if (GetGames.getConfigGamesCount() > 0) {
@@ -20,18 +20,18 @@ public class ListGames extends RmCommand {
 				int i = 0;
 				int imax = games.length;
 
-				sender.sendMessage(RageMode.getLang().get("commands.listgames.listing-games", "%games%", imax));
+				sendMessage(sender, RageMode.getLang().get("commands.listgames.listing-games", "%games%", imax));
 
 				while (i < imax) {
 					if (PlayerList.isGameRunning(games[i]))
-						sender.sendMessage(RageMode.getLang().get("commands.listgames.game-running", "%number%", i + 1, "%game%", games[i]));
+						sendMessage(sender, RageMode.getLang().get("commands.listgames.game-running", "%number%", i + 1, "%game%", games[i]));
 					else
-						sender.sendMessage(RageMode.getLang().get("commands.listgames.game-stopped", "%number%", i + 1, "%game%", games[i]));
+						sendMessage(sender, RageMode.getLang().get("commands.listgames.game-stopped", "%number%", i + 1, "%game%", games[i]));
 					i++;
 				}
 			}
 		} else
-			sender.sendMessage(RageMode.getLang().get("commands.listgames.no-games-available"));
+			sendMessage(sender, RageMode.getLang().get("commands.listgames.no-games-available"));
 		return;
 	}
 }

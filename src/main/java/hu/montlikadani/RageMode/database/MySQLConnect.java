@@ -1,10 +1,12 @@
-package hu.montlikadani.ragemode;
+package hu.montlikadani.ragemode.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
+
+import hu.montlikadani.ragemode.RageMode;
 
 public class MySQLConnect {
 
@@ -17,7 +19,9 @@ public class MySQLConnect {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			try {
-				String url = "jdbc:mysql://" + host + ":" + port + "/" + database + "?verifyServerCertificate=" + serverCertificate + "&useUnicode=" + useUnicode + "&characterEncoding=" + characterEncode + "&autoReConnect=" + autoReconnect + "&useSSL=" + useSSL;
+				String url = "jdbc:mysql://" + host + ":" + port + "/" + database + "?verifyServerCertificate=" + serverCertificate
+						+ "&useUnicode=" + useUnicode + "&characterEncoding=" + characterEncode + "&autoReConnect="
+						+ autoReconnect + "&useSSL=" + useSSL;
 				connection = DriverManager.getConnection(url, userName, password);
 			} catch (SQLException e) {
 				RageMode.logConsole(Level.WARNING, "Could not connect to the MySQL database.");

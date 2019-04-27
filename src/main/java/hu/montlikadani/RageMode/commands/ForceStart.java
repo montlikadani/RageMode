@@ -1,54 +1,59 @@
 package hu.montlikadani.ragemode.commands;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.GameLoader;
+import hu.montlikadani.ragemode.gameLogic.LobbyTimer;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class ForceStart extends RmCommand {
 
-	// Stops the LobbyTimer task when wants to force starts game
-	public static List<String> toStopTask = new ArrayList<>();
-
 	public ForceStart(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player)) {
-			sender.sendMessage(RageMode.getLang().get("in-game-only"));
+			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return;
 		}
 		Player p = (Player) sender;
 		if (!p.hasPermission("ragemode.admin.forcestart")) {
-			p.sendMessage(RageMode.getLang().get("no-permission"));
+			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return;
 		}
 		if (args.length < 2) {
-			p.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm forcestart <gameName>"));
-			return;
-		}
-		if (!GetGames.isGameExistent(args[1])) {
-			p.sendMessage(RageMode.getLang().get("commands.forcestart.game-not-exist"));
+			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm forcestart <gameName>"));
 			return;
 		}
 		String game = args[1];
-		if (PlayerList.getPlayersGame(p) != null) {
-			if (!PlayerList.isGameRunning(game)) {
-				if (toStopTask.contains(game))
-					toStopTask.remove(game);
+		if (!GetGames.isGameExistent(game)) {
+			sendMessage(p, RageMode.getLang().get("commands.forcestart.game-not-exist"));
+			return;
+		}
+		if (!PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+			sendMessage(p, RageMode.getLang().get("commands.forcestart.player-not-in-game"));
+			return;
+		}
+		if (PlayerList.getPlayersInGame(game).length < 2) {
+			sendMessage(p, RageMode.getLang().get("commands.forcestart.not-enough-players"));
+			return;
+		}
+		if (PlayerList.isGameRunning(game)) {
+			sendMessage(p, RageMode.getLang().get("game.running"));
+			return;
+		}
 
-				toStopTask.add(game);
+		if (LobbyTimer.map.containsKey(game)) {
+			LobbyTimer.map.get(game).cancel();
+			LobbyTimer.map.remove(game);
 
-				new GameLoader(game);
-				p.sendMessage(RageMode.getLang().get("commands.forcestart.game-start", "%game%", game));
-			} else
-				p.sendMessage(RageMode.getLang().get("game.running"));
-		} else
-			p.sendMessage(RageMode.getLang().get("commands.forcestart.not-enough-players"));
+			// Set level back to 0
+			p.setLevel(0);
+		}
+
+		new GameLoader(game);
+		sendMessage(p, RageMode.getLang().get("commands.forcestart.game-start", "%game%", game));
 		return;
 	}
 }

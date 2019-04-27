@@ -1,25 +1,26 @@
 package hu.montlikadani.ragemode.gameLogic;
 
-import java.util.Timer;
+import java.util.HashMap;
+import java.util.List;
 import java.util.TimerTask;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.commands.ForceStart;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.gameUtils.Titles;
 
-public class LobbyTimer {
+public class LobbyTimer extends TimerTask {
 
 	private String gameName;
 	private int time;
-	private Timer t;
+	public static HashMap<String, TimerTask> map = new HashMap<>();
 
 	public LobbyTimer(String gameName, int time) {
 		this.gameName = gameName;
 		this.time = time;
-
-		PlayerList.setStatus(GameStatus.WAITING);
 	}
 
 	public String getGame() {
@@ -30,87 +31,74 @@ public class LobbyTimer {
 		return time;
 	}
 
-	public void sendTimerMessages() {
-		t = new Timer();
-
-		int totalTimerMillis = ((int) (((time * 1000) + 5000) / 10000)) * (10000);
-		if (totalTimerMillis == 0)
-			totalTimerMillis = 10000;
-		final int timeMillisForLoop = totalTimerMillis;
-
-		t.scheduleAtFixedRate(new TimerTask() {
-			private int totalMessagesBeforeTen = timeMillisForLoop / 10000;
-
-			public void run() {
-				if (totalMessagesBeforeTen > 0 && PlayerList.getPlayersInGame(gameName).length >= 2) {
-					if (ForceStart.toStopTask.contains(gameName)) {
-						cancel();
-						ForceStart.toStopTask.remove(gameName);
-					} else {
-						String[] playerUUIDs = PlayerList.getPlayersInGame(gameName);
-						for (int i = 0; i < playerUUIDs.length; i++) {
-							Bukkit.getPlayer(UUID.fromString(playerUUIDs[i])).sendMessage(RageMode.getLang().get("game.lobby.start-message", "%time%",
-									Integer.toString(totalMessagesBeforeTen * 10)));
-
-							setLevelCounter(playerUUIDs[i], totalMessagesBeforeTen * 10);
-						}
-
-						totalMessagesBeforeTen--;
-
-						if (totalMessagesBeforeTen == 0) {
-							cancel();
-							startTimer();
-						}
-					}
-				} else if (PlayerList.getPlayersInGame(gameName).length < 2)
-					cancel();
-			}
-		}, 0, 10000);
+	public void loadTimer() {
+		PlayerList.setStatus(GameStatus.WAITING);
+		// Put the timer to map to cancel when use force start
+		if (map.containsKey(gameName)) {
+			cancel();
+			map.remove(gameName);
+		}
+		map.put(gameName, this);
 	}
 
-	private void startTimer() {
-		t.scheduleAtFixedRate(new TimerTask() {
-			private int timesToSendMessage = RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.time-to-send-message");
+	@Override
+	public void run() {
+		if (PlayerList.isGameRunning(gameName)) {
+			cancel();
+			return;
+		}
 
-			@Override
-			public void run() {
-				if (timesToSendMessage > 0 && PlayerList.getPlayersInGame(gameName).length >= 2) {
-					if (ForceStart.toStopTask.contains(gameName)) {
-						cancel();
-						ForceStart.toStopTask.remove(gameName);
-					} else {
-						String[] playerUUIDs = PlayerList.getPlayersInGame(gameName);
-						for (int i = 0; i < playerUUIDs.length; i++) {
-							Bukkit.getPlayer(UUID.fromString(playerUUIDs[i])).sendMessage(RageMode.getLang().get("game.lobby.start-message", "%time%",
-									Integer.toString(timesToSendMessage)));
+		String[] playersInGame = PlayerList.getPlayersInGame(gameName);
+		Player player = Bukkit.getPlayer(UUID.fromString(playersInGame[playersInGame.length - 1]));
+		org.bukkit.configuration.file.FileConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
 
-							setLevelCounter(playerUUIDs[i], timesToSendMessage);
-						}
-						timesToSendMessage--;
-					}
-				} else if (timesToSendMessage == 0 && PlayerList.getPlayersInGame(gameName).length >= 2) {
-					cancel();
-					String[] playerUUIDs = PlayerList.getPlayersInGame(gameName);
-					for (int i = 0; i < playerUUIDs.length; i++) {
-						Bukkit.getPlayer(UUID.fromString(playerUUIDs[i])).getInventory().clear();
-
-						setLevelCounter(playerUUIDs[i], 0);
-					}
-
-					RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
-						@Override
-						public void run() {
-							new GameLoader(gameName);
-						}
-					});
-				} else
-					cancel();
+		List<Integer> listValues = conf.getIntegerList("game.global.lobby.values-to-send-start-message");
+		if (listValues != null && !listValues.isEmpty()) {
+			for (int i = 0; i < listValues.size(); i++) {
+				if (time == listValues.get(i)) {
+					GameUtils.broadcastToGame(gameName, RageMode.getLang().get("game.lobby.start-message", "%time%",
+							Integer.toString(time)));
+				}
 			}
-		}, 0, 1000);
-	}
+		}
 
-	private void setLevelCounter(String player, int timer) {
+		if (conf.getBoolean("titles.lobby-waiting.enable")) {
+			List<Integer> listTitleValues = conf.getIntegerList("titles.lobby-waiting.values-to-send-start-message");
+			String title = conf.getString("titles.lobby-waiting.title");
+			String sTitle = conf.getString("titles.lobby-waiting.subtitle");
+
+			title = title.replace("%time%", Integer.toString(time));
+			title = title.replace("%game%", gameName);
+
+			sTitle = sTitle.replace("%time%", Integer.toString(time));
+			sTitle = sTitle.replace("%game%", gameName);
+
+			if (title != null && sTitle != null) {
+				if (listTitleValues != null && !listTitleValues.isEmpty()) {
+					for (int i = 0; i < listTitleValues.size(); i++) {
+						if (time == listTitleValues.get(i)) {
+							Titles.sendTitle(player,
+									conf.getInt("titles.lobby-waiting.fade-in"),
+									conf.getInt("titles.lobby-waiting.stay"),
+									conf.getInt("titles.lobby-waiting.fade-out"),
+									title, sTitle);
+						}
+					}
+				}
+			}
+		}
+
 		if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game.global.lobby.player-level-as-time-counter"))
-			Bukkit.getPlayer(UUID.fromString(player)).setLevel(timer);
+			player.setLevel(time);
+
+		if (time == 0) {
+			cancel();
+			map.remove(gameName);
+
+			RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
+					() -> new GameLoader(gameName));
+		}
+
+		time--;
 	}
 }

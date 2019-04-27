@@ -5,32 +5,38 @@ import java.io.IOException;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class AddSpawn extends RmCommand {
 
 	public AddSpawn(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player)) {
-			sender.sendMessage(RageMode.getLang().get("in-game-only"));
+			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return;
 		}
 		Player p = (Player) sender;
 		if (!p.hasPermission("ragemode.admin.addspawn")) {
-			p.sendMessage(RageMode.getLang().get("no-permission"));
+			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return;
 		}
 		if (args.length < 2) {
-			p.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm addspawn <gameName>"));
+			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm addspawn <gameName>"));
 			return;
 		}
-		FileConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
+		if (!GetGames.isGameExistent(args[1])) {
+			sendMessage(p, RageMode.getLang().get("invalid-game"));
+			return;
+		}
+
+		YamlConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
 		int i = 1;
 		String path = "arenas." + args[1];
 		if (!aFile.isSet(path)) {
-			p.sendMessage(RageMode.getLang().get("setup.not-set-yet", "%usage%", "/rm addgame <gameName> <maxPlayers>"));
+			sendMessage(p, RageMode.getLang().get("setup.not-set-yet", "%usage%", "/rm addgame <gameName> <maxPlayers>"));
 			return;
 		}
 
@@ -50,7 +56,7 @@ public class AddSpawn extends RmCommand {
 			e.printStackTrace();
 			RageMode.getInstance().throwMsg();
 		}
-		p.sendMessage(RageMode.getLang().get("setup.spawn-set-success", "%number%", i, "%game%", args[1]));
+		sendMessage(p, RageMode.getLang().get("setup.spawn-set-success", "%number%", i, "%game%", args[1]));
 		return;
 	}
 }

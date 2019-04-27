@@ -14,38 +14,39 @@ public class RemoveGame extends RmCommand {
 
 	public RemoveGame(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player)) {
-			sender.sendMessage(RageMode.getLang().get("in-game-only"));
+			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return;
 		}
 		Player p = (Player) sender;
 		if (!p.hasPermission("ragemode.admin.removegame")) {
-			p.sendMessage(RageMode.getLang().get("no-permission"));
+			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return;
 		}
 		if (args.length >= 2) {
 			String game = args[1];
+			if (!GetGames.isGameExistent(game)) {
+				sendMessage(p, RageMode.getLang().get("setup.removed-non-existent-game"));
+				return;
+			}
 
-			if (!GetGames.isGameExistent(game))
-				p.sendMessage(RageMode.getLang().get("setup.removed-non-existent-game"));
+			if (PlayerList.isGameRunning(game))
+				sendMessage(p, RageMode.getLang().get("game.running"));
 			else {
-				if (PlayerList.isGameRunning(game))
-					p.sendMessage(RageMode.getLang().get("game.running"));
-				else {
-					PlayerList.deleteGameFromList(game);
+				PlayerList.deleteGameFromList(game);
 
-					RageMode.getInstance().getConfiguration().getArenasCfg().set("arenas." + game, null);
-					try {
-						RageMode.getInstance().getConfiguration().getArenasCfg().save(RageMode.getInstance().getConfiguration().getArenasFile());
-					} catch (IOException e) {
-						e.printStackTrace();
-						RageMode.getInstance().throwMsg();
-					}
-
-					p.sendMessage(RageMode.getLang().get("setup.success-removed", "%game%", game));
+				RageMode.getInstance().getConfiguration().getArenasCfg().set("arenas." + game, null);
+				try {
+					RageMode.getInstance().getConfiguration().getArenasCfg()
+							.save(RageMode.getInstance().getConfiguration().getArenasFile());
+				} catch (IOException e) {
+					e.printStackTrace();
+					RageMode.getInstance().throwMsg();
 				}
+
+				sendMessage(p, RageMode.getLang().get("setup.success-removed", "%game%", game));
 			}
 		} else
-			p.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName>"));
+			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName>"));
 		return;
 	}
 }

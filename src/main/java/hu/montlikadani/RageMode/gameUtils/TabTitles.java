@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.gameLogic.GameLoader;
 
 public class TabTitles {
 
@@ -36,7 +35,6 @@ public class TabTitles {
 	 * can be accessed with the getTabList(String gameName) method.
 	 * 
 	 * @param gameName the unique game-name for which the TabList element should be saved for.
-	 * 
 	 * @return Whether the TabList was stored successfully or not.
 	 */
 	public boolean addToTabList(String gameName, boolean forceReplace) {
@@ -59,10 +57,7 @@ public class TabTitles {
 	 * @return The TabList element which was saved for the given String.
 	 */
 	public TabTitles getTabList(String gameName) {
-		if (allTabLists.containsKey(gameName))
-			return allTabLists.get(gameName);
-		else
-			return null;
+		return allTabLists.containsKey(gameName) ? allTabLists.get(gameName) : null;
 	}
 
 	/**
@@ -86,22 +81,23 @@ public class TabTitles {
 	 */
 	public void sendTabTitle(Player player, String header, String footer) {
 		if (header == null) header = "";
-
 		if (footer == null) footer = "";
 
 		try {
-			Object tabHeader = Utils.getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", new Class[] { String.class }).invoke(null, new Object[] { "{\"text\":\"" + header + "\"}" });
-			Object tabFooter = Utils.getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", new Class[] { String.class }).invoke(null, new Object[] { "{\"text\":\"" + footer + "\"}" });
+			Object tabHeader = Utils.getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", new Class[] { String.class })
+					.invoke(null, new Object[] { "{\"text\":\"" + header + "\"}" });
+			Object tabFooter = Utils.getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", new Class[] { String.class })
+					.invoke(null, new Object[] { "{\"text\":\"" + footer + "\"}" });
 			Constructor<?> titleConstructor = Utils.getNMSClass("PacketPlayOutPlayerListHeaderFooter").getConstructor(new Class[0]);
 			Object packet = titleConstructor.newInstance(new Object[0]);
 			Field aField = null;
 			Field bField = null;
-			if (RageMode.getPackageVersion().equals("v1_13_R2")) {
+			if (Utils.getVersion().contains("1.13") || Utils.getVersion().contains("1.14")) {
 				aField = packet.getClass().getDeclaredField("header");
 				aField.setAccessible(true);
 				aField.set(packet, tabHeader);
 				bField = packet.getClass().getDeclaredField("footer");
-			} else if (!RageMode.getPackageVersion().equals("v1_13_R2")) {
+			} else {
 				aField = packet.getClass().getDeclaredField("a");
 				aField.setAccessible(true);
 				aField.set(packet, tabHeader);
@@ -120,23 +116,18 @@ public class TabTitles {
 	 * Removing the tablist from all online player that are currently playing in the game.
 	 */
 	public void removeTabList() {
-		if (GameLoader.task2 != null)
-			GameLoader.task2.cancel();
-
 		for (Player player : this.player) {
-			sendTabTitle(player, null, null);
+			removeTabList(player);
 		}
 	}
 
 	/**
-	 * 
-	 * @param player Player name to remove tablist from the specified player that are currently
+	 * Removes the tablist from the specified player that are currently
 	 * playing the game.
+	 * 
+	 * @param player Player name
 	 */
 	public void removeTabList(Player player) {
-		if (GameLoader.task2 != null)
-			GameLoader.task2.cancel();
-
 		sendTabTitle(player, null, null);
 	}
 }

@@ -11,16 +11,16 @@ public class PlayerLeave extends RmCommand {
 
 	public PlayerLeave(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player)) {
-			sender.sendMessage(RageMode.getLang().get("in-game-only"));
+			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return;
 		}
 		Player p = (Player) sender;
 		if (!p.hasPermission("ragemode.leave")) {
-			p.sendMessage(RageMode.getLang().get("no-permission"));
+			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return;
 		}
-		PlayerList.removePlayerSynced(p);
 		PlayerList.removePlayer(p);
+		PlayerList.removeSpectatorPlayer(p);
 		return;
 	}
 }

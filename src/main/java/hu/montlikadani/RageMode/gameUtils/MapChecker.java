@@ -3,9 +3,10 @@ package hu.montlikadani.ragemode.gameUtils;
 import java.util.Set;
 
 import org.bukkit.World;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 
 public class MapChecker {
 
@@ -47,9 +48,9 @@ public class MapChecker {
 			if (RageMode.getInstance().getConfiguration().getArenasCfg().contains(path + ".world") &&
 					!RageMode.getInstance().getConfiguration().getArenasCfg().getString(path + ".world").equals("")) {
 				maxPlayers = RageMode.getInstance().getConfiguration().getArenasCfg().getInt(path + ".maxplayers");
-				if (maxPlayers != -32500000) {
+				if (maxPlayers != -32500000)
 					isValid = true;
-				} else {
+				else {
 					message = RageMode.getLang().get("game.maxplayers-not-set", "%game%", gameName);
 					isValid = false;
 				}
@@ -61,7 +62,7 @@ public class MapChecker {
 	}
 
 	private void checkLobby() {
-		FileConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
+		YamlConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
 
 		if (!aFile.isSet("arenas." + gameName + ".lobby")) {
 			message = RageMode.getLang().get("setup.lobby.not-set", "%game%", gameName);
@@ -72,10 +73,10 @@ public class MapChecker {
 					&& aFile.isSet(thisPath + ".z")
 					&& aFile.isSet(thisPath + ".yaw") && aFile.isSet(thisPath + ".pitch")) {
 				if (aFile.contains(thisPath + ".world") && !aFile.getString(thisPath + ".world").equals("")) {
-					if (isDouble(aFile.getString(thisPath + ".x")) && isDouble(aFile.getString(thisPath + ".y"))
-							&& isDouble(aFile.getString(thisPath + ".z"))
-							&& isDouble(aFile.getString(thisPath + ".yaw"))
-							&& isDouble(aFile.getString(thisPath + ".pitch")))
+					if (Utils.isDouble(aFile.getString(thisPath + ".x")) && Utils.isDouble(aFile.getString(thisPath + ".y"))
+							&& Utils.isDouble(aFile.getString(thisPath + ".z"))
+							&& Utils.isDouble(aFile.getString(thisPath + ".yaw"))
+							&& Utils.isDouble(aFile.getString(thisPath + ".pitch")))
 						isValid = true;
 					else {
 						message = RageMode.getLang().get("setup.lobby.coords-not-set");
@@ -94,7 +95,7 @@ public class MapChecker {
 	}
 
 	private void checkSpawns() {
-		FileConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
+		YamlConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
 		String path = "arenas." + gameName;
 		if (aFile.isSet(path + ".spawns")) {
 			Set<String> spawnNames = aFile.getConfigurationSection(path + ".spawns").getKeys(false);
@@ -108,11 +109,11 @@ public class MapChecker {
 						world = null;
 					}
 					if (world != null
-							&& isDouble(aFile.getString(path + ".spawns." + s + ".x"))
-							&& isDouble(aFile.getString(path + ".spawns." + s + ".y"))
-							&& isDouble(aFile.getString(path + ".spawns." + s + ".z"))
-							&& isDouble(aFile.getString(path + ".spawns." + s + ".yaw"))
-							&& isDouble(aFile.getString(path + ".spawns." + s + ".pitch")))
+							&& Utils.isDouble(aFile.getString(path + ".spawns." + s + ".x"))
+							&& Utils.isDouble(aFile.getString(path + ".spawns." + s + ".y"))
+							&& Utils.isDouble(aFile.getString(path + ".spawns." + s + ".z"))
+							&& Utils.isDouble(aFile.getString(path + ".spawns." + s + ".yaw"))
+							&& Utils.isDouble(aFile.getString(path + ".spawns." + s + ".pitch")))
 						isValid = true;
 					else {
 						message = RageMode.getLang().get("game.spawns-not-set-properly");
@@ -128,15 +129,6 @@ public class MapChecker {
 			message = RageMode.getLang().get("game.no-spawns-configured", "%game%", gameName);
 			isValid = false;
 		}
-	}
-
-	private boolean isDouble(String str) {
-		try {
-			Double.parseDouble(str);
-		} catch (Throwable e) {
-			return false;
-		}
-		return true;
 	}
 
 	public boolean isValid() {

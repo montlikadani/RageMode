@@ -11,8 +11,8 @@ import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 
-import hu.montlikadani.ragemode.MySQLConnect;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.database.MySQLConnect;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 
@@ -26,7 +26,8 @@ public class MySQLStats {
 	 * @param mySQLConnect The MySQLConnect instance which holds the Connection for the database.
 	 */
 	public static void addPlayerStatistics(PlayerPoints playerPoints, MySQLConnect mySQLConnect) {
-		testConnection();
+		if (!testConnection())
+			return;
 
 		Connection connection = RageMode.getMySQL().getConnection();
 
@@ -125,7 +126,8 @@ public class MySQLStats {
 	 * @return
 	 */
 	public static RetPlayerPoints getPlayerStatistics(String player, MySQLConnect mySQLConnector) {
-		testConnection();
+		if (!testConnection())
+			return null;
 
 		Connection connection = RageMode.getMySQL().getConnection();
 
@@ -213,7 +215,8 @@ public class MySQLStats {
 	public static List<RetPlayerPoints> getAllPlayerStatistics() {
 		List<RetPlayerPoints> rppList = new java.util.ArrayList<>();
 
-		testConnection();
+		if (!testConnection())
+			return Collections.emptyList();
 
 		Connection connection = RageMode.getMySQL().getConnection();
 
@@ -238,9 +241,6 @@ public class MySQLStats {
 		double currentKD = 0;
 
 		try {
-			if (connection == null)
-				return Collections.emptyList();
-
 			statement = connection.createStatement();
 			ResultSet rs = statement.executeQuery(query);
 			while (rs.next()) {
@@ -295,12 +295,16 @@ public class MySQLStats {
 		return rppList;
 	}
 
-	private synchronized static void testConnection() {
+	private synchronized static boolean testConnection() {
 		try {
-			if (RageMode.getMySQL().getConnection() != null && RageMode.getMySQL().getConnection().isValid(2))
-				RageMode.getInstance().connectMySQL();
+			if (RageMode.getMySQL().getConnection() == null || !RageMode.getMySQL().getConnection().isValid(2))
+				return false;
 		} catch (SQLException e) {
 			e.printStackTrace();
+			return false;
 		}
+
+		RageMode.getInstance().connectMySQL();
+		return true;
 	}
 }

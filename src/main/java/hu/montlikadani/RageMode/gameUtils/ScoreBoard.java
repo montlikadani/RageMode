@@ -13,7 +13,6 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 
-import hu.montlikadani.ragemode.gameLogic.GameLoader;
 import hu.montlikadani.ragemode.scoreboard.ScoreBoardHolder;
 
 public class ScoreBoard {
@@ -110,7 +109,7 @@ public class ScoreBoard {
 	 */
 	public void setScoreBoard() {
 		for (Player player : this.player) {
-			player.setScoreboard(scoreboards.get(player).getScoreboard());
+			setScoreBoard(player);
 		}
 	}
 
@@ -127,11 +126,8 @@ public class ScoreBoard {
 	 * Removes the ScoreBoard for all the Players given in the constructor.
 	 */
 	public void removeScoreBoard() {
-		if (GameLoader.task != null)
-			GameLoader.task.cancel();
-
 		for (Player player : this.player) {
-			player.setScoreboard(scoreboardManager.getNewScoreboard());
+			removeScoreBoard(player);
 		}
 	}
 
@@ -141,10 +137,7 @@ public class ScoreBoard {
 	 * @param player The Player instance for which the ScoreBoard should be removed.
 	 */
 	public void removeScoreBoard(Player player) {
-		if (GameLoader.task != null)
-			GameLoader.task.cancel();
-
-		player.setScoreboard(scoreboardManager.getNewScoreboard());
+		player.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
 	}
 
 	/**

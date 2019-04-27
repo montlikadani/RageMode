@@ -7,33 +7,61 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class SignCreator {
 
-	private static FileConfiguration fileConf = SignConfiguration.getSignConfiguration();
-	private static SignPlaceholder signPlaceholder;
+	private static YamlConfiguration fileConf;
+	private static SignPlaceholder signPlaceholder = null;
 
 	private static List<SignData> signData = new ArrayList<>();
+
+	public synchronized static boolean loadSigns() {
+		fileConf = SignConfiguration.getSignConfig();
+
+		signPlaceholder = new SignPlaceholder(RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list"));
+
+		List<String> list = new ArrayList<>(fileConf.getStringList("signs"));
+
+		if (list == null || list.isEmpty())
+			return false;
+
+		int totalSigns = 0;
+
+		for (String one : list) {
+			String[] splited = one.split(",");
+			String world = splited[0];
+			double x = Double.parseDouble(splited[1]);
+			double y = Double.parseDouble(splited[2]);
+			double z = Double.parseDouble(splited[3]);
+			String game = splited[4];
+
+			Location loc = new Location(Bukkit.getWorld(world), x, y, z);
+			SignData data = new SignData(loc, game, signPlaceholder);
+
+			signData.add(data);
+			totalSigns += list.size();
+		}
+
+		if (totalSigns > 0)
+			RageMode.logConsole("[RageMode] Loaded " + totalSigns + " sign" + (totalSigns < 1 ? "s" : "") + ".");
+
+		return false;
+	}
 
 	public synchronized static boolean createNewSign(Sign sign, String game) {
 		List<String> signs = fileConf.getStringList("signs");
 		String index = locationSignToString(sign.getLocation(), game);
-
-		signPlaceholder = new SignPlaceholder(RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list"));
+		SignData data = new SignData(sign.getLocation(), game, signPlaceholder);
 
 		signs.add(index);
 		fileConf.set("signs", signs);
+		signData.add(data);
 		try {
 			fileConf.save(SignConfiguration.getYamlSignsFile());
-
-			if (signPlaceholder != null) {
-				SignData data = new SignData(sign.getLocation(), game, signPlaceholder);
-				signData.add(data);
-			}
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -46,24 +74,22 @@ public class SignCreator {
 		List<String> signs = fileConf.getStringList("signs");
 
 		for (String game : GetGames.getGameNames()) {
-			String index = locationSignToString(sign.getLocation(), game);
+			for (SignData data : signData) {
+				if (sign.getLocation().equals(data.getLocation())) {
+					String index = locationSignToString(data.getLocation(), game);
 
-			signPlaceholder = new SignPlaceholder(RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list"));
-
-			signs.remove(index);
-			fileConf.set("signs", signs);
-			try {
-				fileConf.save(SignConfiguration.getYamlSignsFile());
-
-				if (signPlaceholder != null) {
-					SignData data = new SignData(sign.getLocation(), game, signPlaceholder);
+					signs.remove(index);
+					fileConf.set("signs", signs);
 					signData.remove(data);
+					try {
+						fileConf.save(SignConfiguration.getYamlSignsFile());
+						return true;
+					} catch (IOException e) {
+						e.printStackTrace();
+						RageMode.getInstance().throwMsg();
+						return false;
+					}
 				}
-				return true;
-			} catch (IOException e) {
-				e.printStackTrace();
-				RageMode.getInstance().throwMsg();
-				return false;
 			}
 		}
 		return false;
@@ -72,23 +98,12 @@ public class SignCreator {
 	/**
 	 * Updates a JoinSigns for the given game which are properly configured.
 	 * 
-	 * @param event Event that are called.
 	 * @return True if a sign is found on the set location.
 	 */
-	public static boolean updateSign(Sign sign) {
-		List<String> signs = fileConf.getStringList("signs");
-
-		if (signs != null && !signs.isEmpty()) {
-			for (String list : signs) {
-				String game = getGameFromString(list);
-
-				if (signPlaceholder == null)
-					signPlaceholder = new SignPlaceholder();
-				else {
-					SignData data = new SignData(sign.getLocation(), game, signPlaceholder);
-
-					data.updateSign();
-				}
+	public static boolean updateSign(Location loc) {
+		for (SignData data : signData) {
+			if (loc.equals(data.getLocation())) {
+				data.updateSign();
 				return true;
 			}
 		}
@@ -111,11 +126,7 @@ public class SignCreator {
 						if (game.trim().contains(gameName.trim())) {
 							Location signLocation = stringToLocationSign(signString);
 							if (signLocation.getBlock().getState() instanceof Sign) {
-								if (signPlaceholder == null)
-									signPlaceholder = new SignPlaceholder();
-								else {
-									SignData data = new SignData(signLocation, game, signPlaceholder);
-
+								for (SignData data : signData) {
 									data.updateSign();
 								}
 								return true;
@@ -155,7 +166,7 @@ public class SignCreator {
 	/**
 	 * Checks whether the sign is properly configured to get the game from the sign.
 	 * 
-	 * @return True if the block found in the specified game.
+	 * @return Game name if found in the list.
 	 */
 	public static String getGameFromString() {
 		List<String> signs = fileConf.getStringList("signs");
@@ -171,6 +182,11 @@ public class SignCreator {
 		return "";
 	}
 
+	/**
+	 * Gets the SignData list
+	 * 
+	 * @return List of SignData
+	 */
 	public static List<SignData> getSignData() {
 		return signData;
 	}

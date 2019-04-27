@@ -3,37 +3,38 @@ package hu.montlikadani.ragemode.gameLogic;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.boss.BarStyle;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
+import org.bukkit.util.Vector;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.GameStartEvent;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.ActionBar;
-import hu.montlikadani.ragemode.gameUtils.BossUtils;
-import hu.montlikadani.ragemode.gameUtils.GameBroadcast;
-import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
-import hu.montlikadani.ragemode.gameUtils.TabTitles;
+import hu.montlikadani.ragemode.gameUtils.BossMessenger;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.CombatAxe;
 import hu.montlikadani.ragemode.items.Grenade;
 import hu.montlikadani.ragemode.items.RageArrow;
 import hu.montlikadani.ragemode.items.RageBow;
 import hu.montlikadani.ragemode.items.RageKnife;
-import hu.montlikadani.ragemode.scoreboard.ScoreBoardHolder;
 import hu.montlikadani.ragemode.signs.SignCreator;
 
 public class GameLoader {
 
 	private String gameName;
 	private List<Location> gameSpawns = new ArrayList<>();
-	public static BukkitTask task, task2;
 
 	private Configuration conf;
 	private GameTimer gameTimer;
@@ -45,42 +46,51 @@ public class GameLoader {
 		GameStartEvent gameStartEvent = new GameStartEvent(gameName, PlayerList.getPlayersInGame(gameName));
 		Bukkit.getPluginManager().callEvent(gameStartEvent);
 
+		checkTeleport();
+
 		PlayerList.setGameRunning(gameName);
 		PlayerList.setStatus(GameStatus.RUNNING);
-		checkTeleport();
 		setInventories();
 
-		List<String> players = Arrays.asList(PlayerList.getPlayersInGame(gameName));
-		setGameTab(players);
-		setGameScoreboard(players);
+		int time = !conf.getArenasCfg().isSet("arenas." + gameName + ".gametime")
+				? conf.getCfg().getInt("game.global.defaults.gametime") < 0 ? 5 * 60
+						: conf.getCfg().getInt("game.global.defaults.gametime") * 60
+				: conf.getArenasCfg().getInt("arenas." + gameName + ".gametime") * 60;
 
-		int time = 0;
-		if (!conf.getArenasCfg().isSet("arenas." + gameName + ".gametime")) {
-			if (conf.getCfg().getInt("game.global.defaults.gametime") > 0)
-				time = conf.getCfg().getInt("game.global.defaults.gametime") * 60;
-			else
-				time = 300;
-		} else
-			time = conf.getArenasCfg().getInt("arenas." + gameName + ".gametime") * 60;
 		gameTimer = new GameTimer(gameName, time);
-		gameTimer.startCounting();
+		gameTimer.loadBoards();
+		new Timer().scheduleAtFixedRate(gameTimer, 0, 60 * 20L);
 
 		SignCreator.updateAllSigns(gameName);
+
+		List<String> players = Arrays.asList(PlayerList.getPlayersInGame(gameName));
+		Player p = null;
+		for (String player : players) {
+			p = Bukkit.getPlayer(UUID.fromString(player));
+		}
+
+		// Try to gets the player from list
+		if (p == null)
+			p = Bukkit.getPlayer(UUID.fromString(players.get(players.size() - 1)));
+
+		if (conf.getCfg().getBoolean("game.global.tablist.player-format.enable"))
+			setPlayerGroup(p, conf.getCfg().getString("game.global.tablist.player-format.prefix"),
+					conf.getCfg().getString("game.global.tablist.player-format.suffix"));
 
 		String bossMessage = conf.getCfg().getString("bossbar-messages.join.message");
 		if (bossMessage != null && !bossMessage.equals("")) {
 			for (String player : players) {
 				bossMessage = bossMessage.replace("%game%", gameName);
-				bossMessage = bossMessage.replace("%player%", Bukkit.getPlayer(UUID.fromString(player)).getName());
+				bossMessage = bossMessage.replace("%player%", p.getName());
 				bossMessage = RageMode.getLang().colors(bossMessage);
 
 				if (conf.getArenasCfg().isSet("arenas." + gameName + ".bossbar")) {
 					if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".bossbar"))
-						new BossUtils(bossMessage).sendBossBar(gameName, player,
+						new BossMessenger(gameName).sendBossBar(bossMessage, player,
 								BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")));
 				} else {
 					if (conf.getCfg().getBoolean("game.global.defaults.bossbar"))
-						new BossUtils(bossMessage).sendBossBar(gameName, player,
+						new BossMessenger(gameName).sendBossBar(bossMessage, player,
 								BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")));
 				}
 			}
@@ -88,17 +98,15 @@ public class GameLoader {
 
 		String actionbarMsg = conf.getCfg().getString("actionbar-messages.join.message");
 		if (actionbarMsg != null && !actionbarMsg.equals("")) {
-			for (String player : players) {
-				actionbarMsg = actionbarMsg.replace("%game%", gameName);
-				actionbarMsg = actionbarMsg.replace("%player%", Bukkit.getPlayer(UUID.fromString(player)).getName());
-				actionbarMsg = RageMode.getLang().colors(actionbarMsg);
+			actionbarMsg = actionbarMsg.replace("%game%", gameName);
+			actionbarMsg = actionbarMsg.replace("%player%", p.getName());
+			actionbarMsg = RageMode.getLang().colors(actionbarMsg);
 
-				if (conf.getArenasCfg().isSet("arenas." + gameName + ".actionbar")) {
-					if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".actionbar"))
-						ActionBar.sendActionBar(Bukkit.getPlayer(UUID.fromString(player)), actionbarMsg);
-				} else if (conf.getCfg().getBoolean("game.global.defaults.actionbar"))
-					ActionBar.sendActionBar(Bukkit.getPlayer(UUID.fromString(player)), actionbarMsg);
-			}
+			if (conf.getArenasCfg().isSet("arenas." + gameName + ".actionbar")) {
+				if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".actionbar"))
+					ActionBar.sendActionBar(p, actionbarMsg);
+			} else if (conf.getCfg().getBoolean("game.global.defaults.actionbar"))
+				ActionBar.sendActionBar(p, actionbarMsg);
 		}
 	}
 
@@ -108,7 +116,7 @@ public class GameLoader {
 			gameSpawns = gameSpawnGetter.getSpawnLocations();
 			teleportPlayersToGameSpawns();
 		} else {
-			GameBroadcast.broadcastToGame(gameName, RageMode.getLang().get("game.not-set-up"));
+			GameUtils.broadcastToGame(gameName, RageMode.getLang().get("game.not-set-up"));
 			String[] players = PlayerList.getPlayersInGame(gameName);
 			for (String player : players) {
 				Player thisPlayer = Bukkit.getPlayer(UUID.fromString(player));
@@ -130,104 +138,104 @@ public class GameLoader {
 		String[] players = PlayerList.getPlayersInGame(gameName);
 		for (String playerUUID : players) {
 			Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
-			FileConfiguration f = conf.getCfg();
-			player.getInventory().setItem(f.getInt("items.rageBow.slot"), RageBow.getRageBow());
-			player.getInventory().setItem(f.getInt("items.rageKnife.slot"), RageKnife.getRageKnife());
-			player.getInventory().setItem(f.getInt("items.combatAxe.slot"), CombatAxe.getCombatAxe());
-			player.getInventory().setItem(f.getInt("items.rageArrow.slot"), RageArrow.getRageArrow());
-			player.getInventory().setItem(f.getInt("items.grenade.slot"), Grenade.getGrenade());
+
+			org.bukkit.inventory.PlayerInventory inv = player.getInventory();
+
+			// Removing the lobby items
+			inv.clear();
+
+			YamlConfiguration f = conf.getCfg();
+			inv.setItem(f.getInt("items.rageBow.slot"), RageBow.getItem());
+			inv.setItem(f.getInt("items.rageKnife.slot"), RageKnife.getItem());
+			inv.setItem(f.getInt("items.combatAxe.slot"), CombatAxe.getItem());
+			inv.setItem(f.getInt("items.rageArrow.slot"), RageArrow.getItem());
+			inv.setItem(f.getInt("items.grenade.slot"), Grenade.getItem());
 		}
 	}
 
-	private void setGameScoreboard(List<String> listPlayers) {
-		if (!conf.getCfg().getBoolean("game.global.scoreboard.enable")) return;
+	private void setPlayerGroup(Player player, String prefix, String suffix) {
+		Scoreboard board = player.getScoreboard();
+		Team team = getScoreboardTeam(board, player.getName());
 
-		String[] players = PlayerList.getPlayersInGame(gameName);
-		for (String playerUUID : players) {
-			Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
-			ScoreBoard gameBoard = new ScoreBoard(listPlayers, false);
+		if (!team.hasEntry(player.getName()))
+			team.addEntry(player.getName());
 
-			task = Bukkit.getScheduler().runTaskTimerAsynchronously(RageMode.getInstance(), new Runnable() {
-				@Override
-				public void run() {
-					String boardTitle = conf.getCfg().getString("game.global.scoreboard.title");
-					if (boardTitle != null && !boardTitle.equals(""))
-						gameBoard.setTitle(RageMode.getLang().colors(boardTitle));
+		if (prefix == null) prefix = "";
+		if (suffix == null) suffix = "";
 
-					List<String> rows = conf.getCfg().getStringList("game.global.scoreboard.content");
-					if (rows != null && !rows.isEmpty()) {
-						int rowMax = rows.size();
+		prefix = Utils.setPlaceholders(prefix, player);
+		suffix = Utils.setPlaceholders(suffix, player);
 
-						for (String row : rows) {
-							if (row.trim().equals("")) {
-								for (int i = 0; i <= rowMax; i++) {
-									row = row + " ";
-								}
-							}
-
-							row = Utils.setPlaceholders(row, player);
-							row = row.replace("%game-time%", Integer.toString(gameTimer.getGameTime()));
-
-							gameBoard.setLine(row, rowMax);
-							rowMax--;
-
-							gameBoard.setScoreBoard();
-							gameBoard.addToScoreBoards(gameName, true);
-
-							ScoreBoardHolder sHolder = gameBoard.getScoreboards().get(player);
-							sHolder.setOldKdLine(row);
-							sHolder.setOldPointsLine(row);
-						}
-					}
-				}
-			}, 3 * 20L, 3 * 20L);
+		// Prefix & suffix char limit, to prevent error
+		String bVersion = Utils.getVersion();
+		if (!(bVersion.contains("1.13") || bVersion.contains("1.14"))) {
+			if (prefix.length() > 15) prefix = prefix.substring(0, 16);
+			if (suffix.length() > 15) suffix = suffix.substring(0, 16);
+		} else {
+			if (prefix.length() > 63) prefix = prefix.substring(0, 64);
+			if (suffix.length() > 63) suffix = suffix.substring(0, 64);
 		}
+
+		if (!conf.getCfg().getBoolean("game.global.show-name-above-player-when-look")) {
+			for (Entity e : getEntitys(player)) {
+				LivingEntity l = (LivingEntity) e;
+				if (!(l instanceof Player))
+					continue;
+
+				board = ((Player) l).getScoreboard();
+				team = getScoreboardTeam(board, ((Player) l).getName());
+
+				l.setCustomNameVisible(false);
+			}
+		} else {
+			for (Entity e : getEntitys(player)) {
+				LivingEntity l = (LivingEntity) e;
+				if (!(l instanceof Player))
+					continue;
+
+				board = ((Player) l).getScoreboard();
+				team = getScoreboardTeam(board, ((Player) l).getName());
+
+				l.setCustomNameVisible(false);
+			}
+		}
+
+		team.setPrefix(prefix);
+		team.setSuffix(suffix);
+		if (bVersion.contains("1.13") || bVersion.contains("1.14"))
+			team.setColor(Utils.fromPrefix(prefix));
+
+		player.setScoreboard(board);
 	}
 
-	private void setGameTab(List<String> listPlayers) {
-		if (!conf.getCfg().getBoolean("game.global.tablist.list.enable")) return;
+	public static void removeScoreboard(Player player) {
+		Scoreboard board = player.getScoreboard();
+		getScoreboardTeam(board, player.getName()).unregister();
+		player.setScoreboard(board);
+	}
 
-		String[] players = PlayerList.getPlayersInGame(gameName);
-		for (String playerUUID : players) {
-			Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
-			TabTitles gameTab = new TabTitles(listPlayers);
+	private static Team getScoreboardTeam(Scoreboard board, String name) {
+		return board.getTeam(name) == null ? board.registerNewTeam(name) : board.getTeam(name);
+	}
 
-			task2 = Bukkit.getScheduler().runTaskTimerAsynchronously(RageMode.getInstance(), new Runnable() {
-				@Override
-				public void run() {
-					List<String> tabHeader = conf.getCfg().getStringList("game.global.tablist.list.header");
-					List<String> tabFooter = conf.getCfg().getStringList("game.global.tablist.list.footer");
-
-					String he = "";
-					String fo = "";
-					int s = 0;
-					for (String line : tabHeader) {
-						s++;
-						if (s > 1)
-							he = he + "\n\u00a7r";
-
-						he = he + line;
-					}
-					s = 0;
-					for (String line : tabFooter) {
-						s++;
-						if (s > 1)
-							fo = fo + "\n\u00a7r";
-
-						fo = fo + line;
-					}
-
-					he = Utils.setPlaceholders(he, player);
-					he = he.replace("%game-time%", Integer.toString(gameTimer.getGameTime()));
-
-					fo = Utils.setPlaceholders(fo, player);
-					fo = fo.replace("%game-time%", Integer.toString(gameTimer.getGameTime()));
-
-					gameTab.sendTabTitle(he, fo);
-
-					gameTab.addToTabList(gameName, true);
-				}
-			}, 3 * 20L, 3 * 20L);
+	// TODO Make player nametag invisible when not looking at
+	private List<Entity> getEntitys(Player player) {
+		List<Entity> entitys = new ArrayList<>();
+		for (Entity e : player.getNearbyEntities(5, 5, 5)) {
+			if (e instanceof LivingEntity) {
+				if (getLookingAt(player, (LivingEntity) e))
+					entitys.add(e);
+			}
 		}
+
+		return entitys;
+	}
+
+	private boolean getLookingAt(Player player, LivingEntity livingEntity) {
+		Location eye = player.getEyeLocation();
+		Vector toEntity = livingEntity.getEyeLocation().toVector().subtract(eye.toVector());
+		double dot = toEntity.normalize().dot(eye.getDirection());
+
+		return dot > 0.99D;
 	}
 }

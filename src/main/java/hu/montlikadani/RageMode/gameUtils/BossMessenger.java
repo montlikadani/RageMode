@@ -9,26 +9,28 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 
-public class BossUtils {
+public class BossMessenger {
 
-	private String message;
+	private String game;
 
-	public BossUtils(String message) {
-		this.message = message;
+	public BossMessenger(String game) {
+		this.game = game;
 	}
 
-	public String getMessage() {
-		return message;
+	public String getGame() {
+		return game;
 	}
 
-	public void sendBossBar(String game, String inGamePlayer, BarStyle style) {
-		if (RageMode.getVersion().contains("1.8")) {
+	public void sendBossBar(String message, String inGamePlayer, BarStyle style) {
+		if (Utils.getVersion().contains("1.8")) {
 			RageMode.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
 			return;
 		}
 
-		BossBar boss = Bukkit.createBossBar(message, BarColor.RED, style != null ? style : BarStyle.SOLID);
+		final BossBar boss = Bukkit.createBossBar(message == null ? "" : message, BarColor.RED, style != null ? style : BarStyle.SOLID);
+		boss.removePlayer(Bukkit.getPlayer(UUID.fromString(inGamePlayer)));
 		boss.addPlayer(Bukkit.getPlayer(UUID.fromString(inGamePlayer)));
 
 		for (int i = 1; i <= 6; ++i) {

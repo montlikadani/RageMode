@@ -34,6 +34,9 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 
 					if (hasPerm(sender, "ragemode.help.playercommands") || hasPerm(sender, "ragemode.stats"))
 						msg += "&7-&6 /rm showstats [player]&a - Showing statistic of a target player.\n";
+
+					if (hasPerm(sender, "ragemode.help.playercommands") || hasPerm(sender, "ragemode.spectate"))
+						msg += "&7-&6 /rm spectate <gameName>&a - Join to the game with spectator mode.\n";
 				} else {
 					msg += "&7-&6 /rm showstats <player>&a - Showing statistic of a target player.\n";
 
@@ -46,13 +49,13 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 				if (hasPerm(sender, "ragemode.admin.help"))
 					msg += "&7-&6 /rm admin&a - Lists all admin commands.";
 
-				sender.sendMessage(RageMode.getLang().colors(msg));
+				sendMessage(sender, RageMode.getLang().colors(msg));
 				return true;
 			}
 
 			if (args.length == 1 && args[0].equals("admin")) {
 				if (!hasPerm(sender, "ragemode.admin.help")) {
-					sender.sendMessage(RageMode.getLang().get("no-permission"));
+					sendMessage(sender, "no-permission");
 					return true;
 				}
 				String msg = "";
@@ -64,6 +67,15 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 
 				if (hasPerm(sender, "ragemode.admin.stopgame"))
 					msg += "&7-&6 /rm stop <gameName>&a - Stops the specified game.\n";
+
+				if (hasPerm(sender, "ragemode.admin.signupdate"))
+					msg += "&7-&6 /rm signupdate <gameName/all>&a - Refresh the specified or all game signs.\n";
+
+				if (hasPerm(sender, "ragemode.admin.togglegame"))
+					msg += "&7-&6 /rm togglegame <gameName>&a - Toggles the specified game, to a player not be able to join.\n";
+
+				if (hasPerm(sender, "ragemode.admin.points"))
+					msg += "&7-&6 /rm points set/add/take <player> <amount>&a - Changes the player points.\n";
 
 				if (sender instanceof Player) {
 					// Setup
@@ -77,7 +89,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 						msg += "&7-&6 /rm addspawn <gameName>&a - Adds a new spawn location.\n";
 
 					if (hasPerm(sender, "ragemode.admin.holostats"))
-						msg += "&7-&6 /rm holostats <add/remove/tp>&a - Adds/remove or teleport a new hologram.\n";
+						msg += "&7-&6 /rm holostats <add/remove>&a - Adds/remove a new hologram.\n";
 
 					if (hasPerm(sender, "ragemode.admin.setactionbar"))
 						msg += "'&7-&6 /rm actionbar <gameName> <true/false>&a - Actionbar on/off which display in the game.\n";
@@ -98,85 +110,98 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 						msg += "&7-&6 /rm removegame <gameName>&a - Removes the specified game.\n";
 
 					// Other
-					if (hasPerm(sender, "ragemode.admin.kick"))
-						msg += "&7-&6 /rm kick <gameName> <player>&a - Kick a player from the game.\n";
-
 					if (hasPerm(sender, "ragemode.admin.forcestart"))
-						msg += "&7-&6 /rm forcestart <gameName>&a - Forces the specified game to start.";
+						msg += "&7-&6 /rm forcestart <gameName>&a - Forces the specified game to start.\n";
 				}
-				sender.sendMessage(RageMode.getLang().colors(msg));
+				if (hasPerm(sender, "ragemode.admin.kick"))
+					msg += "&7-&6 /rm kick <gameName> <player>&a - Kick a player from the game.";
+
+				sendMessage(sender, RageMode.getLang().colors(msg));
 				return true;
 			}
 
 			switch (args[0]) {
 			case "addgame":
 				new AddGame(sender, cmd, label, args);
-				return true;
+				break;
 			case "setlobby":
 				new SetLobby(sender, cmd, label, args);
-				return true;
+				break;
 			case "addspawn":
 				new AddSpawn(sender, cmd, label, args);
-				return true;
+				break;
 			case "holostats":
 			case "holo":
 				new HoloStats(sender, cmd, label, args);
-				return true;
+				break;
 			case "listgames":
 			case "list":
 				new ListGames(sender, cmd, label, args);
-				return true;
+				break;
 			case "join":
 				new PlayerJoin(sender, cmd, label, args);
-				return true;
+				break;
 			case "leave":
 				new PlayerLeave(sender, cmd, label, args);
-				return true;
+				break;
 			case "reload":
 			case "rl":
 				new Reload(sender, cmd, label, args);
-				return true;
+				break;
 			case "removegame":
 			case "remove":
 				new RemoveGame(sender, cmd, label, args);
-				return true;
+				break;
 			case "actionbar":
 				new SetActionBar(sender, cmd, label, args);
-				return true;
+				break;
 			case "bossbar":
 				new SetBossBar(sender, cmd, label, args);
-				return true;
+				break;
 			case "resetstats":
 				new ResetPlayerStats(sender, cmd, label, args);
-				return true;
+				break;
 			case "gametime":
 				new SetGameTime(sender, cmd, label, args);
-				return true;
+				break;
 			case "globalmessages":
 			case "globalmsgs":
 				new SetGlobalMessages(sender, cmd, label, args);
-				return true;
+				break;
 			case "lobbydelay":
 				new SetLobbyDelay(sender, cmd, label, args);
-				return true;
+				break;
 			case "forcestart":
 				new ForceStart(sender, cmd, label, args);
-				return true;
+				break;
+			case "points":
+				new Points(sender, cmd, label, args);
+				break;
+			case "togglegame":
+			case "toggle":
+				new ToggleGame(sender, cmd, label, args);
+				break;
+			case "spectate":
+			case "spec":
+				new Spectate(sender, cmd, label, args);
+				break;
 			case "stats":
 			case "showstats":
 				new ShowStats(sender, cmd, label, args);
-				return true;
+				break;
 			case "kickplayer":
 			case "kick":
 				new KickPlayer(sender, cmd, label, args);
-				return true;
+				break;
 			case "signupdate":
 				new SignUpdate(sender, cmd, label, args);
-				return true;
+				break;
 			case "stop":
 			case "stopgame":
 				new StopGame(sender, cmd, label, args);
-				return true;
+				break;
+			default:
+				break;
 			}
 		}
 		return true;
@@ -185,8 +210,8 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		List<String> completionList = new ArrayList<>();
-
 		String partOfCommand = "";
+
 		if (cmd.getName().equals("ragemode") || cmd.getName().equals("rm")) {
 			List<String> cmds = new ArrayList<>();
 			if (args.length < 2) {
@@ -219,7 +244,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 
 	private List<String> getDefaultCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
-		for (String cmds : new String[] { "join", "leave", "listgames", "stats" }) {
+		for (String cmds : new String[] { "join", "leave", "listgames", "stats", "spectate" }) {
 			if (!hasPerm(sender, "ragemode.help.playercommands") || !hasPerm(sender, "ragemode." + cmds))
 				continue;
 			c.add(cmds);
@@ -230,7 +255,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 	private List<String> getAdminCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
 		for (String cmds : new String[] { "addgame", "addspawn", "setlobby", "reload", "holostats", "removegame", "resetstats", "forcestart",
-				"kick", "stopgame", "signupdate" }) {
+				"kick", "stopgame", "signupdate", "togglegame", "points" }) {
 			if (!hasPerm(sender, "ragemode.admin." + cmds))
 				continue;
 			c.add(cmds);
@@ -250,12 +275,17 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 
 	private List<String> getGameListCmds() {
 		return java.util.Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay", "removegame", "forcestart", "setlobby",
-				"addspawn", "join", "leave", "signupdate", "stop", "stopgame");
+				"addspawn", "join", "leave", "signupdate", "stop", "stopgame", "togglegame", "spectate");
 	}
 
 	private boolean hasPerm(CommandSender sender, String perm) {
 		if (sender.hasPermission(perm))
 			return true;
 		return false;
+	}
+
+	public void sendMessage(CommandSender sender, String msg) {
+		if (sender != null && msg != null && !msg.equals(""))
+			sender.sendMessage(msg);
 	}
 }

@@ -1,9 +1,7 @@
 package hu.montlikadani.ragemode.config;
 
 import java.io.File;
-import java.util.logging.Level;
 
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -11,14 +9,16 @@ import hu.montlikadani.ragemode.RageMode;
 public class Configuration {
 
 	private RageMode plugin;
-	private FileConfiguration config, arenas;
-	private File config_file, arenas_file;
+	private YamlConfiguration config, arenas, rewards, datas;
+	private File config_file, arenas_file, rewards_file, datas_file;
 
 	public Configuration(RageMode plugin) {
 		this.plugin = plugin;
 
 		config_file = new File(plugin.getFolder(), "config.yml");
 		arenas_file = new File(plugin.getFolder(), "arenas.yml");
+		rewards_file = new File(plugin.getFolder(), "rewards.yml");
+		datas_file = new File(plugin.getFolder(), "datas.yml");
 	}
 
 	public void loadConfig() {
@@ -29,7 +29,7 @@ public class Configuration {
 			} else {
 				plugin.saveResource("config.yml", false);
 				config = YamlConfiguration.loadConfiguration(config_file);
-				RageMode.logConsole(Level.INFO, "[RageMode] The 'config.yml' file successfully created!");
+				RageMode.logConsole("[RageMode] The 'config.yml' file successfully created!");
 			}
 			if (arenas_file.exists()) {
 				arenas = YamlConfiguration.loadConfiguration(arenas_file);
@@ -38,7 +38,29 @@ public class Configuration {
 			} else {
 				arenas_file.createNewFile();
 				arenas = YamlConfiguration.loadConfiguration(arenas_file);
-				RageMode.logConsole(Level.INFO, "[RageMode] The 'arenas.yml' file successfully created!");
+				RageMode.logConsole("[RageMode] The 'arenas.yml' file successfully created!");
+			}
+			if (config.getBoolean("rewards.enable")) {
+				if (rewards_file.exists()) {
+					rewards = YamlConfiguration.loadConfiguration(rewards_file);
+					rewards.load(rewards_file);
+					rewards.save(rewards_file);
+				} else {
+					plugin.saveResource("rewards.yml", false);
+					rewards = YamlConfiguration.loadConfiguration(rewards_file);
+					RageMode.logConsole("[RageMode] The 'rewards.yml' file successfully created!");
+				}
+			}
+			if (config.getBoolean("save-player-datas-to-file")) {
+				if (datas_file.exists()) {
+					datas = YamlConfiguration.loadConfiguration(datas_file);
+					datas.load(datas_file);
+					datas.save(datas_file);
+				} else {
+					plugin.saveResource("datas.yml", false);
+					datas = YamlConfiguration.loadConfiguration(datas_file);
+					RageMode.logConsole("[RageMode] The 'datas.yml' file successfully created!");
+				}
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -46,12 +68,20 @@ public class Configuration {
 		}
 	}
 
-	public FileConfiguration getCfg() {
+	public YamlConfiguration getCfg() {
 		return config;
 	}
 
-	public FileConfiguration getArenasCfg() {
+	public YamlConfiguration getArenasCfg() {
 		return arenas;
+	}
+
+	public YamlConfiguration getRewardsCfg() {
+		return rewards;
+	}
+
+	public YamlConfiguration getDatasCfg() {
+		return datas;
 	}
 
 	public File getCfgFile() {
@@ -60,5 +90,13 @@ public class Configuration {
 
 	public File getArenasFile() {
 		return arenas_file;
+	}
+
+	public File getRewardsFile() {
+		return rewards_file;
+	}
+
+	public File getDatasFile() {
+		return datas_file;
 	}
 }

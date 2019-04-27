@@ -16,8 +16,6 @@ public class SignScheduler implements Runnable, Listener {
 
 	public SignScheduler(RageMode plugin) {
 		this.plugin = plugin;
-
-		plugin.getServer().getPluginManager().registerEvents(this, plugin);
 	}
 
 	@Override

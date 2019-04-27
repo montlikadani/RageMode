@@ -7,23 +7,24 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 
 public class LeaveGame {
 
-	public static ItemStack getLeaveGameItem() {
+	public static ItemStack getItem() {
 		ItemStack grenade = new ItemStack(Material.valueOf(RageMode.getInstance().getConfiguration().getCfg().getString("items.leavegameitem.item")));
 		ItemMeta meta = grenade.getItemMeta();
-		meta.setDisplayName(getLeaveGameItemName());
+		meta.setDisplayName(getName());
 
 		List<String> lore = RageMode.getInstance().getConfiguration().getCfg().getStringList("items.leavegameitem.lore");
 		if (lore != null && !lore.isEmpty())
-			meta.setLore(ItemUtil.color(lore));
+			meta.setLore(Utils.colorList(lore));
 
 		grenade.setItemMeta(meta);
 		return grenade;
 	}
 
-	public static String getLeaveGameItemName() {
+	public static String getName() {
 		String iname = RageMode.getInstance().getConfiguration().getCfg().getString("items.leavegameitem.name");
 		return iname != null && !iname.equals("") ? RageMode.getLang().colors(iname) : org.bukkit.ChatColor.RED + "Exit";
 	}

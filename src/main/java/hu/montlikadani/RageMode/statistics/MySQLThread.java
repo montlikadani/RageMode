@@ -7,8 +7,8 @@ public class MySQLThread implements Runnable {
 
 	private PlayerPoints pP = null;
 
-	public MySQLThread(PlayerPoints playerPoints) {
-		this.pP = playerPoints;
+	public MySQLThread(PlayerPoints pP) {
+		this.pP = pP;
 	}
 
 	@Override

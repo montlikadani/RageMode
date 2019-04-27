@@ -11,15 +11,15 @@ public class HoloStats extends RmCommand {
 
 	public HoloStats(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player)) {
-			sender.sendMessage(RageMode.getLang().get("in-game-only"));
+			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return;
 		}
 		Player p = (Player) sender;
 		if (!p.hasPermission("ragemode.admin.holo")) {
-			p.sendMessage(RageMode.getLang().get("no-permission"));
+			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return;
 		}
-		if (RageMode.getInstance().getHologramAvailable()) {
+		if (RageMode.getInstance().isHologramEnabled()) {
 			if (args.length >= 2) {
 				if (args[1].equalsIgnoreCase("add")) {
 					HoloHolder.addHolo(p.getLocation());
@@ -32,9 +32,9 @@ public class HoloStats extends RmCommand {
 					HoloHolder.teleporttoHologram(p, HoloHolder.getClosest(p));
 				}*/
 			} else
-				p.sendMessage(RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <add/remove>"));
+				sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <add/remove>"));
 		} else
-			p.sendMessage(RageMode.getLang().get("missing-dependencies", "%depend%", "HolographicDisplays"));
+			sendMessage(p, RageMode.getLang().get("missing-dependencies", "%depend%", "HolographicDisplays"));
 		return;
 	}
 }

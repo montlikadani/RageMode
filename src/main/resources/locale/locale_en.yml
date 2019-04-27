@@ -21,7 +21,7 @@ commands:
   forcestart:
     game-start: "&aStarting the&e %game%&a game..."
     not-enough-players: "&cNot enough player to run this game!"
-    game-not-exist: "&cThis game not exists. Please add correctly name."
+    player-not-in-game: "&cYou are not in-game lobby to start!"
   holostats:
     no-holo-found: "&cThere is no hologram saved."
   stats:
@@ -32,12 +32,24 @@ commands:
     player-currently-in-game: "&cThis player is currently playing! Please wait while the game end."
   kick:
     game-not-null: "&cThe game name can not be null!"
-    player-not-null: "&cThe player name can not be null!"
+    player-not-found: "&cThe player name can not be null!"
     player-kicked: "&2The player&e %player%&2 successfully kicked from&e %game%&2 game!"
     player-currently-not-playing: "&cThis player currently not playing."
   signupdate:
     usage: "&cUsage:&7 '/rm signupdate <gameName>'&c."
-    game-not-exist: "&cThis game not exists. Please add correctly name."
+  togglegame:
+    game-not-exist: "&cThis game not exists."
+    game-is-running: "&cThis game is currently running, please stop it firstly."
+    successfully-toggled: "&2This game&7 %game%&2 successfully toggled %status%&2."
+    status:
+      on: "&aON"
+      off: "&cOFF"
+  join:
+    game-locked: "&cThis game is locked, so you can not join."
+  points:
+    player-not-found: "&cThe player name can not be null!"
+    amount-not-less: "&cThe number must be greater than 0."
+    changed: "&2The player points has been changed:&e %amount%&2, new:&e %new%"
 
 hologram-list:
 - "&6Rank:&a %rank%"
@@ -116,10 +128,12 @@ game:
   maxplayers-not-set: "&cThe maxplayers value for&e %game%&c is not set properly."
   worldname-not-set: "&4The world key can't be empty! Ask an Admin to check the config.yml."
   does-not-exist: "&cThe game you wish to join wasn't found."
+  command-disabled-in-end-game: "&cAll commands are disabled at the end of the game. Endure!!"
   this-command-is-disabled-in-game: "&cThis command is currently disabled."
   full: "&cThis Game is already full."
   player-joined: "&2%player%&9 joined the game."
   you-joined-the-game: "&aYou joined to&3 %game%&a."
+  player-not-switch-spectate: "&cYou are playing in-game, so you can not switch to spectator mode."
   player-kicked-for-vip: "&cYou were kicked out of the Game to make room for a VIP players."
   player-already-in-game: "&cYou are already in a game. You can leave it by typing&e %usage%"
   player-not-ingame: "&cThe fact that you are not in a game caused a Problem while trying to remove you from that game."
@@ -135,7 +149,13 @@ game:
     knife-death: "&3You were killed by&6&l %killer%&3 with a RageKnife.&4&l %points%"
     explosion-death: "&3You were killed by&6&l %killer%&3 by an explosion.&4&l %points%"
     current-points: "&3You now have&6&l %points%&3 points."
+    points-loss-for-suicide: "&cYou lost&6 %amount%&c points. Your current deaths number:&6 %deaths%"
     streak: "&6%number%&2 KILLSTREAK&6 %points%"
     suicide: "&3You killed yourself you silly idiot."
     player-won: "&2%player%&d won the &6%game%&d!"
     you-won: "&dYou won the&6 %game%&d game!"
+
+time-formats:
+  second: "s"
+  minute: "m"
+  hour: "h"

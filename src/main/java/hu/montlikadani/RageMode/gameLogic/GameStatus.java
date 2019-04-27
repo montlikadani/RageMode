@@ -4,5 +4,7 @@ public enum GameStatus {
 	RUNNING,
 	WAITING,
 	GAMEFREEZE,
-	STOPPED;
+	STOPPED,
+	READY,
+	NOTREADY;
 }

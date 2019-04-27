@@ -10,7 +10,7 @@ import java.lang.reflect.Constructor;
 public class Titles {
 
 	/**
-	 * Sends the player the title and the sub-title and how long they should appear or stay or disappear.
+	 * Sends for player the title and the subtitle and how long they should appear or stay or disappear.
 	 * 
 	 * @param player Player
 	 * @param fadeIn FadeIn
@@ -81,6 +81,7 @@ public class Titles {
 
 	/**
 	 * Clears the current set title.
+	 * 
 	 * @param player Player
 	 */
 	public static void clearTitle(Player player) {

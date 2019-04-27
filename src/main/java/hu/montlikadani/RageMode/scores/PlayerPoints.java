@@ -130,6 +130,14 @@ public class PlayerPoints implements Comparable<PlayerPoints> {
 		this.points = points;
 	}
 
+	public void addPoints(Integer points) {
+		this.points += points;
+	}
+
+	public void takePoints(Integer points) {
+		this.points -= points;
+	}
+
 	public boolean isWinner() {
 		return isWinner;
 	}

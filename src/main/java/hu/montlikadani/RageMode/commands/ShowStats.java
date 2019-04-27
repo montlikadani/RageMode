@@ -14,17 +14,17 @@ public class ShowStats extends RmCommand {
 
 	public ShowStats(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!sender.hasPermission("ragemode.stats")) {
-			sender.sendMessage(RageMode.getLang().get("no-permission"));
+			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return;
 		}
 		if (!(sender instanceof Player)) {
 			if (args.length < 2) {
-				sender.sendMessage(RageMode.getLang().get("commands.stats.player-not-null"));
+				sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-null"));
 				return;
 			}
 			Player target = Bukkit.getPlayer(args[1]);
 			if (target == null) {
-				sender.sendMessage(RageMode.getLang().get("commands.stats.player-not-found"));
+				sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-found"));
 				return;
 			}
 			showStats(sender, target);
@@ -34,7 +34,7 @@ public class ShowStats extends RmCommand {
 		if (args.length == 2) {
 			Player target = Bukkit.getPlayer(args[1]);
 			if (target == null) {
-				p.sendMessage(RageMode.getLang().get("commands.stats.player-not-found"));
+				sendMessage(p, RageMode.getLang().get("commands.stats.player-not-found"));
 				return;
 			}
 			showStats(p, target);
@@ -53,9 +53,9 @@ public class ShowStats extends RmCommand {
 
 				list = Utils.setPlaceholders(list, t);
 				list = list.replace("%rank%", Integer.toString(rpp.getRank()));
-				sender.sendMessage(list);
+				sendMessage(sender, list);
 			}
 		} else
-			sender.sendMessage(RageMode.getLang().get("not-played-yet"));
+			sendMessage(sender, RageMode.getLang().get("not-played-yet"));
 	}
 }
