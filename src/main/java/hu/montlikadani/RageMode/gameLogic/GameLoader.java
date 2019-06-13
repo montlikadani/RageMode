@@ -8,17 +8,14 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.GameStartEvent;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.ActionBar;
@@ -43,13 +40,13 @@ public class GameLoader {
 		this.gameName = gameName;
 		conf = RageMode.getInstance().getConfiguration();
 
+		checkTeleport();
+
 		GameStartEvent gameStartEvent = new GameStartEvent(gameName, PlayerList.getPlayersInGame(gameName));
 		Bukkit.getPluginManager().callEvent(gameStartEvent);
 
-		checkTeleport();
-
 		PlayerList.setGameRunning(gameName);
-		PlayerList.setStatus(GameStatus.RUNNING);
+		GameUtils.setStatus(GameStatus.RUNNING);
 		setInventories();
 
 		int time = !conf.getArenasCfg().isSet("arenas." + gameName + ".gametime")
@@ -58,7 +55,7 @@ public class GameLoader {
 				: conf.getArenasCfg().getInt("arenas." + gameName + ".gametime") * 60;
 
 		gameTimer = new GameTimer(gameName, time);
-		gameTimer.loadBoards();
+		gameTimer.loadModules();
 		new Timer().scheduleAtFixedRate(gameTimer, 0, 60 * 20L);
 
 		SignCreator.updateAllSigns(gameName);
@@ -73,26 +70,22 @@ public class GameLoader {
 		if (p == null)
 			p = Bukkit.getPlayer(UUID.fromString(players.get(players.size() - 1)));
 
-		if (conf.getCfg().getBoolean("game.global.tablist.player-format.enable"))
-			setPlayerGroup(p, conf.getCfg().getString("game.global.tablist.player-format.prefix"),
-					conf.getCfg().getString("game.global.tablist.player-format.suffix"));
-
 		String bossMessage = conf.getCfg().getString("bossbar-messages.join.message");
 		if (bossMessage != null && !bossMessage.equals("")) {
-			for (String player : players) {
-				bossMessage = bossMessage.replace("%game%", gameName);
-				bossMessage = bossMessage.replace("%player%", p.getName());
-				bossMessage = RageMode.getLang().colors(bossMessage);
+			bossMessage = bossMessage.replace("%game%", gameName);
+			bossMessage = bossMessage.replace("%player%", p.getName());
+			bossMessage = RageMode.getLang().colors(bossMessage);
 
-				if (conf.getArenasCfg().isSet("arenas." + gameName + ".bossbar")) {
-					if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".bossbar"))
-						new BossMessenger(gameName).sendBossBar(bossMessage, player,
-								BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")));
-				} else {
-					if (conf.getCfg().getBoolean("game.global.defaults.bossbar"))
-						new BossMessenger(gameName).sendBossBar(bossMessage, player,
-								BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")));
-				}
+			if (conf.getArenasCfg().isSet("arenas." + gameName + ".bossbar")) {
+				if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".bossbar"))
+					new BossMessenger(gameName).sendBossBar(bossMessage, p,
+							BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")),
+							BarColor.valueOf(conf.getCfg().getString("bossbar-messages.join.color")));
+			} else {
+				if (conf.getCfg().getBoolean("game.global.defaults.bossbar"))
+					new BossMessenger(gameName).sendBossBar(bossMessage, p,
+							BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")),
+							BarColor.valueOf(conf.getCfg().getString("bossbar-messages.join.color")));
 			}
 		}
 
@@ -153,73 +146,7 @@ public class GameLoader {
 		}
 	}
 
-	private void setPlayerGroup(Player player, String prefix, String suffix) {
-		Scoreboard board = player.getScoreboard();
-		Team team = getScoreboardTeam(board, player.getName());
-
-		if (!team.hasEntry(player.getName()))
-			team.addEntry(player.getName());
-
-		if (prefix == null) prefix = "";
-		if (suffix == null) suffix = "";
-
-		prefix = Utils.setPlaceholders(prefix, player);
-		suffix = Utils.setPlaceholders(suffix, player);
-
-		// Prefix & suffix char limit, to prevent error
-		String bVersion = Utils.getVersion();
-		if (!(bVersion.contains("1.13") || bVersion.contains("1.14"))) {
-			if (prefix.length() > 15) prefix = prefix.substring(0, 16);
-			if (suffix.length() > 15) suffix = suffix.substring(0, 16);
-		} else {
-			if (prefix.length() > 63) prefix = prefix.substring(0, 64);
-			if (suffix.length() > 63) suffix = suffix.substring(0, 64);
-		}
-
-		if (!conf.getCfg().getBoolean("game.global.show-name-above-player-when-look")) {
-			for (Entity e : getEntitys(player)) {
-				LivingEntity l = (LivingEntity) e;
-				if (!(l instanceof Player))
-					continue;
-
-				board = ((Player) l).getScoreboard();
-				team = getScoreboardTeam(board, ((Player) l).getName());
-
-				l.setCustomNameVisible(false);
-			}
-		} else {
-			for (Entity e : getEntitys(player)) {
-				LivingEntity l = (LivingEntity) e;
-				if (!(l instanceof Player))
-					continue;
-
-				board = ((Player) l).getScoreboard();
-				team = getScoreboardTeam(board, ((Player) l).getName());
-
-				l.setCustomNameVisible(false);
-			}
-		}
-
-		team.setPrefix(prefix);
-		team.setSuffix(suffix);
-		if (bVersion.contains("1.13") || bVersion.contains("1.14"))
-			team.setColor(Utils.fromPrefix(prefix));
-
-		player.setScoreboard(board);
-	}
-
-	public static void removeScoreboard(Player player) {
-		Scoreboard board = player.getScoreboard();
-		getScoreboardTeam(board, player.getName()).unregister();
-		player.setScoreboard(board);
-	}
-
-	private static Team getScoreboardTeam(Scoreboard board, String name) {
-		return board.getTeam(name) == null ? board.registerNewTeam(name) : board.getTeam(name);
-	}
-
-	// TODO Make player nametag invisible when not looking at
-	private List<Entity> getEntitys(Player player) {
+	/*public static List<Entity> getEntities(Player player) {
 		List<Entity> entitys = new ArrayList<>();
 		for (Entity e : player.getNearbyEntities(5, 5, 5)) {
 			if (e instanceof LivingEntity) {
@@ -229,9 +156,9 @@ public class GameLoader {
 		}
 
 		return entitys;
-	}
+	}*/
 
-	private boolean getLookingAt(Player player, LivingEntity livingEntity) {
+	public static boolean getLookingAt(Player player, LivingEntity livingEntity) {
 		Location eye = player.getEyeLocation();
 		Vector toEntity = livingEntity.getEyeLocation().toVector().subtract(eye.toVector());
 		double dot = toEntity.normalize().dot(eye.getDirection());

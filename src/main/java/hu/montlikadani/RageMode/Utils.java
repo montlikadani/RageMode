@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
@@ -59,12 +60,14 @@ public class Utils {
 	/**
 	 * Sets the available placeholders to that string, that manages from RageMode
 	 * 
-	 * @param s String to replaceable the variables
+	 * @param s String to replace the variables
 	 * @param player Player
 	 * @return String
 	 */
 	public static String setPlaceholders(String s, Player player) {
 		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(player.getUniqueId().toString());
+		if (rpp == null)
+			return RageMode.getLang().colors(s);
 
 		if (s.contains("%kills%"))
 			s = s.replace("%kills%", Integer.toString(rpp.getKills()));
@@ -118,52 +121,28 @@ public class Utils {
 	}
 
 	/**
-	 * Sends the packet
+	 * Sends the packet to the specified player
 	 * 
 	 * @param player Player
 	 * @param packet Packet name
 	 */
-	public static void sendPacket(Player player, Object packet) {
-		try {
-			Object handle = getNMSPlayer(player);
-			Object playerConnection = handle.getClass().getField("playerConnection").get(handle);
-			playerConnection.getClass().getMethod("sendPacket", new Class[] { getNMSClass("Packet") })
-				.invoke(playerConnection, new Object[] { packet });
-		} catch (Throwable e) {
-			e.printStackTrace();
-			RageMode.getInstance().throwMsg();
-		}
-	}
-
-	private static Object getNMSPlayer(Player p) throws Throwable {
-		return p.getClass().getMethod("getHandle", new Class[0]).invoke(p, new Object[0]);
+	public static void sendPacket(Player player, Object packet) throws Throwable {
+		Object handle = player.getClass().getMethod("getHandle", new Class[0]).invoke(player, new Object[0]);
+		Object playerConnection = handle.getClass().getField("playerConnection").get(handle);
+		playerConnection.getClass().getMethod("sendPacket", new Class[] { getNMSClass("Packet") })
+			.invoke(playerConnection, new Object[] { packet });
 	}
 
 	/**
-	 * Gets the NMS class to support for all versions
+	 * Gets the NMS class with packet name
 	 * 
 	 * @param name Packet
-	 * @return Returns the MC version
+	 * @throws ClassNotFoundException
+	 * @return Returns MC class name
 	 */
-	public static Class<?> getNMSClass(String name) {
-		String version = getPackageVersion();
-		try {
-			return Class.forName("net.minecraft.server." + version + "." + name);
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	/**
-	 * Gets the Bukkit package version
-	 * <br><br>
-	 * Example: v1_8_R3, v1_13_R1
-	 * 
-	 * @return Package name
-	 */
-	public static String getPackageVersion() {
-		return Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
+	public static Class<?> getNMSClass(String name) throws ClassNotFoundException {
+		String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
+		return Class.forName("net.minecraft.server." + version + "." + name);
 	}
 
 	/**
@@ -192,6 +171,17 @@ public class Utils {
 	}
 
 	/**
+	 * Gets the Bukkit RGB color from string
+	 * 
+	 * @param paramString String
+	 * @return Bukkit RGB color from string
+	 */
+	public static Color getColorFromString(String paramString) {
+		String[] color = paramString.split(",");
+		return Color.fromRGB(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
+	}
+
+	/**
 	 * Check if number is an integer
 	 * 
 	 * @param str Number as string
@@ -200,7 +190,7 @@ public class Utils {
 	public static boolean isDouble(String str) {
 		try {
 			Double.parseDouble(str);
-		} catch (Throwable e) {
+		} catch (NumberFormatException e) {
 			return false;
 		}
 		return true;
@@ -215,7 +205,7 @@ public class Utils {
 	public static boolean isInt(String str) {
 		try {
 			Integer.parseInt(str);
-		} catch (Throwable e) {
+		} catch (NumberFormatException e) {
 			return false;
 		}
 		return true;

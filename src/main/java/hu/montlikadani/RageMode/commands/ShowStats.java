@@ -12,50 +12,54 @@ import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 
 public class ShowStats extends RmCommand {
 
-	public ShowStats(CommandSender sender, Command cmd, String label, String[] args) {
-		if (!sender.hasPermission("ragemode.stats")) {
+	@Override
+	public boolean run(CommandSender sender, Command cmd, String[] args) {
+		if (!hasPerm(sender, "ragemode.stats")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
-			return;
+			return false;
 		}
 		if (!(sender instanceof Player)) {
 			if (args.length < 2) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-null"));
-				return;
+				return false;
 			}
 			Player target = Bukkit.getPlayer(args[1]);
 			if (target == null) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-found"));
-				return;
+				return false;
 			}
 			showStats(sender, target);
-			return;
+			return false;
 		}
 		Player p = (Player) sender;
 		if (args.length == 2) {
 			Player target = Bukkit.getPlayer(args[1]);
 			if (target == null) {
 				sendMessage(p, RageMode.getLang().get("commands.stats.player-not-found"));
-				return;
+				return false;
 			}
 			showStats(p, target);
-			return;
+			return false;
 		}
 
 		showStats(p, p);
+		return false;
 	}
 
 	private void showStats(CommandSender sender, Player t) {
 		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(t.getUniqueId().toString());
 
-		if (rpp != null) {
-			for (String list : RageMode.getLang().getList("statistic-list")) {
-				list = list.replace("%player%", t.getName());
-
-				list = Utils.setPlaceholders(list, t);
-				list = list.replace("%rank%", Integer.toString(rpp.getRank()));
-				sendMessage(sender, list);
-			}
-		} else
+		if (rpp == null) {
 			sendMessage(sender, RageMode.getLang().get("not-played-yet"));
+			return;
+		}
+
+		for (String list : RageMode.getLang().getList("statistic-list")) {
+			list = list.replace("%player%", t.getName());
+
+			list = Utils.setPlaceholders(list, t);
+			list = list.replace("%rank%", Integer.toString(rpp.getRank()));
+			sendMessage(sender, list);
+		}
 	}
 }

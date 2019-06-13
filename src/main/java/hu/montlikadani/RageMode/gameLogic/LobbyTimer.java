@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ public class LobbyTimer extends TimerTask {
 
 	private String gameName;
 	private int time;
+
 	public static HashMap<String, TimerTask> map = new HashMap<>();
 
 	public LobbyTimer(String gameName, int time) {
@@ -32,13 +34,15 @@ public class LobbyTimer extends TimerTask {
 	}
 
 	public void loadTimer() {
-		PlayerList.setStatus(GameStatus.WAITING);
+		GameUtils.setStatus(GameStatus.WAITING);
 		// Put the timer to map to cancel when use force start
 		if (map.containsKey(gameName)) {
 			cancel();
 			map.remove(gameName);
 		}
 		map.put(gameName, this);
+
+		new Timer().scheduleAtFixedRate(this, 0, 60 * 20L);
 	}
 
 	@Override
@@ -47,23 +51,27 @@ public class LobbyTimer extends TimerTask {
 			cancel();
 			return;
 		}
-
 		String[] playersInGame = PlayerList.getPlayersInGame(gameName);
-		Player player = Bukkit.getPlayer(UUID.fromString(playersInGame[playersInGame.length - 1]));
-		org.bukkit.configuration.file.FileConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
+		org.bukkit.configuration.file.YamlConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
+		if (playersInGame.length < conf.getInt("game.global.lobby.min-players-to-start-lobby-timer")) {
+			cancel();
+			return;
+		}
 
-		List<Integer> listValues = conf.getIntegerList("game.global.lobby.values-to-send-start-message");
-		if (listValues != null && !listValues.isEmpty()) {
-			for (int i = 0; i < listValues.size(); i++) {
-				if (time == listValues.get(i)) {
-					GameUtils.broadcastToGame(gameName, RageMode.getLang().get("game.lobby.start-message", "%time%",
-							Integer.toString(time)));
+		Player player = Bukkit.getPlayer(UUID.fromString(playersInGame[playersInGame.length - 1]));
+
+		List<Integer> values = conf.getIntegerList("game.global.lobby.values-to-send-start-message");
+		if (values != null && !values.isEmpty()) {
+			for (int i = 0; i < values.size(); i++) {
+				if (time == values.get(i)) {
+					GameUtils.broadcastToGame(gameName,
+							RageMode.getLang().get("game.lobby.start-message", "%time%", Integer.toString(time)));
 				}
 			}
 		}
 
 		if (conf.getBoolean("titles.lobby-waiting.enable")) {
-			List<Integer> listTitleValues = conf.getIntegerList("titles.lobby-waiting.values-to-send-start-message");
+			List<Integer> titleValues = conf.getIntegerList("titles.lobby-waiting.values-to-send-start-message");
 			String title = conf.getString("titles.lobby-waiting.title");
 			String sTitle = conf.getString("titles.lobby-waiting.subtitle");
 
@@ -74,9 +82,9 @@ public class LobbyTimer extends TimerTask {
 			sTitle = sTitle.replace("%game%", gameName);
 
 			if (title != null && sTitle != null) {
-				if (listTitleValues != null && !listTitleValues.isEmpty()) {
-					for (int i = 0; i < listTitleValues.size(); i++) {
-						if (time == listTitleValues.get(i)) {
+				if (titleValues != null && !titleValues.isEmpty()) {
+					for (int i = 0; i < titleValues.size(); i++) {
+						if (time == titleValues.get(i)) {
 							Titles.sendTitle(player,
 									conf.getInt("titles.lobby-waiting.fade-in"),
 									conf.getInt("titles.lobby-waiting.stay"),

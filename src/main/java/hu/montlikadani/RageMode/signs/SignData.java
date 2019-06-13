@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -17,6 +18,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class SignData {
@@ -77,7 +79,7 @@ public class SignData {
 				if (placeholder != null) {
 					List<String> lines = placeholder.parsePlaceholder(game);
 					if (placeholder.getLines().size() >= 5 || placeholder.getLines().size() <= 3) {
-						Bukkit.getLogger().log(Level.INFO, "In the configuration the signs lines not more/less than 4.");
+						Bukkit.getLogger().log(Level.INFO, "[RageMode] In the configuration the signs lines not more/less than 4.");
 						return;
 					}
 
@@ -88,8 +90,9 @@ public class SignData {
 						String path = "signs.background.";
 						if (cfg.getBoolean(path + "enable")) {
 							if (!Utils.getVersion().contains("1.8")) {
-								if (b.getType() == Material.WALL_SIGN) {
-									if (PlayerList.getStatus() == GameStatus.WAITING) {
+								if (Utils.getVersion().contains("1.14") && Tag.WALL_SIGNS.isTagged(sign.getType())
+										|| !Utils.getVersion().contains("1.14") && sign.getType() == Material.getMaterial("WALL_SIGN")) {
+									if (GameUtils.getStatus() == GameStatus.WAITING) {
 										if (PlayerList.getPlayersInGame(game).length == GetGames.getMaxPlayers(game)) {
 											if (cfg.getString(path + "type").equals("wool"))
 												updateBackground(Material.BLUE_WOOL);
@@ -103,7 +106,7 @@ public class SignData {
 											else if (cfg.getString(path + "type").equals("glass"))
 												updateBackground(Material.LIME_STAINED_GLASS);
 											else if (cfg.getString(path + "type").equals("terracotta"))
-												updateBackground(Material.RED_TERRACOTTA);
+												updateBackground(Material.LIME_TERRACOTTA);
 										}
 									}
 
@@ -114,7 +117,7 @@ public class SignData {
 											updateBackground(Material.LIME_STAINED_GLASS);
 										else if (cfg.getString(path + "type").equals("terracotta"))
 											updateBackground(Material.LIME_TERRACOTTA);
-									} else if (PlayerList.getStatus() == GameStatus.STOPPED) {
+									} else if (GameUtils.getStatus() == GameStatus.STOPPED) {
 										if (cfg.getString(path + "type").equals("wool"))
 											updateBackground(Material.RED_WOOL);
 										else if (cfg.getString(path + "type").equals("glass"))
@@ -124,47 +127,46 @@ public class SignData {
 									}
 								}
 							} else {
-								if (b.getType() == Material.WALL_SIGN) {
-									if (PlayerList.getStatus() == GameStatus.WAITING) {
+								if (sign.getType() == Material.getMaterial("WALL_SIGN")) {
+									if (GameUtils.getStatus() == GameStatus.WAITING) {
 										if (PlayerList.getPlayersInGame(game).length == GetGames.getMaxPlayers(game)) {
 											if (cfg.getString(path + "type").equals("wool"))
-												updateBackground(Material.valueOf("WOOL"));
+												updateBackground(Material.getMaterial("WOOL"));
 											else if (cfg.getString(path + "type").equals("glass"))
-												updateBackground(Material.valueOf("STAINED_GLASS"));
+												updateBackground(Material.getMaterial("STAINED_GLASS"));
 											else if (cfg.getString(path + "type").equals("terracotta"))
-												updateBackground(Material.valueOf("STAINED_CLAY"));
+												updateBackground(Material.getMaterial("STAINED_CLAY"));
 										} else {
 											if (cfg.getString(path + "type").equals("wool"))
-												updateBackground(Material.valueOf("WOOL"));
+												updateBackground(Material.getMaterial("WOOL"));
 											else if (cfg.getString(path + "type").equals("glass"))
-												updateBackground(Material.valueOf("STAINED_GLASS"));
+												updateBackground(Material.getMaterial("STAINED_GLASS"));
 											else if (cfg.getString(path + "type").equals("terracotta"))
-												updateBackground(Material.valueOf("STAINED_CLAY"));
+												updateBackground(Material.getMaterial("STAINED_CLAY"));
 										}
 									}
 
-									if (PlayerList.getStatus() == GameStatus.RUNNING && PlayerList.isGameRunning(game)) {
+									if (GameUtils.getStatus() == GameStatus.RUNNING && PlayerList.isGameRunning(game)) {
 										if (cfg.getString(path + "type").equals("wool"))
-											updateBackground(Material.valueOf("WOOL"));
+											updateBackground(Material.getMaterial("WOOL"));
 										else if (cfg.getString(path + "type").equals("glass"))
-											updateBackground(Material.valueOf("STAINED_GLASS"));
+											updateBackground(Material.getMaterial("STAINED_GLASS"));
 										else if (cfg.getString(path + "type").equals("terracotta"))
-											updateBackground(Material.valueOf("STAINED_CLAY"));
-									} else if (PlayerList.getStatus() == GameStatus.STOPPED) {
+											updateBackground(Material.getMaterial("STAINED_CLAY"));
+									} else if (GameUtils.getStatus() == GameStatus.STOPPED) {
 										if (cfg.getString(path + "type").equals("wool"))
-											updateBackground(Material.valueOf("WOOL"));
+											updateBackground(Material.getMaterial("WOOL"));
 										else if (cfg.getString(path + "type").equals("glass"))
-											updateBackground(Material.valueOf("STAINED_GLASS"));
+											updateBackground(Material.getMaterial("STAINED_GLASS"));
 										else if (cfg.getString(path + "type").equals("terracotta"))
-											updateBackground(Material.valueOf("STAINED_CLAY"));
+											updateBackground(Material.getMaterial("STAINED_CLAY"));
 									}
 								}
 							}
 						}
 						sign.update();
 					}
-				} else
-					RageMode.logConsole(Level.WARNING, "Placeholder on the sign not exists.");
+				}
 			}
 		}
 	}
@@ -172,18 +174,18 @@ public class SignData {
 	private void updateBackground(Material mat/*, int c*/) {
 		Location loc = getLocation();
 		BlockState s = (Sign) loc.getBlock().getState();
+		BlockFace bf = null;
 		try {
-			BlockFace bf = ((Directional) s.getData()).getFacing();
-			Location loc2 = new Location(loc.getWorld(), loc.getBlockX() - bf.getModX(), loc.getBlockY() - bf.getModY(),
-					loc.getBlockZ() - bf.getModZ());
-			Block wall = loc2.getBlock();
-			wall.setType(mat);
+			bf = ((Directional) s.getData()).getFacing();
 		} catch (ClassCastException e) {
-			// deprecated not using
-			/*Sign sign = (Sign) s.getData();
-			Block b = sign.getBlock().getRelative(((org.bukkit.material.Sign) sign.getData()).getAttachedFace());
-			b.setType(mat);*/
+			org.bukkit.block.data.type.WallSign data = (org.bukkit.block.data.type.WallSign) s.getBlockData();
+			bf = data.getFacing();
 		}
+		Location loc2 = new Location(loc.getWorld(), loc.getBlockX() - bf.getModX(), loc.getBlockY() - bf.getModY(),
+				loc.getBlockZ() - bf.getModZ());
+		Block wall = loc2.getBlock();
+		wall.setType(mat);
+		// In 1.8 this works
 		//wall.setData((byte) c);
 	}
 }

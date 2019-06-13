@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -24,6 +23,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -41,6 +41,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerEggThrowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -50,19 +51,19 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameLoader;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.LobbyTimer;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.gameUtils.GetGameLobby;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.gameUtils.MapChecker;
-import hu.montlikadani.ragemode.gameUtils.Titles;
 import hu.montlikadani.ragemode.holo.HoloHolder;
 import hu.montlikadani.ragemode.items.CombatAxe;
 import hu.montlikadani.ragemode.items.ForceStarter;
@@ -94,26 +95,12 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
-		Player player = event.getPlayer();
+		GameUtils.leavePlayer(event.getPlayer());
+	}
 
-		if (PlayerList.removeSpectatorPlayer(player))
-			// Just removes the spec player
-
-		if (PlayerList.getStatus() == GameStatus.RUNNING && PlayerList.isPlayerPlaying(player.getUniqueId().toString())) {
-			if (PlayerList.removePlayer(player)) {
-				RageMode.logConsole("Player " + player.getName() + " left the server while playing.");
-
-				List<String> list = plugin.getConfiguration().getCfg().getStringList("game.global.run-commands-for-player-left-while-playing");
-				if (list != null && !list.isEmpty()) {
-					for (String cmds : list) {
-						cmds = cmds.replace("%player%", player.getName());
-						cmds = cmds.replace("%player-ip%", player.getAddress().getAddress().getHostAddress());
-						Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), RageMode.getLang().colors(cmds));
-					}
-				}
-			}
-		}
-		HoloHolder.deleteHoloObjectsOfPlayer(player);
+	@EventHandler
+	public void onPlayerKick(PlayerKickEvent ev) {
+		GameUtils.leavePlayer(ev.getPlayer());
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
@@ -125,15 +112,15 @@ public class EventListener implements Listener {
 			event.setCancelled(true);
 
 		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
-			if (PlayerList.getStatus() == GameStatus.WAITING) {
+			if (GameUtils.getStatus() == GameStatus.WAITING) {
 				if (!plugin.getConfiguration().getCfg().getBoolean("game.global.lobby.enable-chat-in-lobby")
 						&& !p.hasPermission("ragemode.bypass.lobby.lockchat")) {
 					event.setCancelled(true);
 					p.sendMessage(RageMode.getLang().get("game.lobby.chat-is-disabled"));
-				} else event.setCancelled(false);
+				}
 			}
 
-			if (PlayerList.getStatus() == GameStatus.RUNNING) {
+			if (GameUtils.getStatus() == GameStatus.RUNNING) {
 				if (!plugin.getConfiguration().getCfg().getBoolean("game.global.enable-chat-in-game")
 						&& !p.hasPermission("ragemode.bypass.game.lockchat")) {
 					event.setCancelled(true);
@@ -156,11 +143,29 @@ public class EventListener implements Listener {
 				}
 			}
 
-			if (PlayerList.getStatus() == GameStatus.GAMEFREEZE) {
+			if (GameUtils.getStatus() == GameStatus.GAMEFREEZE) {
 				if (!plugin.getConfiguration().getCfg().getBoolean("game.global.enable-chat-after-end")) {
 					event.setCancelled(true);
 					p.sendMessage(RageMode.getLang().get("game.game-freeze.chat-is-disabled"));
-				} else event.setCancelled(false);
+				}
+			}
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void onCreatureSpawn(CreatureSpawnEvent e) {
+		if (GameUtils.getStatus() == GameStatus.RUNNING && GameUtils.getStatus() == GameStatus.WAITING) {
+			if (e.isCancelled() || e.getSpawnReason() == org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CUSTOM)
+				return;
+
+			for (String game : GetGames.getGameNames()) {
+				if (GetGameLobby.getLobbyLocation(game).getWorld().equals(e.getLocation().getWorld())) {
+					if (e.getLocation().distanceSquared(GetGameLobby.getLobbyLocation(game)) <= Math.pow(
+							plugin.getConfiguration().getCfg().getInt("game.global.prevent-spawn-mobs-radius"), 2)) {
+						e.setCancelled(true);
+						return;
+					}
+				}
 			}
 		}
 	}
@@ -168,7 +173,7 @@ public class EventListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onProjectileHit(ProjectileHitEvent event) {
 		// RageArrow explosion event
-		if (PlayerList.getStatus() == GameStatus.RUNNING && event.getEntity() instanceof Arrow) {
+		if (GameUtils.getStatus() == GameStatus.RUNNING && event.getEntity() instanceof Arrow) {
 			Arrow arrow = (Arrow) event.getEntity();
 			if (arrow.getShooter() != null && arrow.getShooter() instanceof Player) {
 				Player shooter = (Player) arrow.getShooter();
@@ -206,14 +211,6 @@ public class EventListener implements Listener {
 								}
 							}
 							explosionVictims.put(near.getUniqueId(), shooter.getUniqueId());
-
-							// Remove arrows from player body
-							if (plugin.getConfiguration().getCfg().getBoolean("game.global.remove-arrows-from-player-body")) {
-								for (Entity e : near.getNearbyEntities(1, 1, 1)) {
-									if (e instanceof Arrow)
-										e.remove();
-								}
-							}
 						}
 						i++;
 					}
@@ -227,7 +224,7 @@ public class EventListener implements Listener {
 		if (event.getDamager() instanceof Player) {
 			Player killer = (Player) event.getDamager();
 			// RageKnife hit event
-			if (PlayerList.getStatus() == GameStatus.RUNNING && event.getEntity() instanceof Player) {
+			if (GameUtils.getStatus() == GameStatus.RUNNING && event.getEntity() instanceof Player) {
 				Player victim = (Player) event.getEntity();
 				if (PlayerList.isPlayerPlaying(killer.getUniqueId().toString())
 						&& PlayerList.isPlayerPlaying(victim.getUniqueId().toString())) {
@@ -244,12 +241,10 @@ public class EventListener implements Listener {
 							event.setDamage(25);
 					}
 				}
-				if (!PlayerList.isGameRunning(PlayerList.getPlayersGame(victim)))
-					event.setDamage(0);
 			}
 
 			// Prevent player damage in lobby
-			if (PlayerList.getStatus() == GameStatus.WAITING && PlayerList.isPlayerPlaying(killer.getUniqueId().toString()))
+			if (GameUtils.getStatus() == GameStatus.WAITING && PlayerList.isPlayerPlaying(killer.getUniqueId().toString()))
 				event.setCancelled(true);
 		}
 	}
@@ -263,10 +258,11 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void onHitPlayer(EntityDamageEvent event) {
 		// Hit player event
-		if (PlayerList.getStatus() == GameStatus.RUNNING && event.getEntity() instanceof Player) {
-			if (PlayerList.isPlayerPlaying(event.getEntity().getUniqueId().toString())) {
+		if (GameUtils.getStatus() == GameStatus.RUNNING && event.getEntity() instanceof Player) {
+			Entity e = event.getEntity();
+			if (PlayerList.isPlayerPlaying(e.getUniqueId().toString())) {
 				if (event.getCause().equals(DamageCause.PROJECTILE)) {
-					Player victim = (Player) event.getEntity();
+					Player victim = (Player) e;
 					if (PlayerList.isPlayerPlaying(victim.getUniqueId().toString())) {
 						if (waitingGames.containsKey(PlayerList.getPlayersGame(victim))) {
 							if (waitingGames.get(PlayerList.getPlayersGame(victim))) {
@@ -275,15 +271,12 @@ public class EventListener implements Listener {
 								return;
 							}
 						}
-						if (event.getEntity() instanceof Projectile && event.getEntity() instanceof org.bukkit.entity.Egg
-								&& event.getEntity().getCustomName().equals(Grenade.getName()))
-							event.setDamage(0.22d);
+						if (e instanceof Projectile) {
+							if (e instanceof org.bukkit.entity.Egg
+									&& e.getCustomName().equals(Grenade.getName()))
+								event.setDamage(0.22d);
 
-						if (event.getEntity() instanceof Projectile && event.getEntity() instanceof Arrow
-								&& event.getEntity().getCustomName().equals(RageArrow.getName())) {
-							if (event.getDamage() == 0.0d)
-								event.setDamage(2.12d);
-							else
+							if (e instanceof Arrow && e.getCustomName().equals(RageArrow.getName()))
 								event.setDamage(2.35d);
 						}
 					}
@@ -304,7 +297,7 @@ public class EventListener implements Listener {
 					return;
 			}
 
-			if (PlayerList.getStatus() == GameStatus.RUNNING) {
+			if (GameUtils.getStatus() == GameStatus.RUNNING) {
 				final Arrow arrow = (Arrow) event.getProjectile();
 
 				if (PlayerList.isPlayerPlaying(((Player) event.getEntity()).getUniqueId().toString())) {
@@ -312,11 +305,16 @@ public class EventListener implements Listener {
 						@Override
 						public void run() {
 							try {
-								if (!arrow.isOnGround() && !arrow.isDead()) {
-									arrow.getWorld().spawnParticle(Particle.valueOf(plugin.getConfiguration().getCfg().getString("game.global.arrow-trail.effect-type")),
-											arrow.getLocation(), 15, 0.0F, 0.0F, 0.0F);
-								} else
+								if (arrow.isOnGround() || arrow.isDead())
 									cancel();
+
+								Particle effect = Particle.valueOf(plugin.getConfiguration()
+										.getCfg().getString("game.global.arrow-trail.effect-type"));
+								arrow.getWorld().spawnParticle(effect, arrow.getLocation(), 4);
+								arrow.getWorld().spawnParticle(effect, arrow.getLocation().add(0D, 1D, 0D), 4);
+								arrow.getWorld().spawnParticle(effect, arrow.getLocation().add(0D, -1D, 0D), 4);
+								arrow.getWorld().spawnParticle(effect, arrow.getLocation().add(1D, 0D, 0D), 4);
+								arrow.getWorld().spawnParticle(effect, arrow.getLocation().add(0D, 0D, 1D), 4);
 							} catch (IllegalArgumentException e) {
 								RageMode.logConsole(java.util.logging.Level.WARNING, "[RageMode] Unknown particle effect type: "
 							+ plugin.getConfiguration().getCfg().getString("game.global.arrow-trail.effect-type"));
@@ -339,11 +337,11 @@ public class EventListener implements Listener {
 			deceased = null;
 			return;
 		}
-		if (deceased != null && PlayerList.isPlayerPlaying(deceased.getUniqueId().toString()) && PlayerList.getStatus() == GameStatus.RUNNING) {
+		if (deceased != null && PlayerList.isPlayerPlaying(deceased.getUniqueId().toString()) && GameUtils.getStatus() == GameStatus.RUNNING) {
+			String game = PlayerList.getPlayersGame(deceased);
+
 			if ((deceased.getKiller() != null && PlayerList.isPlayerPlaying(deceased.getKiller().getUniqueId().toString()))
 					|| deceased.getKiller() == null) {
-				String game = PlayerList.getPlayersGame(deceased);
-
 				boolean doDeathBroadcast = plugin.getConfiguration().getCfg().getBoolean("game.global.death-messages");
 
 				if (plugin.getConfiguration().getArenasCfg().isSet("arenas." + game + ".death-messages")) {
@@ -421,12 +419,23 @@ public class EventListener implements Listener {
 					if (doDeathBroadcast)
 						GameUtils.broadcastToGame(game, RageMode.getLang().get("game.unknown-weapon", "%victim%", deceased.getName()));
 				}
+
+				// Remove arrows from player body
+				if (plugin.getConfiguration().getCfg().getBoolean("game.global.remove-arrows-from-player-body")) {
+					for (Entity e : deceased.getNearbyEntities(1, 1, 1)) {
+						if (e instanceof Arrow)
+							Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> e.remove(), 1L);
+					}
+				}
+
 				event.setDroppedExp(0);
 				event.setDeathMessage("");
 				event.setKeepInventory(true);
+
+				//TODO fix 1.14 respawn bug: does not respawn suddenly the player
 			}
 
-			GameSpawnGetter gameSpawnGetter = new GameSpawnGetter(PlayerList.getPlayersGame(deceased));
+			GameSpawnGetter gameSpawnGetter = new GameSpawnGetter(game);
 			gameSpawnGetter.randomSpawn(deceased);
 
 			// give him a new set of items that losing durability
@@ -487,22 +496,34 @@ public class EventListener implements Listener {
 
 		if (event.getMessage() == null) return;
 
-		List<String> cmds = plugin.getConfiguration().getCfg().getStringList("game.global.commands");
 		String arg = event.getMessage().trim().toLowerCase();
-		if (cmds != null && !cmds.isEmpty()) {
-			if (PlayerList.specPlayer.containsKey(p.getUniqueId())) {
+		List<String> cmds = null;
+
+		if (plugin.getConfiguration().getCfg().getBoolean("spectator.enable") && PlayerList.specPlayer.containsKey(p.getUniqueId())) {
+			cmds = plugin.getConfiguration().getCfg().getStringList("spectator.allowed-spectator-commands");
+			if (cmds != null && !cmds.isEmpty()) {
 				if (!cmds.contains(arg)) {
 					p.sendMessage(RageMode.getLang().get("game.this-command-is-disabled-in-game"));
 					event.setCancelled(true);
+					return;
+				}
+			}
+		}
+
+		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+			if (waitingGames.containsKey(PlayerList.getPlayersGame(p))) {
+				if (waitingGames.get(PlayerList.getPlayersGame(p))) {
+					p.sendMessage(RageMode.getLang().get("game.command-disabled-in-end-game"));
+					event.setCancelled(true);
+					return;
 				}
 			}
 
-			if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
-				if (waitingGames.containsKey(PlayerList.getPlayersGame(p))) {
-					if (waitingGames.get(PlayerList.getPlayersGame(p))) {
-						p.sendMessage(RageMode.getLang().get("game.command-disabled-in-end-game"));
-						event.setCancelled(true);
-					}
+			cmds = plugin.getConfiguration().getCfg().getStringList("game.global.allowed-commands");
+			if (cmds != null && !cmds.isEmpty()) {
+				if (!cmds.contains(arg)) {
+					p.sendMessage(RageMode.getLang().get("game.this-command-is-disabled-in-game"));
+					event.setCancelled(true);
 				}
 			}
 		}
@@ -519,7 +540,7 @@ public class EventListener implements Listener {
 					return;
 			}
 
-			if (PlayerList.getStatus() == GameStatus.RUNNING) {
+			if (GameUtils.getStatus() == GameStatus.RUNNING) {
 				event.setHatching(false); // no baby chickens
 
 				// Removes the egg from player inventory and prevent
@@ -540,7 +561,7 @@ public class EventListener implements Listener {
 
 				final List<Entity> nears = grenade.getNearbyEntities(13, 13, 13);
 
-				if (Utils.getVersion().contains("1.8"))
+				if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
 					Sounds.CREEPER_HISS.playSound(grenade.getLocation(), 1, 1);
 				else
 					Sounds.ENTITY_CREEPER_PRIMED.playSound(grenade.getLocation(), 1, 1);
@@ -582,7 +603,7 @@ public class EventListener implements Listener {
 		Player p = event.getPlayer();
 
 		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
-			if (PlayerList.getStatus() == GameStatus.RUNNING) {
+			if (GameUtils.getStatus() == GameStatus.RUNNING) {
 				Player thrower = event.getPlayer();
 				if (waitingGames.containsKey(PlayerList.getPlayersGame(thrower))) {
 					if (waitingGames.get(PlayerList.getPlayersGame(thrower)))
@@ -601,12 +622,11 @@ public class EventListener implements Listener {
 
 			// Don't use left click block action to prevent block randomly hide
 			//
-			// Left/Right click air bug: when the player joins the game with a left/right click
+			// Left/Right click air bug under 1.13: when the player joins the game with a left/right click
 			// through the sign and the slot is on one of the lobby items, the item is executed
 			// SO THESE ARE BUGGY!!
-			if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR
-					|| event.getAction() == Action.LEFT_CLICK_AIR) {
-				if (PlayerList.getStatus() == GameStatus.WAITING) {
+			if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR) {
+				if (GameUtils.getStatus() == GameStatus.WAITING) {
 					ItemStack hand = NMS.getItemInHand(p);
 					ItemMeta meta = hand.getItemMeta();
 					if (meta != null && meta.getDisplayName() != null) {
@@ -617,7 +637,7 @@ public class EventListener implements Listener {
 								LobbyTimer.map.get(game).cancel();
 								LobbyTimer.map.remove(game);
 
-								// Set level back to 0
+								// Set level counter back to 0
 								p.setLevel(0);
 							}
 
@@ -634,73 +654,13 @@ public class EventListener implements Listener {
 			}
 		}
 
-		Configuration conf = plugin.getConfiguration();
-
-		if (conf.getCfg().getBoolean("signs.enable") && event.getClickedBlock() != null
+		if (plugin.getConfiguration().getCfg().getBoolean("signs.enable") && event.getClickedBlock() != null
 				&& event.getClickedBlock().getState() != null) {
 			if (event.getClickedBlock().getState() instanceof Sign && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-				Sign sign = (Sign) event.getClickedBlock().getState();
-
-				if (sign.getLine(0).contains(RageMode.getLang().colors(conf.getCfg()
-						.getStringList("signs.list").get(0))) && SignCreator.isJoinSign()) {
+				if (SignCreator.isJoinSign(event.getClickedBlock().getLocation())) {
 					if (p.hasPermission("ragemode.join.sign")) {
-						String arena = SignCreator.getGameFromString();
-						org.bukkit.inventory.PlayerInventory inv = p.getInventory();
-						if (PlayerList.getStatus() == GameStatus.RUNNING) {
-							if (!PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
-								if (PlayerList.addSpectatorPlayer(p)) {
-									GameSpawnGetter gameSpawnGetter = new GameSpawnGetter(arena);
-									gameSpawnGetter.randomSpawn(p);
-									p.setAllowFlight(true);
-									p.setFlying(true);
-									p.setGameMode(GameMode.SPECTATOR);
-									if (conf.getCfg().contains("items.leavegameitem"))
-										inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getItem());
-								}
-							} else
-								p.sendMessage(RageMode.getLang().get("game.player-not-switch-spectate"));
-						} else {
-							MapChecker mapChecker = new MapChecker(arena);
-							if (mapChecker.isValid()) {
-								String path = "arenas." + arena + ".lobby.";
-								String world = conf.getArenasCfg().getString(path + "world");
-								double lobbyX = conf.getArenasCfg().getDouble(path + "x");
-								double lobbyY = conf.getArenasCfg().getDouble(path + "y");
-								double lobbyZ = conf.getArenasCfg().getDouble(path + "z");
-								double lobbyYaw = conf.getArenasCfg().getDouble(path + "yaw");
-								double lobbyPitch = conf.getArenasCfg().getDouble(path + "pitch");
-
-								Location lobbyLocation = new Location(Bukkit.getWorld(world), lobbyX, lobbyY, lobbyZ);
-								lobbyLocation.setYaw((float) lobbyYaw);
-								lobbyLocation.setPitch((float) lobbyPitch);
-
-								if (PlayerList.addPlayer(p, arena)) {
-									GameUtils.savePlayerData(p);
-
-									p.teleport(lobbyLocation);
-
-									if (conf.getCfg().contains("items.leavegameitem"))
-										inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getItem());
-
-									if (conf.getCfg().contains("items.force-start") && p.hasPermission("ragemode.admin.item.forcestart"))
-										inv.setItem(conf.getCfg().getInt("items.force-start.slot"), ForceStarter.getItem());
-
-									GameUtils.broadcastToGame(arena, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
-
-									String title = conf.getCfg().getString("titles.join-game.title");
-									String subtitle = conf.getCfg().getString("titles.join-game.subtitle");
-									if (title != null && subtitle != null) {
-										title = title.replace("%game%", arena);
-										subtitle = subtitle.replace("%game%", arena);
-										Titles.sendTitle(p, conf.getCfg().getInt("titles.join-game.fade-in"), conf.getCfg().getInt("titles.join-game.stay"),
-												conf.getCfg().getInt("titles.join-game.fade-out"), title, subtitle);
-									}
-									SignCreator.updateAllSigns(arena);
-								} else
-									RageMode.logConsole(RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", arena));
-							} else
-								p.sendMessage(mapChecker.getMessage());
-						}
+						String game = SignCreator.getGameFromString();
+						GameUtils.joinPlayer(p, game);
 					} else
 						p.sendMessage(RageMode.getLang().get("no-permission"));
 				}
@@ -777,8 +737,15 @@ public class EventListener implements Listener {
 				return;
 			}
 
+			String l1 = event.getLine(1);
+
 			for (String game : GetGames.getGameNames()) {
-				if (event.getLine(1).contains(game)) {
+				if (!GameUtils.isGameWithNameExists(l1)) {
+					event.getPlayer().sendMessage(RageMode.getLang().get("invalid-game", "%game%", l1));
+					return;
+				}
+
+				if (l1.contains(game)) {
 					SignCreator.createNewSign((Sign) event.getBlock().getState(), game);
 					SignCreator.updateSign(((Sign) event.getBlock().getState()).getLocation());
 				}
@@ -791,7 +758,7 @@ public class EventListener implements Listener {
 		Player p = event.getPlayer();
 
 		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
-			if (PlayerList.getStatus() == GameStatus.RUNNING) {
+			if (GameUtils.getStatus() == GameStatus.RUNNING) {
 				if (waitingGames != null && waitingGames.containsKey(PlayerList.getPlayersGame(p))) {
 					if (waitingGames.get(PlayerList.getPlayersGame(p))) {
 						Location from = event.getFrom();

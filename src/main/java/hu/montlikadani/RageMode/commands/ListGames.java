@@ -9,10 +9,11 @@ import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class ListGames extends RmCommand {
 
-	public ListGames(CommandSender sender, Command cmd, String label, String[] args) {
-		if (!sender.hasPermission("ragemode.listgames")) {
+	@Override
+	public boolean run(CommandSender sender, Command cmd) {
+		if (!hasPerm(sender, "ragemode.listgames")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
-			return;
+			return false;
 		}
 		if (GetGames.getConfigGamesCount() > 0) {
 			if (GetGames.getGameNames() != null) {
@@ -32,6 +33,6 @@ public class ListGames extends RmCommand {
 			}
 		} else
 			sendMessage(sender, RageMode.getLang().get("commands.listgames.no-games-available"));
-		return;
+		return false;
 	}
 }

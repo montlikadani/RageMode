@@ -8,9 +8,12 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
 public class Placeholder extends PlaceholderExpansion {
 
+	protected Placeholder() {
+	}
+
 	@Override
 	public String getAuthor() {
-		return "montlikadani";
+		return RageMode.getInstance().getDescription().getAuthors().toString();
 	}
 
 	@Override
@@ -18,20 +21,20 @@ public class Placeholder extends PlaceholderExpansion {
 		return "ragemode";
 	}
 
-	public String getPlugin() {
-		return "";
+	@Override
+	public String getVersion() {
+		return "1.0";
 	}
 
 	@Override
-	public String getVersion() {
-		return "1.0.0";
-	}
-
 	public String onPlaceholderRequest(Player p, String var) {
 		if (p == null)
 			return "";
 
 		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(p.getUniqueId().toString());
+		if (rpp == null)
+			return "";
+
 		// Player kill stats
 		if (var.equals("kills"))
 			return Integer.toString(rpp.getKills());

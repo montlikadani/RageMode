@@ -30,10 +30,11 @@ import hu.montlikadani.ragemode.statistics.YAMLStats;
 
 public class StopGame extends RmCommand {
 
-	public StopGame(CommandSender sender, Command cmd, String label, String[] args) {
-		if (!sender.hasPermission("ragemode.admin.stopgame")) {
+	@Override
+	public boolean run(CommandSender sender, Command cmd, String[] args) {
+		if (!hasPerm(sender, "ragemode.admin.stopgame")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
-			return;
+			return false;
 		}
 		if (args.length >= 2) {
 			if (PlayerList.isGameRunning(args[1])) {
@@ -63,19 +64,19 @@ public class StopGame extends RmCommand {
 
 				RageScores.removePointsForPlayers(players);
 				PlayerList.setGameNotRunning(game);
-				PlayerList.setStatus(GameStatus.STOPPED);
+				GameUtils.setStatus(GameStatus.STOPPED);
 				SignCreator.updateAllSigns(game);
 			} else
 				sendMessage(sender, RageMode.getLang().get("game.not-running"));
 		} else
 			sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName>"));
-		return;
+		return false;
 	}
 
-	public static void stopGame(String game) {
+	public static void stopGame(final String game) {
 		boolean winnervalid = false;
 		if (PlayerList.isGameRunning(game)) {
-			PlayerList.setStatus(GameStatus.GAMEFREEZE);
+			GameUtils.setStatus(GameStatus.GAMEFREEZE);
 
 			String[] players = PlayerList.getPlayersInGame(game);
 
@@ -107,16 +108,17 @@ public class StopGame extends RmCommand {
 
 							youWonSubtitle = replaceVariables(youWonSubtitle, winnerUUID);
 
-							if (wonTitle != null && wonSubtitle != null)
+							if (player != winner) {
 								Titles.sendTitle(player, conf.getInt("titles.player-won.fade-in"), conf.getInt("titles.player-won.stay"),
 										conf.getInt("titles.player-won.fade-out"), wonTitle, wonSubtitle);
 
-							if (youWonTitle != null && youWonSubtitle != null)
+								if (conf.getBoolean("game.global.switch-gamemode-to-spectator-at-end-of-game"))
+									player.setGameMode(GameMode.SPECTATOR);
+							}
+
+							if (player == winner)
 								Titles.sendTitle(winner, conf.getInt("titles.you-won.fade-in"), conf.getInt("titles.you-won.stay"),
 										conf.getInt("titles.you-won.fade-out"), youWonTitle, youWonSubtitle);
-
-							if (conf.getBoolean("game.global.switch-gamemode-to-spectator-at-end-of-game") && player != winner)
-								player.setGameMode(GameMode.SPECTATOR);
 
 							PlayerList.removePlayerSynced(player);
 						}
@@ -140,25 +142,27 @@ public class StopGame extends RmCommand {
 				EventListener.waitingGames.put(game, true);
 			}
 
-			final boolean winner = winnervalid;
-			final String gameName = game;
+			Player player = null;
+			for (String playerUUID : players) {
+				player = Bukkit.getPlayer(UUID.fromString(playerUUID));
+			}
+
+			final Player p = player;
+			final Player winner = Bukkit.getPlayer(UUID.fromString(winnerUUID));
 			RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
 				@Override
 				public void run() {
 					Reward reward = new Reward("end-game", game);
-					if (winner)
-						reward.executeRewards(Bukkit.getPlayer(UUID.fromString(winnerUUID)), true);
-					else {
-						for (String playerUUID : players) {
-							reward.executeRewards(Bukkit.getPlayer(UUID.fromString(playerUUID)), false);
-						}
-					}
+					if (p == winner)
+						reward.executeRewards(winner, true);
+					else
+						reward.executeRewards(p, false);
 
-					finishStopping(gameName);
-					PlayerList.setStatus(GameStatus.STOPPED);
+					finishStopping(game);
+					GameUtils.setStatus(GameStatus.STOPPED);
 
-					if (EventListener.waitingGames.containsKey(gameName))
-						EventListener.waitingGames.remove(gameName);
+					if (EventListener.waitingGames.containsKey(game))
+						EventListener.waitingGames.remove(game);
 				}
 			}, 200);
 		}
@@ -223,9 +227,11 @@ public class StopGame extends RmCommand {
 	}
 
 	public static void stopAllGames() {
-		RageMode.logConsole("Searching games to stop...");
+		RageMode.logConsole("[RageMode] Searching games to stop...");
 
 		String[] games = GetGames.getGameNames();
+		if (games == null)
+			return;
 
 		int i = 0;
 		int imax = games.length;
@@ -233,7 +239,7 @@ public class StopGame extends RmCommand {
 		while (i < imax) {
 			if (games[i] != null && PlayerList.isGameRunning(games[i])) {
 
-				RageMode.logConsole("Stopping " + games[i] + " ...");
+				RageMode.logConsole("[RageMode] Stopping " + games[i] + " ...");
 
 				String[] players = PlayerList.getPlayersInGame(games[i]);
 				RageScores.calculateWinner(games[i], players);
@@ -256,9 +262,9 @@ public class StopGame extends RmCommand {
 				RageScores.removePointsForPlayers(players);
 
 				PlayerList.setGameNotRunning(games[i]);
-				PlayerList.setStatus(GameStatus.STOPPED);
+				GameUtils.setStatus(GameStatus.STOPPED);
 
-				RageMode.logConsole(games[i] + " has been stopped.");
+				RageMode.logConsole("[RageMode] " + games[i] + " has been stopped.");
 			}
 			i++;
 		}

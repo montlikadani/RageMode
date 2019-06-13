@@ -50,6 +50,10 @@ commands:
     player-not-found: "&cThe player name can not be null!"
     amount-not-less: "&cThe number must be greater than 0."
     changed: "&2The player points has been changed:&e %amount%&2, new:&e %new%"
+    player-is-in-game: "&cThis player&7 %player%&c is in game, so the points can not be modifiable while playing."
+  editspawn:
+    not-valid-spawn-id: "&cGame spawn with id&e %id%&c is not a valid spawn."
+    edit-success: "&2Spawn&e %number%&2 for the game&3 %game%&2 was modified successfully!"
 
 hologram-list:
 - "&6Rank:&a %rank%"

@@ -15,6 +15,10 @@ save-player-datas-to-file: true
 # bStats metrics for sending some statistic.
 metrics: true
 
+bungee:
+  enable: false
+  hub-name: "lobby"
+
 # MySQL database to save the players statistic.
 MySQL:
   auto-reconnect: false
@@ -33,8 +37,8 @@ signs:
   # Enables the signs creates.
   enable: false
 
-  # Sign refresh time in ticks.
-  update-time: 360
+  # Sign refresh time in seconds.
+  update-time: 20
 
   # Sign text when the game running or waiting for players.
   game:
@@ -63,11 +67,6 @@ actionbar-messages:
     # This be ignored, when empty or not found.
     message: ""
 
-  player-actions:
-    # Actionbar message when someone killed a player in the game and sends to player.
-    # This be ignored, when empty or not found.
-    message: "&2%pointer%:&3 %player% -&6 %points%&3 points,&6 %kills%&7/&6%deaths%&3 KD"
-
 # Bossbar messages
 bossbar-messages:
   join:
@@ -79,14 +78,9 @@ bossbar-messages:
     # Styles: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarStyle.html
     style: "SEGMENTED_6"
 
-  player-actions:
-    # Bossbar message when someone killed a player in the game and sends to player.
-    # This be ignored, when empty or not found.
-    message: "&2%pointer%:&3 %player% -&6 %points%&3 points,&6 %kills%&7/&6%deaths%&3 KD"
-
-    # Bossbar style
-    # Styles: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarStyle.html
-    style: "SEGMENTED_12"
+    # Bossbar color
+    # Colors: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarColor.html
+    color: GREEN
 
 # Title texts
 titles:
@@ -128,6 +122,15 @@ titles:
     stay: 80
     fade-out: 20
 
+# Enables the spectator mode in the already running game, to see what happens in that game.
+spectator:
+  enable: true
+
+  # Which spectator commands will be allowed  to use in-game?
+  allowed-spectator-commands:
+  - "/rm leave"
+  - "/ragemode leave"
+
 # Global settings for game.
 game:
   # ---- Attention! The games spawn, lobby locations are not configured in this place! ----
@@ -159,6 +162,9 @@ game:
     # This ignores, when the boolean is contains in the arenas file.
     death-messages: true
 
+    # This prevents the creature spawning in that world.
+    prevent-spawn-mobs-radius: 16
+
     # Removes arrows from player body.
     remove-arrows-from-player-body: false
 
@@ -168,6 +174,11 @@ game:
 
     # If this false if player has fallen to ground then not damage.
     damage-player-fall: false
+
+    # Show the player name above player head.
+    # This makes the game more difficult, because if it is enabled, it hides the names of 
+    # the players if the target player is not in the position of the other player's 10 radius eye.
+    show-name-above-player-when-look: true
 
     # Should be enable chat in the game?
     # This ignores with ragemode.bypass.game.lockchat permission.
@@ -236,7 +247,7 @@ game:
       format: "&e[%points%]&r %player%&7:&r %message%"
 
     # In-game commands, to use a player the specified commands in-game.
-    commands:
+    allowed-commands:
     - "/rm leave"
     - "/ragemode leave"
     - "/ragemode stop"

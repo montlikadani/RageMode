@@ -5,18 +5,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>hu.montlikadani</groupId>
 	<artifactId>ragemode</artifactId>
-	<version>1.0.0.003</version>
+	<version>1.0.0.004</version>
 	<packaging>jar</packaging>
 	<name>ragemode</name>
 	<url>http://maven.apache.org</url>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
 	<repositories>
-		<repository>
-			<id>bstats-repo</id>
-			<url>https://repo.codemc.org/repository/maven-public</url>
-		</repository>
 		<repository>
 			<id>papi-repo</id>
 			<url>http://repo.extendedclip.com/content/repositories/placeholderapi/</url>
@@ -47,69 +40,21 @@
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.14-R0.1-SNAPSHOT</version>
+			<version>1.14.2-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.spigotmc</groupId>
-			<artifactId>spigot-api</artifactId>
-			<version>1.13.2-R0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/libs/spigot-1.13.2.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>1.12_R1</groupId>
-			<artifactId>spigot_1_12_R1</artifactId>
-			<version>1.12.2</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/libs/spigot-1.12.2.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>1.11_R1</groupId>
-			<artifactId>spigot_1_11_R1</artifactId>
-			<version>1.11.2</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/libs/spigot-1.11.2-R0.1-SNAPSHOT.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>1.10_R1</groupId>
-			<artifactId>spigot_1_10_R1</artifactId>
-			<version>1.10.2</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/libs/spigot-1.10.2-R0.1-SNAPSHOT.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>1.9_R1</groupId>
-			<artifactId>spigot_1_9_R1</artifactId>
-			<version>1.9.4</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/libs/spigot-1.9.4-R0.1-SNAPSHOT.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>1.8_R3</groupId>
-			<artifactId>spigot_1_8_R3</artifactId>
-			<version>1.8.8</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/libs/spigot-1.8.8-R0.1-SNAPSHOT.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>org.bstats</groupId>
-			<artifactId>bstats-bukkit</artifactId>
-			<version>1.4</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>me.clip</groupId>
 			<artifactId>placeholderapi</artifactId>
-			<version>2.9.2</version>
+			<version>2.10.2</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gmail</groupId>
 			<artifactId>HolographicDisplays</artifactId>
-			<version>2.3.2</version>
+			<version>2.3.3</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/libs/HolographicDisplays.jar</systemPath>
+			<systemPath>${project.basedir}/libs/HolographicDisplays-2.3.3-SNAPSHOT.jar</systemPath>
 		</dependency>
 	</dependencies>
 </project>

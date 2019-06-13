@@ -7,28 +7,29 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
-import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class KickPlayer extends RmCommand {
 
-	public KickPlayer(CommandSender sender, Command cmd, String label, String[] args) {
-		if (!sender.hasPermission("ragemode.admin.kick")) {
+	@Override
+	public boolean run(CommandSender sender, Command cmd, String[] args) {
+		if (!hasPerm(sender, "ragemode.admin.kick")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
-			return;
+			return false;
 		}
 		if (args.length < 3) {
 			sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName> <playerName>"));
-			return;
+			return false;
 		}
 		String game = args[1];
 		if (game == null) {
 			sendMessage(sender, RageMode.getLang().get("commands.kick.game-not-null"));
-			return;
+			return false;
 		}
 
-		if (!GetGames.isGameExistent(game)) {
+		if (!GameUtils.isGameWithNameExists(game)) {
 			sendMessage(sender, RageMode.getLang().get("invalid-game"));
-			return;
+			return false;
 		}
 
 		if (!PlayerList.isGameRunning(game))
@@ -37,7 +38,7 @@ public class KickPlayer extends RmCommand {
 			Player target = Bukkit.getPlayer(args[2]);
 			if (target == null) {
 				sendMessage(sender, RageMode.getLang().get("commands.kick.player-not-found"));
-				return;
+				return false;
 			}
 			if (PlayerList.isPlayerPlaying(target.getUniqueId().toString())) {
 				PlayerList.removePlayer(target);
@@ -46,6 +47,6 @@ public class KickPlayer extends RmCommand {
 			} else
 				sendMessage(sender, RageMode.getLang().get("commands.kick.player-currently-not-playing"));
 		}
-		return;
+		return false;
 	}
 }

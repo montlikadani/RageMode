@@ -4,25 +4,54 @@ import java.io.File;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.google.common.base.StandardSystemProperty;
 
+import hu.montlikadani.ragemode.metrics.Metrics;
+import hu.montlikadani.ragemode.MinecraftVersion.Version;
+import hu.montlikadani.ragemode.commands.AddGame;
+import hu.montlikadani.ragemode.commands.AddSpawn;
+import hu.montlikadani.ragemode.commands.EditSpawn;
+import hu.montlikadani.ragemode.commands.ForceStart;
+import hu.montlikadani.ragemode.commands.HoloStats;
+import hu.montlikadani.ragemode.commands.KickPlayer;
+import hu.montlikadani.ragemode.commands.ListGames;
+import hu.montlikadani.ragemode.commands.PlayerJoin;
+import hu.montlikadani.ragemode.commands.PlayerLeave;
+import hu.montlikadani.ragemode.commands.Points;
+import hu.montlikadani.ragemode.commands.Reload;
+import hu.montlikadani.ragemode.commands.RemoveGame;
+import hu.montlikadani.ragemode.commands.ResetPlayerStats;
 import hu.montlikadani.ragemode.commands.RmCommand;
+import hu.montlikadani.ragemode.commands.SetActionBar;
+import hu.montlikadani.ragemode.commands.SetBossBar;
+import hu.montlikadani.ragemode.commands.SetGameTime;
+import hu.montlikadani.ragemode.commands.SetGlobalMessages;
+import hu.montlikadani.ragemode.commands.SetLobby;
+import hu.montlikadani.ragemode.commands.SetLobbyDelay;
+import hu.montlikadani.ragemode.commands.ShowStats;
+import hu.montlikadani.ragemode.commands.SignUpdate;
+import hu.montlikadani.ragemode.commands.Spectate;
 import hu.montlikadani.ragemode.commands.StopGame;
+import hu.montlikadani.ragemode.commands.ToggleGame;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.Language;
 import hu.montlikadani.ragemode.database.MySQLConnect;
+import hu.montlikadani.ragemode.events.BungeeListener;
 import hu.montlikadani.ragemode.events.EventListener;
 import hu.montlikadani.ragemode.events.Listeners_1_8;
 import hu.montlikadani.ragemode.events.Listeners_1_9;
+import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.ActionBar;
+import hu.montlikadani.ragemode.gameUtils.BungeeUtils;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.holo.HoloHolder;
-import hu.montlikadani.ragemode.metrics.Metrics;
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignConfiguration;
@@ -34,10 +63,12 @@ import net.milkbowl.vault.economy.Economy;
 public class RageMode extends JavaPlugin {
 
 	private Configuration conf = null;
-	private PlayerList playerList = null;
 	private SignScheduler sign = null;
+	private BungeeUtils bungee = null;
 	private static Language lang = null;
 	private static MySQLConnect mySQLConnect = null;
+	private static MinecraftVersion mcVersion = null;
+
 	private static Economy econ = null;
 
 	private static RageMode instance = null;
@@ -50,40 +81,26 @@ public class RageMode extends JavaPlugin {
 		instance = this;
 
 		try {
-			if (instance == null) {
-				logConsole(Level.SEVERE, "Plugin instance is null. Disabling...");
-				getManager().disablePlugin(this);
-				return;
-			}
-
 			if (!checkJavaVersion()) {
 				getManager().disablePlugin(this);
 				return;
 			}
 
+			mcVersion = new MinecraftVersion();
+
 			if (Utils.getVersion().contains("1.7")) {
-				logConsole(Level.SEVERE, "[RageMode] This version is not supported by this plugin! Please use larger 1.8+");
+				Bukkit.getLogger().log(Level.SEVERE, "[RageMode] This version is not supported by this plugin! Please use larger 1.8+");
 				getManager().disablePlugin(this);
 				return;
 			}
 
-			if (Utils.getVersion().contains("1.8"))
-				logConsole("[RageMode] This version not fully supported by this plugin, so some options will not work.");
+			if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
+				Bukkit.getLogger().log(Level.INFO, "[RageMode] This version not fully supported by this plugin, so some options will not work.");
 
 			conf = new Configuration(this);
-			if (conf == null) {
-				logConsole(Level.SEVERE, "Configuration path is invalid. Disabling...");
-				getManager().disablePlugin(this);
-				return;
-			}
 			conf.loadConfig();
 
 			lang = new Language(this, conf.getCfg().getString("language"));
-			if (lang == null) {
-				logConsole(Level.SEVERE, "Language path is invalid. Disabling...");
-				getManager().disablePlugin(this);
-				return;
-			}
 			lang.loadLanguage();
 
 			if (getManager().isPluginEnabled("HolographicDisplays")) {
@@ -101,39 +118,63 @@ public class RageMode extends JavaPlugin {
 			if (getManager().isPluginEnabled("PlaceholderAPI"))
 				new Placeholder().register();
 
-			playerList = new PlayerList();
+			if (conf.getCfg().getBoolean("bungee.enable")) {
+				bungee = new BungeeUtils(this);
+				getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+			}
+
 			initActionBar();
 
 			getManager().registerEvents(new EventListener(this), this);
-			if (Utils.getVersion().contains("1.8"))
+			if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
 				getManager().registerEvents(new Listeners_1_8(), this);
 			else
 				getManager().registerEvents(new Listeners_1_9(), this);
 
-			getCommand("ragemode").setExecutor(new RmCommand());
-			getCommand("ragemode").setTabCompleter(new RmCommand());
+			registerCommands();
 
 			if (conf.getCfg().getString("statistics").equals("") || conf.getCfg().getString("statistics").equals("yaml"))
 				initYamlStatistics();
 			else if (conf.getCfg().getString("statistics").equals("mysql"))
 				connectMySQL();
 
+			RageScores.load();
+
 			if (conf.getCfg().getBoolean("signs.enable")) {
 				sign = new SignScheduler(this);
 				getManager().registerEvents(sign, this);
 
 				SignConfiguration.initSignConfiguration();
-
 				SignCreator.loadSigns();
-				SignCreator.updateAllSigns(GetGames.getGameNames()[GetGames.getConfigGamesCount() - 1]);
 
 				Bukkit.getScheduler().runTaskLater(this, sign, 40L);
+			}
+
+			String game = null;
+			if (conf.getArenasCfg().contains("arenas"))
+				game = GetGames.getGameNames()[GetGames.getConfigGamesCount() - 1];
+
+			if (game != null) {
+				if (conf.getCfg().getBoolean("bungee.enable"))
+					getManager().registerEvents(new BungeeListener(game), this);
+
+				new PlayerList();
+
+				if (conf.getCfg().getBoolean("signs.enable"))
+					SignCreator.updateAllSigns(game);
+
+				// Loads the game locker
+				if (conf.getArenasCfg().contains("arenas." + game + ".lock")
+						&& conf.getArenasCfg().getBoolean("arenas." + game + ".lock")) {
+					GameUtils.setStatus(GameStatus.NOTREADY);
+				} else
+					GameUtils.setStatus(GameStatus.READY);
 			}
 
 			if (conf.getCfg().getBoolean("metrics")) {
 				Metrics metrics = new Metrics(this);
 				// TODO Metrics statistic
-				logConsole("Metrics enabled.");
+				logConsole("[RageMode] Metrics enabled.");
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -146,10 +187,15 @@ public class RageMode extends JavaPlugin {
 		if (instance == null) return;
 
 		Thread thread = new Thread(() -> {
-			StopGame.stopAllGames();
+			try {
+				Class.forName("hu.montlikadani.ragemode.commands.StopGame");
+				StopGame.stopAllGames();
+			} catch (ClassNotFoundException e) {
+			}
 
 			sign = null;
 			getServer().getScheduler().cancelTasks(instance);
+			HandlerList.unregisterAll(this);
 			instance = null;
 		});
 
@@ -167,8 +213,6 @@ public class RageMode extends JavaPlugin {
 		YAMLStats.initS();
 
 		Bukkit.getServer().getScheduler().runTaskAsynchronously(this, () -> RuntimeRPPManager.getRPPListFromYAML());
-
-		RageScores.load();
 	}
 
 	public void connectMySQL() {
@@ -187,10 +231,9 @@ public class RageMode extends JavaPlugin {
 		mySQLConnect = new MySQLConnect(host, port, database, username, password, serverCertificate,
 				useUnicode, characterEnc, autoReconnect, useSSL);
 
-		Bukkit.getServer().getScheduler().runTaskAsynchronously(this, () -> {
-			if (mySQLConnect != null)
-				RuntimeRPPManager.getRPPListFromMySQL();
-		});
+		if (mySQLConnect != null)
+			Bukkit.getServer().getScheduler().runTaskAsynchronously(this,
+					() -> RuntimeRPPManager.getRPPListFromMySQL());
 	}
 
 	private void initActionBar() {
@@ -200,7 +243,7 @@ public class RageMode extends JavaPlugin {
 		if (ActionBar.nmsver.equalsIgnoreCase("v1_8_") && ActionBar.nmsver.equalsIgnoreCase("v1_9_")
 				&& ActionBar.nmsver.equalsIgnoreCase("v1_10_") && ActionBar.nmsver.equalsIgnoreCase("v1_11_")
 				&& ActionBar.nmsver.equalsIgnoreCase("v1_12_") && ActionBar.nmsver.equalsIgnoreCase("v1_13_")
-				&& ActionBar.nmsver.equalsIgnoreCase("v1_14_") || ActionBar.nmsver.startsWith("v1_7_"))
+				&& ActionBar.nmsver.equalsIgnoreCase("v1_14_"))
 			ActionBar.useOldMethods = true;
 	}
 
@@ -214,6 +257,60 @@ public class RageMode extends JavaPlugin {
 			return;
 
 		return;
+	}
+
+	public synchronized void loadListeners() {
+		HandlerList.unregisterAll(this);
+
+		if (conf.getCfg().getBoolean("bungee.enable")) {
+			String game = null;
+			if (conf.getArenasCfg().contains("arenas"))
+				game = GetGames.getGameNames()[GetGames.getConfigGamesCount() - 1];
+
+			if (game != null)
+				getManager().registerEvents(new BungeeListener(game), this);
+		}
+
+		if (conf.getCfg().getBoolean("signs.enable"))
+			getManager().registerEvents(sign, this);
+
+		getManager().registerEvents(new EventListener(this), this);
+		if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
+			getManager().registerEvents(new Listeners_1_8(), this);
+		else
+			getManager().registerEvents(new Listeners_1_9(), this);
+	}
+
+	private void registerCommands() {
+		//TODO short this if possible, maybe?
+		new AddGame();
+		new AddSpawn();
+		new EditSpawn();
+		new ForceStart();
+		new HoloStats();
+		new KickPlayer();
+		new ListGames();
+		new PlayerJoin();
+		new PlayerLeave();
+		new Points();
+		new Reload();
+		new RemoveGame();
+		new ResetPlayerStats();
+		new SetActionBar();
+		new SetBossBar();
+		new SetGameTime();
+		new SetGlobalMessages();
+		new SetLobby();
+		new SetLobbyDelay();
+		new ShowStats();
+		new SignUpdate();
+		new Spectate();
+		new StopGame();
+		new ToggleGame();
+
+		RmCommand rm = new RmCommand();
+		getCommand("ragemode").setExecutor(rm);
+		getCommand("ragemode").setTabCompleter(rm);
 	}
 
 	public File getFolder() {
@@ -233,25 +330,30 @@ public class RageMode extends JavaPlugin {
 	}
 
 	/**
-	 * Gets the MySQLConnect class
+	 * Gets the {@link MySQLConnect} class
 	 * 
-	 * @return if mySQLConnect instance is not null
+	 * @return mySQLConnect class
 	 */
 	public static MySQLConnect getMySQL() {
-		return mySQLConnect == null ? null : mySQLConnect;
-	}
-
-	public PlayerList getPlayerList() {
-		return playerList;
+		return mySQLConnect;
 	}
 
 	/**
-	 * Gets the Language class
+	 * Gets the {@link Language} class
 	 * 
 	 * @return Language class
 	 */
 	public static Language getLang() {
 		return lang;
+	}
+
+	/**
+	 * Gets the {@link MinecraftVersion} class
+	 * 
+	 * @return MinecraftVersion class
+	 */
+	public static MinecraftVersion getMCVersion() {
+		return mcVersion;
 	}
 
 	public boolean isHologramEnabled() {
@@ -266,8 +368,12 @@ public class RageMode extends JavaPlugin {
 		return conf;
 	}
 
+	public BungeeUtils getBungeeUtils() {
+		return bungee;
+	}
+
 	public void throwMsg() {
-		logConsole(Level.WARNING, "There was an error. Please report it here:\nhttps://github.com/montlikadani/RageMode/issues");
+		logConsole(Level.WARNING, "[RageMode] There was an error. Please report it here:\nhttps://github.com/montlikadani/RageMode/issues");
 		return;
 	}
 

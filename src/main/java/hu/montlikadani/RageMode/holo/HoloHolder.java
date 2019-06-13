@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
@@ -25,9 +24,10 @@ import hu.montlikadani.ragemode.statistics.YAMLStats;
 public class HoloHolder {
 
 	private static File holosFile;
-	private static FileConfiguration holosConf;
+	private static YamlConfiguration holosConf;
 
-	@SuppressWarnings("unchecked")
+	private static List<Location> holos = new ArrayList<>();
+
 	public static void addHolo(Location loc) {
 		if (!RageMode.getInstance().isHologramEnabled())
 			return;
@@ -35,14 +35,9 @@ public class HoloHolder {
 		loc.add(0d, 2d, 0d);
 		loc.setPitch(0f);
 		loc.setYaw(0f);
-		List<Location> savedHolos;
-		if (holosConf.isSet("data.holos"))
-			savedHolos = (List<Location>) holosConf.getList("data.holos");
-		else
-			savedHolos = new ArrayList<>();
 
-		savedHolos.add(loc);
-		holosConf.set("data.holos", savedHolos);
+		holos.add(loc);
+		holosConf.set("data.holos", holos);
 
 		try {
 			holosConf.save(holosFile);
@@ -51,8 +46,7 @@ public class HoloHolder {
 			RageMode.getInstance().throwMsg();
 		}
 
-		Collection<? extends Player> onlines = Bukkit.getOnlinePlayers();
-		for (Player player : onlines) {
+		for (Player player : Bukkit.getOnlinePlayers()) {
 			displayHoloToPlayer(player, loc);
 		}
 	}
@@ -65,8 +59,7 @@ public class HoloHolder {
 		for (Hologram holo : holos) {
 			holo.delete();
 		}
-		Collection<? extends Player> onlines = Bukkit.getOnlinePlayers();
-		for (Player player : onlines) {
+		for (Player player : Bukkit.getOnlinePlayers()) {
 			showAllHolosToPlayer(player);
 		}
 	}
@@ -148,23 +141,18 @@ public class HoloHolder {
 		}
 	}
 
-	public static void deleteHologram(Player p, Hologram holo) {
+	public static boolean deleteHologram(Hologram holo) {
 		if (!RageMode.getInstance().isHologramEnabled())
-			return;
+			return false;
 
 		if (holo == null)
-			return;
+			return false;
 
-		@SuppressWarnings("unchecked")
-		List<Location> locList = (List<Location>) holosConf.getList("data.holos");
-		if (locList.contains(holo.getLocation()))
-			locList.remove(holo.getLocation());
-		else {
-			p.sendMessage(RageMode.getLang().get("commands.holostats.no-holo-found"));
-			return;
-		}
+		if (!holos.contains(holo.getLocation()))
+			return false;
 
-		holosConf.set("data.holos", locList);
+		holos.remove(holo.getLocation());
+		holosConf.set("data.holos", holos);
 
 		try {
 			holosConf.save(holosFile);
@@ -175,21 +163,24 @@ public class HoloHolder {
 
 		holo.delete();
 		loadHolos();
+
+		return true;
 	}
 
-/**	public static void teleporttoHologram(Player p, Hologram holo) {
+	public static Location getHologramLocation(Hologram holo) {
 		if (holo == null)
-			return;
+			return null;
 
-		@SuppressWarnings("unchecked")
-		List<Location> locList = (List<Location>) holosConf.getList("data.holos");
-		if (locList.contains(holo.getLocation()))
-			p.teleport(holo.getLocation());
-		else
-			p.sendMessage(RageMode.getLang().get("commands.holostats.no-holo-found"));
-	}*/
+		return holo.getLocation();
+	}
 
-	public static Hologram getClosest(Player player) {
+	/**
+	 * Getting the hologram around the player.
+	 * @param player Player
+	 * @param eyeLoc player eye location or current location
+	 * @return Hologram if found around the player
+	 */
+	public static Hologram getClosest(Player player, boolean eyeLoc) {
 		if (!RageMode.getInstance().isHologramEnabled())
 			return null;
 
@@ -198,7 +189,7 @@ public class HoloHolder {
 		double lowestDist = Double.MAX_VALUE;
 
 		for (Hologram holo : holos) {
-			double dist = holo.getLocation().distance(player.getLocation());
+			double dist = holo.getLocation().distance(eyeLoc ? player.getEyeLocation() : player.getLocation());
 			if (dist < lowestDist) {
 				lowestDist = dist;
 				closest = holo;
@@ -244,21 +235,14 @@ public class HoloHolder {
 		loadHolos();
 	}
 
-	@SuppressWarnings("unchecked")
 	public static void showAllHolosToPlayer(Player player) {
 		if (!RageMode.getInstance().isHologramEnabled())
 			return;
 
-		List<Location> holoList;
-		if (holosConf.isSet("data.holos"))
-			holoList = (List<Location>) holosConf.getList("data.holos");
-		else
-			return;
-
 		int i = 0;
-		int imax = holoList.size();
+		int imax = holos.size();
 		while (i < imax) {
-			displayHoloToPlayer(player, holoList.get(i));
+			displayHoloToPlayer(player, holos.get(i));
 			i++;
 		}
 	}

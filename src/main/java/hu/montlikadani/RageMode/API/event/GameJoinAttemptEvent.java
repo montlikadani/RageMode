@@ -2,12 +2,9 @@ package hu.montlikadani.ragemode.API.event;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
 
-public class GameJoinAttemptEvent extends Event implements Cancellable {
+public class GameJoinAttemptEvent extends BaseEvent implements Cancellable {
 
-	private static final HandlerList HANDLERS = new HandlerList();
 	private String game;
 	private Player player;
 	private boolean cancelled = false;
@@ -15,10 +12,6 @@ public class GameJoinAttemptEvent extends Event implements Cancellable {
 	public GameJoinAttemptEvent(Player player, String game) {
 		this.game = game;
 		this.player = player;
-	}
-
-	public static HandlerList getHandlerList() {
-		return HANDLERS;
 	}
 
 	public String getGame() {
@@ -35,9 +28,5 @@ public class GameJoinAttemptEvent extends Event implements Cancellable {
 
 	public Player getPlayer() {
 		return player;
-	}
-
-	public HandlerList getHandlers() {
-		return HANDLERS;
 	}
 }

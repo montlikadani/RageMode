@@ -214,10 +214,18 @@ public class YAMLStats {
 		return allRPPs;
 	}
 
-	public static void resetPlayerStatistic(String uuid) {
-		if (!inited) return;
+	/**
+	 * Reset the specified player uuid all datas
+	 * 
+	 * @param uuid UUID of player
+	 * @return true if the class inited and player found in database
+	 */
+	public static boolean resetPlayerStatistic(String uuid) {
+		if (!inited) return false;
 
 		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(uuid);
+		if (rpp == null)
+			return false;
 
 		if (statsConf.getConfigurationSection("data").getKeys(false).contains(uuid)) {
 			rpp.setDeaths(0);
@@ -248,6 +256,7 @@ public class YAMLStats {
 				RageMode.getInstance().throwMsg();
 			}
 		}
+		return true;
 	}
 
 	public static File getFile() {

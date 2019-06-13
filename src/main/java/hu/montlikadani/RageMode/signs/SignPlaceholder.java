@@ -6,6 +6,7 @@ import java.util.List;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class SignPlaceholder {
@@ -34,7 +35,7 @@ public class SignPlaceholder {
 				line = line.replace("%max-players%", Integer.toString(GetGames.getMaxPlayers(game)));
 
 			if (line.contains("%running%")) {
-				if (PlayerList.getStatus() == GameStatus.WAITING) {
+				if (GameUtils.getStatus() == GameStatus.WAITING) {
 					if (PlayerList.getPlayersInGame(game).length == GetGames.getMaxPlayers(game))
 						line = line.replace("%running%", RageMode.getInstance().getConfiguration().getCfg().getString("signs.game.full"));
 					else

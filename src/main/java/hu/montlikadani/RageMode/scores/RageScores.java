@@ -165,7 +165,7 @@ public class RageScores {
 	 * Gets the specified player points
 	 * 
 	 * @param string UUID of player
-	 * @return playerPoints Player current points
+	 * @return playerPoints Player points
 	 */
 	public static PlayerPoints getPlayerPoints(String playerUUID) {
 		if (playerUUID == null) {

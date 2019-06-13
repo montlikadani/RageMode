@@ -9,17 +9,18 @@ import hu.montlikadani.ragemode.signs.SignCreator;
 
 public class SignUpdate extends RmCommand {
 
-	public SignUpdate(CommandSender sender, Command cmd, String label, String[] args) {
-		if (!sender.hasPermission("ragemode.admin.signupdate")) {
+	@Override
+	public boolean run(CommandSender sender, Command cmd, String[] args) {
+		if (!hasPerm(sender, "ragemode.admin.signupdate")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
-			return;
+			return false;
 		}
 		if (!RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable"))
-			return;
+			return false;
 
 		if (args.length != 2) {
 			sendMessage(sender, RageMode.getLang().get("commands.signupdate.usage"));
-			return;
+			return false;
 		}
 
 		String name = null;
@@ -29,11 +30,11 @@ public class SignUpdate extends RmCommand {
 			name = args[1];
 			if (!GetGames.isGameExistent(name)) {
 				sendMessage(sender, RageMode.getLang().get("invalid-game"));
-				return;
+				return false;
 			}
 		}
 
 		SignCreator.updateAllSigns(name);
-		return;
+		return false;
 	}
 }

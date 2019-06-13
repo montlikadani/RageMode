@@ -1,8 +1,13 @@
 package hu.montlikadani.ragemode;
 
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 
+import hu.montlikadani.ragemode.MinecraftVersion.Version;
+
+@SuppressWarnings("deprecation")
 public class NMS {
 
 	/**
@@ -11,9 +16,8 @@ public class NMS {
 	 * @param p Player
 	 * @return ItemStack
 	 */
-	@SuppressWarnings("deprecation")
 	public static ItemStack getItemInHand(Player p) {
-		return Utils.getVersion().contains("1.8") ? p.getItemInHand() : p.getInventory().getItemInMainHand();
+		return Version.isCurrentEqualOrLower(Version.v1_8_R3) ? p.getInventory().getItemInHand() : p.getInventory().getItemInMainHand();
 	}
 
 	/**
@@ -22,11 +26,36 @@ public class NMS {
 	 * @param p Player
 	 * @param item ItemStack
 	 */
-	@SuppressWarnings("deprecation")
 	public static void setItemInHand(Player p, ItemStack item) {
-		if (Utils.getVersion().equals("1.8"))
+		if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
 			p.setItemInHand(item);
 		else
 			p.getInventory().setItemInMainHand(item);
+	}
+
+	/**
+	 * Sets the item durability, this prevents error when the durability is fully removed in the next mc version.
+	 * 
+	 * @param item ItemStack
+	 * @param number short item durability
+	 */
+	public static void setDurability(ItemStack item, short number) {
+		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1))
+			((Damageable) item.getItemMeta()).setDamage(number);
+		else
+			item.setDurability(number);
+	}
+
+	/**
+	 * Gets the Enchantment name in item, this prevents the deprecated getByName() using in 1.13+ versions.
+	 * 
+	 * @param type Enchantment name
+	 * @return Enchantment type
+	 */
+	public static Enchantment getEnchant(String type) {
+		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1))
+			return Enchantment.getByKey(org.bukkit.NamespacedKey.minecraft(type.toLowerCase()));
+		else
+			return Enchantment.getByName(type.toUpperCase());
 	}
 }

@@ -13,7 +13,7 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 
-import hu.montlikadani.ragemode.scoreboard.ScoreBoardHolder;
+import hu.montlikadani.ragemode.holder.ScoreBoardHolder;
 
 public class ScoreBoard {
 
@@ -34,6 +34,7 @@ public class ScoreBoard {
 		for (Player loopPlayer : player) {
 			Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
 			scoreboard.clearSlot(DisplaySlot.SIDEBAR);
+			removeScoreBoard(loopPlayer);
 
 			Objective objective = scoreboard.registerNewObjective("ragescores", "dummy");
 			objective.setDisplaySlot(DisplaySlot.SIDEBAR);

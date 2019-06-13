@@ -1,12 +1,9 @@
 package hu.montlikadani.ragemode.API.event;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
 
-public class GameLeaveAttemptEvent extends Event {
+public class GameLeaveAttemptEvent extends BaseEvent {
 
-	private static final HandlerList HANDLERS = new HandlerList();
 	private String game;
 	private Player player;
 
@@ -15,19 +12,11 @@ public class GameLeaveAttemptEvent extends Event {
 		this.player = player;
 	}
 
-	public static HandlerList getHandlerList() {
-		return HANDLERS;
-	}
-
 	public String getGame() {
 		return game;
 	}
 
 	public Player getPlayer() {
 		return player;
-	}
-
-	public HandlerList getHandlers() {
-		return HANDLERS;
 	}
 }

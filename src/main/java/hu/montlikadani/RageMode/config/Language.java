@@ -95,6 +95,9 @@ public class Language {
 		l.get("commands.points.player-not-found", "&cThe player name can not be null!");
 		l.get("commands.points.amount-not-less", "&cThe number must be greater than 0.");
 		l.get("commands.points.changed", "&2The player points has been changed:&e %amount%&2, new:&e %new%");
+		l.get("commands.points.player-is-in-game", "&cThis player&7 %player%&c is in game, so the points can not be modifiable while playing.");
+		l.get("commands.editspawn.not-valid-spawn-id", "&cGame spawn with id&e %id%&c is not a valid spawn.");
+		l.get("commands.editspawn.edit-success", "&2Spawn&e %number%&2 for the game&3 %game%&2 was modified successfully!");
 
 		String[] holoList = new String[] { "&6Rank:&a %rank%", "&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
 				"&5KD:&a %kd%", "&4Kills:&a %kills%", "&7Deaths:&a %deaths%" };

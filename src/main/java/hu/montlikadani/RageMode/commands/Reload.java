@@ -13,10 +13,11 @@ import hu.montlikadani.ragemode.signs.SignCreator;
 
 public class Reload extends RmCommand {
 
-	public Reload(CommandSender sender, Command cmd, String label, String[] args) {
-		if (!sender.hasPermission("ragemode.admin.reload")) {
+	@Override
+	public boolean run(RageMode plugin, CommandSender sender, Command cmd) {
+		if (!hasPerm(sender, "ragemode.admin.reload")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
-			return;
+			return false;
 		}
 		String game = GetGames.getGameNames()[GetGames.getConfigGamesCount() - 1];
 		if (PlayerList.isGameRunning(game))
@@ -24,18 +25,20 @@ public class Reload extends RmCommand {
 
 		StopGame.stopAllGames();
 
-		RageMode.getInstance().getConfiguration().loadConfig();
+		plugin.getConfiguration().loadConfig();
 		RageMode.getLang().loadLanguage();
 
-		if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable"))
+		if (plugin.getConfiguration().getCfg().getBoolean("signs.enable"))
 			SignConfiguration.initSignConfiguration();
+
+		plugin.loadListeners();
 
 		SignCreator.updateAllSigns(game);
 
-		if (RageMode.getInstance().isHologramEnabled())
+		if (plugin.isHologramEnabled())
 			HoloHolder.initHoloHolder();
 
 		sendMessage(sender, RageMode.getLang().get("commands.reload.success"));
-		return;
+		return false;
 	}
 }

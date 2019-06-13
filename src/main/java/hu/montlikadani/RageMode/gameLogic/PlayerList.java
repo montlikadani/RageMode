@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.Timer;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -21,8 +20,11 @@ import org.bukkit.potion.PotionEffect;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.GameJoinAttemptEvent;
 import hu.montlikadani.ragemode.API.event.GameLeaveAttemptEvent;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.gameUtils.GetGameLobby;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
+import hu.montlikadani.ragemode.gameUtils.ScoreTeam;
 import hu.montlikadani.ragemode.gameUtils.TabTitles;
 import hu.montlikadani.ragemode.gameUtils.TableList;
 import hu.montlikadani.ragemode.scores.RageScores;
@@ -49,10 +51,8 @@ public class PlayerList {
 	static boolean fly = false;
 	static boolean allowFly = false;
 
-	private static String[] list = new String[1]; // [Gamename,Playername x overallMaxPlayers,Gamename,...]
+	private static String[] list = new String[1]; // Store game names, max players...
 	private static String[] runningGames = new String[1];
-
-	private static GameStatus status = GameStatus.STOPPED;
 
 	private static LobbyTimer lobbyTimer;
 
@@ -102,7 +102,7 @@ public class PlayerList {
 	}
 
 	public static boolean addPlayer(Player player, String game) {
-		if (status == GameStatus.NOTREADY) {
+		if (GameUtils.getStatus() == GameStatus.NOTREADY) {
 			player.sendMessage(RageMode.getLang().get("commands.join.game-locked"));
 			return false;
 		}
@@ -110,6 +110,11 @@ public class PlayerList {
 			player.sendMessage(RageMode.getLang().get("game.running"));
 			return false;
 		}
+
+		GameJoinAttemptEvent event = new GameJoinAttemptEvent(player, game);
+		Bukkit.getPluginManager().callEvent(event);
+		if (event.isCancelled())
+			return false;
 
 		int i, n;
 		i = 0;
@@ -133,23 +138,12 @@ public class PlayerList {
 					n = i;
 					n++; // should increase performance because the game name in the list isn't checked for null
 
-					int time = 0;
-					if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + game + ".lobbydelay")) {
-						time = RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.delay") > 0
-								? RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.delay")
-								: 30;
-					} else
-						time = RageMode.getInstance().getConfiguration().getArenasCfg().getInt("arenas." + game + ".lobbydelay");
+					int time = GetGameLobby.getLobbyTime(game);
 
 					while (n <= (GetGames.getMaxPlayers(game) + i)) {
 						if (list[n] == null) {
 							list[n] = player.getUniqueId().toString();
 							player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", game));
-
-							GameJoinAttemptEvent event = new GameJoinAttemptEvent(player, game);
-							Bukkit.getPluginManager().callEvent(event);
-							if (event.isCancelled())
-								return false;
 
 							if (RageMode.getInstance().getConfiguration().getCfg()
 									.getInt("game.global.lobby.min-players-to-start-lobby-timer") > 1) {
@@ -157,13 +151,11 @@ public class PlayerList {
 										.getInt("game.global.lobby.min-players-to-start-lobby-timer")) {
 									lobbyTimer = new LobbyTimer(game, time);
 									lobbyTimer.loadTimer();
-									new Timer().scheduleAtFixedRate(lobbyTimer, 0, 60 * 20L);
 								}
 							} else {
 								if (getPlayersInGame(game).length == 2) {
 									lobbyTimer = new LobbyTimer(game, time);
 									lobbyTimer.loadTimer();
-									new Timer().scheduleAtFixedRate(lobbyTimer, 0, 60 * 20L);
 								}
 							}
 							return true;
@@ -185,141 +177,145 @@ public class PlayerList {
 
 						player.setMetadata("Leaving", new FixedMetadataValue(RageMode.getInstance(), true));
 
-						while (n < oldLocations.getFirstLength()) { // Get him back to his old location.
-							if (oldLocations.getFromFirstObject(n) == playerToKick) {
-								playerToKick.teleport(oldLocations.getFromSecondObject(n));
-								oldLocations.removeFromBoth(n);
+						if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("bungee.enable"))
+							RageMode.getInstance().getBungeeUtils().connectToHub(playerToKick);
+						else {
+							while (n < oldLocations.getFirstLength()) { // Get him back to his old location.
+								if (oldLocations.getFromFirstObject(n) == playerToKick) {
+									playerToKick.teleport(oldLocations.getFromSecondObject(n));
+									oldLocations.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldInventories.getFirstLength()) { // Give him his inventory back.
-							if (oldInventories.getFromFirstObject(n) == playerToKick) {
-								playerToKick.getInventory().clear();
-								playerToKick.getInventory().setContents(oldInventories.getFromSecondObject(n));
-								oldInventories.removeFromBoth(n);
+							while (n < oldInventories.getFirstLength()) { // Give him his inventory back.
+								if (oldInventories.getFromFirstObject(n) == playerToKick) {
+									playerToKick.getInventory().clear();
+									playerToKick.getInventory().setContents(oldInventories.getFromSecondObject(n));
+									oldInventories.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldArmor.getFirstLength()) { // Give him his armor back.
-							if (oldArmor.getFromFirstObject(n) == playerToKick) {
-								playerToKick.getInventory().setArmorContents(oldArmor.getFromSecondObject(n));
-								oldArmor.removeFromBoth(n);
+							while (n < oldArmor.getFirstLength()) { // Give him his armor back.
+								if (oldArmor.getFromFirstObject(n) == playerToKick) {
+									playerToKick.getInventory().setArmorContents(oldArmor.getFromSecondObject(n));
+									oldArmor.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldHealth.getFirstLength()) { // Give him his health back.
-							if (oldHealth.getFromFirstObject(n) == playerToKick) {
-								playerToKick.setHealth(oldHealth.getFromSecondObject(n));
-								oldHealth.removeFromBoth(n);
+							while (n < oldHealth.getFirstLength()) { // Give him his health back.
+								if (oldHealth.getFromFirstObject(n) == playerToKick) {
+									playerToKick.setHealth(oldHealth.getFromSecondObject(n));
+									oldHealth.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldHunger.getFirstLength()) { // Give him his hunger back.
-							if (oldHunger.getFromFirstObject(n) == playerToKick) {
-								playerToKick.setFoodLevel(oldHunger.getFromSecondObject(n));
-								oldHunger.removeFromBoth(n);
+							while (n < oldHunger.getFirstLength()) { // Give him his hunger back.
+								if (oldHunger.getFromFirstObject(n) == playerToKick) {
+									playerToKick.setFoodLevel(oldHunger.getFromSecondObject(n));
+									oldHunger.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldEffects.getFirstLength()) { // Give him his potion effects back.
-							if (oldEffects.getFromFirstObject(n) == playerToKick) {
-								playerToKick.addPotionEffects(oldEffects.getFromSecondObject(n));
-								oldEffects.removeFromBoth(n);
+							while (n < oldEffects.getFirstLength()) { // Give him his potion effects back.
+								if (oldEffects.getFromFirstObject(n) == playerToKick) {
+									playerToKick.addPotionEffects(oldEffects.getFromSecondObject(n));
+									oldEffects.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldGameMode.getFirstLength()) { // Give him his gamemode back.
-							if (oldGameMode.getFromFirstObject(n) == playerToKick) {
-								playerToKick.setGameMode(oldGameMode.getFromSecondObject(n));
-								oldGameMode.removeFromBoth(n);
+							while (n < oldGameMode.getFirstLength()) { // Give him his gamemode back.
+								if (oldGameMode.getFromFirstObject(n) == playerToKick) {
+									playerToKick.setGameMode(oldGameMode.getFromSecondObject(n));
+									oldGameMode.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldListName.getFirstLength()) { // Give him his list name back.
-							if (oldListName.getFromFirstObject(n) == playerToKick) {
-								playerToKick.setPlayerListName(oldListName.getFromSecondObject(n));
-								oldListName.removeFromBoth(n);
+							while (n < oldListName.getFirstLength()) { // Give him his list name back.
+								if (oldListName.getFromFirstObject(n) == playerToKick) {
+									playerToKick.setPlayerListName(oldListName.getFromSecondObject(n));
+									oldListName.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldDisplayName.getFirstLength()) { // Give him his display name back.
-							if (oldDisplayName.getFromFirstObject(n) == playerToKick) {
-								playerToKick.setDisplayName(oldDisplayName.getFromSecondObject(n));
-								oldDisplayName.removeFromBoth(n);
+							while (n < oldDisplayName.getFirstLength()) { // Give him his display name back.
+								if (oldDisplayName.getFromFirstObject(n) == playerToKick) {
+									playerToKick.setDisplayName(oldDisplayName.getFromSecondObject(n));
+									oldDisplayName.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldFire.getFirstLength()) { // Give him his fire back.
-							if (oldFire.getFromFirstObject(n) == playerToKick) {
-								playerToKick.setFireTicks(oldFire.getFromSecondObject(n));
-								oldFire.removeFromBoth(n);
+							while (n < oldFire.getFirstLength()) { // Give him his fire back.
+								if (oldFire.getFromFirstObject(n) == playerToKick) {
+									playerToKick.setFireTicks(oldFire.getFromSecondObject(n));
+									oldFire.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldExp.getFirstLength()) { // Give him his exp back.
-							if (oldExp.getFromFirstObject(n) == playerToKick) {
-								playerToKick.setExp(oldExp.getFromSecondObject(n));
-								oldExp.removeFromBoth(n);
+							while (n < oldExp.getFirstLength()) { // Give him his exp back.
+								if (oldExp.getFromFirstObject(n) == playerToKick) {
+									playerToKick.setExp(oldExp.getFromSecondObject(n));
+									oldExp.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldExpLevel.getFirstLength()) { // Give him his exp level back.
-							if (oldExpLevel.getFromFirstObject(n) == playerToKick) {
-								playerToKick.setLevel(oldExpLevel.getFromSecondObject(n));
-								oldExpLevel.removeFromBoth(n);
+							while (n < oldExpLevel.getFirstLength()) { // Give him his exp level back.
+								if (oldExpLevel.getFromFirstObject(n) == playerToKick) {
+									playerToKick.setLevel(oldExpLevel.getFromSecondObject(n));
+									oldExpLevel.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldVehicle.getFirstLength()) { // Give him his vehicle back.
-							if (oldVehicle.getFromFirstObject(n) == playerToKick) {
-								oldVehicle.getFromSecondObject(n).getVehicle().teleport(playerToKick);
-								oldVehicle.removeFromBoth(n);
+							while (n < oldVehicle.getFirstLength()) { // Give him his vehicle back.
+								if (oldVehicle.getFromFirstObject(n) == playerToKick) {
+									oldVehicle.getFromSecondObject(n).getVehicle().teleport(playerToKick);
+									oldVehicle.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						RageMode.getInstance().getConfiguration().getDatasCfg().set("datas." + playerToKick.getName(), null);
-						try {
-							RageMode.getInstance().getConfiguration().getDatasCfg().save(RageMode.getInstance().getConfiguration().getDatasFile());
-						} catch (IOException e) {
-							e.printStackTrace();
-							RageMode.getInstance().throwMsg();
+							RageMode.getInstance().getConfiguration().getDatasCfg().set("datas." + playerToKick.getName(), null);
+							try {
+								RageMode.getInstance().getConfiguration().getDatasCfg().save(RageMode.getInstance().getConfiguration().getDatasFile());
+							} catch (IOException e) {
+								e.printStackTrace();
+								RageMode.getInstance().throwMsg();
+							}
 						}
 
 						list[kickposition] = player.getUniqueId().toString();
@@ -330,13 +326,11 @@ public class PlayerList {
 									.getInt("game.global.lobby.min-players-to-start-lobby-timer")) {
 								lobbyTimer = new LobbyTimer(game, time);
 								lobbyTimer.loadTimer();
-								new Timer().scheduleAtFixedRate(lobbyTimer, 0, 60 * 20L);
 							}
 						} else {
 							if (getPlayersInGame(game).length == 2) {
 								lobbyTimer = new LobbyTimer(game, time);
 								lobbyTimer.loadTimer();
-								new Timer().scheduleAtFixedRate(lobbyTimer, 0, 60 * 20L);
 							}
 						}
 						player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", game));
@@ -355,20 +349,27 @@ public class PlayerList {
 	}
 
 	public static boolean addSpectatorPlayer(Player player) {
-		loc = player.getLocation();
-		gMode = player.getGameMode();
-		fly = player.isFlying();
-		allowFly = player.getAllowFlight();
+		if (!RageMode.getInstance().getConfiguration().getCfg().getBoolean("bungee.enable")) {
+			loc = player.getLocation();
+			gMode = player.getGameMode();
+			fly = player.isFlying();
+			allowFly = player.getAllowFlight();
+		}
 		specPlayer.put(player.getUniqueId(), player);
 		return specPlayer.containsKey(player.getUniqueId());
 	}
 
 	public static boolean removeSpectatorPlayer(Player player) {
+		if (!RageMode.getInstance().getConfiguration().getCfg().getBoolean("spectator.enable"))
+			return false;
+
 		if (specPlayer.containsKey(player.getUniqueId())) {
-			player.teleport(loc);
-			player.setGameMode(gMode);
-			player.setFlying(fly);
-			player.setAllowFlight(allowFly);
+			if (!RageMode.getInstance().getConfiguration().getCfg().getBoolean("bungee.enable")) {
+				player.teleport(loc);
+				player.setGameMode(gMode);
+				player.setFlying(fly);
+				player.setAllowFlight(allowFly);
+			}
 
 			specPlayer.remove(player.getUniqueId());
 			return true;
@@ -400,143 +401,147 @@ public class PlayerList {
 
 						player.setMetadata("Leaving", new FixedMetadataValue(RageMode.getInstance(), true));
 
-						while (n < oldLocations.getFirstLength()) { // Bring him back to his old location
-							if (oldLocations.getFromFirstObject(n) == player) {
-								player.teleport(oldLocations.getFromSecondObject(n));
-								oldLocations.removeFromBoth(n);
+						if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("bungee.enable"))
+							RageMode.getInstance().getBungeeUtils().connectToHub(player);
+						else {
+							while (n < oldLocations.getFirstLength()) { // Bring him back to his old location
+								if (oldLocations.getFromFirstObject(n) == player) {
+									player.teleport(oldLocations.getFromSecondObject(n));
+									oldLocations.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldInventories.getFirstLength()) { // Give him his inventory back
-							if (oldInventories.getFromFirstObject(n) == player) {
-								player.getInventory().setContents(oldInventories.getFromSecondObject(n));
-								oldInventories.removeFromBoth(n);
+							while (n < oldInventories.getFirstLength()) { // Give him his inventory back
+								if (oldInventories.getFromFirstObject(n) == player) {
+									player.getInventory().setContents(oldInventories.getFromSecondObject(n));
+									oldInventories.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldArmor.getFirstLength()) {
-							if (oldArmor.getFromFirstObject(n) == player) { // Give him his armor back
-								player.getInventory().setArmorContents(oldArmor.getFromSecondObject(n));
-								oldArmor.removeFromBoth(n);
+							while (n < oldArmor.getFirstLength()) {
+								if (oldArmor.getFromFirstObject(n) == player) { // Give him his armor back
+									player.getInventory().setArmorContents(oldArmor.getFromSecondObject(n));
+									oldArmor.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldHealth.getFirstLength()) { // Give him his health back.
-							if (oldHealth.getFromFirstObject(n) == player) {
-								player.setHealth(oldHealth.getFromSecondObject(n));
-								oldHealth.removeFromBoth(n);
+							while (n < oldHealth.getFirstLength()) { // Give him his health back.
+								if (oldHealth.getFromFirstObject(n) == player) {
+									player.setHealth(oldHealth.getFromSecondObject(n));
+									oldHealth.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldHunger.getFirstLength()) { // Give him his hunger back.
-							if (oldHunger.getFromFirstObject(n) == player) {
-								player.setFoodLevel(oldHunger.getFromSecondObject(n));
-								oldHunger.removeFromBoth(n);
+							while (n < oldHunger.getFirstLength()) { // Give him his hunger back.
+								if (oldHunger.getFromFirstObject(n) == player) {
+									player.setFoodLevel(oldHunger.getFromSecondObject(n));
+									oldHunger.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldEffects.getFirstLength()) { // Give him his potion effects back.
-							if (oldEffects.getFromFirstObject(n) == player) {
-								player.addPotionEffects(oldEffects.getFromSecondObject(n));
-								oldEffects.removeFromBoth(n);
+							while (n < oldEffects.getFirstLength()) { // Give him his potion effects back.
+								if (oldEffects.getFromFirstObject(n) == player) {
+									player.addPotionEffects(oldEffects.getFromSecondObject(n));
+									oldEffects.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldGameMode.getFirstLength()) { // Give him his gamemode back.
-							if (oldGameMode.getFromFirstObject(n) == player) {
-								player.setGameMode(oldGameMode.getFromSecondObject(n));
-								oldGameMode.removeFromBoth(n);
+							while (n < oldGameMode.getFirstLength()) { // Give him his gamemode back.
+								if (oldGameMode.getFromFirstObject(n) == player) {
+									player.setGameMode(oldGameMode.getFromSecondObject(n));
+									oldGameMode.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldListName.getFirstLength()) { // Give him his list name back.
-							if (oldListName.getFromFirstObject(n) == player) {
-								player.setPlayerListName(oldListName.getFromSecondObject(n));
-								oldListName.removeFromBoth(n);
+							while (n < oldListName.getFirstLength()) { // Give him his list name back.
+								if (oldListName.getFromFirstObject(n) == player) {
+									player.setPlayerListName(oldListName.getFromSecondObject(n));
+									oldListName.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldDisplayName.getFirstLength()) { // Give him his display name back.
-							if (oldDisplayName.getFromFirstObject(n) == player) {
-								player.setDisplayName(oldDisplayName.getFromSecondObject(n));
-								oldDisplayName.removeFromBoth(n);
+							while (n < oldDisplayName.getFirstLength()) { // Give him his display name back.
+								if (oldDisplayName.getFromFirstObject(n) == player) {
+									player.setDisplayName(oldDisplayName.getFromSecondObject(n));
+									oldDisplayName.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldFire.getFirstLength()) { // Give him his fire back.
-							if (oldFire.getFromFirstObject(n) == player) {
-								player.setFireTicks(oldFire.getFromSecondObject(n));
-								oldFire.removeFromBoth(n);
+							while (n < oldFire.getFirstLength()) { // Give him his fire back.
+								if (oldFire.getFromFirstObject(n) == player) {
+									player.setFireTicks(oldFire.getFromSecondObject(n));
+									oldFire.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldExp.getFirstLength()) { // Give him his exp back.
-							if (oldExp.getFromFirstObject(n) == player) {
-								player.setExp(oldExp.getFromSecondObject(n));
-								oldExp.removeFromBoth(n);
+							while (n < oldExp.getFirstLength()) { // Give him his exp back.
+								if (oldExp.getFromFirstObject(n) == player) {
+									player.setExp(oldExp.getFromSecondObject(n));
+									oldExp.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldExpLevel.getFirstLength()) { // Give him his exp level back.
-							if (oldExpLevel.getFromFirstObject(n) == player) {
-								player.setLevel(oldExpLevel.getFromSecondObject(n));
-								oldExpLevel.removeFromBoth(n);
+							while (n < oldExpLevel.getFirstLength()) { // Give him his exp level back.
+								if (oldExpLevel.getFromFirstObject(n) == player) {
+									player.setLevel(oldExpLevel.getFromSecondObject(n));
+									oldExpLevel.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
-						}
 
-						n = 0;
+							n = 0;
 
-						while (n < oldVehicle.getFirstLength()) { // Give him his vehicle back.
-							if (oldVehicle.getFromFirstObject(n) == player) {
-								oldVehicle.getFromSecondObject(n).teleport(player);
-								oldVehicle.removeFromBoth(n);
+							while (n < oldVehicle.getFirstLength()) { // Give him his vehicle back.
+								if (oldVehicle.getFromFirstObject(n) == player) {
+									oldVehicle.getFromSecondObject(n).teleport(player);
+									oldVehicle.removeFromBoth(n);
+								}
+								n++;
 							}
-							n++;
+
+							RageMode.getInstance().getConfiguration().getDatasCfg().set("datas." + player.getName(), null);
+							try {
+								RageMode.getInstance().getConfiguration().getDatasCfg().save(RageMode.getInstance().getConfiguration().getDatasFile());
+							} catch (IOException e) {
+								e.printStackTrace();
+								RageMode.getInstance().throwMsg();
+							}
 						}
 
 						list[i] = null;
-
-						RageMode.getInstance().getConfiguration().getDatasCfg().set("datas." + player.getName(), null);
-						try {
-							RageMode.getInstance().getConfiguration().getDatasCfg().save(RageMode.getInstance().getConfiguration().getDatasFile());
-						} catch (IOException e) {
-							e.printStackTrace();
-							RageMode.getInstance().throwMsg();
-						}
 
 						player.removeMetadata("leavingRageMode", RageMode.getInstance());
 						return true;
@@ -559,7 +564,8 @@ public class PlayerList {
 		if (TabTitles.allTabLists.containsKey(game))
 			TabTitles.allTabLists.get(game).removeTabList(player);
 
-		hu.montlikadani.ragemode.gameLogic.GameLoader.removeScoreboard(player);
+		if (ScoreTeam.allTeams.containsKey(game))
+			ScoreTeam.allTeams.get(game).removeTeam(player);
 	}
 
 	public static boolean isGameRunning(String game) {
@@ -774,13 +780,5 @@ public class PlayerList {
 			i++;
 		}
 		return null;
-	}
-
-	public static GameStatus getStatus() {
-		return status;
-	}
-
-	public static void setStatus(GameStatus status) {
-		PlayerList.status = status;
 	}
 }

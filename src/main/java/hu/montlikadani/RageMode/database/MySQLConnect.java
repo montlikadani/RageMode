@@ -24,12 +24,12 @@ public class MySQLConnect {
 						+ autoReconnect + "&useSSL=" + useSSL;
 				connection = DriverManager.getConnection(url, userName, password);
 			} catch (SQLException e) {
-				RageMode.logConsole(Level.WARNING, "Could not connect to the MySQL database.");
+				RageMode.logConsole(Level.WARNING, "[RageMode] Could not connect to the MySQL database.");
 				return;
 			}
 		} catch (ClassNotFoundException c) {
 			c.printStackTrace();
-			RageMode.logConsole(Level.WARNING, "Could not connect to the MySQL database.");
+			RageMode.logConsole(Level.WARNING, "[RageMode] Could not connect to the MySQL database.");
 			return;
 		}
 

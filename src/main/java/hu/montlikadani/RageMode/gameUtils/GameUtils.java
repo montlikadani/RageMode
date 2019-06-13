@@ -1,18 +1,28 @@
 package hu.montlikadani.ragemode.gameUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
+import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.holo.HoloHolder;
+import hu.montlikadani.ragemode.items.ForceStarter;
+import hu.montlikadani.ragemode.items.LeaveGame;
+import hu.montlikadani.ragemode.signs.SignCreator;
 
 public class GameUtils {
+
+	private static GameStatus status = GameStatus.STOPPED;
 
 	/**
 	 * Broadcast for in-game players to the specified game
@@ -33,12 +43,61 @@ public class GameUtils {
 	}
 
 	/**
+	 * Checks whatever the specified game is exists or no.
+	 * 
+	 * @param game Game
+	 * @return true if game exists
+	 */
+	public static boolean isGameWithNameExists(String game) {
+		return GetGames.isGameExistent(game);
+	}
+
+	/**
+	 * Gets the game by name.
+	 * 
+	 * @param name Game name
+	 * @return game name if exist
+	 */
+	public static String getGameByName(String name) {
+		String gName = null;
+		if (isGameWithNameExists(name))
+			gName = name;
+
+		return gName;
+	}
+
+	/**
+	 * Get the player who in game.
+	 * 
+	 * @param game Game
+	 * @return Player
+	 */
+	public static Player getPlayerGame(String game) {
+		String[] players = PlayerList.getPlayersInGame(game);
+		Player player = null;
+		if (players != null) {
+			int i = 0;
+			int imax = players.length;
+
+			while (i < imax) {
+				if (players[i] != null)
+					player = Bukkit.getPlayer(UUID.fromString(players[i]));
+
+				i++;
+			}
+		}
+		return player != null ? player : null;
+	}
+
+	/**
 	 * Saves the player data to a yaml file
+	 * <br>
+	 * This prevents losing the player data when the server has stopped randomly.
 	 * 
 	 * @param p Player
 	 */
 	public static void savePlayerData(Player p) {
-		org.bukkit.inventory.PlayerInventory inv = p.getInventory();
+		PlayerInventory inv = p.getInventory();
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
 		PlayerList.oldLocations.addToBoth(p, p.getLocation());
@@ -130,5 +189,111 @@ public class GameUtils {
 		inv.setBoots(null);
 		p.setDisplayName(p.getName());
 		p.setPlayerListName(p.getName());
+	}
+
+	/**
+	 * Connect the specified player to the game. If the game is
+	 * running and the player is not playing, then if want to
+	 * join to the game, switching to spectator mode.
+	 * 
+	 * @param p Player
+	 * @param game GameName
+	 * @return message if occur error
+	 */
+	public static void joinPlayer(Player p, String game) {
+		PlayerInventory inv = p.getInventory();
+		Configuration conf = RageMode.getInstance().getConfiguration();
+
+		if (status == GameStatus.RUNNING) {
+			if (conf.getCfg().getBoolean("spectator.enable")) {
+				if (!PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+					if (PlayerList.addSpectatorPlayer(p)) {
+						GameSpawnGetter gameSpawnGetter = new GameSpawnGetter(game);
+						gameSpawnGetter.randomSpawn(p);
+						p.setAllowFlight(true);
+						p.setFlying(true);
+						p.setGameMode(GameMode.SPECTATOR);
+						if (conf.getCfg().contains("items.leavegameitem"))
+							inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getItem());
+					}
+				} else
+					p.sendMessage(RageMode.getLang().get("game.player-not-switch-spectate"));
+			} else
+				p.sendMessage(RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
+		} else {
+			MapChecker mapChecker = new MapChecker(game);
+			if (mapChecker.isValid()) {
+				if (PlayerList.addPlayer(p, game)) {
+					GameUtils.savePlayerData(p);
+
+					p.teleport(GetGameLobby.getLobbyLocation(game));
+
+					if (conf.getCfg().contains("items.leavegameitem"))
+						inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getItem());
+
+					if (conf.getCfg().contains("items.force-start") && p.hasPermission("ragemode.admin.item.forcestart"))
+						inv.setItem(conf.getCfg().getInt("items.force-start.slot"), ForceStarter.getItem());
+
+					GameUtils.broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
+
+					String title = conf.getCfg().getString("titles.join-game.title");
+					String subtitle = conf.getCfg().getString("titles.join-game.subtitle");
+					if (title != null || subtitle != null) {
+						title = title.replace("%game%", game);
+						subtitle = subtitle.replace("%game%", game);
+						Titles.sendTitle(p, conf.getCfg().getInt("titles.join-game.fade-in"), conf.getCfg().getInt("titles.join-game.stay"),
+								conf.getCfg().getInt("titles.join-game.fade-out"), title, subtitle);
+					}
+					SignCreator.updateAllSigns(game);
+				} else
+					RageMode.logConsole(RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", game));
+			} else
+				p.sendMessage(mapChecker.getMessage());
+		}
+	}
+
+	/**
+	 * Leaves the specified player from game.
+	 * 
+	 * @param p Player
+	 */
+	public static void leavePlayer(Player p) {
+		// Just removes the spec player
+		PlayerList.removeSpectatorPlayer(p);
+
+		if (status == GameStatus.RUNNING && PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+			if (PlayerList.removePlayer(p)) {
+				RageMode.logConsole("[RageMode] Player " + p.getName() + " left the server while playing.");
+
+				List<String> list = RageMode.getInstance().getConfiguration().getCfg()
+						.getStringList("game.global.run-commands-for-player-left-while-playing");
+				if (list != null && !list.isEmpty()) {
+					for (String cmds : list) {
+						cmds = cmds.replace("%player%", p.getName());
+						cmds = cmds.replace("%player-ip%", p.getAddress().getAddress().getHostAddress());
+						Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), RageMode.getLang().colors(cmds));
+					}
+				}
+			}
+		}
+		HoloHolder.deleteHoloObjectsOfPlayer(p);
+	}
+
+	/**
+	 * Get the GameStatus
+	 * 
+	 * @return {@link GameStatus}
+	 */
+	public static GameStatus getStatus() {
+		return status;
+	}
+
+	/**
+	 * Sets the game status to new status
+	 * 
+	 * @param status
+	 */
+	public static void setStatus(GameStatus status) {
+		GameUtils.status = status;
 	}
 }

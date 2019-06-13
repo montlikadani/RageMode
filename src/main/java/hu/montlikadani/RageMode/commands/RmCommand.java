@@ -1,8 +1,12 @@
 package hu.montlikadani.ragemode.commands;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -15,6 +19,44 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class RmCommand implements CommandExecutor, TabCompleter {
+
+	private Map<String, String> arg = new HashMap<>();
+	//private List<String> aliases = new ArrayList<>();
+
+	public RmCommand() {
+		arg.put("addgame", AddGame.class.getName());
+		arg.put("addspawn", AddSpawn.class.getName());
+		arg.put("editspawn", EditSpawn.class.getName());
+		arg.put("forcestart", ForceStart.class.getName());
+		arg.put("holostats", HoloStats.class.getName());
+		arg.put("kick", KickPlayer.class.getName());
+		arg.put("listgames", ListGames.class.getName());
+		arg.put("join", PlayerJoin.class.getName());
+		arg.put("leave", PlayerLeave.class.getName());
+		arg.put("points", Points.class.getName());
+		arg.put("reload", Reload.class.getName());
+		arg.put("removegame", RemoveGame.class.getName());
+		arg.put("reset", ResetPlayerStats.class.getName());
+		arg.put("actionbar", SetActionBar.class.getName());
+		arg.put("bossbar", SetBossBar.class.getName());
+		arg.put("gametime", SetGameTime.class.getName());
+		arg.put("globalmessages", SetGlobalMessages.class.getName());
+		arg.put("setlobby", SetLobby.class.getName());
+		arg.put("lobbydelay", SetLobbyDelay.class.getName());
+		arg.put("stats", ShowStats.class.getName());
+		arg.put("signupdate", SignUpdate.class.getName());
+		arg.put("spectate", Spectate.class.getName());
+		arg.put("stopgame", StopGame.class.getName());
+		arg.put("togglegame", ToggleGame.class.getName());
+
+		//TODO add aliases
+		/*aliases.add("holo");
+		aliases.add("list");
+		aliases.add("rl");
+		aliases.add("remove");
+		aliases.add("globalmsgs");
+		aliases.add("stop");*/
+	}
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -44,7 +86,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 				}
 
 				if (hasPerm(sender, "ragemode.help.playercommands") || hasPerm(sender, "ragemode.listgames"))
-					msg += "&7-&6 /rm listgames&a - Listing available games.\n \n"; // New row in empty
+					msg += "&7-&6 /rm listgames&a - Listing available games.\n \n"; // Style
 
 				if (hasPerm(sender, "ragemode.admin.help"))
 					msg += "&7-&6 /rm admin&a - Lists all admin commands.";
@@ -88,6 +130,9 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 					if (hasPerm(sender, "ragemode.admin.addspawn"))
 						msg += "&7-&6 /rm addspawn <gameName>&a - Adds a new spawn location.\n";
 
+					if (hasPerm(sender, "ragemode.admin.editspawn"))
+						msg += "&7-&6 /rm editspawn <gameName> <id>&a - Modify the game spawns from id.\n";
+
 					if (hasPerm(sender, "ragemode.admin.holostats"))
 						msg += "&7-&6 /rm holostats <add/remove>&a - Adds/remove a new hologram.\n";
 
@@ -120,88 +165,61 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 				return true;
 			}
 
-			switch (args[0]) {
-			case "addgame":
-				new AddGame(sender, cmd, label, args);
-				break;
-			case "setlobby":
-				new SetLobby(sender, cmd, label, args);
-				break;
-			case "addspawn":
-				new AddSpawn(sender, cmd, label, args);
-				break;
-			case "holostats":
-			case "holo":
-				new HoloStats(sender, cmd, label, args);
-				break;
-			case "listgames":
-			case "list":
-				new ListGames(sender, cmd, label, args);
-				break;
-			case "join":
-				new PlayerJoin(sender, cmd, label, args);
-				break;
-			case "leave":
-				new PlayerLeave(sender, cmd, label, args);
-				break;
-			case "reload":
-			case "rl":
-				new Reload(sender, cmd, label, args);
-				break;
-			case "removegame":
-			case "remove":
-				new RemoveGame(sender, cmd, label, args);
-				break;
-			case "actionbar":
-				new SetActionBar(sender, cmd, label, args);
-				break;
-			case "bossbar":
-				new SetBossBar(sender, cmd, label, args);
-				break;
-			case "resetstats":
-				new ResetPlayerStats(sender, cmd, label, args);
-				break;
-			case "gametime":
-				new SetGameTime(sender, cmd, label, args);
-				break;
-			case "globalmessages":
-			case "globalmsgs":
-				new SetGlobalMessages(sender, cmd, label, args);
-				break;
-			case "lobbydelay":
-				new SetLobbyDelay(sender, cmd, label, args);
-				break;
-			case "forcestart":
-				new ForceStart(sender, cmd, label, args);
-				break;
-			case "points":
-				new Points(sender, cmd, label, args);
-				break;
-			case "togglegame":
-			case "toggle":
-				new ToggleGame(sender, cmd, label, args);
-				break;
-			case "spectate":
-			case "spec":
-				new Spectate(sender, cmd, label, args);
-				break;
-			case "stats":
-			case "showstats":
-				new ShowStats(sender, cmd, label, args);
-				break;
-			case "kickplayer":
-			case "kick":
-				new KickPlayer(sender, cmd, label, args);
-				break;
-			case "signupdate":
-				new SignUpdate(sender, cmd, label, args);
-				break;
-			case "stop":
-			case "stopgame":
-				new StopGame(sender, cmd, label, args);
-				break;
-			default:
-				break;
+			for (Entry<String, String> a : arg.entrySet()) {
+				if (args[0].equalsIgnoreCase(a.getKey())) {
+					try {
+						String className = a.getValue();
+						Class<?> fclass = Class.forName(className);
+						Object run = fclass.newInstance();
+						Class<?>[] paramTypes = new Class<?>[] { RageMode.class, CommandSender.class, Command.class, String[].class };
+						Method printMethod = null;
+						try {
+							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
+						} catch (NoSuchMethodException e) {
+							paramTypes = new Class<?>[] { CommandSender.class, Command.class, String[].class };
+						}
+
+						try {
+							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
+						} catch (NoSuchMethodException e2) {
+							paramTypes = new Class<?>[] { RageMode.class, CommandSender.class, Command.class };
+						}
+
+						try {
+							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
+						} catch (NoSuchMethodException e2) {
+							paramTypes = new Class<?>[] { CommandSender.class, Command.class };
+						}
+
+						if (printMethod == null)
+							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
+
+						Object[] arguments = new Object[] { RageMode.getInstance(), sender, cmd, args };
+						try {
+							printMethod.invoke(run, arguments);
+							return true;
+						} catch (IllegalArgumentException e3) {
+							arguments = new Object[] { RageMode.getInstance(), sender, cmd };
+						}
+
+						try {
+							printMethod.invoke(run, arguments);
+							return true;
+						} catch (IllegalArgumentException e3) {
+							arguments = new Object[] { sender, cmd, args };
+						}
+
+						try {
+							printMethod.invoke(run, arguments);
+							return true;
+						} catch (IllegalArgumentException e4) {
+							arguments = new Object[] { sender, cmd };
+						}
+						printMethod.invoke(run, arguments);
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+				}
 			}
 		}
 		return true;
@@ -255,7 +273,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 	private List<String> getAdminCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
 		for (String cmds : new String[] { "addgame", "addspawn", "setlobby", "reload", "holostats", "removegame", "resetstats", "forcestart",
-				"kick", "stopgame", "signupdate", "togglegame", "points" }) {
+				"kick", "stopgame", "signupdate", "togglegame", "points", "editspawn" }) {
 			if (!hasPerm(sender, "ragemode.admin." + cmds))
 				continue;
 			c.add(cmds);
@@ -275,10 +293,10 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 
 	private List<String> getGameListCmds() {
 		return java.util.Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay", "removegame", "forcestart", "setlobby",
-				"addspawn", "join", "leave", "signupdate", "stop", "stopgame", "togglegame", "spectate");
+				"addspawn", "join", "leave", "signupdate", "stop", "stopgame", "togglegame", "spectate", "editspawn");
 	}
 
-	private boolean hasPerm(CommandSender sender, String perm) {
+	public boolean hasPerm(CommandSender sender, String perm) {
 		if (sender.hasPermission(perm))
 			return true;
 		return false;
@@ -287,5 +305,21 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 	public void sendMessage(CommandSender sender, String msg) {
 		if (sender != null && msg != null && !msg.equals(""))
 			sender.sendMessage(msg);
+	}
+
+	public boolean run(CommandSender sender, Command cmd) {
+		return false;
+	}
+
+	public boolean run(CommandSender sender, Command cmd, String[] args) {
+		return false;
+	}
+
+	public boolean run(RageMode plugin, CommandSender sender, Command cmd) {
+		return false;
+	}
+
+	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
+		return false;
 	}
 }

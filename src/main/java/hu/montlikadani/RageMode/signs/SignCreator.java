@@ -24,7 +24,7 @@ public class SignCreator {
 
 		signPlaceholder = new SignPlaceholder(RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list"));
 
-		List<String> list = new ArrayList<>(fileConf.getStringList("signs"));
+		List<String> list = fileConf.getStringList("signs");
 
 		if (list == null || list.isEmpty())
 			return false;
@@ -40,16 +40,17 @@ public class SignCreator {
 			String game = splited[4];
 
 			Location loc = new Location(Bukkit.getWorld(world), x, y, z);
-			SignData data = new SignData(loc, game, signPlaceholder);
-
-			signData.add(data);
+			if (loc != null) {
+				SignData data = new SignData(loc, game, signPlaceholder);
+				signData.add(data);
+			}
 			totalSigns += list.size();
 		}
 
 		if (totalSigns > 0)
 			RageMode.logConsole("[RageMode] Loaded " + totalSigns + " sign" + (totalSigns < 1 ? "s" : "") + ".");
 
-		return false;
+		return true;
 	}
 
 	public synchronized static boolean createNewSign(Sign sign, String game) {
@@ -146,7 +147,7 @@ public class SignCreator {
 	 * 
 	 * @return True if the block found in the specified location.
 	 */
-	public static boolean isJoinSign() {
+	public static boolean isJoinSign(Location loc) {
 		List<String> signs = fileConf.getStringList("signs");
 		if (signs != null && !signs.isEmpty()) {
 			for (String signString : signs) {
@@ -154,7 +155,7 @@ public class SignCreator {
 				for (String gameName : GetGames.getGameNames()) {
 					if (game.trim().contains(gameName.trim())) {
 						Location signLocation = stringToLocationSign(signString);
-						if (signLocation.getBlock().getState() instanceof Sign)
+						if (signLocation.getBlock().getState() instanceof Sign && signLocation.equals(loc))
 							return true;
 					}
 				}

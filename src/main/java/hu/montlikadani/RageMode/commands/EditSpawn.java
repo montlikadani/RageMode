@@ -9,9 +9,10 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-public class AddSpawn extends RmCommand {
+public class EditSpawn extends RmCommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
@@ -20,31 +21,34 @@ public class AddSpawn extends RmCommand {
 			return false;
 		}
 		Player p = (Player) sender;
-		if (!hasPerm(p, "ragemode.admin.addspawn")) {
+		if (!hasPerm(p, "ragemode.admin.editspawn")) {
 			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return false;
 		}
-		if (args.length < 2) {
-			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm addspawn <gameName>"));
+		if (args.length < 3) {
+			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm editspawn <gameName> <id>"));
 			return false;
 		}
 		if (!GameUtils.isGameWithNameExists(args[1])) {
-			sendMessage(p, RageMode.getLang().get("invalid-game"));
+			sendMessage(p, RageMode.getLang().get("invalid-game", "%game%", args[1]));
 			return false;
 		}
 
+		if (!Utils.isInt(args[2])) {
+			sendMessage(p, RageMode.getLang().get("not-a-number", "%number%", args[2]));
+			return false;
+		}
+
+		int i = Integer.parseInt(args[2]);
 		YamlConfiguration aFile = plugin.getConfiguration().getArenasCfg();
-		int i = 1;
 		String path = "arenas." + args[1];
-		if (!aFile.isSet(path)) {
-			sendMessage(p, RageMode.getLang().get("setup.not-set-yet", "%usage%", "/rm addgame <gameName> <maxPlayers>"));
+		Location loc = p.getLocation();
+
+		if (!aFile.isSet(path + ".spawns." + i)) {
+			sendMessage(p, RageMode.getLang().get("commands.editspawn.not-valid-spawn-id", "%id%", i));
 			return false;
 		}
 
-		while (aFile.isSet(path + ".spawns." + i))
-			i++;
-
-		Location loc = p.getLocation();
 		aFile.set(path + ".spawns." + i + ".world", p.getWorld().getName());
 		aFile.set(path + ".spawns." + i + ".x", loc.getX());
 		aFile.set(path + ".spawns." + i + ".y", loc.getY());
@@ -57,7 +61,7 @@ public class AddSpawn extends RmCommand {
 			e.printStackTrace();
 			plugin.throwMsg();
 		}
-		sendMessage(p, RageMode.getLang().get("setup.spawn-set-success", "%number%", i, "%game%", args[1]));
+		sendMessage(p, RageMode.getLang().get("commands.editspawn.edit-success", "%number%", i, "%game%", args[1]));
 		return false;
 	}
 }

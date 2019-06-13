@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 
@@ -92,7 +93,7 @@ public class TabTitles {
 			Object packet = titleConstructor.newInstance(new Object[0]);
 			Field aField = null;
 			Field bField = null;
-			if (Utils.getVersion().contains("1.13") || Utils.getVersion().contains("1.14")) {
+			if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
 				aField = packet.getClass().getDeclaredField("header");
 				aField.setAccessible(true);
 				aField.set(packet, tabHeader);

@@ -16,7 +16,7 @@ public class GetGames {
 	public static int getConfigGamesCount() {
 		int n = 0;
 
-		if (RageMode.getInstance().getConfiguration().getArenasFile().exists() && fi.contains("arenas"))
+		if (fi.contains("arenas"))
 			n = fi.getConfigurationSection("arenas").getKeys(false).size();
 
 		return n;
@@ -33,24 +33,38 @@ public class GetGames {
 	}
 
 	/**
+	 * Get the specified game world
+	 * 
+	 * @param game Game
+	 * @return World name
+	 */
+	public static String getWorld(String game) {
+		return !fi.isSet("arenas." + game + ".world") ? "" : fi.getString("arenas." + game + ".world");
+	}
+
+	/**
 	 * Get game names from file
 	 * 
 	 * @return config section
 	 */
 	public static String[] getGameNames() {
-		return fi.getConfigurationSection("arenas").getKeys(false).toArray(new String[getConfigGamesCount()]);
+		return fi.contains("arenas") ? fi.getConfigurationSection("arenas").getKeys(false).toArray(new String[getConfigGamesCount()])
+				: null;
 	}
 
 	/**
 	 * Gets overall max players from file
 	 * 
-	 * @return int number
+	 * @return max players integer
 	 */
 	public static int getOverallMaxPlayers() {
 		int i = 0;
 		int n = 0;
 		int x;
 		String[] names = getGameNames();
+		if (names == null)
+			return 0;
+
 		while (i < names.length) {
 			x = fi.getInt("arenas." + names[i] + ".maxplayers");
 			if (n < x)
@@ -76,6 +90,5 @@ public class GetGames {
 			i++;
 		}
 		return false;
-
 	}
 }

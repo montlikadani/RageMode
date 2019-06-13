@@ -7,9 +7,33 @@ rewards:
       messages:
       #- "&aYou have won this game&c %game%&a!"
       #- "&eYour reward:&7 %reward%"
+      items:
+        stone:
+          type: COBBLESTONE
+          amount: 128
+        bow:
+         type: BOW
+         amount: 1
+         slot: 6
+         durability: 0
+         meta: true
+         name: "&cKiller&6 Bow"
+         lore:
+         - "&4Killer bow!!"
+         - "&7One shot..."
+         enchants:
+         - ARROW_INFINITE:1
+         - ARROW_DAMAGE:2
+        '3':
+          type: GRASS
+          amount: 64
     players:
       cash: 2.0
       commands:
       - "console: say %player% &2We waiting for you to the next game!"
       messages:
       #- "&eYour reward:&7 %reward%"
+      items:
+        granite:
+          type: GRANITE
+          amount: 5

@@ -40,11 +40,11 @@ public class Configuration {
 				arenas = YamlConfiguration.loadConfiguration(arenas_file);
 				RageMode.logConsole("[RageMode] The 'arenas.yml' file successfully created!");
 			}
+
 			if (config.getBoolean("rewards.enable")) {
 				if (rewards_file.exists()) {
 					rewards = YamlConfiguration.loadConfiguration(rewards_file);
 					rewards.load(rewards_file);
-					rewards.save(rewards_file);
 				} else {
 					plugin.saveResource("rewards.yml", false);
 					rewards = YamlConfiguration.loadConfiguration(rewards_file);
@@ -57,7 +57,7 @@ public class Configuration {
 					datas.load(datas_file);
 					datas.save(datas_file);
 				} else {
-					plugin.saveResource("datas.yml", false);
+					datas_file.createNewFile();
 					datas = YamlConfiguration.loadConfiguration(datas_file);
 					RageMode.logConsole("[RageMode] The 'datas.yml' file successfully created!");
 				}

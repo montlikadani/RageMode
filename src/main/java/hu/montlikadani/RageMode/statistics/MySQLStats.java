@@ -7,7 +7,6 @@ import java.sql.Statement;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 
@@ -71,7 +70,7 @@ public class MySQLStats {
 				oldGames = rs.getInt("games");
 			}
 		} catch (SQLException e) {
-			RageMode.logConsole(Level.INFO, Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID()))
+			RageMode.logConsole("[RageMode] " +Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID()))
 							+ " has no statistics yet! Creating one special row for him...");
 		}
 		if (statement != null) {

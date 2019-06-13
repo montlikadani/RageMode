@@ -7,6 +7,8 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -14,14 +16,16 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.commands.StopGame;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
+import hu.montlikadani.ragemode.gameUtils.ScoreTeam;
 import hu.montlikadani.ragemode.gameUtils.TabTitles;
-import hu.montlikadani.ragemode.scoreboard.ScoreBoardHolder;
 
 public class GameTimer extends TimerTask {
 
 	private List<String> listPlayers = new ArrayList<>();
+
 	private TabTitles gameTab = null;
 	private ScoreBoard gameBoard = null;
+	private ScoreTeam scoreTeam = null;
 
 	private String gameName;
 	private int time;
@@ -39,7 +43,7 @@ public class GameTimer extends TimerTask {
 		return time;
 	}
 
-	public void loadBoards() {
+	public void loadModules() {
 		listPlayers = Arrays.asList(PlayerList.getPlayersInGame(gameName));
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
@@ -53,6 +57,11 @@ public class GameTimer extends TimerTask {
 			gameTab = new TabTitles(listPlayers);
 			gameTab.addToTabList(gameName, true);
 		}
+
+		if (conf.getCfg().getBoolean("game.global.tablist.player-format.enable")) {
+			scoreTeam = new ScoreTeam(listPlayers);
+			scoreTeam.addToTeam(gameName, true);
+		}
 	}
 
 	@Override
@@ -61,41 +70,37 @@ public class GameTimer extends TimerTask {
 			cancel();
 			return;
 		}
-		if (PlayerList.getPlayersInGame(gameName).length < 2)
-			cancel();
-
+		//if (PlayerList.getPlayersInGame(gameName).length < 2) {
+		//cancel();
+		//return;
+		//}
 		time--;
+
+		List<LivingEntity> le = null;
 
 		for (String playerUUID : listPlayers) {
 			Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
 			String tFormat = Utils.getFormattedTime(time);
 			Configuration conf = RageMode.getInstance().getConfiguration();
 
-			if (gameBoard != null) {
-				String boardTitle = conf.getCfg().getString("game.global.scoreboard.title");
-				if (boardTitle != null && !boardTitle.equals(""))
-					gameBoard.setTitle(RageMode.getLang().colors(boardTitle));
+			if (conf.getCfg().getBoolean("game.global.show-name-above-player-when-look")) {
+				le = new ArrayList<>();
 
-				List<String> rows = conf.getCfg().getStringList("game.global.scoreboard.content");
-				if (rows != null && !rows.isEmpty()) {
-					int rowMax = rows.size();
+				// making the game more difficult
+				for (Entity e : player.getNearbyEntities(Math.round(10), Math.round(10), Math.round(10))) {
+					if (e instanceof LivingEntity) {
+						LivingEntity liv = (LivingEntity) e;
+						if (!(liv instanceof Player))
+							continue;
 
-					for (String row : rows) {
-						if (row.trim().equals("")) {
-							for (int i = 0; i <= rowMax; i++) {
-								row = row + " ";
-							}
-						}
+						if (!le.contains(liv))
+							le.add(liv);
 
-						row = Utils.setPlaceholders(row, player);
-						row = row.replace("%game-time%", tFormat);
+						liv.setCustomNameVisible(false);
 
-						gameBoard.setLine(row, rowMax);
-						rowMax--;
-
-						ScoreBoardHolder sHolder = gameBoard.getScoreboards().get(player);
-						sHolder.setOldKdLine(row);
-						sHolder.setOldPointsLine(row);
+						// TODO fix issue when the player looks through the block and the name appears within the 10 radius
+						if (GameLoader.getLookingAt(player, liv))
+							liv.setCustomNameVisible(true);
 					}
 				}
 			}
@@ -131,9 +136,50 @@ public class GameTimer extends TimerTask {
 
 				gameTab.sendTabTitle(he, fo);
 			}
+
+			if (scoreTeam != null) {
+				String prefix = conf.getCfg().getString("game.global.tablist.player-format.prefix");
+				String suffix = conf.getCfg().getString("game.global.tablist.player-format.suffix");
+
+				prefix = Utils.setPlaceholders(prefix, player);
+				suffix = Utils.setPlaceholders(suffix, player);
+
+				scoreTeam.setTeam(prefix, suffix);
+			}
+
+			if (gameBoard != null) {
+				String boardTitle = conf.getCfg().getString("game.global.scoreboard.title");
+				if (boardTitle != null && !boardTitle.equals(""))
+					gameBoard.setTitle(RageMode.getLang().colors(boardTitle));
+
+				List<String> rows = conf.getCfg().getStringList("game.global.scoreboard.content");
+				if (rows != null && !rows.isEmpty()) {
+					int rowMax = rows.size();
+
+					for (String row : rows) {
+						if (row.trim().equals("")) {
+							for (int i = 0; i <= rowMax; i++) {
+								row = row + " ";
+							}
+						}
+
+						row = Utils.setPlaceholders(row, player);
+						row = row.replace("%game-time%", tFormat);
+
+						gameBoard.setLine(row, rowMax);
+						rowMax--;
+					}
+				}
+			}
 		}
 
 		if (time == 0) {
+			if (le != null && !le.isEmpty()) {
+				for (int i = 0; i < le.size(); i++) {
+					le.get(i).setCustomNameVisible(true);
+					le.clear();
+				}
+			}
 			cancel();
 			RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 					() -> StopGame.stopGame(gameName));

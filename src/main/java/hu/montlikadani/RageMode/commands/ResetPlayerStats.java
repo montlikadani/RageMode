@@ -11,56 +11,55 @@ import hu.montlikadani.ragemode.statistics.YAMLStats;
 
 public class ResetPlayerStats extends RmCommand {
 
-	public ResetPlayerStats(CommandSender sender, Command cmd, String label, String[] args) {
-		if (!sender.hasPermission("ragemode.admin.stats.reset")) {
+	@Override
+	public boolean run(CommandSender sender, Command cmd, String[] args) {
+		if (!hasPerm(sender, "ragemode.admin.stats.reset")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
-			return;
+			return false;
 		}
 		if (!(sender instanceof Player)) {
 			if (args.length < 2) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-null"));
-				return;
+				return false;
 			}
 			Player target = Bukkit.getPlayer(args[0]);
 			if (target == null) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-found"));
-				return;
+				return false;
 			}
 			if (PlayerList.isPlayerPlaying(target.getUniqueId().toString())) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.player-currently-in-game"));
-				return;
+				return false;
 			}
-			reset(target);
-			sendMessage(sender, RageMode.getLang().get("commands.stats.target-stats-reseted", "%player%", target.getName()));
-			sendMessage(target, RageMode.getLang().get("commands.stats.reseted"));
-			return;
+			if (YAMLStats.resetPlayerStatistic(target.getUniqueId().toString())) {
+				sendMessage(sender, RageMode.getLang().get("commands.stats.target-stats-reseted", "%player%", target.getName()));
+				sendMessage(target, RageMode.getLang().get("commands.stats.reseted"));
+			}
+			return false;
 		}
 		if (args.length == 1) {
 			Player target = Bukkit.getPlayer(args[0]);
 			if (target == null) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-found"));
-				return;
+				return false;
 			}
 			if (PlayerList.isPlayerPlaying(target.getUniqueId().toString())) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.player-currently-in-game"));
-				return;
+				return false;
 			}
-			reset(target);
-			sendMessage(sender, RageMode.getLang().get("commands.stats.target-stats-reseted", "%player%", target.getName()));
-			sendMessage(target, RageMode.getLang().get("commands.stats.reseted"));
-			return;
+			if (YAMLStats.resetPlayerStatistic(target.getUniqueId().toString())) {
+				sendMessage(sender, RageMode.getLang().get("commands.stats.target-stats-reseted", "%player%", target.getName()));
+				sendMessage(target, RageMode.getLang().get("commands.stats.reseted"));
+			}
+			return false;
 		}
 		Player p = (Player) sender;
 		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
 			sendMessage(sender, RageMode.getLang().get("commands.stats.player-currently-in-game"));
-			return;
+			return false;
 		}
-		reset(p);
-		sendMessage(p, RageMode.getLang().get("commands.stats.reseted"));
-		return;
-	}
-
-	private void reset(Player p) {
-		YAMLStats.resetPlayerStatistic(p.getUniqueId().toString());
+		if (YAMLStats.resetPlayerStatistic(p.getUniqueId().toString()))
+			sendMessage(p, RageMode.getLang().get("commands.stats.reseted"));
+		return false;
 	}
 }

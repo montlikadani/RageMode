@@ -146,6 +146,7 @@ public class MapChecker {
 		if (world == null) {
 			throw new NullPointerException("World cannot be null!");
 		}
+
 		String spawnsPath = "arenas." + gameName + ".spawns";
 		Set<String> allSpawns = RageMode.getInstance().getConfiguration().getArenasCfg().getConfigurationSection(spawnsPath).getKeys(false);
 		for (String spawn : allSpawns) {

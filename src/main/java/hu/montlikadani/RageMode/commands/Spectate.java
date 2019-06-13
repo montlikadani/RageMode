@@ -9,42 +9,43 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
-import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.LeaveGame;
 
 public class Spectate extends RmCommand {
 
-	public Spectate(CommandSender sender, Command cmd, String label, String[] args) {
+	@Override
+	public boolean run(CommandSender sender, Command cmd, String[] args) {
 		if (!(sender instanceof Player)) {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
-			return;
+			return false;
 		}
 
 		Player p = (Player) sender;
-		if (!p.hasPermission("ragemode.spectate")) {
+		if (!hasPerm(p, "ragemode.spectate")) {
 			sendMessage(p, RageMode.getLang().get("no-permission"));
-			return;
+			return false;
 		}
 
 		if (args.length < 2) {
 			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName>"));
-			return;
+			return false;
 		}
 
 		String map = args[1];
-		if (!GetGames.isGameExistent(map)) {
+		if (!GameUtils.isGameWithNameExists(map)) {
 			sendMessage(p, RageMode.getLang().get("invalid-game"));
-			return;
+			return false;
 		}
 
 		if (!PlayerList.isGameRunning(map)) {
 			sendMessage(p, RageMode.getLang().get("game.not-running"));
-			return;
+			return false;
 		}
 
 		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
 			sendMessage(p, RageMode.getLang().get("game.player-not-switch-spectate"));
-			return;
+			return false;
 		}
 
 		YamlConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
@@ -58,6 +59,6 @@ public class Spectate extends RmCommand {
 			if (conf.contains("items.leavegameitem"))
 				p.getInventory().setItem(conf.getInt("items.leavegameitem.slot"), LeaveGame.getItem());
 		}
-		return;
+		return false;
 	}
 }

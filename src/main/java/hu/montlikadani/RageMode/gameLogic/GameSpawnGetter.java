@@ -36,9 +36,11 @@ public class GameSpawnGetter {
 				double spawnZ = aCfg.getDouble(path + "." + spawnName + ".z");
 				double spawnYaw = aCfg.getDouble(path + "." + spawnName + ".yaw");
 				double spawnPitch = aCfg.getDouble(path + "." + spawnName + ".pitch");
+
 				Location location = new Location(Bukkit.getWorld(world), spawnX, spawnY, spawnZ);
 				location.setYaw((float) spawnYaw);
 				location.setPitch((float) spawnPitch);
+
 				spawnLocations.add(location);
 			}
 			isGameReady = true;

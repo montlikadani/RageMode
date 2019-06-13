@@ -31,6 +31,7 @@ public class ActionBar {
 			} else {
 				Class<?> chatComponentTextClass = Class.forName("net.minecraft.server." + nmsver + ".ChatComponentText");
 				Class<?> iChatBaseComponentClass = Class.forName("net.minecraft.server." + nmsver + ".IChatBaseComponent");
+				Object chatCompontentText;
 				try {
 					Class<?> chatMessageTypeClass = Class.forName("net.minecraft.server." + nmsver + ".ChatMessageType");
 					Object[] chatMessageTypes = chatMessageTypeClass.getEnumConstants();
@@ -39,10 +40,10 @@ public class ActionBar {
 						if (obj.toString().equals("GAME_INFO"))
 							chatMessageType = obj;
 					}
-					Object chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[] { String.class }).newInstance(message);
+					chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[] { String.class }).newInstance(message);
 					packet = packetPlayOutChatClass.getConstructor(new Class<?>[] { iChatBaseComponentClass, chatMessageTypeClass }).newInstance(chatCompontentText, chatMessageType);
 				} catch (ClassNotFoundException cnfe) {
-					Object chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[] { String.class }).newInstance(message);
+					chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[] { String.class }).newInstance(message);
 					packet = packetPlayOutChatClass.getConstructor(new Class<?>[] { iChatBaseComponentClass, byte.class }).newInstance(chatCompontentText, (byte) 2);
 				}
 			}
