@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>hu.montlikadani</groupId>
 	<artifactId>ragemode</artifactId>
-	<version>1.0.0.004</version>
+	<version>1.0.0.010</version>
 	<packaging>jar</packaging>
 	<name>ragemode</name>
 	<url>http://maven.apache.org</url>

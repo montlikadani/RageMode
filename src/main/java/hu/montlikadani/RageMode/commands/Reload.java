@@ -26,7 +26,7 @@ public class Reload extends RmCommand {
 		StopGame.stopAllGames();
 
 		plugin.getConfiguration().loadConfig();
-		RageMode.getLang().loadLanguage();
+		RageMode.getLang().loadLanguage(plugin.getConfiguration().getCfg().getString("language"));
 
 		if (plugin.getConfiguration().getCfg().getBoolean("signs.enable"))
 			SignConfiguration.initSignConfiguration();

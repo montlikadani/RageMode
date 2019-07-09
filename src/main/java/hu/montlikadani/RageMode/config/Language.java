@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.config;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -18,14 +19,17 @@ import hu.montlikadani.ragemode.Utils;
 public class Language {
 
 	private RageMode plugin;
-	private String lang;
+	private List<String> lang;
 
-	public Language(RageMode plugin, String lang) {
+	public Language(RageMode plugin) {
 		this.plugin = plugin;
-		this.lang = lang;
 	}
 
-	public void loadLanguage() {
+	public void loadLanguage(String lang) {
+		this.lang = new ArrayList<>();
+		this.lang.clear();
+		this.lang.add(lang);
+
 		try {
 			File localeFolder = new File(plugin.getFolder(), "locale");
 			if (!localeFolder.exists())
@@ -264,7 +268,12 @@ public class Language {
 
 	public File getCurrentLangFile() {
 		File localeFolder = new File(plugin.getFolder(), "locale");
-		return new File(localeFolder, "locale_" + lang + ".yml");
+		File file = null;
+		for (String l : this.lang) {
+			file = new File(localeFolder, "locale_" + l + ".yml");
+		}
+
+		return file != null ? file : null;
 	}
 
 	public File getDefaultLangFile() {

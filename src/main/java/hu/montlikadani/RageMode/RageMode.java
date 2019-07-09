@@ -108,8 +108,8 @@ public class RageMode extends JavaPlugin {
 			conf = new Configuration(this);
 			conf.loadConfig();
 
-			lang = new Language(this, conf.getCfg().getString("language"));
-			lang.loadLanguage();
+			lang = new Language(this);
+			lang.loadLanguage(conf.getCfg().getString("language"));
 
 			if (getManager().isPluginEnabled("HolographicDisplays")) {
 				hologram = true;
