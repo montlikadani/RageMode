@@ -8,7 +8,7 @@ missing-dependencies: "&e%depend%&c must be installed to use this!"
 not-a-number: "&e%number%&c is not a number."
 invalid-game: "&e%game%&4 is not a valid RageMode Map."
 player-non-existent: "&cThat player doesn't even exist."
-not-played-yet: "&cThat player hasn't played on this server yet."
+not-played-yet: "&cThat player&7 %player%&c hasn't played on this server yet."
 
 commands:
   listgames:
@@ -46,14 +46,22 @@ commands:
       off: "&cOFF"
   join:
     game-locked: "&cThis game is locked, so you can not join."
+    empty-inventory:
+      armor: "&cYou must empty your armor inventory to join the game."
+      contents: "&cYou must empty your inventory contents to join the game."
   points:
     player-not-found: "&cThe player name can not be null!"
     amount-not-less: "&cThe number must be greater than 0."
     changed: "&2The player points has been changed:&e %amount%&2, new:&e %new%"
     player-is-in-game: "&cThis player&7 %player%&c is in game, so the points can not be modifiable while playing."
-  editspawn:
+  removespawn:
     not-valid-spawn-id: "&cGame spawn with id&e %id%&c is not a valid spawn."
-    edit-success: "&2Spawn&e %number%&2 for the game&3 %game%&2 was modified successfully!"
+    remove-success: "&cSpawn&e %number%&c for the game&3 %game%&c was removed successfully!"
+  givesaveditems:
+    not-enabled: "&cThis option is not enabled in the configuration file."
+    player-not-found-in-data-file: "&cThis player&7 %player%&c not found in the data file."
+    no-player-saved-inventory: "&cThere are no player found in the data file that have been saved their inventory."
+    player-is-in-game: "&cThis player&7 %player%&c is in game."
 
 hologram-list:
 - "&6Rank:&a %rank%"
@@ -79,6 +87,7 @@ setup:
   success: "&2Success!"
   removed-non-existent-game: "&cDon't remove non-existent games!"
   success-removed: "&cThe game&e %game%&c was removed successfully."
+  set-game-time-success: "&aGame time successfully set for&e %game%&a game with&e %time% minutes&a."
 
 statistic-list:
 - "&e--------&2 %player%&e --------"
@@ -100,16 +109,9 @@ game:
   lobby:
     start-message: "&9This round will start in&e %time%&9 seconds."
     chat-is-disabled: "&cThe chat currently is disabled in lobby!"
-  already-exists: "&cThis &e%game%&c game already exists."
-  success-added: "&2The game &3%game%&2 was added successfully!"
-  at-least-two: "&cThe maxplayers value must be at least two."
-  not-set-yet: "&cThis game was not set yet! Set it with&e %usage%"
-  spawn-set-success: "&2Spawn&e %number%&2 for the game&3 %game%&2 was set successfully!"
-  success-removed: "&cThe game&e %game%&c was removed successfully."
-  removed-non-existent-game: "&cDon't remove non-existent games!"
   spawns-not-set-properly: "&cOne or more spawns are not set properly!"
-  no-spawns-configured: "&cIn&e %game%&c are no spawns configured!"
   too-few-spawns: "&4The number of spawns must be greater than or equal the maxplayers value!"
+  no-spawns-configured: "&cIn&e %game%&c are no spawns configured!"
   player-could-not-join: "&e%player%&4 couldn't join the RageMode game&e %game%."
   game-stopped-for-reload: "&cThe game has stopped because we reloading the plugin and need to stop the game. Sorry!"
   broadcast:
@@ -132,6 +134,7 @@ game:
   maxplayers-not-set: "&cThe maxplayers value for&e %game%&c is not set properly."
   worldname-not-set: "&4The world key can't be empty! Ask an Admin to check the config.yml."
   does-not-exist: "&cThe game you wish to join wasn't found."
+  no-enough-points: "&cThere are not enough points to pay for your suicide."
   command-disabled-in-end-game: "&cAll commands are disabled at the end of the game. Endure!!"
   this-command-is-disabled-in-game: "&cThis command is currently disabled."
   full: "&cThis Game is already full."
@@ -153,7 +156,7 @@ game:
     knife-death: "&3You were killed by&6&l %killer%&3 with a RageKnife.&4&l %points%"
     explosion-death: "&3You were killed by&6&l %killer%&3 by an explosion.&4&l %points%"
     current-points: "&3You now have&6&l %points%&3 points."
-    points-loss-for-suicide: "&cYou lost&6 %amount%&c points. Your current deaths number:&6 %deaths%"
+    points-loss-for-suicide: "&cYou lost&6 %amount%&c points. Your current points/deaths number:&6 %current%/%deaths%"
     streak: "&6%number%&2 KILLSTREAK&6 %points%"
     suicide: "&3You killed yourself you silly idiot."
     player-won: "&2%player%&d won the &6%game%&d!"

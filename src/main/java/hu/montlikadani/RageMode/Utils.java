@@ -1,11 +1,15 @@
 package hu.montlikadani.ragemode;
 
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.RetPlayerPoints;
@@ -58,6 +62,21 @@ public class Utils {
 	}
 
 	/**
+	 * Clear the specified player inventory.
+	 * <p>This fixes the crash when the inventory is empty and the
+	 * server throws AssertionError: TRAP, that cause the server crash and stop.</p>
+	 * @param pl Player
+	 */
+	public static void clearPlayerInventory(Player pl) {
+		try {
+			for (ItemStack content : pl.getInventory().getContents()) {
+				if (content != null && !content.getType().equals(Material.AIR))
+					pl.getInventory().clear();
+			}
+		} catch (AssertionError a) {}
+	}
+
+	/**
 	 * Sets the available placeholders to that string, that manages from RageMode
 	 * 
 	 * @param s String to replace the variables
@@ -66,56 +85,56 @@ public class Utils {
 	 */
 	public static String setPlaceholders(String s, Player player) {
 		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(player.getUniqueId().toString());
-		if (rpp == null)
-			return RageMode.getLang().colors(s);
 
 		if (s.contains("%kills%"))
-			s = s.replace("%kills%", Integer.toString(rpp.getKills()));
+			s = s.replace("%kills%", rpp == null ? "0" : Integer.toString(rpp.getKills()));
 
 		if (s.contains("%axe-kills%"))
-			s = s.replace("%axe-kills%", Integer.toString(rpp.getAxeKills()));
+			s = s.replace("%axe-kills%", rpp == null ? "0" : Integer.toString(rpp.getAxeKills()));
 
 		if (s.contains("%direct-arrow-kills%"))
-			s = s.replace("%direct-arrow-kills%", Integer.toString(rpp.getDirectArrowKills()));
+			s = s.replace("%direct-arrow-kills%", rpp == null ? "0" : Integer.toString(rpp.getDirectArrowKills()));
 
 		if (s.contains("%explosion-kills%"))
-			s = s.replace("%explosion-kills%", Integer.toString(rpp.getExplosionKills()));
+			s = s.replace("%explosion-kills%", rpp == null ? "0" : Integer.toString(rpp.getExplosionKills()));
 
 		if (s.contains("%knife-kills%"))
-			s = s.replace("%knife-kills%", Integer.toString(rpp.getKnifeKills()));
+			s = s.replace("%knife-kills%", rpp == null ? "0" : Integer.toString(rpp.getKnifeKills()));
 
 		if (s.contains("%deaths%"))
-			s = s.replace("%deaths%", Integer.toString(rpp.getDeaths()));
+			s = s.replace("%deaths%", rpp == null ? "0" : Integer.toString(rpp.getDeaths()));
 
 		if (s.contains("%axe-deaths%"))
-			s = s.replace("%axe-deaths%", Integer.toString(rpp.getAxeDeaths()));
+			s = s.replace("%axe-deaths%", rpp == null ? "0" : Integer.toString(rpp.getAxeDeaths()));
 
 		if (s.contains("%direct-arrow-deaths%"))
-			s = s.replace("%direct-arrow-deaths%", Integer.toString(rpp.getDirectArrowDeaths()));
+			s = s.replace("%direct-arrow-deaths%", rpp == null ? "0" : Integer.toString(rpp.getDirectArrowDeaths()));
 
 		if (s.contains("%explosion-deaths%"))
-			s = s.replace("%explosion-deaths%", Integer.toString(rpp.getExplosionDeaths()));
+			s = s.replace("%explosion-deaths%", rpp == null ? "0" : Integer.toString(rpp.getExplosionDeaths()));
 
 		if (s.contains("%knife-deaths%"))
-			s = s.replace("%knife-deaths%", Integer.toString(rpp.getKnifeDeaths()));
+			s = s.replace("%knife-deaths%", rpp == null ? "0" : Integer.toString(rpp.getKnifeDeaths()));
 
 		if (s.contains("%current-streak%"))
-			s = s.replace("%current-streak%", Integer.toString(rpp.getCurrentStreak()));
+			s = s.replace("%current-streak%", rpp == null ? "0" : Integer.toString(rpp.getCurrentStreak()));
 
 		if (s.contains("%longest-streak%"))
-			s = s.replace("%longest-streak%", Integer.toString(rpp.getLongestStreak()));
+			s = s.replace("%longest-streak%", rpp == null ? "0" : Integer.toString(rpp.getLongestStreak()));
 
 		if (s.contains("%points%"))
-			s = s.replace("%points%", Integer.toString(rpp.getPoints()));
+			s = s.replace("%points%", rpp == null ? "0" : Integer.toString(rpp.getPoints()));
 
 		if (s.contains("%games%"))
-			s = s.replace("%games%", Integer.toString(rpp.getGames()));
+			s = s.replace("%games%", rpp == null ? "0" : Integer.toString(rpp.getGames()));
 
 		if (s.contains("%wins%"))
-			s = s.replace("%wins%", Integer.toString(rpp.getWins()));
+			s = s.replace("%wins%", rpp == null ? "0" : Integer.toString(rpp.getWins()));
 
-		if (s.contains("%kd%"))
-			s = s.replace("%kd%", Double.toString(rpp.getKD()));
+		if (s.contains("%kd%")) {
+			NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
+			s = s.replace("%kd%", rpp == null ? "0.0" : format.format(rpp.getKD()));
+		}
 
 		return RageMode.getLang().colors(s);
 	}

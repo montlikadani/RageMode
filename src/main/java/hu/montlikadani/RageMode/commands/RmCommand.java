@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.commands;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -24,9 +25,10 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 	//private List<String> aliases = new ArrayList<>();
 
 	public RmCommand() {
+		arg.clear();
+
 		arg.put("addgame", AddGame.class.getName());
 		arg.put("addspawn", AddSpawn.class.getName());
-		arg.put("editspawn", EditSpawn.class.getName());
 		arg.put("forcestart", ForceStart.class.getName());
 		arg.put("holostats", HoloStats.class.getName());
 		arg.put("kick", KickPlayer.class.getName());
@@ -36,7 +38,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 		arg.put("points", Points.class.getName());
 		arg.put("reload", Reload.class.getName());
 		arg.put("removegame", RemoveGame.class.getName());
-		arg.put("reset", ResetPlayerStats.class.getName());
+		arg.put("resetstats", ResetPlayerStats.class.getName());
 		arg.put("actionbar", SetActionBar.class.getName());
 		arg.put("bossbar", SetBossBar.class.getName());
 		arg.put("gametime", SetGameTime.class.getName());
@@ -48,6 +50,8 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 		arg.put("spectate", Spectate.class.getName());
 		arg.put("stopgame", StopGame.class.getName());
 		arg.put("togglegame", ToggleGame.class.getName());
+		arg.put("givesaveditems", GiveSavedItems.class.getName());
+		arg.put("removespawn", RemoveSpawn.class.getName());
 
 		//TODO add aliases
 		/*aliases.add("holo");
@@ -130,11 +134,11 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 					if (hasPerm(sender, "ragemode.admin.addspawn"))
 						msg += "&7-&6 /rm addspawn <gameName>&a - Adds a new spawn location.\n";
 
-					if (hasPerm(sender, "ragemode.admin.editspawn"))
-						msg += "&7-&6 /rm editspawn <gameName> <id>&a - Modify the game spawns from id.\n";
+					if (hasPerm(sender, "ragemode.admin.removespawn"))
+						msg += "&7-&6 /rm removespawn <gameName> <id>&a - Removes the game spawn from id.\n";
 
 					if (hasPerm(sender, "ragemode.admin.holostats"))
-						msg += "&7-&6 /rm holostats <add/remove>&a - Adds/remove a new hologram.\n";
+						msg += "&7-&6 /rm holostats <add/remove/tp>&a - Adds/remove/teleports a new hologram.\n";
 
 					if (hasPerm(sender, "ragemode.admin.setactionbar"))
 						msg += "'&7-&6 /rm actionbar <gameName> <true/false>&a - Actionbar on/off which display in the game.\n";
@@ -157,6 +161,9 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 					// Other
 					if (hasPerm(sender, "ragemode.admin.forcestart"))
 						msg += "&7-&6 /rm forcestart <gameName>&a - Forces the specified game to start.\n";
+
+					if (hasPerm(sender, "ragemode.admin.givesaveditems"))
+						msg += "&7-&6 /rm givesaveditems <player>&a - Returns the saved inventory to the player.\n";
 				}
 				if (hasPerm(sender, "ragemode.admin.kick"))
 					msg += "&7-&6 /rm kick <gameName> <player>&a - Kick a player from the game.";
@@ -253,6 +260,15 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 						partOfCommand = args[1];
 					}
 				}
+			} else if (args.length < 4) {
+				for (int i = 0; i < getValueListCmds().size(); i++) {
+					if (args[0].equalsIgnoreCase(getValueListCmds().get(i))) {
+						for (String tf : Arrays.asList("true", "false")) {
+							cmds.add(tf);
+						}
+						partOfCommand = args[2];
+					}
+				}
 			}
 			StringUtil.copyPartialMatches(partOfCommand, cmds, completionList);
 		}
@@ -273,7 +289,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 	private List<String> getAdminCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
 		for (String cmds : new String[] { "addgame", "addspawn", "setlobby", "reload", "holostats", "removegame", "resetstats", "forcestart",
-				"kick", "stopgame", "signupdate", "togglegame", "points", "editspawn" }) {
+				"kick", "stopgame", "signupdate", "togglegame", "points", "givesaveditems", "removespawn" }) {
 			if (!hasPerm(sender, "ragemode.admin." + cmds))
 				continue;
 			c.add(cmds);
@@ -292,8 +308,12 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 	}
 
 	private List<String> getGameListCmds() {
-		return java.util.Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay", "removegame", "forcestart", "setlobby",
-				"addspawn", "join", "leave", "signupdate", "stop", "stopgame", "togglegame", "spectate", "editspawn");
+		return Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay", "removegame", "forcestart", "setlobby",
+				"addspawn", "join", "leave", "signupdate", "stop", "stopgame", "togglegame", "spectate", "removespawn");
+	}
+
+	private List<String> getValueListCmds() {
+		return Arrays.asList("actionbar", "bossbar", "globalmessages");
 	}
 
 	public boolean hasPerm(CommandSender sender, String perm) {

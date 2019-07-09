@@ -46,8 +46,8 @@ public class MapChecker {
 			isValid = false;
 		} else {
 			if (RageMode.getInstance().getConfiguration().getArenasCfg().contains(path + ".world") &&
-					!RageMode.getInstance().getConfiguration().getArenasCfg().getString(path + ".world").equals("")) {
-				maxPlayers = RageMode.getInstance().getConfiguration().getArenasCfg().getInt(path + ".maxplayers");
+					!GetGames.getWorld(gameName).equals("")) {
+				maxPlayers = GetGames.getMaxPlayers(gameName);
 				if (maxPlayers != -32500000)
 					isValid = true;
 				else {
@@ -72,7 +72,7 @@ public class MapChecker {
 			if (aFile.isSet(thisPath + ".x") && aFile.isSet(thisPath + ".y")
 					&& aFile.isSet(thisPath + ".z")
 					&& aFile.isSet(thisPath + ".yaw") && aFile.isSet(thisPath + ".pitch")) {
-				if (aFile.contains(thisPath + ".world") && !aFile.getString(thisPath + ".world").equals("")) {
+				if (aFile.contains(thisPath + ".world") && !GetGames.getWorld(gameName).equals("")) {
 					if (Utils.isDouble(aFile.getString(thisPath + ".x")) && Utils.isDouble(aFile.getString(thisPath + ".y"))
 							&& Utils.isDouble(aFile.getString(thisPath + ".z"))
 							&& Utils.isDouble(aFile.getString(thisPath + ".yaw"))
@@ -155,7 +155,7 @@ public class MapChecker {
 				return true;
 		}
 
-		String worldName = RageMode.getInstance().getConfiguration().getArenasCfg().getString("arenas." + gameName + ".lobby.world");
+		String worldName = GetGameLobby.getLobbyLocation(gameName).getWorld().getName();
 		if (worldName.trim().equals(world.getName().trim()))
 			return true;
 

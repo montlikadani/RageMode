@@ -1,6 +1,7 @@
 package hu.montlikadani.ragemode.config;
 
 import java.io.File;
+import java.util.logging.Level;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -11,6 +12,8 @@ public class Configuration {
 	private RageMode plugin;
 	private YamlConfiguration config, arenas, rewards, datas;
 	private File config_file, arenas_file, rewards_file, datas_file;
+
+	private double configVersion = 1.0;
 
 	public Configuration(RageMode plugin) {
 		this.plugin = plugin;
@@ -26,6 +29,11 @@ public class Configuration {
 			if (config_file.exists()) {
 				config = YamlConfiguration.loadConfiguration(config_file);
 				config.load(config_file);
+
+				if (!config.isSet("config-version") || !config.get("config-version").equals(configVersion)) {
+					RageMode.logConsole(Level.WARNING, "Found outdated configuration (config.yml)! (Your version: "
+							+ config.getDouble("config-version") + " | Newest version: " + configVersion + ")");
+				}
 			} else {
 				plugin.saveResource("config.yml", false);
 				config = YamlConfiguration.loadConfiguration(config_file);
@@ -98,5 +106,9 @@ public class Configuration {
 
 	public File getDatasFile() {
 		return datas_file;
+	}
+
+	public double getConfigVersion() {
+		return configVersion;
 	}
 }

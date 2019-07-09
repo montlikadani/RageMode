@@ -43,6 +43,36 @@ public class GetGames {
 	}
 
 	/**
+	 * Check if actionbar is enabled in config
+	 * 
+	 * @param game Game
+	 * @return actionbar boolean
+	 */
+	public static boolean isActionbarEnabled(String game) {
+		return fi.getBoolean("arenas." + game + ".actionbar");
+	}
+
+	/**
+	 * Check if bossbar is enabled in config
+	 * 
+	 * @param game Game
+	 * @return bossbar boolean
+	 */
+	public static boolean isBossbarEnabled(String game) {
+		return fi.getBoolean("arenas." + game + ".bossbar");
+	}
+
+	/**
+	 * Get the game time from config
+	 * 
+	 * @param game Game
+	 * @return time
+	 */
+	public static int getGameTime(String game) {
+		return fi.getInt("arenas." + game + ".gametime");
+	}
+
+	/**
 	 * Get game names from file
 	 * 
 	 * @return config section

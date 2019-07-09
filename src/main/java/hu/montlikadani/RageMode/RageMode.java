@@ -1,9 +1,13 @@
 package hu.montlikadani.ragemode;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -15,7 +19,6 @@ import hu.montlikadani.ragemode.metrics.Metrics;
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.commands.AddGame;
 import hu.montlikadani.ragemode.commands.AddSpawn;
-import hu.montlikadani.ragemode.commands.EditSpawn;
 import hu.montlikadani.ragemode.commands.ForceStart;
 import hu.montlikadani.ragemode.commands.HoloStats;
 import hu.montlikadani.ragemode.commands.KickPlayer;
@@ -25,6 +28,7 @@ import hu.montlikadani.ragemode.commands.PlayerLeave;
 import hu.montlikadani.ragemode.commands.Points;
 import hu.montlikadani.ragemode.commands.Reload;
 import hu.montlikadani.ragemode.commands.RemoveGame;
+import hu.montlikadani.ragemode.commands.RemoveSpawn;
 import hu.montlikadani.ragemode.commands.ResetPlayerStats;
 import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.commands.SetActionBar;
@@ -45,18 +49,20 @@ import hu.montlikadani.ragemode.events.BungeeListener;
 import hu.montlikadani.ragemode.events.EventListener;
 import hu.montlikadani.ragemode.events.Listeners_1_8;
 import hu.montlikadani.ragemode.events.Listeners_1_9;
+import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.ActionBar;
 import hu.montlikadani.ragemode.gameUtils.BungeeUtils;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
-import hu.montlikadani.ragemode.holo.HoloHolder;
+import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignConfiguration;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.signs.SignScheduler;
+import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 import net.milkbowl.vault.economy.Economy;
 
@@ -75,6 +81,8 @@ public class RageMode extends JavaPlugin {
 
 	private boolean hologram = false;
 	private boolean vault = false;
+
+	private List<GameSpawnGetter> spawns = new ArrayList<>();
 
 	@Override
 	public void onEnable() {
@@ -150,30 +158,50 @@ public class RageMode extends JavaPlugin {
 				Bukkit.getScheduler().runTaskLater(this, sign, 40L);
 			}
 
-			String game = null;
-			if (conf.getArenasCfg().contains("arenas"))
-				game = GetGames.getGameNames()[GetGames.getConfigGamesCount() - 1];
+			if (conf.getArenasCfg().contains("arenas")) {
+				for (String game : GetGames.getGameNames()) {
+					if (game != null) {
+						if (conf.getCfg().getBoolean("bungee.enable"))
+							getManager().registerEvents(new BungeeListener(game), this);
 
-			if (game != null) {
-				if (conf.getCfg().getBoolean("bungee.enable"))
-					getManager().registerEvents(new BungeeListener(game), this);
+						new PlayerList();
 
-				new PlayerList();
+						spawns.add(new GameSpawnGetter(game));
 
-				if (conf.getCfg().getBoolean("signs.enable"))
-					SignCreator.updateAllSigns(game);
+						if (conf.getCfg().getBoolean("signs.enable"))
+							SignCreator.updateAllSigns(game);
 
-				// Loads the game locker
-				if (conf.getArenasCfg().contains("arenas." + game + ".lock")
-						&& conf.getArenasCfg().getBoolean("arenas." + game + ".lock")) {
-					GameUtils.setStatus(GameStatus.NOTREADY);
-				} else
-					GameUtils.setStatus(GameStatus.READY);
+						// Loads the game locker
+						if (conf.getArenasCfg().contains("arenas." + game + ".lock")
+								&& conf.getArenasCfg().getBoolean("arenas." + game + ".lock")) {
+							GameUtils.setStatus(GameStatus.NOTREADY);
+						} else
+							GameUtils.setStatus(GameStatus.READY);
+
+						logConsole("[RageMode] Loaded " + game + " game!");
+					}
+				}
 			}
 
 			if (conf.getCfg().getBoolean("metrics")) {
 				Metrics metrics = new Metrics(this);
-				// TODO Metrics statistic
+				metrics.addCustomChart(
+						new Metrics.SimplePie("games_amount", () -> GetGames.getConfigGamesCount() + ""));
+
+				metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
+					int totalPlayers = 0;
+					if (conf.getCfg().getString("statistics").equals("mysql"))
+						totalPlayers = MySQLStats.getAllPlayerStatistics().size();
+					else if (conf.getCfg().getString("statistics").equals("yaml"))
+						totalPlayers = YAMLStats.getAllPlayerStatistics().size();
+
+					totalPlayers++;
+
+					return String.valueOf(totalPlayers);
+				}));
+
+				metrics.addCustomChart(new Metrics.SimplePie("statistic_type", () -> conf.getCfg().getString("statistics")));
+
 				logConsole("[RageMode] Metrics enabled.");
 			}
 		} catch (Throwable e) {
@@ -187,10 +215,44 @@ public class RageMode extends JavaPlugin {
 		if (instance == null) return;
 
 		Thread thread = new Thread(() -> {
-			try {
-				Class.forName("hu.montlikadani.ragemode.commands.StopGame");
-				StopGame.stopAllGames();
-			} catch (ClassNotFoundException e) {
+			logConsole("[RageMode] Searching games to stop...");
+
+			String[] games = GetGames.getGameNames();
+			if (games != null) {
+				int i = 0;
+				int imax = games.length;
+
+				while (i < imax) {
+					if (games[i] != null && PlayerList.isGameRunning(games[i])) {
+						logConsole("[RageMode] Stopping " + games[i] + " ...");
+
+						String[] players = PlayerList.getPlayersInGame(games[i]);
+						RageScores.calculateWinner(games[i], players);
+
+						if (players != null) {
+							int n = 0;
+							int nmax = players.length;
+
+							while (n < nmax) {
+								if (players[n] != null) {
+									PlayerList.removePlayerSynced(Bukkit.getPlayer(UUID.fromString(players[n])));
+									PlayerList.removePlayer(Bukkit.getPlayer(UUID.fromString(players[n])));
+								}
+								n++;
+							}
+						}
+						for (Player key : PlayerList.specPlayer.values()) {
+							PlayerList.removeSpectatorPlayer(key);
+						}
+						RageScores.removePointsForPlayers(players);
+
+						PlayerList.setGameNotRunning(games[i]);
+						GameUtils.setStatus(GameStatus.STOPPED);
+
+						logConsole("[RageMode] " + games[i] + " has been stopped.");
+					}
+					i++;
+				}
 			}
 
 			sign = null;
@@ -223,13 +285,15 @@ public class RageMode extends JavaPlugin {
 		String password = conf.getCfg().getString("MySQL.password");
 		String characterEnc = conf.getCfg().getString("MySQL.character-encoding").equals("") ? "UTF-8"
 				: conf.getCfg().getString("MySQL.character-encoding");
+		String prefix = conf.getCfg().getString("MySQL.table-prefix").equals("") ? "rm_"
+				: conf.getCfg().getString("MySQL.table-prefix");
 		boolean serverCertificate = conf.getCfg().getBoolean("MySQL.verify-server-certificate");
 		boolean useUnicode = conf.getCfg().getBoolean("MySQL.use-unicode");
 		boolean autoReconnect = conf.getCfg().getBoolean("MySQL.auto-reconnect");
 		boolean useSSL = conf.getCfg().getBoolean("MySQL.use-SSL");
 
 		mySQLConnect = new MySQLConnect(host, port, database, username, password, serverCertificate,
-				useUnicode, characterEnc, autoReconnect, useSSL);
+				useUnicode, characterEnc, autoReconnect, useSSL, prefix);
 
 		if (mySQLConnect != null)
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(this,
@@ -263,12 +327,11 @@ public class RageMode extends JavaPlugin {
 		HandlerList.unregisterAll(this);
 
 		if (conf.getCfg().getBoolean("bungee.enable")) {
-			String game = null;
 			if (conf.getArenasCfg().contains("arenas"))
-				game = GetGames.getGameNames()[GetGames.getConfigGamesCount() - 1];
-
-			if (game != null)
-				getManager().registerEvents(new BungeeListener(game), this);
+				for (String game : GetGames.getGameNames()) {
+					if (game != null)
+						getManager().registerEvents(new BungeeListener(game), this);
+				}
 		}
 
 		if (conf.getCfg().getBoolean("signs.enable"))
@@ -285,7 +348,7 @@ public class RageMode extends JavaPlugin {
 		//TODO short this if possible, maybe?
 		new AddGame();
 		new AddSpawn();
-		new EditSpawn();
+		new RemoveSpawn();
 		new ForceStart();
 		new HoloStats();
 		new KickPlayer();
@@ -370,6 +433,10 @@ public class RageMode extends JavaPlugin {
 
 	public BungeeUtils getBungeeUtils() {
 		return bungee;
+	}
+
+	public List<GameSpawnGetter> getSpawns() {
+		return spawns;
 	}
 
 	public void throwMsg() {

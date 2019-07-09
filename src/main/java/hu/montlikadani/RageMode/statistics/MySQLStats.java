@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.database.MySQLConnect;
+import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 
@@ -25,13 +26,13 @@ public class MySQLStats {
 	 * @param mySQLConnect The MySQLConnect instance which holds the Connection for the database.
 	 */
 	public static void addPlayerStatistics(PlayerPoints playerPoints, MySQLConnect mySQLConnect) {
-		if (!testConnection())
+		if (!mySQLConnect.isValid())
 			return;
 
-		Connection connection = RageMode.getMySQL().getConnection();
+		Connection connection = mySQLConnect.getConnection();
 
 		Statement statement = null;
-		String query = "SELECT * FROM rm_stats_players WHERE uuid LIKE '" + playerPoints.getPlayerUUID() + "';";
+		String query = "SELECT * FROM " + mySQLConnect.getPrefix() + "stats_players WHERE uuid LIKE '" + playerPoints.getPlayerUUID() + "';";
 
 		int oldKills = 0;
 		int oldAxeKills = 0;
@@ -70,8 +71,8 @@ public class MySQLStats {
 				oldGames = rs.getInt("games");
 			}
 		} catch (SQLException e) {
-			RageMode.logConsole("[RageMode] " +Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID()))
-							+ " has no statistics yet! Creating one special row for him...");
+			RageMode.logConsole("[RageMode] " + Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID()))
+					+ " has no statistics yet! Creating one special row for him...");
 		}
 		if (statement != null) {
 			try {
@@ -99,7 +100,7 @@ public class MySQLStats {
 		double newKD = (newDeaths != 0) ? (((double) newKills) / ((double) newDeaths)) : 1;
 
 		statement = null;
-		query = "REPLACE INTO rm_stats_players (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills, knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths, knife_deaths, wins, score, games, kd) VALUES ("
+		query = "REPLACE INTO " + mySQLConnect.getPrefix() + "stats_players (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills, knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths, knife_deaths, wins, score, games, kd) VALUES ("
 				+ "'" + Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID())).getName() + "', " + "'"
 				+ playerPoints.getPlayerUUID() + "', " + Integer.toString(newKills) + ", "
 				+ Integer.toString(newAxeKills) + ", " + Integer.toString(newDirectArrowKills) + ", "
@@ -124,14 +125,14 @@ public class MySQLStats {
 	 * @param mySQLConnect The MySQLConnect which holds the Connection instance for the database.
 	 * @return
 	 */
-	public static RetPlayerPoints getPlayerStatistics(String player, MySQLConnect mySQLConnector) {
-		if (!testConnection())
+	public static RetPlayerPoints getPlayerStatistics(String playerUUID, MySQLConnect mySQLConnector) {
+		if (!mySQLConnector.isValid())
 			return null;
 
-		Connection connection = RageMode.getMySQL().getConnection();
+		Connection connection = mySQLConnector.getConnection();
 
 		Statement statement = null;
-		String query = "SELECT * FROM rm_stats_players WHERE uuid LIKE '" + player + "';";
+		String query = "SELECT * FROM " + mySQLConnector.getPrefix() + "stats_players WHERE uuid LIKE '" + playerUUID + "';";
 
 		int currentKills = 0;
 		int currentAxeKills = 0;
@@ -185,7 +186,7 @@ public class MySQLStats {
 		if (currentGames == 0)
 			return null;
 
-		RetPlayerPoints retPlayerPoints = new RetPlayerPoints(player);
+		RetPlayerPoints retPlayerPoints = new RetPlayerPoints(playerUUID);
 		retPlayerPoints.setKills(currentKills);
 		retPlayerPoints.setAxeKills(currentAxeKills);
 		retPlayerPoints.setDirectArrowKills(currentDirectArrowKills);
@@ -214,13 +215,13 @@ public class MySQLStats {
 	public static List<RetPlayerPoints> getAllPlayerStatistics() {
 		List<RetPlayerPoints> rppList = new java.util.ArrayList<>();
 
-		if (!testConnection())
+		if (!RageMode.getMySQL().isConnected())
 			return Collections.emptyList();
 
 		Connection connection = RageMode.getMySQL().getConnection();
 
 		Statement statement = null;
-		String query = "SELECT * FROM rm_stats_players;";
+		String query = "SELECT * FROM " + RageMode.getMySQL().getPrefix() + "stats_players;";
 
 		int currentKills = 0;
 		int currentAxeKills = 0;
@@ -294,16 +295,73 @@ public class MySQLStats {
 		return rppList;
 	}
 
-	private synchronized static boolean testConnection() {
+	/**
+	 * Restores all data of the specified player to 0
+	 * 
+	 * @param uuid UUID of player
+	 * @return true if the player found in database
+	 */
+	public static boolean resetPlayerStatistic(String uuid) {
+		if (!RageMode.getMySQL().isConnected())
+			return false;
+
+		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(uuid);
+		if (rpp == null)
+			return false;
+
+		Connection connection = RageMode.getMySQL().getConnection();
+
+		Statement statement = null;
+		String query = "SELECT * FROM " + RageMode.getMySQL().getPrefix() + "stats_players;";
+
 		try {
-			if (RageMode.getMySQL().getConnection() == null || !RageMode.getMySQL().getConnection().isValid(2))
-				return false;
+			statement = connection.createStatement();
+			ResultSet rs = statement.executeQuery(query);
+			while (rs.next()) {
+				rpp.setKills(0);
+				rpp.setAxeKills(0);
+				rpp.setDirectArrowKills(0);
+				rpp.setExplosionKills(0);
+				rpp.setKnifeKills(0);
+
+				rpp.setDeaths(0);
+				rpp.setAxeDeaths(0);
+				rpp.setDirectArrowDeaths(0);
+				rpp.setExplosionDeaths(0);
+				rpp.setKnifeDeaths(0);
+
+				rpp.setWins(0);
+				rpp.setPoints(0);
+				rpp.setGames(0);
+				rpp.setKD(0d);
+			}
 		} catch (SQLException e) {
-			e.printStackTrace();
 			return false;
 		}
+		if (statement != null) {
+			try {
+				statement.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 
-		RageMode.getInstance().connectMySQL();
+		statement = null;
+		query = "REPLACE INTO " + RageMode.getMySQL().getPrefix() + "stats_players (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills, knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths, knife_deaths, wins, score, games, kd) VALUES ("
+				+ "'" + Bukkit.getPlayer(UUID.fromString(rpp.getPlayerUUID())).getName() + "', " + "'"
+				+ rpp.getPlayerUUID() + "', " + Integer.toString(0) + ", "
+				+ Integer.toString(0) + ", " + Integer.toString(0) + ", "
+				+ Integer.toString(0) + ", " + Integer.toString(0) + ", "
+				+ Integer.toString(0) + ", " + Integer.toString(0) + ", "
+				+ Integer.toString(0) + ", " + Integer.toString(0) + ", "
+				+ Integer.toString(0) + ", " + Integer.toString(0) + ", "
+				+ Integer.toString(0) + ", " + Integer.toString(0) + ", " + Double.toString(0d) + ");";
+		try {
+			statement = connection.createStatement();
+			statement.executeUpdate(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		return true;
 	}
 }

@@ -30,10 +30,10 @@ permissions:
       ragemode.admin.addgame: true
       ragemode.admin.setlobby: true
       ragemode.admin.addspawn: true
-      ragemode.admin.editspawn: true
+      ragemode.admin.removespawn: true
       ragemode.admin.removegame: true
       ragemode.admin.reload: true
-      ragemode.admin.resetstats: true
+      ragemode.admin.stats.reset: true
       ragemode.admin.stopgame: true
       ragemode.admin.setlobbydelay: true
       ragemode.admin.setgametime: true
@@ -48,9 +48,16 @@ permissions:
       ragemode.admin.item.forcestart: true
       ragemode.admin.togglegame: true
       ragemode.admin.points: true
+      ragemode.admin.givesaveditems: true
   ragemode.vip:
     description: Gives access to the VIP functions.
     default: false
   ragemode.join.sign:
     description: Gives access to join the game from sign.
     default: true
+  ragemode.bypass.disabledcommands:
+    description: Allows to the player to execute the disabled commands in game.
+    default: false
+  ragemode.bypass.spectatorcommands:
+    description: Allows to the spectator player to execute the disabled commands in game.
+    default: false

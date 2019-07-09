@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -22,6 +21,7 @@ import hu.montlikadani.ragemode.gameUtils.TabTitles;
 public class GameTimer extends TimerTask {
 
 	private List<String> listPlayers = new ArrayList<>();
+	private List<Player> le = new ArrayList<>();
 
 	private TabTitles gameTab = null;
 	private ScoreBoard gameBoard = null;
@@ -43,13 +43,24 @@ public class GameTimer extends TimerTask {
 		return time;
 	}
 
+	public TabTitles getTabTitles() {
+		return gameTab;
+	}
+
+	public ScoreBoard getScoreboard() {
+		return gameBoard;
+	}
+
+	public ScoreTeam getScoreTeam() {
+		return scoreTeam;
+	}
+
 	public void loadModules() {
 		listPlayers = Arrays.asList(PlayerList.getPlayersInGame(gameName));
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
 		if (conf.getCfg().getBoolean("game.global.scoreboard.enable")) {
 			gameBoard = new ScoreBoard(listPlayers, false);
-			gameBoard.setScoreBoard();
 			gameBoard.addToScoreBoards(gameName, true);
 		}
 
@@ -70,37 +81,34 @@ public class GameTimer extends TimerTask {
 			cancel();
 			return;
 		}
-		//if (PlayerList.getPlayersInGame(gameName).length < 2) {
-		//cancel();
-		//return;
-		//}
+		if (PlayerList.getPlayersInGame(gameName).length < 2) {
+			cancel();
+			return;
+		}
 		time--;
-
-		List<LivingEntity> le = null;
 
 		for (String playerUUID : listPlayers) {
 			Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
 			String tFormat = Utils.getFormattedTime(time);
 			Configuration conf = RageMode.getInstance().getConfiguration();
 
-			if (conf.getCfg().getBoolean("game.global.show-name-above-player-when-look")) {
-				le = new ArrayList<>();
+			if (player == null || !player.isOnline())
+				return;
 
+			if (conf.getCfg().getBoolean("game.global.show-name-above-player-when-look")) {
 				// making the game more difficult
 				for (Entity e : player.getNearbyEntities(Math.round(10), Math.round(10), Math.round(10))) {
-					if (e instanceof LivingEntity) {
-						LivingEntity liv = (LivingEntity) e;
-						if (!(liv instanceof Player))
-							continue;
+					if (e instanceof Player) {
+						Player p = (Player) e;
 
-						if (!le.contains(liv))
-							le.add(liv);
+						if (!le.contains(p))
+							le.add(p);
 
-						liv.setCustomNameVisible(false);
+						p.setCustomNameVisible(false);
 
 						// TODO fix issue when the player looks through the block and the name appears within the 10 radius
-						if (GameLoader.getLookingAt(player, liv))
-							liv.setCustomNameVisible(true);
+						if (GameLoader.getLookingAt(player, p))
+							p.setCustomNameVisible(true);
 					}
 				}
 			}
@@ -168,6 +176,8 @@ public class GameTimer extends TimerTask {
 
 						gameBoard.setLine(row, rowMax);
 						rowMax--;
+
+						gameBoard.setScoreBoard();
 					}
 				}
 			}
@@ -176,10 +186,13 @@ public class GameTimer extends TimerTask {
 		if (time == 0) {
 			if (le != null && !le.isEmpty()) {
 				for (int i = 0; i < le.size(); i++) {
-					le.get(i).setCustomNameVisible(true);
+					if (le.get(i).isCustomNameVisible())
+						le.get(i).setCustomNameVisible(true);
+
 					le.clear();
 				}
 			}
+
 			cancel();
 			RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 					() -> StopGame.stopGame(gameName));

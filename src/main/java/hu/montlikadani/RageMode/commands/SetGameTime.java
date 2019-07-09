@@ -42,7 +42,7 @@ public class SetGameTime extends RmCommand {
 					e.printStackTrace();
 					plugin.throwMsg();
 				}
-				sendMessage(p, RageMode.getLang().get("setup.success"));
+				sendMessage(p, RageMode.getLang().get("setup.set-game-time-success", "%game%", args[1], "%time%", args[2]));
 			} else
 				sendMessage(p, RageMode.getLang().get("not-a-number", "%number%", args[2]));
 		} else

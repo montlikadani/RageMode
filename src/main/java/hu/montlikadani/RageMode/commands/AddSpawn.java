@@ -57,6 +57,12 @@ public class AddSpawn extends RmCommand {
 			e.printStackTrace();
 			plugin.throwMsg();
 		}
+
+		for (int y = 0; y < plugin.getSpawns().size(); y++) {
+			if (plugin.getSpawns().get(y).getGameName().equalsIgnoreCase(args[1]))
+				plugin.getSpawns().get(y).getSpawnLocations().add(loc);
+		}
+
 		sendMessage(p, RageMode.getLang().get("setup.spawn-set-success", "%number%", i, "%game%", args[1]));
 		return false;
 	}

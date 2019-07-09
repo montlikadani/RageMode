@@ -3,7 +3,7 @@ rewards:
     winner:
       cash: 15.0
       commands:
-      - "console: say %player% &aWe waiting for you to the next game!"
+      - "console: say %player% &aWe waiting you to the next game!"
       messages:
       #- "&aYou have won this game&c %game%&a!"
       #- "&eYour reward:&7 %reward%"
@@ -30,10 +30,10 @@ rewards:
     players:
       cash: 2.0
       commands:
-      - "console: say %player% &2We waiting for you to the next game!"
+      - "console: say %player% &2We waiting you to the next game!"
       messages:
       #- "&eYour reward:&7 %reward%"
       items:
         granite:
-          type: GRANITE
+          type: STONE
           amount: 5

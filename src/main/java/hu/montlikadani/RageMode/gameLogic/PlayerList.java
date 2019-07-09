@@ -18,6 +18,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.GameJoinAttemptEvent;
 import hu.montlikadani.ragemode.API.event.GameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -27,7 +28,6 @@ import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
 import hu.montlikadani.ragemode.gameUtils.ScoreTeam;
 import hu.montlikadani.ragemode.gameUtils.TabTitles;
 import hu.montlikadani.ragemode.gameUtils.TableList;
-import hu.montlikadani.ragemode.scores.RageScores;
 
 public class PlayerList {
 
@@ -162,6 +162,7 @@ public class PlayerList {
 						}
 						n++;
 					}
+
 					if (player.hasPermission("ragemode.vip") && hasRoomForVIP(game)) {
 						Random random = new Random();
 						boolean isVIP = false;
@@ -177,9 +178,11 @@ public class PlayerList {
 
 						player.setMetadata("Leaving", new FixedMetadataValue(RageMode.getInstance(), true));
 
+						Utils.clearPlayerInventory(playerToKick);
+
 						if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("bungee.enable"))
 							RageMode.getInstance().getBungeeUtils().connectToHub(playerToKick);
-						else {
+						else if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("save-player-datas-to-file")) {
 							while (n < oldLocations.getFirstLength()) { // Get him back to his old location.
 								if (oldLocations.getFromFirstObject(n) == playerToKick) {
 									playerToKick.teleport(oldLocations.getFromSecondObject(n));
@@ -192,7 +195,6 @@ public class PlayerList {
 
 							while (n < oldInventories.getFirstLength()) { // Give him his inventory back.
 								if (oldInventories.getFromFirstObject(n) == playerToKick) {
-									playerToKick.getInventory().clear();
 									playerToKick.getInventory().setContents(oldInventories.getFromSecondObject(n));
 									oldInventories.removeFromBoth(n);
 								}
@@ -316,6 +318,24 @@ public class PlayerList {
 								e.printStackTrace();
 								RageMode.getInstance().throwMsg();
 							}
+						} else {
+							while (n < oldLocations.getFirstLength()) { // Get him back to his old location.
+								if (oldLocations.getFromFirstObject(n) == playerToKick) {
+									playerToKick.teleport(oldLocations.getFromSecondObject(n));
+									oldLocations.removeFromBoth(n);
+								}
+								n++;
+							}
+
+							n = 0;
+
+							while (n < oldGameMode.getFirstLength()) { // Give him his gamemode back.
+								if (oldGameMode.getFromFirstObject(n) == playerToKick) {
+									playerToKick.setGameMode(oldGameMode.getFromSecondObject(n));
+									oldGameMode.removeFromBoth(n);
+								}
+								n++;
+							}
 						}
 
 						list[kickposition] = player.getUniqueId().toString();
@@ -333,6 +353,7 @@ public class PlayerList {
 								lobbyTimer.loadTimer();
 							}
 						}
+
 						player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", game));
 						return true;
 					} else {
@@ -388,22 +409,24 @@ public class PlayerList {
 			while (i < imax) {
 				if (list[i] != null) {
 					if (list[i].equals(player.getUniqueId().toString())) {
-
-						GameLeaveAttemptEvent gameLeaveEvent = new GameLeaveAttemptEvent(player, PlayerList.getPlayersGame(player));
-						Bukkit.getPluginManager().callEvent(gameLeaveEvent);
-
 						removePlayerSynced(player);
 
-						RageScores.removePointsForPlayers(new String[] { player.getUniqueId().toString() });
+						GameLeaveAttemptEvent gameLeaveEvent = new GameLeaveAttemptEvent(player, PlayerList.getPlayersGame(player));
+						Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
+								() -> Bukkit.getPluginManager().callEvent(gameLeaveEvent));
+						if (gameLeaveEvent.isCancelled())
+							return false;
 
-						player.getInventory().clear();
+						//RageScores.removePointsForPlayers(new String[] { player.getUniqueId().toString() });
+
+						Utils.clearPlayerInventory(player);
 						player.sendMessage(RageMode.getLang().get("game.player-left"));
 
 						player.setMetadata("Leaving", new FixedMetadataValue(RageMode.getInstance(), true));
 
 						if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("bungee.enable"))
 							RageMode.getInstance().getBungeeUtils().connectToHub(player);
-						else {
+						else if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("save-player-datas-to-file")) {
 							while (n < oldLocations.getFirstLength()) { // Bring him back to his old location
 								if (oldLocations.getFromFirstObject(n) == player) {
 									player.teleport(oldLocations.getFromSecondObject(n));
@@ -539,6 +562,24 @@ public class PlayerList {
 								e.printStackTrace();
 								RageMode.getInstance().throwMsg();
 							}
+						} else {
+							while (n < oldLocations.getFirstLength()) { // Bring him back to his old location
+								if (oldLocations.getFromFirstObject(n) == player) {
+									player.teleport(oldLocations.getFromSecondObject(n));
+									oldLocations.removeFromBoth(n);
+								}
+								n++;
+							}
+
+							n = 0;
+
+							while (n < oldGameMode.getFirstLength()) { // Give him his gamemode back.
+								if (oldGameMode.getFromFirstObject(n) == player) {
+									player.setGameMode(oldGameMode.getFromSecondObject(n));
+									oldGameMode.removeFromBoth(n);
+								}
+								n++;
+							}
 						}
 
 						list[i] = null;
@@ -559,7 +600,7 @@ public class PlayerList {
 	public static void removePlayerSynced(Player player) {
 		String game = getPlayersGame(player);
 		if (ScoreBoard.allScoreBoards.containsKey(game))
-			ScoreBoard.allScoreBoards.get(game).removeScoreBoard(player);
+			ScoreBoard.allScoreBoards.get(game).removeScoreBoard(player, true);
 
 		if (TabTitles.allTabLists.containsKey(game))
 			TabTitles.allTabLists.get(game).removeTabList(player);
@@ -780,5 +821,9 @@ public class PlayerList {
 			i++;
 		}
 		return null;
+	}
+
+	public static LobbyTimer getLobbyTimer() {
+		return lobbyTimer;
 	}
 }

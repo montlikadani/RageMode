@@ -29,7 +29,7 @@ public class SignUpdate extends RmCommand {
 		else {
 			name = args[1];
 			if (!GetGames.isGameExistent(name)) {
-				sendMessage(sender, RageMode.getLang().get("invalid-game"));
+				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", name));
 				return false;
 			}
 		}

@@ -41,7 +41,7 @@ public class RuntimeRPPManager {
 		return rpp;
 	}
 
-	public synchronized static void updatePlayerEntry(PlayerPoints pp) throws IndexOutOfBoundsException {
+	public synchronized static void updatePlayerEntry(PlayerPoints pp) {
 		RetPlayerPoints oldRPP = getRPPForPlayer(pp.getPlayerUUID());
 		if (oldRPP == null) {
 			int i = RuntimeRPPList.size();

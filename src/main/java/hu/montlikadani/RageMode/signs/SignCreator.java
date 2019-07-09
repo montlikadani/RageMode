@@ -22,8 +22,6 @@ public class SignCreator {
 	public synchronized static boolean loadSigns() {
 		fileConf = SignConfiguration.getSignConfig();
 
-		signPlaceholder = new SignPlaceholder(RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list"));
-
 		List<String> list = fileConf.getStringList("signs");
 
 		if (list == null || list.isEmpty())
@@ -39,16 +37,19 @@ public class SignCreator {
 			double z = Double.parseDouble(splited[3]);
 			String game = splited[4];
 
+			signPlaceholder = new SignPlaceholder(RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list"));
+
 			Location loc = new Location(Bukkit.getWorld(world), x, y, z);
 			if (loc != null) {
 				SignData data = new SignData(loc, game, signPlaceholder);
 				signData.add(data);
 			}
-			totalSigns += list.size();
 		}
 
+		totalSigns += list.size();
+
 		if (totalSigns > 0)
-			RageMode.logConsole("[RageMode] Loaded " + totalSigns + " sign" + (totalSigns < 1 ? "s" : "") + ".");
+			RageMode.logConsole("[RageMode] Loaded " + totalSigns + " sign" + (totalSigns > 1 ? "s" : "") + ".");
 
 		return true;
 	}
@@ -76,7 +77,7 @@ public class SignCreator {
 
 		for (String game : GetGames.getGameNames()) {
 			for (SignData data : signData) {
-				if (sign.getLocation().equals(data.getLocation())) {
+				if (sign.getLocation().equals(data.getLocation()) && game.equalsIgnoreCase(data.getGame())) {
 					String index = locationSignToString(data.getLocation(), game);
 
 					signs.remove(index);
@@ -165,7 +166,7 @@ public class SignCreator {
 	}
 
 	/**
-	 * Checks whether the sign is properly configured to get the game from the sign.
+	 * Checks whether the sign is properly configured to get the game from the file.
 	 * 
 	 * @return Game name if found in the list.
 	 */

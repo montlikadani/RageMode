@@ -7,7 +7,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.LeaveGame;
@@ -51,8 +50,8 @@ public class Spectate extends RmCommand {
 		YamlConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
 
 		if (PlayerList.addSpectatorPlayer(p)) {
-			GameSpawnGetter gameSpawnGetter = new GameSpawnGetter(map);
-			gameSpawnGetter.randomSpawn(p);
+			GameUtils.getGameSpawnByName(map).randomSpawn(p);
+
 			p.setAllowFlight(true);
 			p.setFlying(true);
 			p.setGameMode(GameMode.SPECTATOR);

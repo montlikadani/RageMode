@@ -31,6 +31,7 @@ public class ShowStats extends RmCommand {
 			showStats(sender, target);
 			return false;
 		}
+
 		Player p = (Player) sender;
 		if (args.length == 2) {
 			Player target = Bukkit.getPlayer(args[1]);
@@ -50,7 +51,7 @@ public class ShowStats extends RmCommand {
 		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(t.getUniqueId().toString());
 
 		if (rpp == null) {
-			sendMessage(sender, RageMode.getLang().get("not-played-yet"));
+			sendMessage(sender, RageMode.getLang().get("not-played-yet", "%player%", t.getName()));
 			return;
 		}
 

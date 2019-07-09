@@ -8,6 +8,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
+import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 
 public class RageScores {
@@ -16,25 +18,40 @@ public class RageScores {
 	private static int totalPoints = 0;
 
 	public static void load() {
-		if (!YAMLStats.getFile().exists())
-			return;
-
 		int totalPlayers = 0;
 
-		org.bukkit.configuration.file.YamlConfiguration conf = YAMLStats.getConf();
-		ConfigurationSection section = conf.getConfigurationSection("data");
+		if (YAMLStats.getFile() != null && YAMLStats.getFile().exists()) {
+			org.bukkit.configuration.file.YamlConfiguration conf = YAMLStats.getConf();
+			ConfigurationSection section = conf.getConfigurationSection("data");
 
-		if (section == null)
-			return;
+			if (section == null)
+				return;
 
-		for (String one : section.getKeys(false)) {
-			String uuid = UUID.fromString(one).toString();
-			playerpoints.put(uuid, new PlayerPoints(uuid));
-			totalPlayers += section.getKeys(false).size();
+			for (String one : section.getKeys(false)) {
+				String uuid = UUID.fromString(one).toString();
+				playerpoints.put(uuid, new PlayerPoints(uuid));
+
+				totalPlayers += section.getKeys(false).size();
+			}
+		} else {
+			for (Player pl : Bukkit.getOnlinePlayers()) {
+				if (!MySQLStats.getAllPlayerStatistics().isEmpty()) {
+					RetPlayerPoints rpp;
+					if (RuntimeRPPManager.getRPPForPlayer(pl.getUniqueId().toString()) == null)
+						rpp = MySQLStats.getPlayerStatistics(pl.getUniqueId().toString(), RageMode.getMySQL());
+					else
+						rpp = RuntimeRPPManager.getRPPForPlayer(pl.getUniqueId().toString());
+
+					String uuid = UUID.fromString(rpp.getPlayerUUID()).toString();
+					playerpoints.put(uuid, new PlayerPoints(uuid));
+				}
+			}
+
+			totalPlayers += MySQLStats.getAllPlayerStatistics().size();
 		}
 
 		if (totalPlayers > 0)
-			RageMode.logConsole("[RageMode] Loaded " + totalPlayers + " player" + (totalPlayers < 1 ? "s" : "") + " database.");
+			RageMode.logConsole("[RageMode] Loaded " + totalPlayers + " player" + (totalPlayers > 1 ? "s" : "") + " database.");
 	}
 
 	public static void addPointsToPlayer(Player killer, Player victim, String killCause) {
@@ -148,9 +165,8 @@ public class RageScores {
 		} else {
 			killer.sendMessage(RageMode.getLang().get("game.message.suicide"));
 
-			int pointLoss = RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.point-loss-for-suicide");
-			if (pointLoss > 0)
-				takePoints(killer, pointLoss);
+			int pointLoss = RageMode.getInstance().getConfiguration().getCfg().getInt("points.suicide");
+			addPoints(killer, pointLoss, false);
 		}
 	}
 
@@ -172,6 +188,14 @@ public class RageScores {
 			throw new IllegalArgumentException("player uuid is null");
 		}
 		return playerpoints.get(playerUUID);
+	}
+
+	/**
+	 * Gets the {@link #playerpoints} map
+	 * @return playerpoints
+	 */
+	public static HashMap<String, PlayerPoints> getPlayerPointsMap() {
+		return playerpoints;
 	}
 
 	private static int addPoints(Player player, int points, boolean killer) {
@@ -197,7 +221,15 @@ public class RageScores {
 			}
 			longestStreak = (currentStreak > pointsHolder.getLongestStreak()) ? currentStreak : pointsHolder.getLongestStreak();
 
-			pointsHolder.setPoints(totalPoints);
+			if (totalPoints < 0) {
+				player.sendMessage(RageMode.getLang().get("game.no-enough-points"));
+
+				// TODO Add reward for player suicide when not enough points
+				/*Reward reward = new Reward("suicide", PlayerList.getPlayersGame(player));
+				reward.rewardForPlayers(null);*/
+			} else {
+				pointsHolder.setPoints(totalPoints);
+			}
 			pointsHolder.setKills(totalKills);
 			pointsHolder.setDeaths(totalDeaths);
 			pointsHolder.setCurrentStreak(currentStreak);
@@ -218,7 +250,7 @@ public class RageScores {
 				currentStreak = 0;
 			}
 			PlayerPoints pointsHolder = new PlayerPoints(playerUUID);
-			pointsHolder.setPoints(points);
+			pointsHolder.setPoints(points < 0 ? 0 : points);
 			pointsHolder.setKills(totalKills);
 			pointsHolder.setDeaths(totalDeaths);
 			pointsHolder.setCurrentStreak(currentStreak);
@@ -228,14 +260,14 @@ public class RageScores {
 		}
 	}
 
-	public static int takePoints(Player player, int points) {
+	/*public static int takePoints(Player player, int amount) {
 		// returns total points
 		String playerUUID = player.getUniqueId().toString();
 		if (playerpoints.containsKey(playerUUID)) {
 			PlayerPoints pointsHolder = getPlayerPoints(playerUUID);
 			int oldPoints = pointsHolder.getPoints();
 			int oldDeaths = pointsHolder.getDeaths();
-			int totalPoints = oldPoints > 0 ? (oldPoints - points) : 0;
+			int totalPoints = oldPoints > 0 ? (oldPoints - amount) : 0;
 			int totalDeaths = oldDeaths;
 
 			totalDeaths++;
@@ -243,12 +275,23 @@ public class RageScores {
 			pointsHolder.setPoints(totalPoints);
 			pointsHolder.setDeaths(totalDeaths);
 
-			player.sendMessage(RageMode.getLang().get("game.message.points-loss-for-suicide", "%amount%", totalPoints,
+			if (totalPoints < 0) {
+				player.sendMessage(RageMode.getLang().get("game.no-enough-points"));
+
+				// TODO Add reward for player suicide when not enough points
+				/*Reward reward = new Reward("suicide", PlayerList.getPlayersGame(player));
+				reward.rewardForPlayers(null);*/
+				/*return totalPoints;
+			}
+
+			player.sendMessage(RageMode.getLang().get("game.message.points-loss-for-suicide",
+					"%current%", totalPoints,
+					"%amount%", amount,
 					"%deaths%", totalDeaths));
 			return totalPoints;
 		}
-		return points;
-	}
+		return amount;
+	}*/
 
 	public static String calculateWinner(String game, String[] players) {
 		String highest = UUID.randomUUID().toString();

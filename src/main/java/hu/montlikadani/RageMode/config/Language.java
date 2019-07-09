@@ -65,7 +65,7 @@ public class Language {
 		l.get("not-a-number", "&e%number%&c is not a number.");
 		l.get("invalid-game", "&e%game%&4 is not a valid RageMode Map.");
 		l.get("player-non-existent", "&cThat player doesn't even exist.");
-		l.get("not-played-yet", "&cThat player hasn't played on this server yet.");
+		l.get("not-played-yet", "&cThat player&7 %player%&c hasn't played on this server yet.");
 
 		l.get("commands.listgames.listing-games", "&6Listing all available ragemode games... There are&a %games%&6 available.");
 		l.get("commands.listgames.no-games-available", "&cThere are currently no RageMode maps on this server.");
@@ -92,12 +92,18 @@ public class Language {
 		l.get("commands.togglegame.status.on", "&aON");
 		l.get("commands.togglegame.status.off", "&cOFF");
 		l.get("commands.join.game-locked", "&cThis game is locked, so you can not join.");
+		l.get("commands.join.empty-inventory.armor", "&cYou must empty your armor inventory to join the game.");
+		l.get("commands.join.empty-inventory.contents", "&cYou must empty your inventory contents to join the game.");
 		l.get("commands.points.player-not-found", "&cThe player name can not be null!");
 		l.get("commands.points.amount-not-less", "&cThe number must be greater than 0.");
 		l.get("commands.points.changed", "&2The player points has been changed:&e %amount%&2, new:&e %new%");
 		l.get("commands.points.player-is-in-game", "&cThis player&7 %player%&c is in game, so the points can not be modifiable while playing.");
-		l.get("commands.editspawn.not-valid-spawn-id", "&cGame spawn with id&e %id%&c is not a valid spawn.");
-		l.get("commands.editspawn.edit-success", "&2Spawn&e %number%&2 for the game&3 %game%&2 was modified successfully!");
+		l.get("commands.removespawn.not-valid-spawn-id", "&cGame spawn with id&e %id%&c is not a valid spawn.");
+		l.get("commands.removespawn.remove-success", "&cSpawn&e %number%&c for the game&3 %game%&c was removed successfully!");
+		l.get("commands.givesaveditems.not-enabled", "&cThis option is not enabled in the configuration file.");
+		l.get("commands.givesaveditems.player-not-found-in-data-file", "&cThis player&7 %player%&c not found in the data file.");
+		l.get("commands.givesaveditems.no-player-saved-inventory", "&cThere are no player found in the data file that have been saved their inventory.");
+		l.get("givesaveditems.player-is-in-game", "&cThis player&7 %player%&c is in game.");
 
 		String[] holoList = new String[] { "&6Rank:&a %rank%", "&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
 				"&5KD:&a %kd%", "&4Kills:&a %kills%", "&7Deaths:&a %deaths%" };
@@ -116,6 +122,7 @@ public class Language {
 		l.get("setup.success", "&2Success!");
 		l.get("setup.removed-non-existent-game", "&cDon't remove non-existent games!");
 		l.get("setup.success-removed", "&cThe game&e %game%&c was removed successfully.");
+		l.get("setup.set-game-time-success", "&aGame time successfully set for&e %game%&a game with&e %time% minutes&a.");
 
 		String[] statList = new String[] { "&e--------&2 %player%&e --------", "", "&6Knife kills/deaths:&a %knife-kills%&7/&6%knife-deaths%",
 				"&6Explosion kills/deaths:&a %explosion-kills%&7/&6%explosion-deaths%", "&6Axe kills/deaths:&a %axe-kills%&7/&6%axe-deaths%",
@@ -126,8 +133,8 @@ public class Language {
 		l.get("game.lobby.start-message", "&9This round will start in&e %time%&9 seconds.");
 		l.get("game.lobby.chat-is-disabled", "&cThe chat currently is disabled in lobby!");
 		l.get("game.spawns-not-set-properly", "&cOne or more spawns are not set properly!");
-		l.get("game.no-spawns-configured", "&cIn&e %game%&c are no spawns configured!");
 		l.get("game.too-few-spawns", "&4The number of spawns must be greater than or equal the maxplayers value!");
+		l.get("game.no-spawns-configured", "&cIn&e %game%&c are no spawns configured!");
 		l.get("game.player-could-not-join", "&e%player%&4 couldn't join the RageMode game&e %game%.");
 		l.get("game.game-stopped-for-reload", "&cThe game has stopped because we reloading the plugin and need to stop the game. Sorry!");
 		l.get("game.broadcast.axe-kill", "&a%victim%&3 was killed by&a %killer%&3 with a&6 CombatAxe&3.");
@@ -148,6 +155,7 @@ public class Language {
 		l.get("game.maxplayers-not-set", "&cThe maxplayers value for&e %game%&c is not set properly.");
 		l.get("game.worldname-not-set", "&4The world key can't be empty! Ask an Admin to check the config.yml.");
 		l.get("game.does-not-exist", "&cThe game you wish to join wasn't found.");
+		l.get("game.no-enough-points", "&cThere are not enough points to pay for your suicide.");
 		l.get("game.command-disabled-in-end-game", "&cAll commands are disabled at the end of the game. Endure!!");
 		l.get("game.this-command-is-disabled-in-game", "&cThis command is currently disabled.");
 		l.get("game.full", "&cThis Game is already full.");
@@ -168,7 +176,7 @@ public class Language {
 		l.get("game.message.knife-death", "&3You were killed by&6&l %killer%&3 with a RageKnife.&4&l %points%");
 		l.get("game.message.explosion-death", "&3You were killed by&6&l %killer%&3 by an explosion.&4&l %points%");
 		l.get("game.message.current-points", "&3You now have&6&l %points%&3 points.");
-		l.get("game.message.points-loss-for-suicide", "&cYou lost&6 %amount%&c points. Your current deaths number:&6 %deaths%");
+		l.get("game.message.points-loss-for-suicide", "&cYou lost&6 %amount%&c points. Your current points/deaths number:&6 %current%/%deaths%");
 		l.get("game.message.streak", "&6%number%&2 KILLSTREAK&6 %points%");
 		l.get("game.message.suicide", "&3You killed yourself you silly idiot.");
 		l.get("game.message.player-won", "&2%player%&d won the &6%game%&d game.");

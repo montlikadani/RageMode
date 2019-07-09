@@ -2,7 +2,7 @@
 # You can find all supported languages on: https://github.com/montlikadani/RageMode/wiki/Languages
 language: en
 
-# Statistic types: yaml, mysql (not tested)
+# Statistic types: yaml, mysql
 statistics: yaml
 
 # Logging console messages, such as error description
@@ -10,13 +10,26 @@ log-console: false
 
 # This saves the player datas, such as inventory, effects etc. to a file.
 # This can be useful for a random server shutdown.
-save-player-datas-to-file: true
+# If this false and "require-empty-inventory-to-join" also false then the players 
+# loses his items from inventory.
+# If this is false, we still need some data to save that will not cause any problems 
+# at the end of the game.
+save-player-datas-to-file: false
+
+# Require empty inventory to join to game?
+# If this false and "save-player-datas-to-file" also false then the players 
+# loses his items from inventory.
+require-empty-inventory-to-join: true
 
 # bStats metrics for sending some statistic.
 metrics: true
 
+# Hook into bungee
+# For server game join signs use:
+# https://www.spigotmc.org/resources/37446/
 bungee:
   enable: false
+  # Bungeecord server name when the game end and teleport players to this server.
   hub-name: "lobby"
 
 # MySQL database to save the players statistic.
@@ -28,6 +41,7 @@ MySQL:
   database: database
   host: localhost
   port: "3306"
+  table-prefix: rm_
   use-unicode: true
   verify-server-certificate: false
   character-encoding: "UTF-8"
@@ -45,6 +59,7 @@ signs:
     running: "&6&oRunning..."
     waiting: "&cWaiting..."
     full: "&4FULL"
+    locked: "&9Locked"
 
   # Sign text list (max. 4 line)
   # Use %game%, %current-players%, %max-players%, %running% placeholder.
@@ -162,16 +177,6 @@ game:
     # This ignores, when the boolean is contains in the arenas file.
     death-messages: true
 
-    # This prevents the creature spawning in that world.
-    prevent-spawn-mobs-radius: 16
-
-    # Removes arrows from player body.
-    remove-arrows-from-player-body: false
-
-    # How many points should a player lose if kills himself?
-    # If 0 ignoring the loss.
-    point-loss-for-suicide: 3
-
     # If this false if player has fallen to ground then not damage.
     damage-player-fall: false
 
@@ -179,6 +184,12 @@ game:
     # This makes the game more difficult, because if it is enabled, it hides the names of 
     # the players if the target player is not in the position of the other player's 10 radius eye.
     show-name-above-player-when-look: true
+
+    # When the game is over, the players will freeze (if the game mode is not in spectator),
+    # then if the time expires, it will be automatically returned to the set location.
+    # This ignores the winner player.
+    # Counting in seconds!
+    game-freeze-time-at-end-game: 10
 
     # Should be enable chat in the game?
     # This ignores with ragemode.bypass.game.lockchat permission.
@@ -188,7 +199,7 @@ game:
     defaults:
       # Bossbar messages when a player killed someone.
       # This ignores, when the boolean is contains in the arenas file.
-      bossbar: true
+      bossbar: false
 
       # Actionbar messages when a player get points or killed someone.
       # This ignores, when the boolean is contains in the arenas file.
@@ -204,13 +215,6 @@ game:
 
     # Enables the chat after end of game.
     enable-chat-after-end: true
-
-    # Arrow trail when you shoot the arrow.
-    # Effect will be cancelled when the arrow is dead or in ground.
-    arrow-trail:
-      enable: false
-      # Effect types: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html
-      effect-type: SMOKE_NORMAL
 
     # Tablist formatting.
     tablist:
@@ -262,12 +266,15 @@ game:
 rewards:
   enable: true
 
+# Points for killing or deaths.
 points:
   bowkill: 25
   axekill: 30
   axedeath: -50
   knifekill: 15
   explosionkill: 25
+  # If 0 ignoring the loss.
+  suicide: -20
 
 # Item editing (name, lore, slot)
 # Inventory positions here: http://redditpublic.com/images/b/b2/Items_slot_number.png
@@ -307,3 +314,6 @@ items:
     lore:
     - "&7Right click, throws a grenade and boom!"
     slot: 5
+
+# Do NOT edit this!!!
+config-version: 1.0

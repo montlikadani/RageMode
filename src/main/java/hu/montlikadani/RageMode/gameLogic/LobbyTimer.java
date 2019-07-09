@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.gameLogic;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -18,8 +17,6 @@ public class LobbyTimer extends TimerTask {
 	private String gameName;
 	private int time;
 
-	public static HashMap<String, TimerTask> map = new HashMap<>();
-
 	public LobbyTimer(String gameName, int time) {
 		this.gameName = gameName;
 		this.time = time;
@@ -35,14 +32,9 @@ public class LobbyTimer extends TimerTask {
 
 	public void loadTimer() {
 		GameUtils.setStatus(GameStatus.WAITING);
-		// Put the timer to map to cancel when use force start
-		if (map.containsKey(gameName)) {
-			cancel();
-			map.remove(gameName);
-		}
-		map.put(gameName, this);
 
-		new Timer().scheduleAtFixedRate(this, 0, 60 * 20L);
+		Timer timer = new Timer();
+		timer.scheduleAtFixedRate(this, 0, 60 * 20L);
 	}
 
 	@Override
@@ -101,7 +93,6 @@ public class LobbyTimer extends TimerTask {
 
 		if (time == 0) {
 			cancel();
-			map.remove(gameName);
 
 			RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 					() -> new GameLoader(gameName));

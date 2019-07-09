@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.gameUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,14 +52,12 @@ public class TabTitles {
 	}
 
 	/**
-	 * Returns the TabList element which was saved for the unique gameName
-	 * String with the addTabList method.
+	 * Returns the players who added to the list.
 	 * 
-	 * @param gameName The unique String key for which the TabList was saved.
-	 * @return The TabList element which was saved for the given String.
+	 * @return List player
 	 */
-	public TabTitles getTabList(String gameName) {
-		return allTabLists.containsKey(gameName) ? allTabLists.get(gameName) : null;
+	public List<Player> getPlayers() {
+		return player;
 	}
 
 	/**
@@ -85,25 +84,23 @@ public class TabTitles {
 		if (footer == null) footer = "";
 
 		try {
-			Object tabHeader = Utils.getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", new Class[] { String.class })
-					.invoke(null, new Object[] { "{\"text\":\"" + header + "\"}" });
-			Object tabFooter = Utils.getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", new Class[] { String.class })
-					.invoke(null, new Object[] { "{\"text\":\"" + footer + "\"}" });
+			Method method = Utils.getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", new Class[] { String.class });
+			Object tabHeader = method.invoke(null, new Object[] { "{\"text\":\"" + header + "\"}" });
+			Object tabFooter = method.invoke(null, new Object[] { "{\"text\":\"" + footer + "\"}" });
 			Constructor<?> titleConstructor = Utils.getNMSClass("PacketPlayOutPlayerListHeaderFooter").getConstructor(new Class[0]);
 			Object packet = titleConstructor.newInstance(new Object[0]);
 			Field aField = null;
 			Field bField = null;
 			if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
 				aField = packet.getClass().getDeclaredField("header");
-				aField.setAccessible(true);
-				aField.set(packet, tabHeader);
 				bField = packet.getClass().getDeclaredField("footer");
 			} else {
 				aField = packet.getClass().getDeclaredField("a");
-				aField.setAccessible(true);
-				aField.set(packet, tabHeader);
 				bField = packet.getClass().getDeclaredField("b");
 			}
+			aField.setAccessible(true);
+			aField.set(packet, tabHeader);
+
 			bField.setAccessible(true);
 			bField.set(packet, tabFooter);
 			Utils.sendPacket(player, packet);
@@ -130,5 +127,10 @@ public class TabTitles {
 	 */
 	public void removeTabList(Player player) {
 		sendTabTitle(player, null, null);
+
+		for (int i = 0; i < this.player.size(); i++) {
+			if (player.equals(this.player.get(i)))
+				this.player.remove(i);
+		}
 	}
 }

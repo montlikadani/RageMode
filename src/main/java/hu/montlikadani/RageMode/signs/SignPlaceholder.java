@@ -43,7 +43,9 @@ public class SignPlaceholder {
 				}
 				line = line.replace("%running%", PlayerList.isGameRunning(game)
 						? RageMode.getInstance().getConfiguration().getCfg().getString("signs.game.running")
-						: RageMode.getInstance().getConfiguration().getCfg().getString("signs.game.waiting"));
+						: GameUtils.getStatus() == GameStatus.NOTREADY ? RageMode.getInstance().getConfiguration()
+								.getCfg().getString("signs.game.locked")
+								: RageMode.getInstance().getConfiguration().getCfg().getString("signs.game.waiting"));
 			}
 
 			line = RageMode.getLang().colors(line);

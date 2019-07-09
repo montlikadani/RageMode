@@ -6,7 +6,6 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.GameLoader;
-import hu.montlikadani.ragemode.gameLogic.LobbyTimer;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
@@ -45,13 +44,9 @@ public class ForceStart extends RmCommand {
 			return false;
 		}
 
-		if (LobbyTimer.map.containsKey(game)) {
-			LobbyTimer.map.get(game).cancel();
-			LobbyTimer.map.remove(game);
-
-			// Set level back to 0
-			p.setLevel(0);
-		}
+		PlayerList.getLobbyTimer().cancel();
+		// Set level back to 0
+		p.setLevel(0);
 
 		new GameLoader(game);
 		sendMessage(p, RageMode.getLang().get("commands.forcestart.game-start", "%game%", game));

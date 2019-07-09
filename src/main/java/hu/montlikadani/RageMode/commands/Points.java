@@ -11,6 +11,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.RetPlayerPoints;
+import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 
 public class Points extends RmCommand {
@@ -21,7 +22,7 @@ public class Points extends RmCommand {
 
 	@Override
 	public boolean run(CommandSender sender, Command cmd, String[] args) {
-		if (!hasPerm(sender, "ragemode.admin.points")) {
+		if (sender instanceof Player && !hasPerm(sender, "ragemode.admin.points")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}
@@ -70,6 +71,11 @@ public class Points extends RmCommand {
 		}
 
 		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(target.getUniqueId().toString());
+		if (rpp == null) {
+			sendMessage(sender, RageMode.getLang().get("not-played-yet", "%player%", args[2]));
+			return false;
+		}
+
 		switch (action) {
 		case Set:
 			rpp.setPoints(amount);
@@ -81,12 +87,16 @@ public class Points extends RmCommand {
 			rpp.takePoints(amount);
 			break;
 		}
-		YAMLStats.getConf().set("data." + target.getUniqueId() + ".score", rpp.getPoints());
-		try {
-			YAMLStats.getConf().save(YAMLStats.getFile());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
+		if (YAMLStats.getFile() != null && YAMLStats.getFile().exists()) {
+			YAMLStats.getConf().set("data." + target.getUniqueId() + ".score", rpp.getPoints());
+			try {
+				YAMLStats.getConf().save(YAMLStats.getFile());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else
+			MySQLStats.addPlayerStatistics(rpp, RageMode.getMySQL());
 
 		sendMessage(sender, RageMode.getLang().get("commands.points.changed", "%amount%", amount, "%new%", rpp.getPoints()));
 		return false;

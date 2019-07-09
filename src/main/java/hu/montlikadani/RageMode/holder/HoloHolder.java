@@ -1,10 +1,12 @@
-package hu.montlikadani.ragemode.holo;
+package hu.montlikadani.ragemode.holder;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -77,12 +79,14 @@ public class HoloHolder {
 		if (RageMode.getInstance().getConfiguration().getCfg().getString("statistics").equals("mysql")) {
 			final Player mySQLPlayer = player;
 			final Hologram mySQLHologram = hologram;
+
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final RetPlayerPoints rpp;
 				if (RuntimeRPPManager.getRPPForPlayer(mySQLPlayer.getUniqueId().toString()) == null)
 					rpp = MySQLStats.getPlayerStatistics(mySQLPlayer.getUniqueId().toString(), RageMode.getMySQL());
 				else
 					rpp = RuntimeRPPManager.getRPPForPlayer(mySQLPlayer.getUniqueId().toString());
+
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 					if (rpp != null)
 						setHologramLines(mySQLHologram, rpp);
@@ -92,12 +96,14 @@ public class HoloHolder {
 		} else if (RageMode.getInstance().getConfiguration().getCfg().getString("statistics").equals("yaml")) {
 			final Player yamlPlayer = player;
 			final Hologram yamlHologram = hologram;
+
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final RetPlayerPoints rpp;
 				if (RuntimeRPPManager.getRPPForPlayer(yamlPlayer.getUniqueId().toString()) == null)
 					rpp = YAMLStats.getPlayerStatistics(yamlPlayer.getUniqueId().toString());
 				else
 					rpp = RuntimeRPPManager.getRPPForPlayer(yamlPlayer.getUniqueId().toString());
+
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 					if (rpp != null)
 						setHologramLines(yamlHologram, rpp);
@@ -110,11 +116,13 @@ public class HoloHolder {
 	private static void setHologramLines(Hologram hologram, RetPlayerPoints rpp) {
 		for (String hList : RageMode.getLang().getList("hologram-list")) {
 			if (rpp != null) {
+				NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
+
 				hList = hList.replace("%rank%", Integer.toString(rpp.getRank()));
 				hList = hList.replace("%points%", rpp.getPoints() + "");
 				hList = hList.replace("%wins%", rpp.getWins() + "");
 				hList = hList.replace("%games%", rpp.getGames() + "");
-				hList = hList.replace("%kd%", rpp.getKD() + "");
+				hList = hList.replace("%kd%", format.format(rpp.getKD()));
 				hList = hList.replace("%kills%", rpp.getKills() + "");
 				hList = hList.replace("%deaths%", rpp.getDeaths() + "");
 			} else {

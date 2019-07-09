@@ -215,7 +215,7 @@ public class YAMLStats {
 	}
 
 	/**
-	 * Reset the specified player uuid all datas
+	 * Restores all data of the specified player to 0
 	 * 
 	 * @param uuid UUID of player
 	 * @return true if the class inited and player found in database
@@ -247,14 +247,6 @@ public class YAMLStats {
 			rpp.setPoints(0);
 			rpp.setRank(0);
 			rpp.setWins(0);
-			statsConf.set("data." + uuid, null);
-
-			try {
-				statsConf.save(yamlStatsFile);
-			} catch (IOException e) {
-				e.printStackTrace();
-				RageMode.getInstance().throwMsg();
-			}
 		}
 		return true;
 	}

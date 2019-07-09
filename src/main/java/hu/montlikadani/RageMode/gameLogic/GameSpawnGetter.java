@@ -49,13 +49,19 @@ public class GameSpawnGetter {
 	}
 
 	public void randomSpawn(Player player) {
-		Random rand = new Random();
-		int x = rand.nextInt(spawnLocations.size() - 1);
-
 		if (!player.getGameMode().equals(GameMode.SPECTATOR))
 			player.setHealth(20);
 
-		player.teleport(spawnLocations.get(x));
+		if (spawnLocations.size() > 0) {
+			Random rand = new Random();
+			int x = rand.nextInt(spawnLocations.size());
+
+			player.teleport(spawnLocations.get(x));
+		}
+	}
+
+	public String getGameName() {
+		return gameName;
 	}
 
 	public boolean isGameReady() {

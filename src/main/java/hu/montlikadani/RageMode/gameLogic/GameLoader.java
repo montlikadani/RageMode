@@ -15,12 +15,14 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.GameStartEvent;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.ActionBar;
 import hu.montlikadani.ragemode.gameUtils.BossMessenger;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.items.CombatAxe;
 import hu.montlikadani.ragemode.items.Grenade;
 import hu.montlikadani.ragemode.items.RageArrow;
@@ -52,54 +54,53 @@ public class GameLoader {
 		int time = !conf.getArenasCfg().isSet("arenas." + gameName + ".gametime")
 				? conf.getCfg().getInt("game.global.defaults.gametime") < 0 ? 5 * 60
 						: conf.getCfg().getInt("game.global.defaults.gametime") * 60
-				: conf.getArenasCfg().getInt("arenas." + gameName + ".gametime") * 60;
+				: GetGames.getGameTime(gameName) * 60;
 
 		gameTimer = new GameTimer(gameName, time);
 		gameTimer.loadModules();
-		new Timer().scheduleAtFixedRate(gameTimer, 0, 60 * 20L);
+		Timer t = new Timer();
+		t.scheduleAtFixedRate(gameTimer, 0, 60 * 20L);
 
 		SignCreator.updateAllSigns(gameName);
 
 		List<String> players = Arrays.asList(PlayerList.getPlayersInGame(gameName));
-		Player p = null;
 		for (String player : players) {
-			p = Bukkit.getPlayer(UUID.fromString(player));
-		}
+			Player p = Bukkit.getPlayer(UUID.fromString(player));
 
-		// Try to gets the player from list
-		if (p == null)
-			p = Bukkit.getPlayer(UUID.fromString(players.get(players.size() - 1)));
+			if (Version.isCurrentEqualOrHigher(Version.v1_9_R1)) {
+				String bossMessage = conf.getCfg().getString("bossbar-messages.join.message");
 
-		String bossMessage = conf.getCfg().getString("bossbar-messages.join.message");
-		if (bossMessage != null && !bossMessage.equals("")) {
-			bossMessage = bossMessage.replace("%game%", gameName);
-			bossMessage = bossMessage.replace("%player%", p.getName());
-			bossMessage = RageMode.getLang().colors(bossMessage);
+				if (bossMessage != null && !bossMessage.equals("")) {
+					bossMessage = bossMessage.replace("%game%", gameName);
+					bossMessage = bossMessage.replace("%player%", p.getName());
+					bossMessage = RageMode.getLang().colors(bossMessage);
 
-			if (conf.getArenasCfg().isSet("arenas." + gameName + ".bossbar")) {
-				if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".bossbar"))
-					new BossMessenger(gameName).sendBossBar(bossMessage, p,
-							BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")),
-							BarColor.valueOf(conf.getCfg().getString("bossbar-messages.join.color")));
-			} else {
-				if (conf.getCfg().getBoolean("game.global.defaults.bossbar"))
-					new BossMessenger(gameName).sendBossBar(bossMessage, p,
-							BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")),
-							BarColor.valueOf(conf.getCfg().getString("bossbar-messages.join.color")));
+					if (conf.getArenasCfg().isSet("arenas." + gameName + ".bossbar")) {
+						if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".bossbar"))
+							new BossMessenger(gameName).sendBossBar(bossMessage, p,
+									BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")),
+									BarColor.valueOf(conf.getCfg().getString("bossbar-messages.join.color")));
+					} else {
+						if (conf.getCfg().getBoolean("game.global.defaults.bossbar"))
+							new BossMessenger(gameName).sendBossBar(bossMessage, p,
+									BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")),
+									BarColor.valueOf(conf.getCfg().getString("bossbar-messages.join.color")));
+					}
+				}
 			}
-		}
 
-		String actionbarMsg = conf.getCfg().getString("actionbar-messages.join.message");
-		if (actionbarMsg != null && !actionbarMsg.equals("")) {
-			actionbarMsg = actionbarMsg.replace("%game%", gameName);
-			actionbarMsg = actionbarMsg.replace("%player%", p.getName());
-			actionbarMsg = RageMode.getLang().colors(actionbarMsg);
+			String actionbarMsg = conf.getCfg().getString("actionbar-messages.join.message");
+			if (actionbarMsg != null && !actionbarMsg.equals("")) {
+				actionbarMsg = actionbarMsg.replace("%game%", gameName);
+				actionbarMsg = actionbarMsg.replace("%player%", p.getName());
+				actionbarMsg = RageMode.getLang().colors(actionbarMsg);
 
-			if (conf.getArenasCfg().isSet("arenas." + gameName + ".actionbar")) {
-				if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".actionbar"))
+				if (conf.getArenasCfg().isSet("arenas." + gameName + ".actionbar")) {
+					if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".actionbar"))
+						ActionBar.sendActionBar(p, actionbarMsg);
+				} else if (conf.getCfg().getBoolean("game.global.defaults.actionbar"))
 					ActionBar.sendActionBar(p, actionbarMsg);
-			} else if (conf.getCfg().getBoolean("game.global.defaults.actionbar"))
-				ActionBar.sendActionBar(p, actionbarMsg);
+			}
 		}
 	}
 

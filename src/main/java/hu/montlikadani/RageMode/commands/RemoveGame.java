@@ -20,11 +20,13 @@ public class RemoveGame extends RmCommand {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return false;
 		}
+
 		Player p = (Player) sender;
 		if (!hasPerm(p, "ragemode.admin.removegame")) {
 			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return false;
 		}
+
 		if (args.length >= 2) {
 			String game = args[1];
 			if (!GameUtils.isGameWithNameExists(game)) {
@@ -38,6 +40,10 @@ public class RemoveGame extends RmCommand {
 				GameDeleteEvent event = new GameDeleteEvent(game);
 				Bukkit.getPluginManager().callEvent(event);
 
+				for (int x = 0; x < plugin.getSpawns().size(); x++) {
+					if (plugin.getSpawns().get(x).getGameName().equalsIgnoreCase(game))
+						plugin.getSpawns().remove(x);
+				}
 				PlayerList.deleteGameFromList(game);
 
 				plugin.getConfiguration().getArenasCfg().set("arenas." + game, null);

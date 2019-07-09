@@ -34,8 +34,10 @@ public class ToggleGame extends RmCommand {
 			if (GameUtils.getStatus() == GameStatus.NOTREADY) {
 				GameUtils.setStatus(GameStatus.READY);
 				toggle = false;
-			} else
+			} else {
 				GameUtils.setStatus(GameStatus.NOTREADY);
+				PlayerList.setGameNotRunning(args[1]);
+			}
 
 			plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".lock", toggle);
 			try {

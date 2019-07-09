@@ -6,16 +6,19 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
-import hu.montlikadani.ragemode.holo.HoloHolder;
+import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.items.ForceStarter;
 import hu.montlikadani.ragemode.items.LeaveGame;
 import hu.montlikadani.ragemode.signs.SignCreator;
@@ -72,7 +75,7 @@ public class GameUtils {
 	 * @param game Game
 	 * @return Player
 	 */
-	public static Player getPlayerGame(String game) {
+	public static Player getPlayerInGame(String game) {
 		String[] players = PlayerList.getPlayersInGame(game);
 		Player player = null;
 		if (players != null) {
@@ -90,8 +93,22 @@ public class GameUtils {
 	}
 
 	/**
+	 * Get the game spawn by name.
+	 * 
+	 * @param name Game name
+	 * @return GameSpawnGetter
+	 */
+	public static GameSpawnGetter getGameSpawnByName(String name) {
+		for (GameSpawnGetter gsg : RageMode.getInstance().getSpawns()) {
+			if (gsg.getGameName().equalsIgnoreCase(name))
+				return gsg;
+		}
+		return null;
+	}
+
+	/**
 	 * Saves the player data to a yaml file
-	 * <br>
+	 * <p>
 	 * This prevents losing the player data when the server has stopped randomly.
 	 * 
 	 * @param p Player
@@ -171,24 +188,7 @@ public class GameUtils {
 			}
 		}
 
-		inv.clear();
-		p.setGameMode(GameMode.SURVIVAL);
-		p.setHealth(20);
-		p.setFoodLevel(20);
-		p.setFireTicks(0);
-		p.setExp(0);
-		p.setLevel(0);
-		if (p.isInsideVehicle())
-			p.leaveVehicle();
-		for (PotionEffect e : p.getActivePotionEffects()) {
-			p.removePotionEffect(e.getType());
-		}
-		inv.setHelmet(null);
-		inv.setChestplate(null);
-		inv.setLeggings(null);
-		inv.setBoots(null);
-		p.setDisplayName(p.getName());
-		p.setPlayerListName(p.getName());
+		clearPlayerTools(p);
 	}
 
 	/**
@@ -198,7 +198,6 @@ public class GameUtils {
 	 * 
 	 * @param p Player
 	 * @param game GameName
-	 * @return message if occur error
 	 */
 	public static void joinPlayer(Player p, String game) {
 		PlayerInventory inv = p.getInventory();
@@ -208,11 +207,12 @@ public class GameUtils {
 			if (conf.getCfg().getBoolean("spectator.enable")) {
 				if (!PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
 					if (PlayerList.addSpectatorPlayer(p)) {
-						GameSpawnGetter gameSpawnGetter = new GameSpawnGetter(game);
-						gameSpawnGetter.randomSpawn(p);
+						getGameSpawnByName(game).randomSpawn(p);
+
 						p.setAllowFlight(true);
 						p.setFlying(true);
 						p.setGameMode(GameMode.SPECTATOR);
+
 						if (conf.getCfg().contains("items.leavegameitem"))
 							inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getItem());
 					}
@@ -221,11 +221,39 @@ public class GameUtils {
 			} else
 				p.sendMessage(RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
 		} else {
+			if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+				p.sendMessage(RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
+				return;
+			}
+
 			MapChecker mapChecker = new MapChecker(game);
 			if (mapChecker.isValid()) {
-				if (PlayerList.addPlayer(p, game)) {
-					GameUtils.savePlayerData(p);
+				if (conf.getCfg().getBoolean("require-empty-inventory-to-join")) {
+					for (ItemStack armor : inv.getArmorContents()) {
+						if (armor != null && !armor.getType().equals(Material.AIR)) {
+							p.sendMessage(RageMode.getLang().get("commands.join.empty-inventory.armor"));
+							return;
+						}
+					}
 
+					for (ItemStack content : inv.getContents()) {
+						if (content != null && !content.getType().equals(Material.AIR)) {
+							p.sendMessage(RageMode.getLang().get("commands.join.empty-inventory.contents"));
+							return;
+						}
+					}
+				} else if (conf.getCfg().getBoolean("save-player-datas-to-file"))
+					savePlayerData(p);
+				else {
+					clearPlayerTools(p);
+
+					// We still need some data saving
+					PlayerList.oldLocations.addToBoth(p, p.getLocation());
+					PlayerList.oldGameMode.addToBoth(p, p.getGameMode());
+					p.setGameMode(GameMode.SURVIVAL);
+				}
+
+				if (PlayerList.addPlayer(p, game)) {
 					p.teleport(GetGameLobby.getLobbyLocation(game));
 
 					if (conf.getCfg().contains("items.leavegameitem"))
@@ -234,7 +262,7 @@ public class GameUtils {
 					if (conf.getCfg().contains("items.force-start") && p.hasPermission("ragemode.admin.item.forcestart"))
 						inv.setItem(conf.getCfg().getInt("items.force-start.slot"), ForceStarter.getItem());
 
-					GameUtils.broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
+					broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
 
 					String title = conf.getCfg().getString("titles.join-game.title");
 					String subtitle = conf.getCfg().getString("titles.join-game.subtitle");
@@ -253,11 +281,11 @@ public class GameUtils {
 	}
 
 	/**
-	 * Leaves the specified player from game.
+	 * Kicks the specified player from the game and server.
 	 * 
 	 * @param p Player
 	 */
-	public static void leavePlayer(Player p) {
+	public static void kickPlayer(Player p) {
 		// Just removes the spec player
 		PlayerList.removeSpectatorPlayer(p);
 
@@ -277,6 +305,23 @@ public class GameUtils {
 			}
 		}
 		HoloHolder.deleteHoloObjectsOfPlayer(p);
+	}
+
+	private static void clearPlayerTools(Player p) {
+		Utils.clearPlayerInventory(p);
+		p.setGameMode(GameMode.SURVIVAL);
+		p.setHealth(20);
+		p.setFoodLevel(20);
+		p.setFireTicks(0);
+		p.setExp(0);
+		p.setLevel(0);
+		if (p.isInsideVehicle())
+			p.leaveVehicle();
+		for (PotionEffect e : p.getActivePotionEffects()) {
+			p.removePotionEffect(e.getType());
+		}
+		p.setDisplayName(p.getName());
+		p.setPlayerListName(p.getName());
 	}
 
 	/**

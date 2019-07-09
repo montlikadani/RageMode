@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.GameCreateEvent;
 import hu.montlikadani.ragemode.events.BungeeListener;
+import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
@@ -53,6 +54,8 @@ public class AddGame extends RmCommand {
 			plugin.getManager().registerEvents(new BungeeListener(game), plugin);
 
 		new PlayerList();
+
+		plugin.getSpawns().add(new GameSpawnGetter(game));
 
 		GameCreateEvent event = new GameCreateEvent(game);
 		Bukkit.getPluginManager().callEvent(event);

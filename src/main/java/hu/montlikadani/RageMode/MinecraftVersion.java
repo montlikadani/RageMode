@@ -65,6 +65,10 @@ public class MinecraftVersion {
 			return getValue() > version.getValue();
 		}
 
+		public boolean isEqual(Version version) {
+			return getValue() == version.getValue();
+		}
+
 		public boolean isEqualOrLower(Version version) {
 			return getValue() <= version.getValue();
 		}
@@ -87,6 +91,10 @@ public class MinecraftVersion {
 
 		public static boolean isCurrentEqualOrLower(Version v) {
 			return getCurrent().getValue() <= v.getValue();
+		}
+
+		public static boolean isCurrentEqual(Version v) {
+			return getCurrent().getValue() == v.getValue();
 		}
 	}
 }

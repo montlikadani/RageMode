@@ -1,9 +1,9 @@
 package hu.montlikadani.ragemode.gameUtils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -18,7 +18,7 @@ import hu.montlikadani.ragemode.holder.ScoreBoardHolder;
 public class ScoreBoard {
 
 	public static HashMap<String, ScoreBoard> allScoreBoards = new HashMap<>();
-	private List<Player> player = new ArrayList<>();
+	private List<Player> player = new CopyOnWriteArrayList<>();
 	private ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
 	private HashMap<Player, ScoreBoardHolder> scoreboards = new HashMap<>();
 
@@ -34,7 +34,7 @@ public class ScoreBoard {
 		for (Player loopPlayer : player) {
 			Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
 			scoreboard.clearSlot(DisplaySlot.SIDEBAR);
-			removeScoreBoard(loopPlayer);
+			removeScoreBoard(loopPlayer, false);
 
 			Objective objective = scoreboard.registerNewObjective("ragescores", "dummy");
 			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
@@ -55,9 +55,13 @@ public class ScoreBoard {
 		for (String player : playerString) {
 			this.player.add(Bukkit.getPlayer(UUID.fromString(player)));
 		}
-		for (Player loopPlayer : player) {
+
+		// Iterator is not work in this, so throws an error
+		// Probably some issues with Java
+		for (Player loopPlayer : this.player) {
 			Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
 			scoreboard.clearSlot(DisplaySlot.SIDEBAR);
+			removeScoreBoard(loopPlayer, false);
 
 			Objective objective = scoreboard.registerNewObjective("ragescores", "dummy");
 			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
@@ -68,7 +72,7 @@ public class ScoreBoard {
 	/**
 	 * Sets the title for the created ScoreBoard.
 	 * 
-	 * @param title The String, the title should be set to.
+	 * @param title The String, where the title should be set to.
 	 */
 	public void setTitle(String title) {
 		for (Player player : this.player) {
@@ -128,17 +132,36 @@ public class ScoreBoard {
 	 */
 	public void removeScoreBoard() {
 		for (Player player : this.player) {
-			removeScoreBoard(player);
+			removeScoreBoard(player, false);
 		}
 	}
 
 	/**
-	 * Removes the ScoreBoard for the given Player.
-	 * 
+	 * Removes the ScoreBoard and the player who exist in the list for the given Player.
 	 * @param player The Player instance for which the ScoreBoard should be removed.
+	 * @param rem if true removes the exists player from the list.
 	 */
-	public void removeScoreBoard(Player player) {
+	public void removeScoreBoard(Player player, boolean rem) {
 		player.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+		scoreboards.remove(player);
+
+		if (rem) {
+			for (int i = 0; i < this.player.size(); i++) {
+				if (player.equals(this.player.get(i)))
+					this.player.remove(i);
+			}
+		}
+	}
+
+	/**
+	 * Removes the player from the stored list.
+	 * @param pl Player
+	 */
+	public void removePlayer(Player pl) {
+		for (int i = 0; i < this.player.size(); i++) {
+			if (pl.equals(this.player.get(i)))
+				this.player.remove(i);
+		}
 	}
 
 	/**
@@ -170,17 +193,11 @@ public class ScoreBoard {
 	}
 
 	/**
-	 * @deprecated
-	 * Returns the ScoreBoard element which was saved for the unique gameName
-	 * String with the addToScoreBoards method.
+	 * Returns the players who added to the list.
 	 * 
-	 * @param gameName The unique String key for which the ScoreBoard was saved.
-	 * @return The ScoreBoard element which was saved for the given String.
+	 * @return List player
 	 */
-	public ScoreBoard getScoreBoard(String gameName) {
-		if (allScoreBoards.containsKey(gameName))
-			return allScoreBoards.get(gameName);
-		else
-			return null;
+	public List<Player> getPlayers() {
+		return player;
 	}
 }
