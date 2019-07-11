@@ -83,7 +83,7 @@ public class HoloHolder {
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final RetPlayerPoints rpp;
 				if (RuntimeRPPManager.getRPPForPlayer(mySQLPlayer.getUniqueId().toString()) == null)
-					rpp = MySQLStats.getPlayerStatistics(mySQLPlayer.getUniqueId().toString(), RageMode.getMySQL());
+					rpp = MySQLStats.getPlayerStatistics(mySQLPlayer.getUniqueId().toString());
 				else
 					rpp = RuntimeRPPManager.getRPPForPlayer(mySQLPlayer.getUniqueId().toString());
 

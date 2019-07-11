@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.gameUtils;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -298,6 +299,7 @@ public class GameUtils {
 				if (list != null && !list.isEmpty()) {
 					for (String cmds : list) {
 						cmds = cmds.replace("%player%", p.getName());
+						// For ipban
 						cmds = cmds.replace("%player-ip%", p.getAddress().getAddress().getHostAddress());
 						Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), RageMode.getLang().colors(cmds));
 					}
@@ -322,6 +324,41 @@ public class GameUtils {
 		}
 		p.setDisplayName(p.getName());
 		p.setPlayerListName(p.getName());
+	}
+
+	/**
+	 * Run commands in game, when the player doing something in game
+	 * such as it died, joining, starting game, stopping game.
+	 * @param game Game name
+	 * @param cmdType Command type, such as death, join or other
+	 */
+	public static void runCommands(String game, String cmdType) {
+		List<String> list = RageMode.getInstance().getConfiguration().getRewardsCfg()
+				.getStringList("rewards.in-game.run-commands");
+
+		if (list != null && !list.isEmpty()) {
+			for (String cmd : list) {
+				if (cmd.split(":").length < 3) {
+					RageMode.logConsole(Level.WARNING, "In the rewards file the in-game commands the split length longer than 3.");
+					continue;
+				}
+
+				String type = cmd.split(":")[0];
+				Player p = getPlayerInGame(game);
+
+				if (type.equals(cmdType)) {
+					String consoleOrPlayer = cmd.split(":")[1];
+					cmd = cmd.split(":")[2].replace("%world%", p.getWorld().getName())
+							.replace("%game%", game)
+							.replace("%player%", p.getName());
+
+					if (consoleOrPlayer.equals("console"))
+						Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+					else if (consoleOrPlayer.equals("player"))
+						p.performCommand(cmd);
+				}
+			}
+		}
 	}
 
 	/**

@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Arrow;
@@ -18,6 +19,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Snowball;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -406,6 +408,8 @@ public class EventListener implements Listener {
 					}
 				}*/
 
+				GameUtils.runCommands(game, "death");
+
 				event.setDroppedExp(0);
 				event.setDeathMessage("");
 				event.setKeepInventory(true);
@@ -606,8 +610,6 @@ public class EventListener implements Listener {
 		Player p = event.getPlayer();
 
 		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
-			//TODO Cancel redstone activating blocks
-
 			if (GameUtils.getStatus() == GameStatus.RUNNING) {
 				Player thrower = event.getPlayer();
 				if (waitingGames.containsKey(PlayerList.getPlayersGame(thrower))) {
@@ -686,17 +688,73 @@ public class EventListener implements Listener {
 					|| type == InventoryType.CHEST
 					|| type == InventoryType.DROPPER
 					|| type == InventoryType.ENDER_CHEST
-					|| type == InventoryType.HOPPER)
+					|| type == InventoryType.HOPPER
+					|| type == InventoryType.BEACON)
 				e.setCancelled(true);
 		}
 	}
 
 	@EventHandler
-	public void onCropsTrampled(PlayerInteractEvent ev) {
-		if (PlayerList.isPlayerPlaying(ev.getPlayer().getUniqueId().toString()) && ev.getAction() == Action.PHYSICAL) {
-			if (ev.getClickedBlock() != null && ev.getClickedBlock().getType() == Material.FARMLAND) {
-				ev.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
-				ev.setCancelled(true);
+	public void onInteractRedstone(PlayerInteractEvent ev) {
+		if (PlayerList.isPlayerPlaying(ev.getPlayer().getUniqueId().toString())) {
+			if (ev.getClickedBlock() != null) {
+				Material t = ev.getClickedBlock().getType();
+
+				if (ev.getAction() == Action.PHYSICAL) {
+					if (t == Material.FARMLAND) {
+						ev.setUseInteractedBlock(Event.Result.DENY);
+						ev.setCancelled(true);
+					} else if (plugin.getConfiguration().getCfg().getBoolean("game.global.cancel-redstone-activating-blocks")
+							&& GameUtils.getStatus() == GameStatus.RUNNING || GameUtils.getStatus() == GameStatus.GAMEFREEZE) {
+						if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
+							if (Tag.WOODEN_PRESSURE_PLATES.isTagged(t)) {
+								ev.setUseInteractedBlock(Event.Result.DENY);
+								ev.setCancelled(true);
+							}
+						}
+
+						if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
+							if (t.equals(Material.OAK_PRESSURE_PLATE) || t.equals(Material.STONE_PRESSURE_PLATE)) {
+								ev.setUseInteractedBlock(Event.Result.DENY);
+								ev.setCancelled(true);
+							}
+						}
+
+						if (t.equals(Material.STONE_PRESSURE_PLATE) || t.equals(Material.HEAVY_WEIGHTED_PRESSURE_PLATE)
+								|| t.equals(Material.LIGHT_WEIGHTED_PRESSURE_PLATE)) {
+							ev.setUseInteractedBlock(Event.Result.DENY);
+							ev.setCancelled(true);
+						}
+					}
+				} else if (plugin.getConfiguration().getCfg().getBoolean("game.global.cancel-redstone-activating-blocks")
+						&& ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
+					if (GameUtils.getStatus() == GameStatus.RUNNING || GameUtils.getStatus() == GameStatus.GAMEFREEZE) {
+						if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
+							if (Tag.TRAPDOORS.isTagged(t) || Tag.BUTTONS.isTagged(t) || Tag.WOODEN_BUTTONS.isTagged(t)
+									|| Tag.WOODEN_TRAPDOORS.isTagged(t)) {
+									ev.setUseInteractedBlock(Event.Result.DENY);
+									ev.setCancelled(true);
+								}
+						}
+
+						if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
+							if (t.equals(Material.valueOf("WOOD_BUTTON")) || t.equals(Material.valueOf("TRAP_DOOR"))
+									|| t.equals(Material.valueOf("STONE_BUTTON"))
+									|| t.equals(Material.valueOf("REDSTONE_COMPARATOR"))
+									|| t.equals(Material.valueOf("REDSTONE_COMPARATOR_ON"))
+									|| t.equals(Material.valueOf("REDSTONE_COMPARATOR_OFF"))) {
+								ev.setUseInteractedBlock(Event.Result.DENY);
+								ev.setCancelled(true);
+							}
+						}
+
+						if (t.equals(Material.LEVER) || t.equals(Material.COMPARATOR) || t.equals(Material.REPEATER)
+								|| t.equals(Material.DAYLIGHT_DETECTOR)) {
+							ev.setUseInteractedBlock(Event.Result.DENY);
+							ev.setCancelled(true);
+						}
+					}
+				}
 			}
 		}
 	}

@@ -3,7 +3,6 @@ package hu.montlikadani.ragemode.database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.logging.Level;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -46,10 +45,8 @@ public class MySQLConnect {
 	public void createDefaultTable() {
 		try {
 			if (isConnected()) {
-				Statement statement = null;
 				String query = "CREATE TABLE IF NOT EXISTS `" + prefix + "stats_players` (`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY , name VARCHAR(255) , uuid VARCHAR(255) , kills INT(11) , axe_kills INT(11) , direct_arrow_kills INT(11) , explosion_kills INT(11) , knife_kills INT(11) , deaths INT(11) , axe_deaths INT(11) , direct_arrow_deaths INT(11) , explosion_deaths INT(11) , knife_deaths INT(11) , wins INT(11) , score INT(11) , games INT(11) , kd DOUBLE, UNIQUE(uuid));";
-				statement = connection.createStatement();
-				statement.executeUpdate(query);
+				connection.createStatement().executeUpdate(query);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

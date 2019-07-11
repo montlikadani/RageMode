@@ -19,6 +19,14 @@ import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 public class MySQLStats {
 
 	/**
+	 * {@link #addPlayerStatistics(PlayerPoints, MySQLConnect)}
+	 * @param playerPoints PlayerPoints
+	 */
+	public static void addPlayerStatistics(PlayerPoints playerPoints) {
+		addPlayerStatistics(playerPoints, RageMode.getMySQL());
+	}
+
+	/**
 	 * Adds the statistics from the given PlayerPoints instance to the database
 	 * connection from the given MySQLConnect instance.
 	 * 
@@ -70,6 +78,7 @@ public class MySQLStats {
 				oldScore = rs.getInt("score");
 				oldGames = rs.getInt("games");
 			}
+			rs.close();
 		} catch (SQLException e) {
 			RageMode.logConsole("[RageMode] " + Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID()))
 					+ " has no statistics yet! Creating one special row for him...");
@@ -115,6 +124,22 @@ public class MySQLStats {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+
+		if (statement != null) {
+			try {
+				statement.close();
+			} catch (SQLException s) {
+				s.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * Gets the {@link #getPlayerStatistics(String, MySQLConnect)}
+	 * @param playerUUID Player uuid
+	 */
+	public static RetPlayerPoints getPlayerStatistics(String playerUUID) {
+		return getPlayerStatistics(playerUUID, RageMode.getMySQL());
 	}
 
 	/**
@@ -172,6 +197,7 @@ public class MySQLStats {
 				currentGames = rs.getInt("games");
 				currentKD = rs.getDouble("kd");
 			}
+			rs.close();
 		} catch (SQLException e) {
 			return null;
 		}
@@ -282,6 +308,7 @@ public class MySQLStats {
 
 				rppList.add(retPlayerPoints);
 			}
+			rs.close();
 		} catch (SQLException e) {
 			return null;
 		}
@@ -335,6 +362,7 @@ public class MySQLStats {
 				rpp.setGames(0);
 				rpp.setKD(0d);
 			}
+			rs.close();
 		} catch (SQLException e) {
 			return false;
 		}

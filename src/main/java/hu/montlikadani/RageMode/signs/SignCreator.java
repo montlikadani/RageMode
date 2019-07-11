@@ -1,8 +1,8 @@
 package hu.montlikadani.ragemode.signs;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -17,7 +17,7 @@ public class SignCreator {
 	private static YamlConfiguration fileConf;
 	private static SignPlaceholder signPlaceholder = null;
 
-	private static List<SignData> signData = new ArrayList<>();
+	private static List<SignData> signData = new CopyOnWriteArrayList<>();
 
 	public synchronized static boolean loadSigns() {
 		fileConf = SignConfiguration.getSignConfig();

@@ -38,7 +38,7 @@ public class RageScores {
 				if (!MySQLStats.getAllPlayerStatistics().isEmpty()) {
 					RetPlayerPoints rpp;
 					if (RuntimeRPPManager.getRPPForPlayer(pl.getUniqueId().toString()) == null)
-						rpp = MySQLStats.getPlayerStatistics(pl.getUniqueId().toString(), RageMode.getMySQL());
+						rpp = MySQLStats.getPlayerStatistics(pl.getUniqueId().toString());
 					else
 						rpp = RuntimeRPPManager.getRPPForPlayer(pl.getUniqueId().toString());
 
@@ -221,12 +221,8 @@ public class RageScores {
 			}
 			longestStreak = (currentStreak > pointsHolder.getLongestStreak()) ? currentStreak : pointsHolder.getLongestStreak();
 
-			if (totalPoints < 0) {
+			if (points > 0 && totalPoints < 0) {
 				player.sendMessage(RageMode.getLang().get("game.no-enough-points"));
-
-				// TODO Add reward for player suicide when not enough points
-				/*Reward reward = new Reward("suicide", PlayerList.getPlayersGame(player));
-				reward.rewardForPlayers(null);*/
 			} else {
 				pointsHolder.setPoints(totalPoints);
 			}

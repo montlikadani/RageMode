@@ -15,7 +15,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.google.common.base.StandardSystemProperty;
 
-import hu.montlikadani.ragemode.metrics.Metrics;
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.commands.AddGame;
 import hu.montlikadani.ragemode.commands.AddSpawn;
@@ -57,6 +56,7 @@ import hu.montlikadani.ragemode.gameUtils.BungeeUtils;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.holder.HoloHolder;
+import hu.montlikadani.ragemode.metrics.Metrics;
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignConfiguration;

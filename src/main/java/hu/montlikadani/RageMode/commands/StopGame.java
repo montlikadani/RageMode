@@ -226,6 +226,16 @@ public class StopGame extends RmCommand {
 			GameUtils.broadcastToGame(game, RageMode.getLang().get("game.stopped", "%game%", game));
 			PlayerList.setGameNotRunning(game);
 			SignCreator.updateAllSigns(game);
+			if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game-stop.restart-server")) {
+				try {
+					Class.forName("org.spigotmc.SpigotConfig");
+
+					Bukkit.spigot().restart();
+				} catch (ClassNotFoundException e) {
+					Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "restart");
+				}
+			} else if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game-stop.stop-server"))
+				Bukkit.shutdown();
 		}
 	}
 

@@ -115,21 +115,6 @@ public class Reward {
 				if (item != null && conf.isConfigurationSection("rewards.end-game.players.items"))
 					getItems("players", player);
 				break;
-			/*case "suicide":
-				List<PotionEffect> effects = new ArrayList<>();
-				List<String> list = conf.getStringList("rewards.suicide.potion-effects");
-				if (list != null && !list.isEmpty()) {
-					for (String s : list) {
-						String[] effect = s.split("\\:");
-						try {
-							effects.add(new PotionEffect(PotionEffectType.getByName(effect[0].toUpperCase()),
-									Integer.parseInt(effect[2]) * 20, (Integer.parseInt(effect[1])) - 1));
-						} catch (IllegalArgumentException e) {
-							RageMode.logConsole(Level.WARNING, "Unknown potion effect type: " + e.getMessage());
-						}
-					}
-					player.addPotionEffects(effects);
-				}*/
 			default:
 				break;
 			}

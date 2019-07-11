@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.gameLogic;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
@@ -33,7 +32,6 @@ import hu.montlikadani.ragemode.signs.SignCreator;
 public class GameLoader {
 
 	private String gameName;
-	private List<Location> gameSpawns = new ArrayList<>();
 
 	private Configuration conf;
 	private GameTimer gameTimer;
@@ -105,9 +103,8 @@ public class GameLoader {
 	}
 
 	private void checkTeleport() {
-		GameSpawnGetter gameSpawnGetter = new GameSpawnGetter(gameName);
+		GameSpawnGetter gameSpawnGetter = GameUtils.getGameSpawnByName(gameName);
 		if (gameSpawnGetter.isGameReady()) {
-			gameSpawns = gameSpawnGetter.getSpawnLocations();
 			teleportPlayersToGameSpawns();
 		} else {
 			GameUtils.broadcastToGame(gameName, RageMode.getLang().get("game.not-set-up"));
@@ -123,7 +120,7 @@ public class GameLoader {
 		String[] players = PlayerList.getPlayersInGame(gameName);
 		for (int i = 0; i < players.length; i++) {
 			Player player = Bukkit.getPlayer(UUID.fromString(players[i]));
-			Location location = gameSpawns.get(i);
+			Location location = GameUtils.getGameSpawnByName(gameName).getSpawnLocations().get(i);
 			player.teleport(location);
 		}
 	}

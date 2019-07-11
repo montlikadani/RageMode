@@ -3,9 +3,7 @@ package hu.montlikadani.ragemode.gameLogic;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -43,6 +41,7 @@ public class LobbyTimer extends TimerTask {
 			cancel();
 			return;
 		}
+
 		String[] playersInGame = PlayerList.getPlayersInGame(gameName);
 		org.bukkit.configuration.file.YamlConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
 		if (playersInGame.length < conf.getInt("game.global.lobby.min-players-to-start-lobby-timer")) {
@@ -50,7 +49,7 @@ public class LobbyTimer extends TimerTask {
 			return;
 		}
 
-		Player player = Bukkit.getPlayer(UUID.fromString(playersInGame[playersInGame.length - 1]));
+		Player player = GameUtils.getPlayerInGame(gameName);
 
 		List<Integer> values = conf.getIntegerList("game.global.lobby.values-to-send-start-message");
 		if (values != null && !values.isEmpty()) {

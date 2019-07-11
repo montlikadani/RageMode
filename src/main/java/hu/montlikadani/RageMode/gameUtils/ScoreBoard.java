@@ -1,5 +1,6 @@
 package hu.montlikadani.ragemode.gameUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -198,6 +199,6 @@ public class ScoreBoard {
 	 * @return List player
 	 */
 	public List<Player> getPlayers() {
-		return player;
+		return Collections.unmodifiableList(player);
 	}
 }
