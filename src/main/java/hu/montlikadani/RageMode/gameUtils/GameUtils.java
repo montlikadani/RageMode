@@ -257,6 +257,8 @@ public class GameUtils {
 				if (PlayerList.addPlayer(p, game)) {
 					p.teleport(GetGameLobby.getLobbyLocation(game));
 
+					runCommands(game, "join");
+
 					if (conf.getCfg().contains("items.leavegameitem"))
 						inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getItem());
 

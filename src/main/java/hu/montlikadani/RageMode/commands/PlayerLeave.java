@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class PlayerLeave extends RmCommand {
 
@@ -20,6 +21,7 @@ public class PlayerLeave extends RmCommand {
 			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return false;
 		}
+		GameUtils.runCommands(PlayerList.getPlayersGame(p), "leave");
 		PlayerList.removePlayer(p);
 		PlayerList.removeSpectatorPlayer(p);
 		return false;

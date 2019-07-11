@@ -48,9 +48,7 @@ public class HoloHolder {
 			RageMode.getInstance().throwMsg();
 		}
 
-		for (Player player : Bukkit.getOnlinePlayers()) {
-			displayHoloToPlayer(player, loc);
-		}
+		Bukkit.getOnlinePlayers().forEach(player -> displayHoloToPlayer(player, loc));
 	}
 
 	public static void loadHolos() {
@@ -61,9 +59,13 @@ public class HoloHolder {
 		for (Hologram holo : holos) {
 			holo.delete();
 		}
-		for (Player player : Bukkit.getOnlinePlayers()) {
-			showAllHolosToPlayer(player);
+
+		List<Location> loc = (List<Location>) holosConf.get("data.holos");
+		for (Location l : loc) {
+			HoloHolder.holos.add(l);
 		}
+
+		Bukkit.getOnlinePlayers().forEach(player -> showAllHolosToPlayer(player));
 	}
 
 	public static void displayHoloToPlayer(Player player, Location loc) {

@@ -225,6 +225,7 @@ public class StopGame extends RmCommand {
 
 			GameUtils.broadcastToGame(game, RageMode.getLang().get("game.stopped", "%game%", game));
 			PlayerList.setGameNotRunning(game);
+			GameUtils.runCommands(game, "stop");
 			SignCreator.updateAllSigns(game);
 			if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game-stop.restart-server")) {
 				try {

@@ -252,12 +252,19 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 					cmds.add(com);
 				}
 			} else if (args.length < 3) {
-				for (int i = 0; i < getGameListCmds().size(); i++) {
-					if (args[0].equalsIgnoreCase(getGameListCmds().get(i))) {
-						for (String scmd : GetGames.getGameNames()) {
-							cmds.add(scmd);
+				if (args[0].equalsIgnoreCase("holostats")) {
+					for (String hcmd : Arrays.asList("add", "remove", "tp")) {
+						cmds.add(hcmd);
+					}
+					partOfCommand = args[1];
+				} else {
+					for (int i = 0; i < getGameListCmds().size(); i++) {
+						if (args[0].equalsIgnoreCase(getGameListCmds().get(i))) {
+							for (String scmd : GetGames.getGameNames()) {
+								cmds.add(scmd);
+							}
+							partOfCommand = args[1];
 						}
-						partOfCommand = args[1];
 					}
 				}
 			} else if (args.length < 4) {

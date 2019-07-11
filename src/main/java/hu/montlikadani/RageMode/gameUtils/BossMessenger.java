@@ -1,14 +1,11 @@
 package hu.montlikadani.ragemode.gameUtils;
 
-import java.util.logging.Level;
-
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 
@@ -25,11 +22,6 @@ public class BossMessenger {
 	}
 
 	public void sendBossBar(String message, Player p, BarStyle style, BarColor color) {
-		if (Version.isCurrentEqualOrLower(Version.v1_8_R3)) {
-			RageMode.logConsole(Level.WARNING, "[RageMode] Your server version does not support for Bossbar. Only 1.9+");
-			return;
-		}
-
 		final BossBar boss = Bukkit.createBossBar(message == null ? "" : message, color != null ? color : BarColor.BLUE,
 				style != null ? style : BarStyle.SOLID);
 		boss.removePlayer(p);

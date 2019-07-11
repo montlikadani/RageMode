@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -59,6 +60,7 @@ public class GameLoader {
 		Timer t = new Timer();
 		t.scheduleAtFixedRate(gameTimer, 0, 60 * 20L);
 
+		GameUtils.runCommands(gameName, "start");
 		SignCreator.updateAllSigns(gameName);
 
 		List<String> players = Arrays.asList(PlayerList.getPlayersInGame(gameName));
@@ -85,6 +87,8 @@ public class GameLoader {
 									BarColor.valueOf(conf.getCfg().getString("bossbar-messages.join.color")));
 					}
 				}
+			} else {
+				RageMode.logConsole(Level.WARNING, "[RageMode] Your server version does not support for Bossbar. Only 1.9+");
 			}
 
 			String actionbarMsg = conf.getCfg().getString("actionbar-messages.join.message");

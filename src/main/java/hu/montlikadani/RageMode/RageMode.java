@@ -158,6 +158,8 @@ public class RageMode extends JavaPlugin {
 				Bukkit.getScheduler().runTaskLater(this, sign, 40L);
 			}
 
+			Bukkit.getOnlinePlayers().forEach(p -> HoloHolder.showAllHolosToPlayer(p));
+
 			if (conf.getArenasCfg().contains("arenas")) {
 				for (String game : GetGames.getGameNames()) {
 					if (game != null) {

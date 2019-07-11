@@ -270,7 +270,8 @@ public class Language {
 		File localeFolder = new File(plugin.getFolder(), "locale");
 		File file = null;
 		for (String l : this.lang) {
-			file = new File(localeFolder, "locale_" + l + ".yml");
+			if (l.equals(plugin.getConfiguration().getCfg().getString("language")))
+				file = new File(localeFolder, "locale_" + l + ".yml");
 		}
 
 		return file != null ? file : null;
