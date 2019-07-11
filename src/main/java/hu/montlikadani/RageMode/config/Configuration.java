@@ -13,7 +13,7 @@ public class Configuration {
 	private YamlConfiguration config, arenas, rewards, datas;
 	private File config_file, arenas_file, rewards_file, datas_file;
 
-	private double configVersion = 1.0;
+	private double configVersion = 1.1;
 
 	public Configuration(RageMode plugin) {
 		this.plugin = plugin;

@@ -185,6 +185,9 @@ game:
     # the players if the target player is not in the position of the other player's 10 radius eye.
     show-name-above-player-when-look: true
 
+    # Cancel all redstone activating blocks, such as lever, comparator, pressure plate, etc.?
+    cancel-redstone-activating-blocks: true
+
     # When the game is over, the players will freeze (if the game mode is not in spectator),
     # then if the time expires, it will be automatically returned to the set location.
     # This ignores the winner player.
@@ -261,6 +264,12 @@ game:
     run-commands-for-player-left-while-playing:
     #- "tell %player% &cWhy you left from the game while playing?"
 
+# Stop the server or restart at the end of the game?
+game-stop:
+  # This supports the Spigot restart script
+  restart-server: false
+  stop-server: false
+
 # Grant rewards at end of game.
 # Rewards can be found in the rewards.yml file.
 rewards:
@@ -316,4 +325,4 @@ items:
     slot: 5
 
 # Do NOT edit this!!!
-config-version: 1.0
+config-version: 1.1

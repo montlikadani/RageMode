@@ -37,3 +37,7 @@ rewards:
         granite:
           type: STONE
           amount: 5
+  in-game:
+    run-commands:
+    - "death:console:msg %player% &aNext time do not die :)"
+    - "join:console:msg %player% &aWe wish you a good game!"
