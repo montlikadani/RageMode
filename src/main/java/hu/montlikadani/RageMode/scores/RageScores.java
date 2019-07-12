@@ -149,6 +149,18 @@ public class RageScores {
 
 				killer.sendMessage(RageMode.getLang().get("game.message.current-points", "%points%", Integer.toString(totalPoints)));
 				break;
+			case "grenade":
+				int grenadePoints = RageMode.getInstance().getConfiguration().getCfg().getInt("points.grenadekill");
+				totalPoints = addPoints(killer, grenadePoints, true);
+				addPoints(victim, 0, false);
+
+				killer.sendMessage(RageMode.getLang().get("game.message.grenade-kill", "%victim%", victim.getName(), "%points%",
+						"+" + Integer.toString(grenadePoints)));
+
+				victim.sendMessage(RageMode.getLang().get("game.message.grenade-death", "%killer%", killer.getName(), "%points%", ""));
+
+				killer.sendMessage(RageMode.getLang().get("game.message.current-points", "%points%", Integer.toString(totalPoints)));
+				break;
 			default:
 				break;
 			}

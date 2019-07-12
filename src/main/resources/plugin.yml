@@ -49,6 +49,7 @@ permissions:
       ragemode.admin.togglegame: true
       ragemode.admin.points: true
       ragemode.admin.givesaveditems: true
+      ragemode.admin.latestart: true
   ragemode.vip:
     description: Gives access to the VIP functions.
     default: false

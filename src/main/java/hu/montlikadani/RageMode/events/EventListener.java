@@ -53,6 +53,7 @@ import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
@@ -209,10 +210,20 @@ public class EventListener implements Listener {
 					}
 				}
 			} else if (event.getEntity() instanceof Snowball && event.getHitEntity() instanceof Player) {
-				((Player) event.getHitEntity()).setLastDamage(0.0f);
-				((Player) event.getHitEntity()).damage(25d);
-			} else if (event.getEntity() instanceof org.bukkit.entity.Egg && event.getHitEntity() instanceof Player)
-				((Player) event.getHitEntity()).damage(2.20d);
+				Player p = (Player) event.getHitEntity();
+
+				p.removeMetadata("snowballKill", plugin);
+				p.setMetadata("snowballKill", new FixedMetadataValue(plugin, "snowball"));
+
+				p.damage(25d);
+			} else if (event.getEntity() instanceof org.bukkit.entity.Egg && event.getHitEntity() instanceof Player) {
+				Player p = (Player) event.getHitEntity();
+
+				p.removeMetadata("grenadeKill", plugin);
+				p.setMetadata("grenadeKill", new FixedMetadataValue(plugin, "grenade"));
+
+				p.damage(2.20d);
+			}
 		}
 	}
 
@@ -241,6 +252,8 @@ public class EventListener implements Listener {
 							if (meta.getDisplayName().equals(RageKnife.getName()))
 								event.setDamage(25);
 						}
+
+						victim.removeMetadata("grenadeKill", plugin);
 					}
 				}
 			}
@@ -268,6 +281,8 @@ public class EventListener implements Listener {
 								return;
 							}
 						}
+
+						victim.removeMetadata("grenadeKill", plugin);
 
 						if (e instanceof Projectile) {
 							if (e instanceof Arrow && e.getCustomName().equals(RageArrow.getName()))
@@ -313,6 +328,7 @@ public class EventListener implements Listener {
 			deceased = null;
 			return;
 		}
+
 		if (deceased != null && PlayerList.isPlayerPlaying(deceased.getUniqueId().toString()) && GameUtils.getStatus() == GameStatus.RUNNING) {
 			String game = PlayerList.getPlayersGame(deceased);
 
@@ -331,7 +347,8 @@ public class EventListener implements Listener {
 				String deceaseName = deceased.getName();
 				DamageCause cause = deceased.getLastDamageCause().getCause();
 
-				if (deceased.getLastDamage() == 0.0f && cause.equals(DamageCause.CUSTOM)) {
+				if (deceased.getMetadata("snowballKill") != null && !deceased.getMetadata("snowballKill").isEmpty()
+						&& deceased.getMetadata("snowballKill").get(0).asString().equals("snowball")) {
 					if (deceased.getKiller() == null) {
 						if (doDeathBroadcast)
 							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.axe-kill", "%victim%", deceaseName,
@@ -345,6 +362,25 @@ public class EventListener implements Listener {
 
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "combataxe");
 					}
+
+					deceased.removeMetadata("snowballKill", plugin);
+				} else if (deceased.getMetadata("grenadeKill") != null && !deceased.getMetadata("grenadeKill").isEmpty()
+						&& deceased.getMetadata("grenadeKill").get(0).asString().equals("grenade")) {
+					if (deceased.getKiller() == null) {
+						if (doDeathBroadcast)
+							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.grenade-kill", "%victim%", deceaseName,
+									"%killer%", deceased.getName()));
+
+						RageScores.addPointsToPlayer(deceased, deceased, "grenade");
+					} else {
+						if (doDeathBroadcast)
+							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.grenade-kill", "%victim%", deceaseName,
+									"%killer%", deceased.getKiller().getName()));
+
+						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "grenade");
+					}
+
+					deceased.removeMetadata("grenadeKill", plugin);
 				} else if (cause.equals(DamageCause.PROJECTILE)) {
 					if (deceased.getKiller() == null) {
 						if (doDeathBroadcast)
@@ -449,8 +485,6 @@ public class EventListener implements Listener {
 	public void onBlockPlace(BlockPlaceEvent ev) {
 		if (PlayerList.isPlayerPlaying(ev.getPlayer().getUniqueId().toString()))
 			ev.setCancelled(true);
-
-		//TODO Fix server crash: AssertionError: Trap, when placing the lever
 	}
 
 	@EventHandler(priority = EventPriority.NORMAL)
@@ -654,7 +688,9 @@ public class EventListener implements Listener {
 							PlayerList.removeSpectatorPlayer(p);
 						}
 					}
-				}
+					event.setCancelled(true);
+				} else if (GameUtils.getStatus() != GameStatus.WAITING && GameUtils.getStatus() != GameStatus.RUNNING)
+					event.setCancelled(true); // Fix AssertionError: TRAP server crash
 			}
 		}
 
@@ -689,7 +725,8 @@ public class EventListener implements Listener {
 					|| type == InventoryType.DROPPER
 					|| type == InventoryType.ENDER_CHEST
 					|| type == InventoryType.HOPPER
-					|| type == InventoryType.BEACON)
+					|| type == InventoryType.BEACON
+					|| type == InventoryType.STONECUTTER)
 				e.setCancelled(true);
 		}
 	}

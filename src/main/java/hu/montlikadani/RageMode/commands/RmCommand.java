@@ -52,6 +52,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 		arg.put("togglegame", ToggleGame.class.getName());
 		arg.put("givesaveditems", GiveSavedItems.class.getName());
 		arg.put("removespawn", RemoveSpawn.class.getName());
+		arg.put("latestart", LateStart.class.getName());
 
 		//TODO add aliases
 		/*aliases.add("holo");
@@ -164,6 +165,9 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 
 					if (hasPerm(sender, "ragemode.admin.givesaveditems"))
 						msg += "&7-&6 /rm givesaveditems <player>&a - Returns the saved inventory to the player.\n";
+
+					if (hasPerm(sender, "ragemode.admin.latestart"))
+						msg += "&7-&6 /rm latestart <timeInSeconds>&a - Increases the current lobby waiting time.";
 				}
 				if (hasPerm(sender, "ragemode.admin.kick"))
 					msg += "&7-&6 /rm kick <gameName> <player>&a - Kick a player from the game.";
@@ -194,8 +198,20 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 
 						try {
 							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
-						} catch (NoSuchMethodException e2) {
+						} catch (NoSuchMethodException e3) {
 							paramTypes = new Class<?>[] { CommandSender.class, Command.class };
+						}
+
+						try {
+							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
+						} catch (NoSuchMethodException e4) {
+							paramTypes = new Class<?>[] { RageMode.class, CommandSender.class };
+						}
+
+						try {
+							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
+						} catch (NoSuchMethodException e5) {
+							paramTypes = new Class<?>[] { CommandSender.class };
 						}
 
 						if (printMethod == null)
@@ -212,15 +228,29 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 						try {
 							printMethod.invoke(run, arguments);
 							return true;
-						} catch (IllegalArgumentException e3) {
+						} catch (IllegalArgumentException e4) {
 							arguments = new Object[] { sender, cmd, args };
 						}
 
 						try {
 							printMethod.invoke(run, arguments);
 							return true;
-						} catch (IllegalArgumentException e4) {
+						} catch (IllegalArgumentException e5) {
 							arguments = new Object[] { sender, cmd };
+						}
+
+						try {
+							printMethod.invoke(run, arguments);
+							return true;
+						} catch (IllegalArgumentException e6) {
+							arguments = new Object[] { RageMode.getInstance(), sender };
+						}
+
+						try {
+							printMethod.invoke(run, arguments);
+							return true;
+						} catch (IllegalArgumentException e7) {
+							arguments = new Object[] { sender };
 						}
 						printMethod.invoke(run, arguments);
 					} catch (Throwable t) {
@@ -296,7 +326,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 	private List<String> getAdminCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
 		for (String cmds : new String[] { "addgame", "addspawn", "setlobby", "reload", "holostats", "removegame", "resetstats", "forcestart",
-				"kick", "stopgame", "signupdate", "togglegame", "points", "givesaveditems", "removespawn" }) {
+				"kick", "stopgame", "signupdate", "togglegame", "points", "givesaveditems", "removespawn", "latestart" }) {
 			if (!hasPerm(sender, "ragemode.admin." + cmds))
 				continue;
 			c.add(cmds);
@@ -332,6 +362,14 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 	public void sendMessage(CommandSender sender, String msg) {
 		if (sender != null && msg != null && !msg.equals(""))
 			sender.sendMessage(msg);
+	}
+
+	public boolean run(CommandSender sender) {
+		return false;
+	}
+
+	public boolean run(RageMode plugin, CommandSender sender) {
+		return false;
 	}
 
 	public boolean run(CommandSender sender, Command cmd) {

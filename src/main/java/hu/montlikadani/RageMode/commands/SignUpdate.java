@@ -11,7 +11,7 @@ public class SignUpdate extends RmCommand {
 
 	@Override
 	public boolean run(CommandSender sender, Command cmd, String[] args) {
-		if (!hasPerm(sender, "ragemode.admin.signupdate")) {
+		if (sender instanceof org.bukkit.entity.Player && !hasPerm(sender, "ragemode.admin.signupdate")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}
@@ -24,10 +24,14 @@ public class SignUpdate extends RmCommand {
 		}
 
 		String name = null;
-		if (args[1].equalsIgnoreCase("all"))
-			name = GetGames.getGameNames()[GetGames.getConfigGamesCount() - 1];
-		else {
+		if (args[1].equalsIgnoreCase("all")) {
+			for (String game : GetGames.getGameNames()) {
+				if (game != null)
+					name = game;
+			}
+		} else {
 			name = args[1];
+
 			if (!GetGames.isGameExistent(name)) {
 				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", name));
 				return false;

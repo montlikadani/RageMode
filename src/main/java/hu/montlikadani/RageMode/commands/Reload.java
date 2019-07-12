@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.commands;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -14,14 +13,16 @@ import hu.montlikadani.ragemode.signs.SignCreator;
 public class Reload extends RmCommand {
 
 	@Override
-	public boolean run(RageMode plugin, CommandSender sender, Command cmd) {
-		if (!hasPerm(sender, "ragemode.admin.reload")) {
+	public boolean run(RageMode plugin, CommandSender sender) {
+		if (sender instanceof org.bukkit.entity.Player && !hasPerm(sender, "ragemode.admin.reload")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}
-		String game = GetGames.getGameNames()[GetGames.getConfigGamesCount() - 1];
-		if (PlayerList.isGameRunning(game))
-			GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
+
+		for (String game : GetGames.getGameNames()) {
+			if (game != null && PlayerList.isGameRunning(game))
+				GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
+		}
 
 		StopGame.stopAllGames();
 
@@ -33,7 +34,10 @@ public class Reload extends RmCommand {
 
 		plugin.loadListeners();
 
-		SignCreator.updateAllSigns(game);
+		for (String game : GetGames.getGameNames()) {
+			if (game != null)
+				SignCreator.updateAllSigns(game);
+		}
 
 		if (plugin.isHologramEnabled())
 			HoloHolder.initHoloHolder();

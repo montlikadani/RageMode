@@ -62,6 +62,10 @@ commands:
     player-not-found-in-data-file: "&cEz a játékos&7 %player%&c nem található az adat fájlban."
     no-player-saved-inventory: "&cNincs egy játékos sem az adat fájlban, akinek el van mentve az eszköztára."
     player-is-in-game: "&cEz a játékos&7 %player%&c játékban."
+  latestart:
+    player-not-in-lobby: "&cNem vagy a lobbyban, hogy növeld az időt."
+    time-can-not-less: "&cAz idő nem lehet kevesebb 1-nél."
+    lobby-timer-increased: "&aA lobby idő növelve&e %newtime%&a másodperccel."
 
 hologram-list:
 - "&6Rank:&a %rank%"
@@ -119,6 +123,7 @@ game:
     arrow-kill: "&a%victim%&3 megölve&6 közvetlen nyíl találattal&a %killer%&3-tól/től."
     knife-kill: "&a%victim%&3 megölve&a %killer%&3 által&6 RageKnife&3 fegyverrel."
     explosion-kill: "&a%victim%&6 felrobbant&a %killer%&3 által."
+    grenade-kill: "&a%victim%&3 megölve&a %killer%&3 a&7 Grenade&3 fegyverrel. LOL"
     error-kill: "&cHoppá, ez nem kellett volna, hogy megtörténjen..."
   unknown-killer: "&cTe tudod ki ölt meg? Mert mi nem tudjuk..."
   unknown-weapon: "&a%victim%&3 megölve valami miatt váratlanul."
@@ -129,7 +134,7 @@ game:
   not-running: "&cEz a játék nem fut."
   chat-is-disabled: "&cA chat jelenleg letiltva!"
   game-freeze:
-    chat-is-disabled: "&ca chat jelenleg letiltva!"
+    chat-is-disabled: "&cA chat jelenleg letiltva!"
   name-or-maxplayers-not-set: "&4A világnév vagy a max. játékosok nincs beállítva. Lépj kapcsolatba egy Adminnal további információért."
   maxplayers-not-set: "&cA max. játékosok értéke&e %game%&c nincs beállítva megfelelően."
   worldname-not-set: "&4A világ kulcs nem lehet üres! Kérdezz meg egy Admin-t, hogy nézze meg a config-ot."
@@ -151,10 +156,12 @@ game:
     axe-kill: "&3Megölted&6&l %victim%&3 a CombatAxe fegyvereddel.&6&l %points%"
     knife-kill: "&3Megölted&6&l %victim%&3 a RageKnife fegyvereddel.&6&l %points%"
     explosion-kill: "&3Megölted&6&l %victim%&3 RageBow fegyverrel súlyos robbanásokat okozva.&6&l %points%"
+    grenade-kill: "&3Megölted&6&l %victim%&3 a Grenade fegyverrel.&6&l %points%"
     arrow-death: "&6&l%killer%&3 megölt téged közvetlen nyíl találattal.&4&l %points%"
     axe-death: "&6&l%killer%&3 megölt a CombatAxe fegyverével.&4&l %points%"
     knife-death: "&6&l%killer%&3 megölt a RageKnife fegyverével.&4&l %points%"
     explosion-death: "&6&l%killer%&3 megölt robbanással.&4&l %points%"
+    grenade-death: "&6&l %killer%&3 megölt a Grenade fegyverrel.&4&l %points%&7, HOW?"
     current-points: "&3Most van neked&6&l %points%&3 pontod."
     points-loss-for-suicide: "&cVeszítettél&6 %amount%&c pontot. Jelenlegi pontod/halálod száma:&6 %current%/%deaths%"
     streak: "&6%number%&2 KILLSTREAK&6 %points%"

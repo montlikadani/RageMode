@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.commands;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -10,11 +9,12 @@ import hu.montlikadani.ragemode.gameUtils.GetGames;
 public class ListGames extends RmCommand {
 
 	@Override
-	public boolean run(CommandSender sender, Command cmd) {
-		if (!hasPerm(sender, "ragemode.listgames")) {
+	public boolean run(CommandSender sender) {
+		if (sender instanceof org.bukkit.entity.Player && !hasPerm(sender, "ragemode.listgames")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}
+
 		if (GetGames.getConfigGamesCount() > 0) {
 			if (GetGames.getGameNames() != null) {
 				String[] games = GetGames.getGameNames();

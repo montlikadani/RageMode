@@ -24,6 +24,14 @@ public class LobbyTimer extends TimerTask {
 		return gameName;
 	}
 
+	public void setLobbyTime(int time) {
+		this.time = time;
+	}
+
+	public void addLobbyTime(int newTime) {
+		time += newTime;
+	}
+
 	public int getLobbyTime() {
 		return time;
 	}

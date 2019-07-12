@@ -107,7 +107,10 @@ public class Language {
 		l.get("commands.givesaveditems.not-enabled", "&cThis option is not enabled in the configuration file.");
 		l.get("commands.givesaveditems.player-not-found-in-data-file", "&cThis player&7 %player%&c not found in the data file.");
 		l.get("commands.givesaveditems.no-player-saved-inventory", "&cThere are no player found in the data file that have been saved their inventory.");
-		l.get("givesaveditems.player-is-in-game", "&cThis player&7 %player%&c is in game.");
+		l.get("commands.givesaveditems.player-is-in-game", "&cThis player&7 %player%&c is in game.");
+		l.get("commands.latestart.player-not-in-lobby", "&cYou are not in the lobby to increase the time.");
+		l.get("commands.latestart.time-can-not-less", "&cTime should not be less than 1.");
+		l.get("commands.latestart.lobby-timer-increased", "&aThe lobby time is increased by&e %newtime%&a seconds.");
 
 		String[] holoList = new String[] { "&6Rank:&a %rank%", "&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
 				"&5KD:&a %kd%", "&4Kills:&a %kills%", "&7Deaths:&a %deaths%" };
@@ -145,6 +148,7 @@ public class Language {
 		l.get("game.broadcast.arrow-kill", "&a%victim%&3 was killed by a&6 direct arrow hit&3 from&a %killer%&3.");
 		l.get("game.broadcast.knife-kill", "&a%victim%&3 was killed by&a %killer%&3 with a&6 RageKnife&3.");
 		l.get("game.broadcast.explosion-kill", "&a%victim%&3 was&6 blown up&3 by&a %killer%&3.");
+		l.get("game.broadcast.grenade-kill", "&a%victim%&3 was killed by&a %killer%&3 with a&7 Grenade&3. LOL");
 		l.get("game.broadcast.error-kill", "&cWhoops, that shouldn't happen normally...");
 		l.get("game.unknown-killer", "&cDo you know who killed you? Because we don't know it...");
 		l.get("game.unknown-weapon", "&a%victim%&3 was killed by something unexpected.");
@@ -175,10 +179,12 @@ public class Language {
 		l.get("game.message.axe-kill", "&3You killed&6&l %victim%&3 with your CombatAxe.&6&l %points%");
 		l.get("game.message.knife-kill", "&3You killed&6&l %victim%&3 with your RageKnife.&6&l %points%");
 		l.get("game.message.explosion-kill", "&3You killed&6&l %victim%&3 by causing heavy explosions with your RageBow.&6&l %points%");
+		l.get("game.message.grenade-kill", "&3You killed&6&l %victim%&3 with your Grenade.&6&l %points%");
 		l.get("game.message.arrow-death", "&3You were killed by&6&l %killer%&3 with a direct arrow hit.&4&l %points%");
 		l.get("game.message.axe-death", "&3You were killed by&6&l %killer%&3 with a CombatAxe.&4&l %points%");
 		l.get("game.message.knife-death", "&3You were killed by&6&l %killer%&3 with a RageKnife.&4&l %points%");
 		l.get("game.message.explosion-death", "&3You were killed by&6&l %killer%&3 by an explosion.&4&l %points%");
+		l.get("game.message.grenade-death", "&3You were killed by&6&l %killer%&3 with a Grenade.&4&l %points%&7, HOW?");
 		l.get("game.message.current-points", "&3You now have&6&l %points%&3 points.");
 		l.get("game.message.points-loss-for-suicide", "&cYou lost&6 %amount%&c points. Your current points/deaths number:&6 %current%/%deaths%");
 		l.get("game.message.streak", "&6%number%&2 KILLSTREAK&6 %points%");

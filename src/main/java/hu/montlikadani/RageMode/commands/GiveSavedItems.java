@@ -18,7 +18,7 @@ public class GiveSavedItems extends RmCommand {
 
 	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
 		if (!plugin.getConfiguration().getCfg().getBoolean("save-player-datas-to-file")) {
-			sendMessage(sender, RageMode.getLang().get("givesaveditems.not-enabled"));
+			sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.not-enabled"));
 			return false;
 		}
 
@@ -39,13 +39,13 @@ public class GiveSavedItems extends RmCommand {
 		}
 
 		if (PlayerList.isPlayerPlaying(target.getUniqueId().toString())) {
-			sendMessage(sender, RageMode.getLang().get("givesaveditems.player-is-in-game", "%player%", args[1]));
+			sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.player-is-in-game", "%player%", args[1]));
 			return false;
 		}
 
 		YamlConfiguration datas = plugin.getConfiguration().getDatasCfg();
 		if (datas.getString("datas." + args[1]) == null) {
-			sendMessage(sender, RageMode.getLang().get("givesaveditems.player-not-found-in-data-file", "%player%", args[1]));
+			sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.player-not-found-in-data-file", "%player%", args[1]));
 			return false;
 		}
 
@@ -65,7 +65,7 @@ public class GiveSavedItems extends RmCommand {
 				target.setLevel(datas.getInt("datas." + names + ".level"));
 				target.setGameMode(GameMode.valueOf(datas.getString("datas." + names + ".game-mode")));
 			} else if (datas.getConfigurationSection("datas").getKeys(false).isEmpty())
-				sendMessage(sender, RageMode.getLang().get("givesaveditems.no-player-saved-inventory"));
+				sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.no-player-saved-inventory"));
 		}
 		return false;
 	}
