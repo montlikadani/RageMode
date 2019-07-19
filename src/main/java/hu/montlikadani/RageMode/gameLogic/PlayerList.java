@@ -407,8 +407,7 @@ public class PlayerList {
 						removePlayerSynced(player);
 
 						GameLeaveAttemptEvent gameLeaveEvent = new GameLeaveAttemptEvent(player, PlayerList.getPlayersGame(player));
-						Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-								() -> Bukkit.getPluginManager().callEvent(gameLeaveEvent));
+						Bukkit.getPluginManager().callEvent(gameLeaveEvent);
 						if (gameLeaveEvent.isCancelled())
 							return false;
 

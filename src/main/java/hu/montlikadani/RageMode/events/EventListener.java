@@ -54,6 +54,7 @@ import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
@@ -204,25 +205,14 @@ public class EventListener implements Listener {
 									}
 								}
 								explosionVictims.put(near.getUniqueId(), shooter.getUniqueId());
+
+								near.removeMetadata("killedWith", plugin);
+								near.setMetadata("killedWith", new FixedMetadataValue(plugin, "bow"));
 							}
 							i++;
 						}
 					}
 				}
-			} else if (event.getEntity() instanceof Snowball && event.getHitEntity() instanceof Player) {
-				Player p = (Player) event.getHitEntity();
-
-				p.removeMetadata("snowballKill", plugin);
-				p.setMetadata("snowballKill", new FixedMetadataValue(plugin, "snowball"));
-
-				p.damage(25d);
-			} else if (event.getEntity() instanceof org.bukkit.entity.Egg && event.getHitEntity() instanceof Player) {
-				Player p = (Player) event.getHitEntity();
-
-				p.removeMetadata("grenadeKill", plugin);
-				p.setMetadata("grenadeKill", new FixedMetadataValue(plugin, "grenade"));
-
-				p.damage(2.20d);
 			}
 		}
 	}
@@ -232,8 +222,8 @@ public class EventListener implements Listener {
 		if (event.getEntity() instanceof Player) {
 			Player victim = (Player) event.getEntity();
 
-			// RageKnife hit event
 			if (GameUtils.getStatus() == GameStatus.RUNNING) {
+				// RageKnife hit event
 				if (event.getDamager() instanceof Player) {
 					Player killer = (Player) event.getDamager();
 
@@ -252,9 +242,15 @@ public class EventListener implements Listener {
 							if (meta.getDisplayName().equals(RageKnife.getName()))
 								event.setDamage(25);
 						}
-
-						victim.removeMetadata("grenadeKill", plugin);
 					}
+				} else if (event.getDamager() instanceof org.bukkit.entity.Egg) {
+					event.setDamage(2.20d);
+
+					victim.setMetadata("killedWith", new FixedMetadataValue(plugin, "grenade"));
+				} else if (event.getDamager() instanceof Snowball) {
+					event.setDamage(25d);
+
+					victim.setMetadata("killedWith", new FixedMetadataValue(plugin, "snowball"));
 				}
 			}
 
@@ -281,8 +277,6 @@ public class EventListener implements Listener {
 								return;
 							}
 						}
-
-						victim.removeMetadata("grenadeKill", plugin);
 
 						if (e instanceof Projectile) {
 							if (e instanceof Arrow && e.getCustomName().equals(RageArrow.getName()))
@@ -343,57 +337,67 @@ public class EventListener implements Listener {
 				}
 
 				String deceaseName = deceased.getName();
+				List<MetadataValue> data = deceased.getMetadata("killedWith");
+
+				if (data != null && !data.isEmpty()) {
+					switch (data.get(0).asString()) {
+					case "bow":
+						if (deceased.getKiller() == null) {
+							if (doDeathBroadcast)
+								GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.arrow-kill", "%victim%",
+										deceaseName, "%killer%", deceaseName));
+
+							RageScores.addPointsToPlayer(deceased, deceased, "ragebow");
+						} else {
+							if (doDeathBroadcast)
+								GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.arrow-kill", "%victim%",
+										deceaseName, "%killer%", deceased.getKiller().getName()));
+
+							RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "ragebow");
+						}
+
+						break;
+					case "snowball":
+						if (deceased.getKiller() == null) {
+							if (doDeathBroadcast)
+								GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.axe-kill", "%victim%",
+										deceaseName, "%killer%", deceased.getName()));
+
+							RageScores.addPointsToPlayer(deceased, deceased, "combataxe");
+						} else {
+							if (doDeathBroadcast)
+								GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.axe-kill", "%victim%",
+										deceaseName, "%killer%", deceased.getKiller().getName()));
+
+							RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "combataxe");
+						}
+						break;
+					case "grenade":
+						if (deceased.getKiller() == null) {
+							if (doDeathBroadcast)
+								GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.grenade-kill", "%victim%",
+										deceaseName, "%killer%", deceased.getName()));
+
+							RageScores.addPointsToPlayer(deceased, deceased, "grenade");
+						} else {
+							if (doDeathBroadcast)
+								GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.grenade-kill", "%victim%",
+										deceaseName, "%killer%", deceased.getKiller().getName()));
+
+							RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "grenade");
+						}
+						break;
+
+						default:
+							break;
+					}
+
+					deceased.removeMetadata("killedWith", plugin);
+				}
+
 				DamageCause cause = deceased.getLastDamageCause().getCause();
 
-				if (deceased.getMetadata("snowballKill") != null && !deceased.getMetadata("snowballKill").isEmpty()
-						&& deceased.getMetadata("snowballKill").get(0).asString().equals("snowball")) {
-					if (deceased.getKiller() == null) {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.axe-kill", "%victim%", deceaseName,
-									"%killer%", deceased.getName()));
-
-						RageScores.addPointsToPlayer(deceased, deceased, "combataxe");
-					} else {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.axe-kill", "%victim%", deceaseName,
-									"%killer%", deceased.getKiller().getName()));
-
-						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "combataxe");
-					}
-
-					deceased.removeMetadata("snowballKill", plugin);
-				} else if (deceased.getMetadata("grenadeKill") != null && !deceased.getMetadata("grenadeKill").isEmpty()
-						&& deceased.getMetadata("grenadeKill").get(0).asString().equals("grenade")) {
-					if (deceased.getKiller() == null) {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.grenade-kill", "%victim%", deceaseName,
-									"%killer%", deceased.getName()));
-
-						RageScores.addPointsToPlayer(deceased, deceased, "grenade");
-					} else {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.grenade-kill", "%victim%", deceaseName,
-									"%killer%", deceased.getKiller().getName()));
-
-						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "grenade");
-					}
-
-					deceased.removeMetadata("grenadeKill", plugin);
-				} else if (cause.equals(DamageCause.PROJECTILE)) {
-					if (deceased.getKiller() == null) {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.arrow-kill", "%victim%", deceaseName,
-									"%killer%", deceaseName));
-
-						RageScores.addPointsToPlayer(deceased, deceased, "ragebow");
-					} else {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.arrow-kill", "%victim%", deceaseName,
-									"%killer%", deceased.getKiller().getName()));
-
-						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "ragebow");
-					}
-				} else if (cause.equals(DamageCause.ENTITY_ATTACK)) {
+				if (cause.equals(DamageCause.ENTITY_ATTACK)) {
 					if (deceased.getKiller() == null) {
 						if (doDeathBroadcast)
 							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.knife-kill", "%victim%", deceaseName,
