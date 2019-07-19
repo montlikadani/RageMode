@@ -51,7 +51,7 @@ public class LobbyTimer extends TimerTask {
 		}
 
 		String[] playersInGame = PlayerList.getPlayersInGame(gameName);
-		org.bukkit.configuration.file.YamlConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
+		org.bukkit.configuration.file.FileConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
 		if (playersInGame.length < conf.getInt("game.global.lobby.min-players-to-start-lobby-timer")) {
 			cancel();
 			return;
@@ -95,7 +95,7 @@ public class LobbyTimer extends TimerTask {
 			}
 		}
 
-		if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game.global.lobby.player-level-as-time-counter"))
+		if (conf.getBoolean("game.global.lobby.player-level-as-time-counter"))
 			player.setLevel(time);
 
 		if (time == 0) {

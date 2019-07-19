@@ -2,7 +2,6 @@ package hu.montlikadani.ragemode.gameUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -85,9 +84,8 @@ public class TabTitles {
 		if (footer == null) footer = "";
 
 		try {
-			Method method = Utils.getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", new Class[] { String.class });
-			Object tabHeader = method.invoke(null, new Object[] { "{\"text\":\"" + header + "\"}" });
-			Object tabFooter = method.invoke(null, new Object[] { "{\"text\":\"" + footer + "\"}" });
+			Object tabHeader = Utils.getAsIChatBaseComponent(header);
+			Object tabFooter = Utils.getAsIChatBaseComponent(footer);
 			Constructor<?> titleConstructor = Utils.getNMSClass("PacketPlayOutPlayerListHeaderFooter").getConstructor(new Class[0]);
 			Object packet = titleConstructor.newInstance(new Object[0]);
 			Field aField = null;

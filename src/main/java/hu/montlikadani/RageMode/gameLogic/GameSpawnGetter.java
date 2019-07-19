@@ -7,7 +7,7 @@ import java.util.Random;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -26,7 +26,7 @@ public class GameSpawnGetter {
 	}
 
 	public void loadSpawns() {
-		YamlConfiguration aCfg = RageMode.getInstance().getConfiguration().getArenasCfg();
+		FileConfiguration aCfg = RageMode.getInstance().getConfiguration().getArenasCfg();
 		if (new MapChecker(gameName).isValid()) {
 			String path = "arenas." + gameName + ".spawns";
 			for (String spawnName : aCfg.getConfigurationSection(path).getKeys(false)) {

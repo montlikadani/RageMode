@@ -1,9 +1,7 @@
 package hu.montlikadani.ragemode.commands;
 
 import org.bukkit.GameMode;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -14,7 +12,7 @@ import hu.montlikadani.ragemode.items.LeaveGame;
 public class Spectate extends RmCommand {
 
 	@Override
-	public boolean run(CommandSender sender, Command cmd, String[] args) {
+	public boolean run(CommandSender sender, String[] args) {
 		if (!(sender instanceof Player)) {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return false;
@@ -47,16 +45,15 @@ public class Spectate extends RmCommand {
 			return false;
 		}
 
-		YamlConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
-
 		if (PlayerList.addSpectatorPlayer(p)) {
 			GameUtils.getGameSpawnByName(map).randomSpawn(p);
 
 			p.setAllowFlight(true);
 			p.setFlying(true);
 			p.setGameMode(GameMode.SPECTATOR);
-			if (conf.contains("items.leavegameitem"))
-				p.getInventory().setItem(conf.getInt("items.leavegameitem.slot"), LeaveGame.getItem());
+			if (RageMode.getInstance().getConfiguration().getCfg().contains("items.leavegameitem"))
+				p.getInventory().setItem(RageMode.getInstance().getConfiguration().getCfg().getInt("items.leavegameitem.slot"),
+						LeaveGame.getItem());
 		}
 		return false;
 	}

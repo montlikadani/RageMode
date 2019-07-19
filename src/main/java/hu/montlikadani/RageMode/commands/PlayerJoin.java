@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.commands;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -10,7 +9,7 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 public class PlayerJoin extends RmCommand {
 
 	@Override
-	public boolean run(CommandSender sender, Command cmd, String[] args) {
+	public boolean run(CommandSender sender, String[] args) {
 		if (!(sender instanceof Player)) {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return false;

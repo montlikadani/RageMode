@@ -1,12 +1,12 @@
 package hu.montlikadani.ragemode.gameUtils;
 
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
 
 public class GetGames {
 
-	private static YamlConfiguration fi = RageMode.getInstance().getConfiguration().getArenasCfg();
+	private static FileConfiguration fi = RageMode.getInstance().getConfiguration().getArenasCfg();
 
 	/**
 	 * Get arenas games count

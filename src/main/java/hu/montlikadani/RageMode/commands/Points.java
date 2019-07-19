@@ -3,7 +3,6 @@ package hu.montlikadani.ragemode.commands;
 import java.io.IOException;
 
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -21,7 +20,7 @@ public class Points extends RmCommand {
 	}
 
 	@Override
-	public boolean run(CommandSender sender, Command cmd, String[] args) {
+	public boolean run(CommandSender sender, String[] args) {
 		if (sender instanceof Player && !hasPerm(sender, "ragemode.admin.points")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;

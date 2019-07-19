@@ -1,5 +1,6 @@
 package hu.montlikadani.ragemode;
 
+import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
@@ -63,8 +64,9 @@ public class Utils {
 
 	/**
 	 * Clear the specified player inventory.
-	 * <p>This fixes the crash when the inventory is empty and the
-	 * server throws AssertionError: TRAP, that cause the server crash and stop.</p>
+	 * <p>
+	 * This fixes the crash when the inventory is empty and the
+	 * server throws AssertionError: TRAP, that cause the server crash and stop.
 	 * @param pl Player
 	 */
 	public static void clearPlayerInventory(Player pl) {
@@ -155,18 +157,38 @@ public class Utils {
 	/**
 	 * Gets the NMS class with packet name
 	 * 
-	 * @param name Packet
-	 * @throws ClassNotFoundException
-	 * @return Returns MC class name
+	 * @param name Packet class
+	 * @throws ClassNotFoundException when the class not found
+	 * @return Returns class name from the current version
 	 */
 	public static Class<?> getNMSClass(String name) throws ClassNotFoundException {
-		String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
-		return Class.forName("net.minecraft.server." + version + "." + name);
+		return Class.forName("net.minecraft.server." + getClassVersion() + "." + name);
+	}
+
+	/**
+	 * Invoke the IChatBaseComponent
+	 * @param name String
+	 * @return JSON
+	 * @throws Exception
+	 */
+	public static Object getAsIChatBaseComponent(String name) throws Exception {
+		Class<?> iChatBaseComponent = Utils.getNMSClass("IChatBaseComponent");
+		Class<?> declaredClass = iChatBaseComponent.getDeclaredClasses()[0];
+		Method m = declaredClass.getMethod("a", String.class);
+		return m.invoke(iChatBaseComponent, "{\"text\":\"" + name + "\"}");
+	}
+
+	/**
+	 * Gets the current class mc version.
+	 * @return version
+	 */
+	public static String getClassVersion() {
+		return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 	}
 
 	/**
 	 * Gets the Bukkit version
-	 * <br><br>
+	 * <p>
 	 * Example: 1.8, 1.13.2
 	 * 
 	 * @return Bukkit version

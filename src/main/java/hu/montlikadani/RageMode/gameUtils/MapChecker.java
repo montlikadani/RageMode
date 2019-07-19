@@ -3,7 +3,7 @@ package hu.montlikadani.ragemode.gameUtils;
 import java.util.Set;
 
 import org.bukkit.World;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
@@ -62,7 +62,7 @@ public class MapChecker {
 	}
 
 	private void checkLobby() {
-		YamlConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
+		FileConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
 
 		if (!aFile.isSet("arenas." + gameName + ".lobby")) {
 			message = RageMode.getLang().get("setup.lobby.not-set", "%game%", gameName);
@@ -95,7 +95,7 @@ public class MapChecker {
 	}
 
 	private void checkSpawns() {
-		YamlConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
+		FileConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
 		String path = "arenas." + gameName;
 		if (aFile.isSet(path + ".spawns")) {
 			Set<String> spawnNames = aFile.getConfigurationSection(path + ".spawns").getKeys(false);

@@ -1,7 +1,6 @@
 package hu.montlikadani.ragemode.commands;
 
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -13,7 +12,7 @@ import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 public class ShowStats extends RmCommand {
 
 	@Override
-	public boolean run(CommandSender sender, Command cmd, String[] args) {
+	public boolean run(CommandSender sender, String[] args) {
 		if (!hasPerm(sender, "ragemode.stats")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;

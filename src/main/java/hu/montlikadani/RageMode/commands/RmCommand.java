@@ -4,10 +4,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.WeakHashMap;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -21,7 +21,7 @@ import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class RmCommand implements CommandExecutor, TabCompleter {
 
-	private Map<String, String> arg = new HashMap<>();
+	private Map<String, String> arg = new WeakHashMap<>();
 	//private List<String> aliases = new ArrayList<>();
 
 	public RmCommand() {
@@ -186,20 +186,14 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 						Method printMethod = null;
 						try {
 							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
-						} catch (NoSuchMethodException e) {
-							paramTypes = new Class<?>[] { CommandSender.class, Command.class, String[].class };
-						}
-
-						try {
-							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
 						} catch (NoSuchMethodException e2) {
-							paramTypes = new Class<?>[] { RageMode.class, CommandSender.class, Command.class };
+							paramTypes = new Class<?>[] { RageMode.class, CommandSender.class, String[].class };
 						}
 
 						try {
 							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
 						} catch (NoSuchMethodException e3) {
-							paramTypes = new Class<?>[] { CommandSender.class, Command.class };
+							paramTypes = new Class<?>[] { CommandSender.class, String[].class };
 						}
 
 						try {
@@ -221,35 +215,28 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 						try {
 							printMethod.invoke(run, arguments);
 							return true;
+						} catch (IllegalArgumentException e1) {
+							arguments = new Object[] { RageMode.getInstance(), sender, args };
+						}
+
+						try {
+							printMethod.invoke(run, arguments);
+							return true;
+						} catch (IllegalArgumentException e2) {
+							arguments = new Object[] { sender, args };
+						}
+
+						try {
+							printMethod.invoke(run, arguments);
+							return true;
 						} catch (IllegalArgumentException e3) {
-							arguments = new Object[] { RageMode.getInstance(), sender, cmd };
-						}
-
-						try {
-							printMethod.invoke(run, arguments);
-							return true;
-						} catch (IllegalArgumentException e4) {
-							arguments = new Object[] { sender, cmd, args };
-						}
-
-						try {
-							printMethod.invoke(run, arguments);
-							return true;
-						} catch (IllegalArgumentException e5) {
-							arguments = new Object[] { sender, cmd };
-						}
-
-						try {
-							printMethod.invoke(run, arguments);
-							return true;
-						} catch (IllegalArgumentException e6) {
 							arguments = new Object[] { RageMode.getInstance(), sender };
 						}
 
 						try {
 							printMethod.invoke(run, arguments);
 							return true;
-						} catch (IllegalArgumentException e7) {
+						} catch (IllegalArgumentException e4) {
 							arguments = new Object[] { sender };
 						}
 						printMethod.invoke(run, arguments);
@@ -270,22 +257,19 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 		if (cmd.getName().equals("ragemode") || cmd.getName().equals("rm")) {
 			List<String> cmds = new ArrayList<>();
 			if (args.length < 2) {
-				partOfCommand = args[0];
+				getDefaultCmds(sender).forEach(com -> cmds.add(com));
 
-				for (String com : getDefaultCmds(sender)) {
-					cmds.add(com);
-				}
-				for (String com : getAdminCmds(sender)) {
-					cmds.add(com);
-				}
-				for (String com : getSomeCmds(sender)) {
-					cmds.add(com);
-				}
+				getAdminCmds(sender).forEach(aCom -> cmds.add(aCom));
+
+				getSomeCmds(sender).forEach(sCom -> cmds.add(sCom));
+
+				partOfCommand = args[0];
 			} else if (args.length < 3) {
 				if (args[0].equalsIgnoreCase("holostats")) {
 					for (String hcmd : Arrays.asList("add", "remove", "tp")) {
 						cmds.add(hcmd);
 					}
+
 					partOfCommand = args[1];
 				} else {
 					for (int i = 0; i < getGameListCmds().size(); i++) {
@@ -293,6 +277,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 							for (String scmd : GetGames.getGameNames()) {
 								cmds.add(scmd);
 							}
+
 							partOfCommand = args[1];
 						}
 					}
@@ -303,6 +288,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 						for (String tf : Arrays.asList("true", "false")) {
 							cmds.add(tf);
 						}
+
 						partOfCommand = args[2];
 					}
 				}
@@ -372,15 +358,11 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 		return false;
 	}
 
-	public boolean run(CommandSender sender, Command cmd) {
+	public boolean run(CommandSender sender, String[] args) {
 		return false;
 	}
 
-	public boolean run(CommandSender sender, Command cmd, String[] args) {
-		return false;
-	}
-
-	public boolean run(RageMode plugin, CommandSender sender, Command cmd) {
+	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		return false;
 	}
 

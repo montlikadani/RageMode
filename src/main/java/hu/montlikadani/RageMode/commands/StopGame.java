@@ -6,9 +6,8 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -32,7 +31,7 @@ import hu.montlikadani.ragemode.statistics.YAMLStats;
 public class StopGame extends RmCommand {
 
 	@Override
-	public boolean run(CommandSender sender, Command cmd, String[] args) {
+	public boolean run(CommandSender sender, String[] args) {
 		if (sender instanceof Player && !hasPerm(sender, "ragemode.admin.stopgame")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
@@ -91,7 +90,7 @@ public class StopGame extends RmCommand {
 
 						for (String playerUUID : players) {
 							Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
-							YamlConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
+							FileConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
 							String wonTitle = conf.getString("titles.player-won.title");
 							String wonSubtitle = conf.getString("titles.player-won.subtitle");
 
@@ -142,6 +141,9 @@ public class StopGame extends RmCommand {
 				EventListener.waitingGames.put(game, true);
 			}
 
+			// Cancels the sign task to reduce the memory leak
+			RageMode.getInstance().getSignTask().cancel();
+
 			GameUtils.setStatus(GameStatus.GAMEFREEZE);
 
 			final Player winner = winnerUUID != null ? Bukkit.getPlayer(UUID.fromString(winnerUUID)) : null;
@@ -153,7 +155,7 @@ public class StopGame extends RmCommand {
 					if (EventListener.waitingGames.containsKey(game))
 						EventListener.waitingGames.remove(game);
 
-					Reward reward = new Reward("end-game", game);
+					Reward reward = new Reward(game);
 					for (String playerUUID : players) {
 						Utils.clearPlayerInventory(Bukkit.getPlayer(UUID.fromString(playerUUID)));
 
@@ -237,6 +239,8 @@ public class StopGame extends RmCommand {
 				}
 			} else if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game-stop.stop-server"))
 				Bukkit.shutdown();
+			else
+				Bukkit.getScheduler().runTaskLater(RageMode.getInstance(), RageMode.getInstance().getSignScheduler(), 40L);
 		}
 	}
 

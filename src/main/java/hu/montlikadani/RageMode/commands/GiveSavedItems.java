@@ -6,7 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -43,7 +43,7 @@ public class GiveSavedItems extends RmCommand {
 			return false;
 		}
 
-		YamlConfiguration datas = plugin.getConfiguration().getDatasCfg();
+		FileConfiguration datas = plugin.getConfiguration().getDatasCfg();
 		if (datas.getString("datas." + args[1]) == null) {
 			sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.player-not-found-in-data-file", "%player%", args[1]));
 			return false;
@@ -53,13 +53,11 @@ public class GiveSavedItems extends RmCommand {
 			if (names.equalsIgnoreCase(args[1])) {
 				Utils.clearPlayerInventory(target);
 
-				List<?> list = null;
+				List<?> contentList = (List<?>) datas.get("datas." + names + ".contents");
+				target.getInventory().setContents(contentList.toArray(new ItemStack[contentList.size()]));
 
-				list = (List<?>) datas.get("datas." + names + ".contents");
-				target.getInventory().setContents((ItemStack[]) list.toArray(new ItemStack[0]));
-
-				list = (List<?>) datas.get("datas." + names + ".armor-contents");
-				target.getInventory().setArmorContents((ItemStack[]) list.toArray(new ItemStack[0]));
+				List<?> armorList = (List<?>) datas.get("datas." + names + ".armor-contents");
+				target.getInventory().setArmorContents((ItemStack[]) armorList.toArray(new ItemStack[armorList.size()]));
 
 				target.setExp(datas.getInt("datas." + names + ".exp"));
 				target.setLevel(datas.getInt("datas." + names + ".level"));

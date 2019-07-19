@@ -10,7 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -139,7 +139,7 @@ public class GameLoader {
 			// Removing the lobby items
 			inv.clear();
 
-			YamlConfiguration f = conf.getCfg();
+			FileConfiguration f = conf.getCfg();
 			inv.setItem(f.getInt("items.rageBow.slot"), RageBow.getItem());
 			inv.setItem(f.getInt("items.rageKnife.slot"), RageKnife.getItem());
 			inv.setItem(f.getInt("items.combatAxe.slot"), CombatAxe.getItem());

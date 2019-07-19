@@ -1,5 +1,6 @@
 package hu.montlikadani.ragemode;
 
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
@@ -43,5 +44,22 @@ public class NMS {
 			((Damageable) item.getItemMeta()).setDamage(number);
 		else
 			item.setDurability(number);
+	}
+
+
+	/**
+	 * Gets the Enchantment name in item, this prevents the deprecated getByName() using in 1.13+ versions.
+	 * <p>
+	 * The latest is very different from the older enchantment name. Such as the new enchant name for
+	 * DAMAGE_ALL (old) replaced to sharpness (new).
+	 * 
+	 * @param type Enchantment name
+	 * @return Enchantment type
+	 */
+	public static Enchantment getEnchant(String type) {
+		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1))
+			return Enchantment.getByKey(org.bukkit.NamespacedKey.minecraft(type.toLowerCase()));
+		else
+			return Enchantment.getByName(type.toUpperCase());
 	}
 }

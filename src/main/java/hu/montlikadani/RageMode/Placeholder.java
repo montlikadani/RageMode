@@ -8,7 +8,7 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
 public class Placeholder extends PlaceholderExpansion {
 
-	protected Placeholder() {
+	Placeholder() {
 	}
 
 	@Override

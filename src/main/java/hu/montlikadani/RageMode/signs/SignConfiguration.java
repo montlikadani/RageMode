@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.signs;
 import java.io.File;
 import java.io.IOException;
 
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -11,7 +12,7 @@ public class SignConfiguration {
 
 	private static boolean inited = false;
 	private static File yamlSignsFile;
-	private static YamlConfiguration signConfig;
+	private static FileConfiguration signConfig;
 
 	public static void initSignConfiguration() {
 		if (inited)
@@ -20,7 +21,7 @@ public class SignConfiguration {
 			inited = true;
 
 		File file = new File(RageMode.getInstance().getFolder(), "signs.yml");
-		YamlConfiguration config = null;
+		FileConfiguration config = null;
 		yamlSignsFile = file;
 
 		if (!file.exists()) {
@@ -59,7 +60,7 @@ public class SignConfiguration {
 		return yamlSignsFile;
 	}
 
-	public static YamlConfiguration getSignConfig() {
+	public static FileConfiguration getSignConfig() {
 		return signConfig;
 	}
 }

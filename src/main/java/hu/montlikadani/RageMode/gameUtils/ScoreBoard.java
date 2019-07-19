@@ -37,6 +37,7 @@ public class ScoreBoard {
 			scoreboard.clearSlot(DisplaySlot.SIDEBAR);
 			removeScoreBoard(loopPlayer, false);
 
+			// TODO Make this to Reflection
 			Objective objective = scoreboard.registerNewObjective("ragescores", "dummy");
 			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 			scoreboards.put(loopPlayer, new ScoreBoardHolder(loopPlayer, scoreboard, objective));
@@ -147,10 +148,7 @@ public class ScoreBoard {
 		scoreboards.remove(player);
 
 		if (rem) {
-			for (int i = 0; i < this.player.size(); i++) {
-				if (player.equals(this.player.get(i)))
-					this.player.remove(i);
-			}
+			removePlayer(player);
 		}
 	}
 
@@ -159,9 +157,10 @@ public class ScoreBoard {
 	 * @param pl Player
 	 */
 	public void removePlayer(Player pl) {
-		for (int i = 0; i < this.player.size(); i++) {
-			if (pl.equals(this.player.get(i)))
-				this.player.remove(i);
+		for (int i = 0; i < player.size(); i++) {
+			if (pl.equals(player.get(i))) {
+				player.remove(i);
+			}
 		}
 	}
 

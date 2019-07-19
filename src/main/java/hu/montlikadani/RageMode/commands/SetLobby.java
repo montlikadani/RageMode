@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -31,9 +31,9 @@ public class SetLobby extends RmCommand {
 				return false;
 			}
 
-			YamlConfiguration aCfg = plugin.getConfiguration().getArenasCfg();
+			FileConfiguration aCfg = plugin.getConfiguration().getArenasCfg();
 			if (!aCfg.isSet("arenas." + gameName))
-				sendMessage(p, RageMode.getLang().get("setup.not-set-yet"));
+				sendMessage(p, RageMode.getLang().get("setup.not-set-yet", "%usage%", "/rm addgame <gameName> <maxPlayers>"));
 			else {
 				String path = "arenas." + gameName + ".lobby";
 				Location loc = p.getLocation();

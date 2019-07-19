@@ -5,34 +5,38 @@ import java.lang.reflect.Method;
 
 import org.bukkit.entity.Player;
 
+import hu.montlikadani.ragemode.Utils;
+
 public class ActionBar {
 
-	public static String nmsver;
-	public static boolean useOldMethods = false;
+	//public static String nmsver;
+	//public static boolean useOldMethods = false;
 
 	public static void sendActionBar(Player player, String message) {
 		if (!player.isOnline())
 			return;
 
-		if (message == null) message = "";
+		if (message == null)
+			message = "";
 
 		try {
-			Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + nmsver + ".entity.CraftPlayer");
+			Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + Utils.getClassVersion() + ".entity.CraftPlayer");
 			Object craftPlayer = craftPlayerClass.cast(player);
 			Object packet;
-			Class<?> packetPlayOutChatClass = getNMSClass("PacketPlayOutChat");
-			Class<?> packetClass = getNMSClass("Packet");
-			if (useOldMethods) {
-				Class<?> chatSerializerClass = getNMSClass("ChatSerializer");
-				Class<?> iChatBaseComponentClass = getNMSClass("IChatBaseComponent");
-				Method m3 = chatSerializerClass.getDeclaredMethod("a", String.class);
-				Object cbc = iChatBaseComponentClass.cast(m3.invoke(chatSerializerClass, "{\"text\": \"" + message + "\"}"));
-				packet = packetPlayOutChatClass.getConstructor(new Class<?>[] { iChatBaseComponentClass, byte.class }).newInstance(cbc, (byte) 2);
-			} else {
-				Class<?> chatComponentTextClass = getNMSClass("ChatComponentText");
-				Class<?> iChatBaseComponentClass = getNMSClass("IChatBaseComponent");
+			Class<?> packetPlayOutChatClass = Utils.getNMSClass("PacketPlayOutChat");
+			Class<?> packetClass = Utils.getNMSClass("Packet");
+			//if (useOldMethods) {
+			Class<?> chatSerializerClass = Utils.getNMSClass("ChatSerializer");
+			Class<?> iChatBaseComponentClass = Utils.getNMSClass("IChatBaseComponent");
+			Method m3 = chatSerializerClass.getDeclaredMethod("a", String.class);
+			Object cbc = iChatBaseComponentClass.cast(m3.invoke(chatSerializerClass, "{\"text\": \"" + message + "\"}"));
+
+			packet = packetPlayOutChatClass.getConstructor(new Class<?>[] { iChatBaseComponentClass, byte.class }).newInstance(cbc, (byte) 2);
+			/*} else {
+				Class<?> chatComponentTextClass = Utils.getNMSClass("ChatComponentText");
+				Class<?> iChatBaseComponentClass = Utils.getNMSClass("IChatBaseComponent");
 				try {
-					Class<?> chatMessageTypeClass = getNMSClass("ChatMessageType");
+					Class<?> chatMessageTypeClass = Utils.getNMSClass("ChatMessageType");
 					Object[] chatMessageTypes = chatMessageTypeClass.getEnumConstants();
 					Object chatMessageType = null;
 					for (Object obj : chatMessageTypes) {
@@ -48,7 +52,7 @@ public class ActionBar {
 					packet = packetPlayOutChatClass.getConstructor(new Class<?>[] { iChatBaseComponentClass, byte.class })
 							.newInstance(chatCompontentText, (byte) 2);
 				}
-			}
+			}*/
 			Method craftPlayerHandleMethod = craftPlayerClass.getDeclaredMethod("getHandle");
 			Object craftPlayerHandle = craftPlayerHandleMethod.invoke(craftPlayer);
 			Field playerConnectionField = craftPlayerHandle.getClass().getDeclaredField("playerConnection");
@@ -58,9 +62,5 @@ public class ActionBar {
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
-	}
-
-	private static Class<?> getNMSClass(String name) throws ClassNotFoundException {
-		return Class.forName("net.minecraft.server." + nmsver + "." + name);
 	}
 }

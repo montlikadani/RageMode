@@ -2,17 +2,17 @@ package hu.montlikadani.ragemode.config;
 
 import java.util.List;
 
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 
-public class YamlConfig {
+public class FileConfig {
 
-	private YamlConfiguration c;
+	private FileConfiguration c;
 
-	public YamlConfig(YamlConfiguration c) {
+	public FileConfig(FileConfiguration c) {
 		this.c = c;
 	}
 
-	public YamlConfiguration getYC() {
+	public FileConfiguration getFC() {
 		return c;
 	}
 

@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.gameUtils;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -147,7 +148,7 @@ public class GameUtils {
 			PlayerList.oldVehicle.addToBoth(p, p.getVehicle());
 
 		if (conf.getDatasFile() != null && conf.getDatasFile().exists()) {
-			org.bukkit.configuration.file.YamlConfiguration data = conf.getDatasCfg();
+			org.bukkit.configuration.file.FileConfiguration data = conf.getDatasCfg();
 			String path = "datas." + p.getName() + ".";
 
 			data.set(path + "location", p.getLocation());
@@ -222,6 +223,11 @@ public class GameUtils {
 			} else
 				p.sendMessage(RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
 		} else {
+			if (status == GameStatus.NOTREADY) {
+				p.sendMessage(RageMode.getLang().get("commands.join.game-locked"));
+				return;
+			}
+
 			if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
 				p.sendMessage(RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
 				return;
@@ -245,7 +251,8 @@ public class GameUtils {
 					}
 				} else if (conf.getCfg().getBoolean("save-player-datas-to-file"))
 					savePlayerData(p);
-				else {
+
+				if (!conf.getCfg().getBoolean("save-player-datas-to-file")) {
 					clearPlayerTools(p);
 
 					// We still need some data saving
@@ -314,6 +321,7 @@ public class GameUtils {
 	private static void clearPlayerTools(Player p) {
 		Utils.clearPlayerInventory(p);
 		p.setGameMode(GameMode.SURVIVAL);
+		p.setFlying(false);
 		p.setHealth(20);
 		p.setFoodLevel(20);
 		p.setFireTicks(0);
@@ -340,24 +348,50 @@ public class GameUtils {
 
 		if (list != null && !list.isEmpty()) {
 			for (String cmd : list) {
-				if (cmd.split(":").length < 3) {
-					RageMode.logConsole(Level.WARNING, "In the rewards file the in-game commands the split length longer than 3.");
+				if (cmd.split(":").length < 3 && cmd.split(":").length > 4) {
+					RageMode.logConsole(Level.WARNING, "In the rewards file the in-game commands the split length is equal to 3.");
 					continue;
 				}
 
-				String type = cmd.split(":")[0];
-				Player p = getPlayerInGame(game);
+				if (cmd.contains("chance:")) {
+					String value = cmd;
+					value = value.split("chance:")[1].replaceAll("[^0-9]+", "");
+					double chance = Double.parseDouble(value);
 
-				if (type.equals(cmdType)) {
-					String consoleOrPlayer = cmd.split(":")[1];
-					cmd = cmd.split(":")[2].replace("%world%", p.getWorld().getName())
-							.replace("%game%", game)
-							.replace("%player%", p.getName());
+					if (ThreadLocalRandom.current().nextInt(0, 100) > chance)
+						continue;
 
-					if (consoleOrPlayer.equals("console"))
-						Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
-					else if (consoleOrPlayer.equals("player"))
-						p.performCommand(cmd);
+					cmd = cmd.replace("chance:" + value + "-", "");
+
+					String type = cmd.split(":")[0];
+					if (type.equals(cmdType)) {
+						String consoleOrPlayer = cmd.split(":")[1];
+						Player p = getPlayerInGame(game);
+
+						cmd = cmd.split(":")[2].replace("%world%", p.getWorld().getName())
+								.replace("%game%", game)
+								.replace("%player%", p.getName());
+
+						if (consoleOrPlayer.equals("console"))
+							Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+						else if (consoleOrPlayer.equals("player"))
+							p.performCommand(cmd);
+					}
+				} else {
+					String type = cmd.split(":")[0];
+					if (type.equals(cmdType)) {
+						String consoleOrPlayer = cmd.split(":")[1];
+						Player p = getPlayerInGame(game);
+
+						cmd = cmd.split(":")[2].replace("%world%", p.getWorld().getName())
+								.replace("%game%", game)
+								.replace("%player%", p.getName());
+
+						if (consoleOrPlayer.equals("console"))
+							Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+						else if (consoleOrPlayer.equals("player"))
+							p.performCommand(cmd);
+					}
 				}
 			}
 		}

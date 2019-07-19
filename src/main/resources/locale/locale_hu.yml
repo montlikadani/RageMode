@@ -47,8 +47,8 @@ commands:
   join:
     game-locked: "&cEz a játék lezárt, így nem csatlakozhatsz."
     empty-inventory:
-      armor: "&cÜrísd ki a felszerelés eszköztárad, hogy tudj csatlakozni a játékhoz."
-      contents: "&cÜrísd ki az eszköztárad, hogy tudj csatlakozni a játékhoz."
+      armor: "&cÜrítsd ki a felszerelés eszköztárad, hogy tudj csatlakozni a játékhoz."
+      contents: "&cÜrítsd ki az eszköztárad, hogy tudj csatlakozni a játékhoz."
   points:
     player-not-found: "&cA játékos név nem lehet null!"
     amount-not-less: "&cA számnak nagyobbnak kell lennie 0-nál."

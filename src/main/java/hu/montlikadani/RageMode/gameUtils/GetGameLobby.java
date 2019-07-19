@@ -2,13 +2,13 @@ package hu.montlikadani.ragemode.gameUtils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
 
 public class GetGameLobby {
 
-	private static YamlConfiguration fi = RageMode.getInstance().getConfiguration().getArenasCfg();
+	private static FileConfiguration fi = RageMode.getInstance().getConfiguration().getArenasCfg();
 
 	/**
 	 * Gets the specified game lobby location.

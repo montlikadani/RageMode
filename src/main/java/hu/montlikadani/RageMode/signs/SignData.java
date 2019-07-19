@@ -10,7 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.material.Directional;
 
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
@@ -85,7 +85,7 @@ public class SignData {
 					for (int i = 0; i < 4; i++) {
 						sign.setLine(i, lines.get(i).toString());
 
-						YamlConfiguration cfg = RageMode.getInstance().getConfiguration().getCfg();
+						FileConfiguration cfg = RageMode.getInstance().getConfiguration().getCfg();
 						String path = "signs.background.";
 						if (cfg.getBoolean(path + "enable")) {
 							if (Version.isCurrentEqualOrHigher(Version.v1_14_R1)) {
@@ -159,7 +159,7 @@ public class SignData {
 		return text;
 	}
 
-	private void chooseFromType(YamlConfiguration cfg, String path, Sign sign) {
+	private void chooseFromType(FileConfiguration cfg, String path, Sign sign) {
 		String type = cfg.getString(path + "type");
 
 		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {

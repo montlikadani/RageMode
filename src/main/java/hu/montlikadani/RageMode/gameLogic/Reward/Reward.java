@@ -1,20 +1,26 @@
 package hu.montlikadani.ragemode.gameLogic.Reward;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.block.Banner;
+import org.bukkit.block.banner.Pattern;
+import org.bukkit.block.banner.PatternType;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
+import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
@@ -23,13 +29,11 @@ import hu.montlikadani.ragemode.gameLogic.PlayerList;
 public class Reward {
 
 	private String game;
-	private YamlConfiguration conf;
+	private FileConfiguration conf;
 	private boolean enable = false;
-	private String type;
 
-	public Reward(String type, String game) {
+	public Reward(String game) {
 		this.game = game;
-		this.type = type;
 
 		conf = RageMode.getInstance().getConfiguration().getRewardsCfg();
 		enable = RageMode.getInstance().getConfiguration().getCfg().getBoolean("rewards.enable");
@@ -81,43 +85,37 @@ public class Reward {
 			if (winner != null && player == winner)
 				return;
 
-			switch (type.toLowerCase()) {
-			case "end-game":
-				List<String> cmds = conf.getStringList("rewards.end-game.players.commands");
-				List<String> msgs = conf.getStringList("rewards.end-game.players.messages");
-				double cash = conf.getDouble("rewards.end-game.players.cash");
-				ConfigurationSection item = conf.getConfigurationSection("rewards.end-game.players.items");
+			List<String> cmds = conf.getStringList("rewards.end-game.players.commands");
+			List<String> msgs = conf.getStringList("rewards.end-game.players.messages");
+			double cash = conf.getDouble("rewards.end-game.players.cash");
+			ConfigurationSection item = conf.getConfigurationSection("rewards.end-game.players.items");
 
-				if (cmds != null && !cmds.isEmpty()) {
-					for (String path : cmds) {
-						String[] arg = path.split(": ");
-						String cmd = arg[1];
-						cmd = replacePlaceholders(cmd, player, false);
+			if (cmds != null && !cmds.isEmpty()) {
+				for (String path : cmds) {
+					String[] arg = path.split(": ");
+					String cmd = arg[1];
+					cmd = replacePlaceholders(cmd, player, false);
 
-						if (arg[0].equals("console"))
-							Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), cmd);
-						else if (arg[0].equals("player"))
-							player.performCommand(cmd);
-					}
+					if (arg[0].equals("console"))
+						Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), cmd);
+					else if (arg[0].equals("player"))
+						player.performCommand(cmd);
 				}
-
-				if (msgs != null && !msgs.isEmpty()) {
-					for (String path : msgs) {
-						path = replacePlaceholders(path, player, false);
-
-						player.sendMessage(path);
-					}
-				}
-
-				if (cash > 0D && RageMode.getInstance().isVaultEnabled())
-					RageMode.getInstance().getEconomy().depositPlayer(player, cash);
-
-				if (item != null && conf.isConfigurationSection("rewards.end-game.players.items"))
-					getItems("players", player);
-				break;
-			default:
-				break;
 			}
+
+			if (msgs != null && !msgs.isEmpty()) {
+				for (String path : msgs) {
+					path = replacePlaceholders(path, player, false);
+
+					player.sendMessage(path);
+				}
+			}
+
+			if (cash > 0D && RageMode.getInstance().isVaultEnabled())
+				RageMode.getInstance().getEconomy().depositPlayer(player, cash);
+
+			if (item != null && conf.isConfigurationSection("rewards.end-game.players.items"))
+				getItems("players", player);
 		}
 	}
 
@@ -138,7 +136,7 @@ public class Reward {
 			String type = conf.getString("rewards.end-game." + path + ".items." + num + ".type");
 			if (type != null) {
 				try {
-					Material mat = Material.valueOf(type);
+					Material mat = Material.valueOf(type.toUpperCase());
 					if (mat == null) {
 						RageMode.logConsole(Level.WARNING, "[RageMode] Unknown item name: " + type);
 						RageMode.logConsole("[RageMode] Find and double check item names using this page:");
@@ -162,21 +160,43 @@ public class Reward {
 
 					if (conf.getBoolean("rewards.end-game." + path + ".items." + num + ".meta")) {
 						ItemMeta itemMeta = itemStack.getItemMeta();
-						String str2 = conf.getString("rewards.end-game." + path + ".items." + num + ".name");
-						if (str2 != null && !str2.equals(""))
-							itemMeta.setDisplayName(str2.replaceAll("&", "\u00a7"));
+						String name = conf.getString("rewards.end-game." + path + ".items." + num + ".name");
+						if (name != null && !name.equals(""))
+							itemMeta.setDisplayName(name.replaceAll("&", "\u00a7"));
 
 						List<String> loreList = conf.getStringList("rewards.end-game." + path + ".items." + num + ".lore");
 						if (loreList != null && !loreList.isEmpty())
 							itemMeta.setLore(Utils.colorList(loreList));
 
-
-						if (mat.equals(Material.LEATHER_BOOTS) || mat.equals(Material.LEATHER_LEGGINGS) || mat.equals(Material.LEATHER_CHESTPLATE) ||
-								mat.equals(Material.LEATHER_HELMET)) {
-							String str3 = conf.getString("rewards.end-game." + path + ".items." + num + ".color");
-							if (str3 != null && !str3.equals("")) {
+						if (type.startsWith("LEATHER_")) {
+							String color = conf.getString("rewards.end-game." + path + ".items." + num + ".color");
+							if (color != null && !color.equals("")) {
 								if (itemMeta instanceof LeatherArmorMeta)
-									((LeatherArmorMeta) itemMeta).setColor(Utils.getColorFromString(str3));
+									((LeatherArmorMeta) itemMeta).setColor(Utils.getColorFromString(color));
+							}
+						}
+
+						String bannerColor = conf.getString("rewards.end-game." + path + ".items." + num + ".banner.color");
+						String bannerType = conf.getString("rewards.end-game." + path + ".items." + num + ".banner.type");
+						if (bannerColor != null && !bannerColor.equals("") && bannerType != null && !bannerType.equals("")) {
+							if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
+								if (mat.equals(Material.valueOf("BANNER"))) {
+									if (itemMeta instanceof BannerMeta) {
+										List<Pattern> patterns = new ArrayList<>();
+										patterns.add(new Pattern(DyeColor.valueOf(bannerColor), PatternType.valueOf(bannerType)));
+
+										((BannerMeta) itemMeta).setBaseColor(DyeColor.valueOf(bannerColor));
+										((BannerMeta) itemMeta).setPatterns(patterns);
+									}
+								}
+							} else if (type.endsWith("_BANNER")) {
+								if (itemMeta instanceof BannerMeta) {
+									List<Pattern> patterns = new ArrayList<>();
+									patterns.add(new Pattern(DyeColor.valueOf(bannerColor), PatternType.valueOf(bannerType)));
+
+									((Banner) itemStack).setBaseColor(DyeColor.valueOf(bannerColor));
+									((BannerMeta) itemMeta).setPatterns(patterns);
+								}
 							}
 						}
 
@@ -184,14 +204,19 @@ public class Reward {
 
 						List<String> enchantList = conf.getStringList("rewards.end-game." + path + ".items." + num + ".enchants");
 						if (enchantList != null && !enchantList.isEmpty()) {
-							for (String str4 : enchantList) {
-								String[] split = str4.split(":");
-								if (itemStack.getItemMeta() instanceof EnchantmentStorageMeta) {
-									EnchantmentStorageMeta enchMeta = (EnchantmentStorageMeta) itemStack.getItemMeta();
-									enchMeta.addStoredEnchant(Enchantment.getByName(split[0]), Integer.parseInt(split[1]), true);
-									itemStack.setItemMeta(enchMeta);
-								} else
-									itemStack.addUnsafeEnchantment(Enchantment.getByName(split[0]), Integer.parseInt(split[1]));
+							for (String enchant : enchantList) {
+								String[] split = enchant.split(":");
+								try {
+									if (itemStack.getItemMeta() instanceof EnchantmentStorageMeta) {
+										EnchantmentStorageMeta enchMeta = (EnchantmentStorageMeta) itemStack.getItemMeta();
+										enchMeta.addStoredEnchant(NMS.getEnchant(split[0]), Integer.parseInt(split[1]), true);
+										itemStack.setItemMeta(enchMeta);
+									} else
+										itemStack.addUnsafeEnchantment(NMS.getEnchant(split[0]), Integer.parseInt(split[1]));
+								} catch (IllegalArgumentException b) {
+									RageMode.logConsole(Level.WARNING, "[RageMode] Bad enchantment name: " + split[0]);
+									continue;
+								}
 							}
 						}
 					}
@@ -203,8 +228,7 @@ public class Reward {
 					} catch (IllegalArgumentException i) {
 						RageMode.logConsole(Level.WARNING, "[RageMode] Slot is not between 0 and 8 inclusive.");
 					}
-				} catch (IllegalArgumentException e) {
-					e.printStackTrace();
+				} catch (Exception e) {
 					RageMode.logConsole(Level.WARNING, "[RageMode] Problem occured with your item: " + e.getMessage());
 				}
 			}
@@ -213,9 +237,5 @@ public class Reward {
 
 	public boolean isEnabled() {
 		return enable;
-	}
-
-	public String getType() {
-		return type;
 	}
 }

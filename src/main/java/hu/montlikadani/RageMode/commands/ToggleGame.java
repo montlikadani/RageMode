@@ -2,7 +2,6 @@ package hu.montlikadani.ragemode.commands;
 
 import java.io.IOException;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -13,7 +12,7 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 public class ToggleGame extends RmCommand {
 
 	@Override
-	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
+	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!hasPerm(sender, "ragemode.admin.togglegame")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
@@ -46,6 +45,7 @@ public class ToggleGame extends RmCommand {
 				e.printStackTrace();
 			}
 
+			// Something wrong with this... But what??
 			sendMessage(sender, RageMode.getLang().get("commands.togglegame.successfully-toggled", "%game%", args[1], "%status%",
 					!toggle ? RageMode.getLang().get("commands.togglegame.status.on") : RageMode.getLang().get("commands.togglegame.status.off")));
 		} else

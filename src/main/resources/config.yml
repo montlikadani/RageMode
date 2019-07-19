@@ -188,6 +188,9 @@ game:
     # Cancel all redstone activating blocks, such as lever, comparator, pressure plate, etc.?
     cancel-redstone-activating-blocks: true
 
+    # Cancels the door opening/closing events in game.
+    cancel-door-use: false
+
     # When the game is over, the players will freeze (if the game mode is not in spectator),
     # then if the time expires, it will be automatically returned to the set location.
     # This ignores the winner player.

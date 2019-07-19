@@ -7,7 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -40,7 +40,7 @@ public class RemoveSpawn extends RmCommand {
 		}
 
 		int i = Integer.parseInt(args[2]);
-		YamlConfiguration aFile = plugin.getConfiguration().getArenasCfg();
+		FileConfiguration aFile = plugin.getConfiguration().getArenasCfg();
 		String path = "arenas." + args[1];
 
 		if (!aFile.isSet(path + ".spawns." + i)) {

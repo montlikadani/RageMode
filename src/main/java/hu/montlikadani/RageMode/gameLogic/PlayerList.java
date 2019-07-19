@@ -21,7 +21,6 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.GameJoinAttemptEvent;
 import hu.montlikadani.ragemode.API.event.GameLeaveAttemptEvent;
-import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGameLobby;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
@@ -102,10 +101,6 @@ public class PlayerList {
 	}
 
 	public static boolean addPlayer(Player player, String game) {
-		if (GameUtils.getStatus() == GameStatus.NOTREADY) {
-			player.sendMessage(RageMode.getLang().get("commands.join.game-locked"));
-			return false;
-		}
 		if (isGameRunning(game)) {
 			player.sendMessage(RageMode.getLang().get("game.running"));
 			return false;

@@ -22,8 +22,8 @@ rewards:
          - "&4Killer bow!!"
          - "&7One shot..."
          enchants:
-         - ARROW_INFINITE:1
-         - ARROW_DAMAGE:2
+         - ARROW_INFINITE:1 #1.13+: infinity:1
+         - ARROW_DAMAGE:2 #1.13+: power:2
         '3':
           type: GRASS
           amount: 64
@@ -31,13 +31,15 @@ rewards:
       cash: 2.0
       commands:
       - "console: say %player% &2We waiting you to the next game!"
-      messages:
+      #messages:
       #- "&eYour reward:&7 %reward%"
       items:
         granite:
           type: STONE
           amount: 5
   in-game:
+    # How to use this section read:
+    # https://github.com/montlikadani/RageMode/wiki/Configuring-rewards#how-do-i-set-up-in-game-commands
     run-commands:
-    - "death:console:msg %player% &aNext time do not die :)"
+    - "chance:3-death:console:msg %player% &aNext time do not die ;)"
     - "join:console:msg %player% &aWe wish you a good game!"

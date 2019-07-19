@@ -12,35 +12,12 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.base.StandardSystemProperty;
 
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
-import hu.montlikadani.ragemode.commands.AddGame;
-import hu.montlikadani.ragemode.commands.AddSpawn;
-import hu.montlikadani.ragemode.commands.ForceStart;
-import hu.montlikadani.ragemode.commands.HoloStats;
-import hu.montlikadani.ragemode.commands.KickPlayer;
-import hu.montlikadani.ragemode.commands.ListGames;
-import hu.montlikadani.ragemode.commands.PlayerJoin;
-import hu.montlikadani.ragemode.commands.PlayerLeave;
-import hu.montlikadani.ragemode.commands.Points;
-import hu.montlikadani.ragemode.commands.Reload;
-import hu.montlikadani.ragemode.commands.RemoveGame;
-import hu.montlikadani.ragemode.commands.RemoveSpawn;
-import hu.montlikadani.ragemode.commands.ResetPlayerStats;
 import hu.montlikadani.ragemode.commands.RmCommand;
-import hu.montlikadani.ragemode.commands.SetActionBar;
-import hu.montlikadani.ragemode.commands.SetBossBar;
-import hu.montlikadani.ragemode.commands.SetGameTime;
-import hu.montlikadani.ragemode.commands.SetGlobalMessages;
-import hu.montlikadani.ragemode.commands.SetLobby;
-import hu.montlikadani.ragemode.commands.SetLobbyDelay;
-import hu.montlikadani.ragemode.commands.ShowStats;
-import hu.montlikadani.ragemode.commands.SignUpdate;
-import hu.montlikadani.ragemode.commands.Spectate;
-import hu.montlikadani.ragemode.commands.StopGame;
-import hu.montlikadani.ragemode.commands.ToggleGame;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.Language;
 import hu.montlikadani.ragemode.database.MySQLConnect;
@@ -51,7 +28,6 @@ import hu.montlikadani.ragemode.events.Listeners_1_9;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
-import hu.montlikadani.ragemode.gameUtils.ActionBar;
 import hu.montlikadani.ragemode.gameUtils.BungeeUtils;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
@@ -78,6 +54,7 @@ public class RageMode extends JavaPlugin {
 	private static Economy econ = null;
 
 	private static RageMode instance = null;
+	private BukkitTask signTask;
 
 	private boolean hologram = false;
 	private boolean vault = false;
@@ -131,8 +108,6 @@ public class RageMode extends JavaPlugin {
 				getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 			}
 
-			initActionBar();
-
 			getManager().registerEvents(new EventListener(this), this);
 			if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
 				getManager().registerEvents(new Listeners_1_8(), this);
@@ -155,7 +130,7 @@ public class RageMode extends JavaPlugin {
 				SignConfiguration.initSignConfiguration();
 				SignCreator.loadSigns();
 
-				Bukkit.getScheduler().runTaskLater(this, sign, 40L);
+				signTask = Bukkit.getScheduler().runTaskLater(this, sign, 40L);
 			}
 
 			if (conf.getArenasCfg().contains("arenas")) {
@@ -255,9 +230,9 @@ public class RageMode extends JavaPlugin {
 				}
 			}
 
-			sign = null;
 			getServer().getScheduler().cancelTasks(instance);
 			HandlerList.unregisterAll(this);
+			sign = null;
 			instance = null;
 		});
 
@@ -300,16 +275,16 @@ public class RageMode extends JavaPlugin {
 					() -> RuntimeRPPManager.getRPPListFromMySQL());
 	}
 
-	private void initActionBar() {
+	/*private void initActionBar() {
 		ActionBar.nmsver = Bukkit.getServer().getClass().getPackage().getName();
 		ActionBar.nmsver = ActionBar.nmsver.substring(ActionBar.nmsver.lastIndexOf(".") + 1);
 
-		if (ActionBar.nmsver.equalsIgnoreCase("v1_8_") && ActionBar.nmsver.equalsIgnoreCase("v1_9_")
+		/*if (ActionBar.nmsver.equalsIgnoreCase("v1_8_") && ActionBar.nmsver.equalsIgnoreCase("v1_9_")
 				&& ActionBar.nmsver.equalsIgnoreCase("v1_10_") && ActionBar.nmsver.equalsIgnoreCase("v1_11_")
 				&& ActionBar.nmsver.equalsIgnoreCase("v1_12_") && ActionBar.nmsver.equalsIgnoreCase("v1_13_")
 				&& ActionBar.nmsver.equalsIgnoreCase("v1_14_"))
 			ActionBar.useOldMethods = true;
-	}
+	}*/
 
 	private void initEconomy() {
 		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
@@ -326,16 +301,26 @@ public class RageMode extends JavaPlugin {
 	public synchronized void loadListeners() {
 		HandlerList.unregisterAll(this);
 
-		if (conf.getCfg().getBoolean("bungee.enable")) {
-			if (conf.getArenasCfg().contains("arenas"))
-				for (String game : GetGames.getGameNames()) {
-					if (game != null)
+		signTask.cancel();
+
+		if (conf.getArenasCfg().contains("arenas")) {
+			spawns.clear();
+
+			for (String game : GetGames.getGameNames()) {
+				if (game != null) {
+					if (conf.getCfg().getBoolean("bungee.enable"))
 						getManager().registerEvents(new BungeeListener(game), this);
+
+					spawns.add(new GameSpawnGetter(game));
 				}
+			}
 		}
 
-		if (conf.getCfg().getBoolean("signs.enable"))
+		if (conf.getCfg().getBoolean("signs.enable")) {
 			getManager().registerEvents(sign, this);
+
+			signTask = Bukkit.getScheduler().runTaskLater(this, sign, 40L);
+		}
 
 		getManager().registerEvents(new EventListener(this), this);
 		if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
@@ -345,32 +330,6 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void registerCommands() {
-		//TODO short this if possible, maybe?
-		new AddGame();
-		new AddSpawn();
-		new RemoveSpawn();
-		new ForceStart();
-		new HoloStats();
-		new KickPlayer();
-		new ListGames();
-		new PlayerJoin();
-		new PlayerLeave();
-		new Points();
-		new Reload();
-		new RemoveGame();
-		new ResetPlayerStats();
-		new SetActionBar();
-		new SetBossBar();
-		new SetGameTime();
-		new SetGlobalMessages();
-		new SetLobby();
-		new SetLobbyDelay();
-		new ShowStats();
-		new SignUpdate();
-		new Spectate();
-		new StopGame();
-		new ToggleGame();
-
 		RmCommand rm = new RmCommand();
 		getCommand("ragemode").setExecutor(rm);
 		getCommand("ragemode").setTabCompleter(rm);
@@ -433,6 +392,14 @@ public class RageMode extends JavaPlugin {
 
 	public BungeeUtils getBungeeUtils() {
 		return bungee;
+	}
+
+	public SignScheduler getSignScheduler() {
+		return sign;
+	}
+
+	public BukkitTask getSignTask() {
+		return signTask;
 	}
 
 	public List<GameSpawnGetter> getSpawns() {

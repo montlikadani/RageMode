@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -33,7 +33,7 @@ public class AddSpawn extends RmCommand {
 			return false;
 		}
 
-		YamlConfiguration aFile = plugin.getConfiguration().getArenasCfg();
+		FileConfiguration aFile = plugin.getConfiguration().getArenasCfg();
 		int i = 1;
 		String path = "arenas." + args[1];
 		if (!aFile.isSet(path)) {

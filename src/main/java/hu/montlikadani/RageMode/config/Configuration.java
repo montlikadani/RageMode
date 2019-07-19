@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.config;
 import java.io.File;
 import java.util.logging.Level;
 
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -10,7 +11,7 @@ import hu.montlikadani.ragemode.RageMode;
 public class Configuration {
 
 	private RageMode plugin;
-	private YamlConfiguration config, arenas, rewards, datas;
+	private FileConfiguration config, arenas, rewards, datas;
 	private File config_file, arenas_file, rewards_file, datas_file;
 
 	private double configVersion = 1.1;
@@ -76,19 +77,19 @@ public class Configuration {
 		}
 	}
 
-	public YamlConfiguration getCfg() {
+	public FileConfiguration getCfg() {
 		return config;
 	}
 
-	public YamlConfiguration getArenasCfg() {
+	public FileConfiguration getArenasCfg() {
 		return arenas;
 	}
 
-	public YamlConfiguration getRewardsCfg() {
+	public FileConfiguration getRewardsCfg() {
 		return rewards;
 	}
 
-	public YamlConfiguration getDatasCfg() {
+	public FileConfiguration getDatasCfg() {
 		return datas;
 	}
 

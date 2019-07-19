@@ -3,18 +3,19 @@ package hu.montlikadani.ragemode.signs;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class SignCreator {
 
-	private static YamlConfiguration fileConf;
+	private static FileConfiguration fileConf;
 	private static SignPlaceholder signPlaceholder = null;
 
 	private static List<SignData> signData = new CopyOnWriteArrayList<>();
@@ -39,10 +40,15 @@ public class SignCreator {
 
 			signPlaceholder = new SignPlaceholder(RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list"));
 
-			Location loc = new Location(Bukkit.getWorld(world), x, y, z);
-			if (loc != null) {
-				SignData data = new SignData(loc, game, signPlaceholder);
-				signData.add(data);
+			if (Bukkit.getWorld(world) != null) {
+				Location loc = new Location(Bukkit.getWorld(world), x, y, z);
+				if (loc != null) {
+					SignData data = new SignData(loc, game, signPlaceholder);
+					signData.add(data);
+				}
+			} else {
+				RageMode.logConsole(Level.WARNING, "[RageMode] World " + world + " not found to load this sign.");
+				return false;
 			}
 		}
 
@@ -127,7 +133,7 @@ public class SignCreator {
 					if (game != null && gameName != null) {
 						if (game.trim().contains(gameName.trim())) {
 							Location signLocation = stringToLocationSign(signString);
-							if (signLocation.getBlock().getState() instanceof Sign) {
+							if (signLocation != null && signLocation.getBlock().getState() instanceof Sign) {
 								for (SignData data : signData) {
 									data.updateSign();
 								}
@@ -211,6 +217,6 @@ public class SignCreator {
 		double y = Double.parseDouble(splited[2]);
 		double z = Double.parseDouble(splited[3]);
 
-		return new Location(Bukkit.getWorld(world), x, y, z);
+		return Bukkit.getWorld(world) != null ? new Location(Bukkit.getWorld(world), x, y, z) : null;
 	}
 }

@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.commands;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -10,7 +9,7 @@ import hu.montlikadani.ragemode.signs.SignCreator;
 public class SignUpdate extends RmCommand {
 
 	@Override
-	public boolean run(CommandSender sender, Command cmd, String[] args) {
+	public boolean run(CommandSender sender, String[] args) {
 		if (sender instanceof org.bukkit.entity.Player && !hasPerm(sender, "ragemode.admin.signupdate")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;

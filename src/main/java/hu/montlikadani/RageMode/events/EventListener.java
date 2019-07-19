@@ -11,7 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.block.Sign;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Explosive;
@@ -296,14 +296,12 @@ public class EventListener implements Listener {
 			}
 		} else if (GameUtils.getStatus() == GameStatus.WAITING && e instanceof Player
 				&& PlayerList.isPlayerPlaying(e.getUniqueId().toString()))
-				event.setDamage(0d); // Prevent player damage in lobby
+			event.setDamage(0d); // Prevent player damage in lobby
 		else if (GameUtils.getStatus() == GameStatus.GAMEFREEZE) { // Prevent damage in game freeze
 			if (e instanceof Player && PlayerList.isPlayerPlaying(e.getUniqueId().toString())) {
 				if (waitingGames.containsKey(PlayerList.getPlayersGame((Player) e))) {
-					if (waitingGames.get(PlayerList.getPlayersGame((Player) e))) {
+					if (waitingGames.get(PlayerList.getPlayersGame((Player) e)))
 						event.setCancelled(true);
-						return;
-					}
 				}
 			}
 		}
@@ -454,7 +452,7 @@ public class EventListener implements Listener {
 			// give him a new set of items that losing durability
 			//deceased.getInventory().clear();
 
-			YamlConfiguration conf = plugin.getConfiguration().getCfg();
+			FileConfiguration conf = plugin.getConfiguration().getCfg();
 			deceased.getInventory().setItem(conf.getInt("items.rageBow.slot"), hu.montlikadani.ragemode.items.RageBow.getItem());
 			deceased.getInventory().setItem(conf.getInt("items.rageKnife.slot"), RageKnife.getItem());
 			deceased.getInventory().setItem(conf.getInt("items.combatAxe.slot"), CombatAxe.getItem());
@@ -615,7 +613,7 @@ public class EventListener implements Listener {
 						double gY = loc.getY();
 						double gZ = loc.getZ();
 
-						grenade.getWorld().createExplosion(gX, gY, gZ, 2f, false, false);
+						grenade.getWorld().createExplosion(gX, gY, gZ, 4f, false, false);
 						grenade.remove(); // get rid of egg so it can't be picked up
 
 						int i = 0;
@@ -726,7 +724,10 @@ public class EventListener implements Listener {
 					|| type == InventoryType.ENDER_CHEST
 					|| type == InventoryType.HOPPER
 					|| type == InventoryType.BEACON
-					|| type == InventoryType.STONECUTTER)
+					|| type == InventoryType.STONECUTTER
+					|| type == InventoryType.BLAST_FURNACE
+					|| type == InventoryType.SHULKER_BOX
+					|| type == InventoryType.MERCHANT)
 				e.setCancelled(true);
 		}
 	}
@@ -789,6 +790,24 @@ public class EventListener implements Listener {
 								|| t.equals(Material.DAYLIGHT_DETECTOR)) {
 							ev.setUseInteractedBlock(Event.Result.DENY);
 							ev.setCancelled(true);
+						}
+					}
+				}
+
+				if (plugin.getConfiguration().getCfg().getBoolean("game.global.cancel-door-use") && ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
+					if (GameUtils.getStatus() == GameStatus.RUNNING || GameUtils.getStatus() == GameStatus.GAMEFREEZE) {
+						if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
+							if (Tag.DOORS.isTagged(t)) {
+								ev.setUseInteractedBlock(Event.Result.DENY);
+								ev.setCancelled(true);
+							}
+
+							if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
+								if (t.equals(Material.valueOf("WOODEN_DOOR"))) {
+									ev.setUseInteractedBlock(Event.Result.DENY);
+									ev.setCancelled(true);
+								}
+							}
 						}
 					}
 				}

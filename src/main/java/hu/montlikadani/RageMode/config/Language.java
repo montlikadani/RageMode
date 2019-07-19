@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -36,13 +37,13 @@ public class Language {
 				localeFolder.mkdirs();
 
 			File langFile = null;
-			YamlConfiguration lf = new YamlConfiguration();
+			FileConfiguration lf = new YamlConfiguration();
 			if (lang == null || lang.equals("") || lang.equals("en")) {
 				langFile = new File(localeFolder, "locale_en.yml");
 				if (!langFile.exists())
 					plugin.saveResource("locale/locale_en.yml", false);
 
-				loadMessages(langFile, new YamlConfig(lf));
+				loadMessages(langFile, new FileConfig(lf));
 			} else {
 				langFile = new File(localeFolder, "locale_" + lang + ".yml");
 				if (!langFile.exists())
@@ -56,8 +57,8 @@ public class Language {
 		}
 	}
 
-	private void loadMessages(File f, YamlConfig l) {
-		l.getYC().options().copyDefaults(true);
+	private void loadMessages(File f, FileConfig l) {
+		l.getFC().options().copyDefaults(true);
 
 		l.get("in-game-only", "&cThis command can only be in-game.");
 		l.get("not-a-player", "&cThis player not a player.");
@@ -197,7 +198,7 @@ public class Language {
 		l.get("time-formats.hour", "h");
 
 		try {
-			l.getYC().save(f);
+			l.getFC().save(f);
 		} catch (IOException e) {
 			e.printStackTrace();
 			plugin.throwMsg();
@@ -205,7 +206,7 @@ public class Language {
 	}
 
 	public String get(String key, Object... variables) {
-		YamlConfiguration yc = getCurrentLangConf();
+		FileConfiguration yc = YamlConfiguration.loadConfiguration(getLangFile());
 		String msg = "";
 		String missing = "BADF " + key;
 
@@ -231,7 +232,7 @@ public class Language {
 	}
 
 	public List<String> getList(String key, Object... variables) {
-		YamlConfiguration yc = getCurrentLangConf();
+		FileConfiguration yc = YamlConfiguration.loadConfiguration(getLangFile());
 		String missing = "BADF " + key + " ";
 
 		if (key == null || key.equals(""))
@@ -272,7 +273,7 @@ public class Language {
 		return ChatColor.translateAlternateColorCodes('&', s);
 	}
 
-	public File getCurrentLangFile() {
+	public File getLangFile() {
 		File localeFolder = new File(plugin.getFolder(), "locale");
 		File file = null;
 		for (String l : this.lang) {
@@ -281,18 +282,5 @@ public class Language {
 		}
 
 		return file != null ? file : null;
-	}
-
-	public File getDefaultLangFile() {
-		File localeFolder = new File(plugin.getFolder(), "locale");
-		return new File(localeFolder, "locale_en.yml");
-	}
-
-	public YamlConfiguration getCurrentLangConf() {
-		return YamlConfiguration.loadConfiguration(getCurrentLangFile());
-	}
-
-	public YamlConfiguration getDefaultLangConf() {
-		return YamlConfiguration.loadConfiguration(getDefaultLangFile());
 	}
 }
