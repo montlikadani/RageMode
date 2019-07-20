@@ -14,6 +14,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.commands.StopGame;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
 import hu.montlikadani.ragemode.gameUtils.ScoreTeam;
 import hu.montlikadani.ragemode.gameUtils.TabTitles;
@@ -109,6 +110,16 @@ public class GameTimer extends TimerTask {
 						// TODO fix issue when the player looks through the block and the name appears within the 10 radius
 						if (GameLoader.getLookingAt(player, p))
 							p.setCustomNameVisible(true);
+					}
+				}
+			}
+
+			List<Integer> values = conf.getCfg().getIntegerList("game.global.values-to-send-game-end-broadcast");
+			if (values != null && !values.isEmpty()) {
+				for (int i = 0; i < values.size(); i++) {
+					if (time == values.get(i)) {
+						GameUtils.broadcastToGame(gameName,
+								RageMode.getLang().get("game.broadcast.game-end", "%time%", Utils.getFormattedTime(time)));
 					}
 				}
 			}

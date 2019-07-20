@@ -125,6 +125,7 @@ game:
     explosion-kill: "&a%victim%&3 was&6 blown up&3 by&a %killer%&3."
     grenade-kill: "&a%victim%&3 was killed by&a %killer%&3 with a&7 Grenade&3. LOL"
     error-kill: "&cWhoops, that shouldn't happen normally..."
+    game-end: "&9The game ends in&e %time%&9."
   unknown-killer: "&cDo you know who killed you? Because we don't know it..."
   unknown-weapon: "&a%victim%&3 was killed by something unexpected."
   void-fall: "&c%player%&2 has void fall from the game."

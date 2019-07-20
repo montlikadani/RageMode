@@ -48,6 +48,7 @@ public class Language {
 				langFile = new File(localeFolder, "locale_" + lang + ".yml");
 				if (!langFile.exists())
 					plugin.saveResource("locale/locale_" + lang + ".yml", false);
+				//TODO Option to change the file encode
 			}
 
 			lf = YamlConfiguration.loadConfiguration(langFile);
@@ -151,6 +152,7 @@ public class Language {
 		l.get("game.broadcast.explosion-kill", "&a%victim%&3 was&6 blown up&3 by&a %killer%&3.");
 		l.get("game.broadcast.grenade-kill", "&a%victim%&3 was killed by&a %killer%&3 with a&7 Grenade&3. LOL");
 		l.get("game.broadcast.error-kill", "&cWhoops, that shouldn't happen normally...");
+		l.get("game.broadcast.game-end", "&9The game ends in&e %time%&9.");
 		l.get("game.unknown-killer", "&cDo you know who killed you? Because we don't know it...");
 		l.get("game.unknown-weapon", "&a%victim%&3 was killed by something unexpected.");
 		l.get("game.void-fall", "&c%player%&2 has void fall from the game.");

@@ -268,39 +268,6 @@ public class RageScores {
 		}
 	}
 
-	/*public static int takePoints(Player player, int amount) {
-		// returns total points
-		String playerUUID = player.getUniqueId().toString();
-		if (playerpoints.containsKey(playerUUID)) {
-			PlayerPoints pointsHolder = getPlayerPoints(playerUUID);
-			int oldPoints = pointsHolder.getPoints();
-			int oldDeaths = pointsHolder.getDeaths();
-			int totalPoints = oldPoints > 0 ? (oldPoints - amount) : 0;
-			int totalDeaths = oldDeaths;
-
-			totalDeaths++;
-
-			pointsHolder.setPoints(totalPoints);
-			pointsHolder.setDeaths(totalDeaths);
-
-			if (totalPoints < 0) {
-				player.sendMessage(RageMode.getLang().get("game.no-enough-points"));
-
-				// TODO Add reward for player suicide when not enough points
-				/*Reward reward = new Reward("suicide", PlayerList.getPlayersGame(player));
-				reward.rewardForPlayers(null);*/
-				/*return totalPoints;
-			}
-
-			player.sendMessage(RageMode.getLang().get("game.message.points-loss-for-suicide",
-					"%current%", totalPoints,
-					"%amount%", amount,
-					"%deaths%", totalDeaths));
-			return totalPoints;
-		}
-		return amount;
-	}*/
-
 	public static String calculateWinner(String game, String[] players) {
 		String highest = UUID.randomUUID().toString();
 		String goy = highest;

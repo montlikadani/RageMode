@@ -22,45 +22,49 @@ import hu.montlikadani.ragemode.gameUtils.GetGames;
 public class RmCommand implements CommandExecutor, TabCompleter {
 
 	private Map<String, String> arg = new WeakHashMap<>();
-	//private List<String> aliases = new ArrayList<>();
 
 	public RmCommand() {
 		arg.clear();
 
+		//TODO How to short this?
 		arg.put("addgame", AddGame.class.getName());
 		arg.put("addspawn", AddSpawn.class.getName());
 		arg.put("forcestart", ForceStart.class.getName());
 		arg.put("holostats", HoloStats.class.getName());
+		arg.put("holo", HoloStats.class.getName());
+
 		arg.put("kick", KickPlayer.class.getName());
 		arg.put("listgames", ListGames.class.getName());
+		arg.put("list", ListGames.class.getName());
+
 		arg.put("join", PlayerJoin.class.getName());
 		arg.put("leave", PlayerLeave.class.getName());
 		arg.put("points", Points.class.getName());
 		arg.put("reload", Reload.class.getName());
+		arg.put("rl", Reload.class.getName());
+
 		arg.put("removegame", RemoveGame.class.getName());
 		arg.put("resetstats", ResetPlayerStats.class.getName());
 		arg.put("actionbar", SetActionBar.class.getName());
 		arg.put("bossbar", SetBossBar.class.getName());
 		arg.put("gametime", SetGameTime.class.getName());
 		arg.put("globalmessages", SetGlobalMessages.class.getName());
+		arg.put("globalmsgs", SetGlobalMessages.class.getName());
+
 		arg.put("setlobby", SetLobby.class.getName());
 		arg.put("lobbydelay", SetLobbyDelay.class.getName());
 		arg.put("stats", ShowStats.class.getName());
 		arg.put("signupdate", SignUpdate.class.getName());
 		arg.put("spectate", Spectate.class.getName());
+		arg.put("spec", Spectate.class.getName());
+
 		arg.put("stopgame", StopGame.class.getName());
+		arg.put("stop", StopGame.class.getName());
+
 		arg.put("togglegame", ToggleGame.class.getName());
 		arg.put("givesaveditems", GiveSavedItems.class.getName());
 		arg.put("removespawn", RemoveSpawn.class.getName());
 		arg.put("latestart", LateStart.class.getName());
-
-		//TODO add aliases
-		/*aliases.add("holo");
-		aliases.add("list");
-		aliases.add("rl");
-		aliases.add("remove");
-		aliases.add("globalmsgs");
-		aliases.add("stop");*/
 	}
 
 	@Override
@@ -96,7 +100,8 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 				if (hasPerm(sender, "ragemode.admin.help"))
 					msg += "&7-&6 /rm admin&a - Lists all admin commands.";
 
-				sendMessage(sender, RageMode.getLang().colors(msg));
+				if (!msg.isEmpty())
+					sendMessage(sender, RageMode.getLang().colors(msg));
 				return true;
 			}
 
@@ -172,7 +177,8 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 				if (hasPerm(sender, "ragemode.admin.kick"))
 					msg += "&7-&6 /rm kick <gameName> <player>&a - Kick a player from the game.";
 
-				sendMessage(sender, RageMode.getLang().colors(msg));
+				if (!msg.isEmpty())
+					sendMessage(sender, RageMode.getLang().colors(msg));
 				return true;
 			}
 

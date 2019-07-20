@@ -169,8 +169,7 @@ game:
       # Does count the player's level with the start time of the game in the lobby?
       player-level-as-time-counter: false
 
-      # Time intervals when the lobby timer reaches, for example, 10 seconds,
-      # write it into the chat.
+      # Time intervals when the lobby timer reaches, for example, 10 seconds, write it into the chat.
       values-to-send-start-message: [30, 20, 10, 5, 4, 3, 2, 1]
 
     # Death messages
@@ -184,6 +183,9 @@ game:
     # This makes the game more difficult, because if it is enabled, it hides the names of 
     # the players if the target player is not in the position of the other player's 10 radius eye.
     show-name-above-player-when-look: true
+
+    # Time intervals when the game timer reaches, for example, 60 seconds, write it into the chat.
+    values-to-send-game-end-broadcast: [60, 30, 20, 10, 5, 4, 3, 2, 1]
 
     # Cancel all redstone activating blocks, such as lever, comparator, pressure plate, etc.?
     cancel-redstone-activating-blocks: true

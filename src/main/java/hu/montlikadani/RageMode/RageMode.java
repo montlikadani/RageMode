@@ -7,7 +7,6 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -212,13 +211,13 @@ public class RageMode extends JavaPlugin {
 								if (players[n] != null) {
 									PlayerList.removePlayerSynced(Bukkit.getPlayer(UUID.fromString(players[n])));
 									PlayerList.removePlayer(Bukkit.getPlayer(UUID.fromString(players[n])));
+
+									Bukkit.getPlayer(UUID.fromString(players[n])).removeMetadata("killedWith", instance);
 								}
 								n++;
 							}
 						}
-						for (Player key : PlayerList.specPlayer.values()) {
-							PlayerList.removeSpectatorPlayer(key);
-						}
+						PlayerList.specPlayer.values().forEach(key -> PlayerList.removeSpectatorPlayer(key));
 						RageScores.removePointsForPlayers(players);
 
 						PlayerList.setGameNotRunning(games[i]);
@@ -294,8 +293,6 @@ public class RageMode extends JavaPlugin {
 		econ = rsp.getProvider();
 		if (econ == null)
 			return;
-
-		return;
 	}
 
 	public synchronized void loadListeners() {

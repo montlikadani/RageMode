@@ -125,6 +125,7 @@ game:
     explosion-kill: "&a%victim%&6 felrobbant&a %killer%&3 által."
     grenade-kill: "&a%victim%&3 megölve&a %killer%&3 a&7 Grenade&3 fegyverrel. LOL"
     error-kill: "&cHoppá, ez nem kellett volna, hogy megtörténjen..."
+    game-end: "&9A játék&e %time%&9 múlva véget ér."
   unknown-killer: "&cTe tudod ki ölt meg? Mert mi nem tudjuk..."
   unknown-weapon: "&a%victim%&3 megölve valami miatt váratlanul."
   void-fall: "&c%player%&2 kiesett a mélybe a játékból."

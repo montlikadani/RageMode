@@ -805,12 +805,12 @@ public class EventListener implements Listener {
 								ev.setUseInteractedBlock(Event.Result.DENY);
 								ev.setCancelled(true);
 							}
+						}
 
-							if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
-								if (t.equals(Material.valueOf("WOODEN_DOOR"))) {
-									ev.setUseInteractedBlock(Event.Result.DENY);
-									ev.setCancelled(true);
-								}
+						if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
+							if (t.equals(Material.valueOf("WOODEN_DOOR"))) {
+								ev.setUseInteractedBlock(Event.Result.DENY);
+								ev.setCancelled(true);
 							}
 						}
 					}

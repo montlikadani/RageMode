@@ -172,7 +172,7 @@ public class Utils {
 	 * @throws Exception
 	 */
 	public static Object getAsIChatBaseComponent(String name) throws Exception {
-		Class<?> iChatBaseComponent = Utils.getNMSClass("IChatBaseComponent");
+		Class<?> iChatBaseComponent = getNMSClass("IChatBaseComponent");
 		Class<?> declaredClass = iChatBaseComponent.getDeclaredClasses()[0];
 		Method m = declaredClass.getMethod("a", String.class);
 		return m.invoke(iChatBaseComponent, "{\"text\":\"" + name + "\"}");
