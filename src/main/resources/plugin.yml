@@ -1,6 +1,6 @@
 name: RageMode
 main: hu.montlikadani.ragemode.RageMode
-version: 1.1.0.000
+version: 1.2.0.000
 softdepend: [HolographicDisplays, PlaceholderAPI]
 description: A RageMode minigame plugin
 api-version: 1.13
@@ -22,6 +22,7 @@ permissions:
       ragemode.listgames: true
       ragemode.stats: true
       ragemode.spectate: true
+      ragemode.listplayers: true
   ragemode.admin.*:
     description: Gives access to all game-setup commands.
     default: op

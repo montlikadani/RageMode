@@ -43,7 +43,7 @@ rewards:
           amount: 5
   in-game:
     # How to use this section read:
-    # https://github.com/montlikadani/RageMode/wiki/Configuring-rewards#how-do-i-set-up-in-game-commands
+    # https://github.com/montlikadani/RageMode/wiki/Configuring-rewards#what-means-the-in-game-section
     run-commands:
     - "chance:3-death:console:msg %player% &aNext time do not die ;)"
     - "join:console:msg %player% &aWe wish you a good game!"
