@@ -268,15 +268,14 @@ public class EventListener implements Listener {
 			if (e instanceof Player && PlayerList.isPlayerPlaying(e.getUniqueId().toString())) {
 				if (event.getCause().equals(DamageCause.FALL) && !plugin.getConfiguration().getCfg()
 						.getBoolean("game.global.damage-player-fall")) {
-					event.setDamage(0);
+					event.setCancelled(true);
+					return;
 				}
 
 				Player victim = (Player) e;
-				if (PlayerList.isPlayerPlaying(victim.getUniqueId().toString())) {
-					if (waitingGames.containsKey(PlayerList.getPlayersGame(victim))) {
-						if (waitingGames.get(PlayerList.getPlayersGame(victim))) {
-							event.setCancelled(true);
-						}
+				if (waitingGames.containsKey(PlayerList.getPlayersGame(victim))) {
+					if (waitingGames.get(PlayerList.getPlayersGame(victim))) {
+						event.setCancelled(true);
 					}
 				}
 			}
