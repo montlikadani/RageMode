@@ -1,7 +1,6 @@
 package hu.montlikadani.ragemode.config;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,11 +8,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 
@@ -31,31 +30,27 @@ public class Language {
 		this.lang.clear();
 		this.lang.add(lang);
 
-		try {
-			File localeFolder = new File(plugin.getFolder(), "locale");
-			if (!localeFolder.exists())
-				localeFolder.mkdirs();
+		File localeFolder = new File(plugin.getFolder(), "locale");
+		if (!localeFolder.exists())
+			localeFolder.mkdirs();
 
-			File langFile = null;
-			FileConfiguration lf = new YamlConfiguration();
-			if (lang == null || lang.equals("") || lang.equals("en")) {
-				langFile = new File(localeFolder, "locale_en.yml");
-				if (!langFile.exists())
-					plugin.saveResource("locale/locale_en.yml", false);
+		File langFile = null;
+		FileConfiguration lf = new YamlConfiguration();
+		if (lang == null || lang.equals("") || lang.equals("en")) {
+			langFile = new File(localeFolder, "locale_en.yml");
+			if (!langFile.exists())
+				plugin.saveResource("locale/locale_en.yml", false);
 
-				loadMessages(langFile, new FileConfig(lf));
-			} else {
-				langFile = new File(localeFolder, "locale_" + lang + ".yml");
-				if (!langFile.exists())
-					plugin.saveResource("locale/locale_" + lang + ".yml", false);
-				//TODO Option to change the file encode
-			}
+			loadMessages(langFile, new FileConfig(lf));
+		} else {
+			langFile = new File(localeFolder, "locale_" + lang + ".yml");
+			if (!langFile.exists())
+				plugin.saveResource("locale/locale_" + lang + ".yml", false);
 
-			lf = YamlConfiguration.loadConfiguration(langFile);
-		} catch (Throwable e) {
-			e.printStackTrace();
-			plugin.throwMsg();
+			//TODO Option to change the file encode
 		}
+
+		lf = YamlConfiguration.loadConfiguration(langFile);
 	}
 
 	private void loadMessages(File f, FileConfig l) {
@@ -69,6 +64,7 @@ public class Language {
 		l.get("missing-arguments", "&cMissing arguments! Usage:&e %usage%");
 		l.get("missing-dependencies", "&e%depend%&c must be installed to use this!");
 		l.get("not-a-number", "&e%number%&c is not a number.");
+		l.get("not-a-boolean", "&e%value%&c is not a boolean.");
 		l.get("invalid-game", "&e%game%&4 is not a valid RageMode Map.");
 		l.get("player-non-existent", "&cThat player doesn't even exist.");
 		l.get("not-played-yet", "&cThat player&7 %player%&c hasn't played on this server yet.");
@@ -113,6 +109,8 @@ public class Language {
 		l.get("commands.latestart.player-not-in-lobby", "&cYou are not in the lobby to increase the time.");
 		l.get("commands.latestart.time-can-not-less", "&cTime should not be less than 1.");
 		l.get("commands.latestart.lobby-timer-increased", "&aThe lobby time is increased by&e %newtime%&a seconds.");
+		l.get("commands.listplayers.game-not-running", "&cThis game is currently not running.");
+		l.get("commands.listplayers.player-currently-not-playing", "&cYou are not currently playing.");
 
 		String[] holoList = new String[] { "&6Rank:&a %rank%", "&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
 				"&5KD:&a %kd%", "&4Kills:&a %kills%", "&7Deaths:&a %deaths%" };
@@ -199,12 +197,7 @@ public class Language {
 		l.get("time-formats.minute", "m");
 		l.get("time-formats.hour", "h");
 
-		try {
-			l.getFC().save(f);
-		} catch (IOException e) {
-			e.printStackTrace();
-			plugin.throwMsg();
-		}
+		Configuration.saveFile(l.getFC(), f);
 	}
 
 	public String get(String key, Object... variables) {
@@ -219,7 +212,7 @@ public class Language {
 			msg = colors(yc.getString(key));
 		else {
 			msg = missing;
-			Bukkit.getConsoleSender().sendMessage(colors("[RageMode]&c Can't read language file for:&7 " + key));
+			Debug.sendMessage("[RageMode]&c Can't read language file for:&7 " + key);
 			return msg;
 		}
 
@@ -245,7 +238,7 @@ public class Language {
 			ls = Utils.colorList(yc.getStringList(key));
 		else {
 			ls = Arrays.asList(missing);
-			Bukkit.getConsoleSender().sendMessage(colors("[RageMode]&c Can't read language file for:&7 " + key));
+			Debug.sendMessage("[RageMode]&c Can't read language file for:&7 " + key);
 			return ls;
 		}
 

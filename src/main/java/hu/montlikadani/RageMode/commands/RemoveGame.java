@@ -1,21 +1,19 @@
 package hu.montlikadani.ragemode.commands;
 
-import java.io.IOException;
-
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.GameDeleteEvent;
+import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class RemoveGame extends RmCommand {
 
 	@Override
-	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
+	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!(sender instanceof Player)) {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return false;
@@ -47,12 +45,7 @@ public class RemoveGame extends RmCommand {
 				PlayerList.deleteGameFromList(game);
 
 				plugin.getConfiguration().getArenasCfg().set("arenas." + game, null);
-				try {
-					plugin.getConfiguration().getArenasCfg().save(plugin.getConfiguration().getArenasFile());
-				} catch (IOException e) {
-					e.printStackTrace();
-					plugin.throwMsg();
-				}
+				Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 
 				sendMessage(p, RageMode.getLang().get("setup.success-removed", "%game%", game));
 			}

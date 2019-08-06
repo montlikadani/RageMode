@@ -1,10 +1,10 @@
 package hu.montlikadani.ragemode.gameUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -19,14 +19,13 @@ import hu.montlikadani.ragemode.holder.ScoreBoardHolder;
 public class ScoreBoard {
 
 	public static HashMap<String, ScoreBoard> allScoreBoards = new HashMap<>();
-	private List<Player> player = new CopyOnWriteArrayList<>();
+	private List<Player> player = new ArrayList<>();
 	private ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
 	private HashMap<Player, ScoreBoardHolder> scoreboards = new HashMap<>();
 
 	/**
 	 * Creates a new instance of ScoreBoard, which manages the ScoreBoards for
 	 * the given List of Players.
-	 * 
 	 * @param player The List of player, the ScoreBoard should be set to later.
 	 */
 	@SuppressWarnings("deprecation")
@@ -48,7 +47,7 @@ public class ScoreBoard {
 	 * Creates a new instance of ScoreBoard, which manages the ScoreBoards for
 	 * the given List of Player UUID Strings.
 	 * 
-	 * @param player The List of player, the ScoreBoard should be set to later.
+	 * @param playerString The List of player, the ScoreBoard should be set to later.
 	 * @param isList Set it to whatever you want, it won't be used. Just to be able to create a new
 	 * constructor with the List parameter.
 	 */
@@ -60,20 +59,21 @@ public class ScoreBoard {
 
 		// Iterator is not work in this, so throws an error
 		// Probably some issues with Java
-		for (Player loopPlayer : this.player) {
-			Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
-			scoreboard.clearSlot(DisplaySlot.SIDEBAR);
-			removeScoreBoard(loopPlayer, false);
+		if (!player.isEmpty()) {
+			for (Player loopPlayer : this.player) {
+				Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
+				scoreboard.clearSlot(DisplaySlot.SIDEBAR);
+				removeScoreBoard(loopPlayer, false);
 
-			Objective objective = scoreboard.registerNewObjective("ragescores", "dummy");
-			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-			scoreboards.put(loopPlayer, new ScoreBoardHolder(loopPlayer, scoreboard, objective));
+				Objective objective = scoreboard.registerNewObjective("ragescores", "dummy");
+				objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+				scoreboards.put(loopPlayer, new ScoreBoardHolder(loopPlayer, scoreboard, objective));
+			}
 		}
 	}
 
 	/**
 	 * Sets the title for the created ScoreBoard.
-	 * 
 	 * @param title The String, where the title should be set to.
 	 */
 	public void setTitle(String title) {
@@ -122,7 +122,6 @@ public class ScoreBoard {
 
 	/**
 	 * Sets the ScoreBoard for the given Player.
-	 * 
 	 * @param player The Player instance for which the ScoreBoard should be set.
 	 */
 	public void setScoreBoard(Player player) {
@@ -169,7 +168,7 @@ public class ScoreBoard {
 	 * can be accessed with the getScoreBoard(String gameName) method.
 	 * 
 	 * @param gameName the unique game-name for which the ScoreBoards element should be saved for.
-	 * 
+	 * @param forceReplace force the game put to the list
 	 * @return Whether the ScoreBoard was stored successfully or not.
 	 */
 	public boolean addToScoreBoards(String gameName, boolean forceReplace) {
@@ -194,7 +193,6 @@ public class ScoreBoard {
 
 	/**
 	 * Returns the players who added to the list.
-	 * 
 	 * @return List player
 	 */
 	public List<Player> getPlayers() {

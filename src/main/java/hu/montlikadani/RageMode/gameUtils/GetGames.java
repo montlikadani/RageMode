@@ -10,7 +10,6 @@ public class GetGames {
 
 	/**
 	 * Get arenas games count
-	 * 
 	 * @return int games count
 	 */
 	public static int getConfigGamesCount() {
@@ -24,7 +23,6 @@ public class GetGames {
 
 	/**
 	 * Get max players from a file
-	 * 
 	 * @param game Game
 	 * @return int number
 	 */
@@ -34,7 +32,6 @@ public class GetGames {
 
 	/**
 	 * Get the specified game world
-	 * 
 	 * @param game Game
 	 * @return World name
 	 */
@@ -44,7 +41,6 @@ public class GetGames {
 
 	/**
 	 * Check if actionbar is enabled in config
-	 * 
 	 * @param game Game
 	 * @return actionbar boolean
 	 */
@@ -54,7 +50,6 @@ public class GetGames {
 
 	/**
 	 * Check if bossbar is enabled in config
-	 * 
 	 * @param game Game
 	 * @return bossbar boolean
 	 */
@@ -64,7 +59,6 @@ public class GetGames {
 
 	/**
 	 * Get the game time from config
-	 * 
 	 * @param game Game
 	 * @return time
 	 */
@@ -74,7 +68,6 @@ public class GetGames {
 
 	/**
 	 * Get game names from file
-	 * 
 	 * @return config section
 	 */
 	public static String[] getGameNames() {
@@ -84,7 +77,6 @@ public class GetGames {
 
 	/**
 	 * Gets overall max players from file
-	 * 
 	 * @return max players integer
 	 */
 	public static int getOverallMaxPlayers() {
@@ -106,7 +98,6 @@ public class GetGames {
 
 	/**
 	 * Check if game is exist that found in the file
-	 * 
 	 * @param game Game
 	 * @return true if correct
 	 */

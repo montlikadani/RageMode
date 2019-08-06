@@ -1,10 +1,9 @@
 package hu.montlikadani.ragemode.commands;
 
-import java.io.IOException;
-
 import org.bukkit.command.CommandSender;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -39,11 +38,7 @@ public class ToggleGame extends RmCommand {
 			}
 
 			plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".lock", toggle);
-			try {
-				plugin.getConfiguration().getArenasCfg().save(plugin.getConfiguration().getArenasFile());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 
 			// Something wrong with this... But what??
 			sendMessage(sender, RageMode.getLang().get("commands.togglegame.successfully-toggled", "%game%", args[1], "%status%",

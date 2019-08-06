@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.signs;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
@@ -10,7 +9,9 @@ import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class SignCreator {
@@ -21,12 +22,14 @@ public class SignCreator {
 	private static List<SignData> signData = new CopyOnWriteArrayList<>();
 
 	public synchronized static boolean loadSigns() {
-		fileConf = SignConfiguration.getSignConfig();
+		fileConf = SignConfiguration.getConf();
 
 		List<String> list = fileConf.getStringList("signs");
 
 		if (list == null || list.isEmpty())
 			return false;
+
+		signPlaceholder = new SignPlaceholder(RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list"));
 
 		int totalSigns = 0;
 
@@ -38,16 +41,13 @@ public class SignCreator {
 			double z = Double.parseDouble(splited[3]);
 			String game = splited[4];
 
-			signPlaceholder = new SignPlaceholder(RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list"));
-
 			if (Bukkit.getWorld(world) != null) {
 				Location loc = new Location(Bukkit.getWorld(world), x, y, z);
-				if (loc != null) {
-					SignData data = new SignData(loc, game, signPlaceholder);
-					signData.add(data);
-				}
+				SignData data = new SignData(loc, game, signPlaceholder);
+
+				signData.add(data);
 			} else {
-				RageMode.logConsole(Level.WARNING, "[RageMode] World " + world + " not found to load this sign.");
+				Debug.logConsole(Level.WARNING, "World " + world + " not found to load this sign.");
 				return false;
 			}
 		}
@@ -55,7 +55,7 @@ public class SignCreator {
 		totalSigns += list.size();
 
 		if (totalSigns > 0)
-			RageMode.logConsole("[RageMode] Loaded " + totalSigns + " sign" + (totalSigns > 1 ? "s" : "") + ".");
+			Debug.logConsole("Loaded " + totalSigns + " sign" + (totalSigns > 1 ? "s" : "") + ".");
 
 		return true;
 	}
@@ -68,36 +68,22 @@ public class SignCreator {
 		signs.add(index);
 		fileConf.set("signs", signs);
 		signData.add(data);
-		try {
-			fileConf.save(SignConfiguration.getYamlSignsFile());
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-			RageMode.getInstance().throwMsg();
-			return false;
-		}
+		Configuration.saveFile(fileConf, SignConfiguration.getFile());
+		return true;
 	}
 
 	public synchronized static boolean removeSign(Sign sign) {
 		List<String> signs = fileConf.getStringList("signs");
 
-		for (String game : GetGames.getGameNames()) {
-			for (SignData data : signData) {
-				if (sign.getLocation().equals(data.getLocation()) && game.equalsIgnoreCase(data.getGame())) {
-					String index = locationSignToString(data.getLocation(), game);
+		for (SignData data : signData) {
+			if (data.getLocation().equals(sign.getLocation())) {
+				String index = locationSignToString(data.getLocation(), data.getGame());
 
-					signs.remove(index);
-					fileConf.set("signs", signs);
-					signData.remove(data);
-					try {
-						fileConf.save(SignConfiguration.getYamlSignsFile());
-						return true;
-					} catch (IOException e) {
-						e.printStackTrace();
-						RageMode.getInstance().throwMsg();
-						return false;
-					}
-				}
+				signs.remove(index);
+				fileConf.set("signs", signs);
+				signData.remove(data);
+				Configuration.saveFile(fileConf, SignConfiguration.getFile());
+				return true;
 			}
 		}
 		return false;
@@ -105,7 +91,7 @@ public class SignCreator {
 
 	/**
 	 * Updates a JoinSigns for the given game which are properly configured.
-	 * 
+	 * @param loc the sign location
 	 * @return True if a sign is found on the set location.
 	 */
 	public static boolean updateSign(Location loc) {
@@ -152,6 +138,7 @@ public class SignCreator {
 	/**
 	 * Checks whether the given sign is properly configured to be an JoinSign or not.
 	 * 
+	 * @param loc The sign location
 	 * @return True if the block found in the specified location.
 	 */
 	public static boolean isJoinSign(Location loc) {
@@ -173,7 +160,6 @@ public class SignCreator {
 
 	/**
 	 * Checks whether the sign is properly configured to get the game from the file.
-	 * 
 	 * @return Game name if found in the list.
 	 */
 	public static String getGameFromString() {
@@ -192,7 +178,6 @@ public class SignCreator {
 
 	/**
 	 * Gets the SignData list
-	 * 
 	 * @return List of SignData
 	 */
 	public static List<SignData> getSignData() {

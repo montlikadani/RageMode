@@ -19,7 +19,6 @@ public class Utils {
 
 	/**
 	 * Time formatting
-	 * 
 	 * @param time Interval
 	 * @return if minute/hour/second less than 10 and writes 0
 	 */
@@ -28,23 +27,21 @@ public class Utils {
 		String mMark = RageMode.getLang().get("time-formats.minute");
 		if (time < 60)
 			return time + sMark;
-		else {
-			int mins = (int) time / 60;
-			int remainderSecs = time - (mins * 60);
-			if (mins < 60)
-				return (mins < 10 ? "0" : "") + mins + mMark + " " + (remainderSecs < 10 ? "0" : "") + remainderSecs + sMark;
-			else {
-				int hours = (int) mins / 60;
-				int remainderMins = mins - (hours * 60);
-				return (hours < 10 ? "0" : "") + hours + RageMode.getLang().get("time-formats.hour") + " " + (remainderMins < 10 ? "0" : "") + remainderMins + mMark + " "
-						+ (remainderSecs < 10 ? "0" : "") + remainderSecs + sMark;
-			}
-		}
+
+		int mins = time / 60;
+		int remainderSecs = time - (mins * 60);
+		if (mins < 60)
+			return (mins < 10 ? "0" : "") + mins + mMark + " " + (remainderSecs < 10 ? "0" : "") + remainderSecs + sMark;
+
+		int hours = mins / 60;
+		int remainderMins = mins - (hours * 60);
+		return (hours < 10 ? "0" : "") + hours + RageMode.getLang().get("time-formats.hour") + " " +
+				(remainderMins < 10 ? "0" : "") + remainderMins + mMark + " "
+				+ (remainderSecs < 10 ? "0" : "") + remainderSecs + sMark;
 	}
 
 	/**
 	 * 1.13 fix for default colors not shows in tablist.
-	 * 
 	 * @param prefix Prefix
 	 * @return ChatColor char to show the specified color
 	 */
@@ -64,9 +61,9 @@ public class Utils {
 
 	/**
 	 * Clear the specified player inventory.
-	 * <p>
-	 * This fixes the crash when the inventory is empty and the
+	 * <p>This fixes the crash when the inventory is empty and the
 	 * server throws AssertionError: TRAP, that cause the server crash and stop.
+	 * <p><b>Regenerate world should fix this.</b>
 	 * @param pl Player
 	 */
 	public static void clearPlayerInventory(Player pl) {
@@ -80,7 +77,6 @@ public class Utils {
 
 	/**
 	 * Sets the available placeholders to that string, that manages from RageMode
-	 * 
 	 * @param s String to replace the variables
 	 * @param player Player
 	 * @return String
@@ -143,11 +139,11 @@ public class Utils {
 
 	/**
 	 * Sends the packet to the specified player
-	 * 
 	 * @param player Player
 	 * @param packet Packet name
+	 * @throws Throwable if class/method not found
 	 */
-	public static void sendPacket(Player player, Object packet) throws Throwable {
+	public static void sendPacket(Player player, Object packet) throws Exception {
 		Object handle = player.getClass().getMethod("getHandle", new Class[0]).invoke(player, new Object[0]);
 		Object playerConnection = handle.getClass().getField("playerConnection").get(handle);
 		playerConnection.getClass().getMethod("sendPacket", new Class[] { getNMSClass("Packet") })
@@ -156,9 +152,8 @@ public class Utils {
 
 	/**
 	 * Gets the NMS class with packet name
-	 * 
 	 * @param name Packet class
-	 * @throws ClassNotFoundException when the class not found
+	 * @throws ClassNotFoundException if class not found
 	 * @return Returns class name from the current version
 	 */
 	public static Class<?> getNMSClass(String name) throws ClassNotFoundException {
@@ -169,7 +164,7 @@ public class Utils {
 	 * Invoke the IChatBaseComponent
 	 * @param name String
 	 * @return JSON
-	 * @throws Exception
+	 * @throws Exception if class/method not found
 	 */
 	public static Object getAsIChatBaseComponent(String name) throws Exception {
 		Class<?> iChatBaseComponent = getNMSClass("IChatBaseComponent");
@@ -188,9 +183,7 @@ public class Utils {
 
 	/**
 	 * Gets the Bukkit version
-	 * <p>
-	 * Example: 1.8, 1.13.2
-	 * 
+	 * <p>Example: 1.8, 1.13.2
 	 * @return Bukkit version
 	 */
 	public static String getVersion() {
@@ -199,7 +192,6 @@ public class Utils {
 
 	/**
 	 * Adds to use the color codes in the list
-	 * 
 	 * @param list List
 	 * @return List
 	 */
@@ -213,7 +205,6 @@ public class Utils {
 
 	/**
 	 * Gets the Bukkit RGB color from string
-	 * 
 	 * @param paramString String
 	 * @return Bukkit RGB color from string
 	 */
@@ -224,7 +215,6 @@ public class Utils {
 
 	/**
 	 * Check if number is an integer
-	 * 
 	 * @param str Number as string
 	 * @return true if the number as double
 	 */
@@ -239,7 +229,6 @@ public class Utils {
 
 	/**
 	 * Check if number is an integer
-	 * 
 	 * @param str Number as string
 	 * @return true if the number as integer
 	 */

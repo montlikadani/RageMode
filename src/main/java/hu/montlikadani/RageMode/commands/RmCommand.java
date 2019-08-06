@@ -65,6 +65,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 		arg.put("givesaveditems", GiveSavedItems.class.getName());
 		arg.put("removespawn", RemoveSpawn.class.getName());
 		arg.put("latestart", LateStart.class.getName());
+		arg.put("listplayers", ListPlayers.class.getName());
 	}
 
 	@Override
@@ -84,12 +85,12 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 						msg += "&7-&6 /rm leave&a - Leave from the current game.\n";
 
 					if (hasPerm(sender, "ragemode.help.playercommands") || hasPerm(sender, "ragemode.stats"))
-						msg += "&7-&6 /rm showstats [player]&a - Showing statistic of a target player.\n";
+						msg += "&7-&6 /rm stats [player]&a - Showing statistic of a target player.\n";
 
 					if (hasPerm(sender, "ragemode.help.playercommands") || hasPerm(sender, "ragemode.spectate"))
 						msg += "&7-&6 /rm spectate <gameName>&a - Join to the game with spectator mode.\n";
 				} else {
-					msg += "&7-&6 /rm showstats <player>&a - Showing statistic of a target player.\n";
+					msg += "&7-&6 /rm stats <player>&a - Showing statistic of a target player.\n";
 
 					msg += "&7-&6 /rm resetstats <player>&a - Reset the player's stat.\n";
 				}
@@ -99,6 +100,9 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 
 				if (hasPerm(sender, "ragemode.admin.help"))
 					msg += "&7-&6 /rm admin&a - Lists all admin commands.";
+
+				if (hasPerm(sender, "ragemode.listplayers"))
+					msg += "&7-&6 /rm listplayers [game]&a - Lists all currently playing players.";
 
 				if (!msg.isEmpty())
 					sendMessage(sender, RageMode.getLang().colors(msg));
@@ -169,7 +173,8 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 						msg += "&7-&6 /rm forcestart <gameName>&a - Forces the specified game to start.\n";
 
 					if (hasPerm(sender, "ragemode.admin.givesaveditems"))
-						msg += "&7-&6 /rm givesaveditems <player>&a - Returns the saved inventory to the player.\n";
+						msg += "&7-&6 /rm givesaveditems <player> [true]&a - Returns the saved inventory to the player"
+								+ " (optional: actually remove from file).\n";
 
 					if (hasPerm(sender, "ragemode.admin.latestart"))
 						msg += "&7-&6 /rm latestart <timeInSeconds>&a - Increases the current lobby waiting time.";
@@ -307,9 +312,10 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 
 	private List<String> getDefaultCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
-		for (String cmds : new String[] { "join", "leave", "listgames", "stats", "spectate" }) {
+		for (String cmds : new String[] { "join", "leave", "listgames", "stats", "spectate", "listplayers" }) {
 			if (!hasPerm(sender, "ragemode.help.playercommands") || !hasPerm(sender, "ragemode." + cmds))
 				continue;
+
 			c.add(cmds);
 		}
 		return c;
@@ -321,6 +327,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 				"kick", "stopgame", "signupdate", "togglegame", "points", "givesaveditems", "removespawn", "latestart" }) {
 			if (!hasPerm(sender, "ragemode.admin." + cmds))
 				continue;
+
 			c.add(cmds);
 		}
 		return c;
@@ -331,6 +338,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 		for (String cmds : new String[] { "actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay" }) {
 			if (!hasPerm(sender, "ragemode.admin.set" + cmds))
 				continue;
+
 			c.add(cmds);
 		}
 		return c;
@@ -338,41 +346,41 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 
 	private List<String> getGameListCmds() {
 		return Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay", "removegame", "forcestart", "setlobby",
-				"addspawn", "join", "leave", "signupdate", "stop", "stopgame", "togglegame", "spectate", "removespawn");
+				"addspawn", "join", "leave", "signupdate", "stop", "stopgame", "togglegame", "spectate", "removespawn", "listplayers");
 	}
 
 	private List<String> getValueListCmds() {
 		return Arrays.asList("actionbar", "bossbar", "globalmessages");
 	}
 
-	public boolean hasPerm(CommandSender sender, String perm) {
+	boolean hasPerm(CommandSender sender, String perm) {
 		if (sender.hasPermission(perm))
 			return true;
 		return false;
 	}
 
-	public void sendMessage(CommandSender sender, String msg) {
+	void sendMessage(CommandSender sender, String msg) {
 		if (sender != null && msg != null && !msg.equals(""))
 			sender.sendMessage(msg);
 	}
 
-	public boolean run(CommandSender sender) {
+	boolean run(CommandSender sender) {
 		return false;
 	}
 
-	public boolean run(RageMode plugin, CommandSender sender) {
+	boolean run(RageMode plugin, CommandSender sender) {
 		return false;
 	}
 
-	public boolean run(CommandSender sender, String[] args) {
+	boolean run(CommandSender sender, String[] args) {
 		return false;
 	}
 
-	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
+	boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		return false;
 	}
 
-	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
+	boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
 		return false;
 	}
 }

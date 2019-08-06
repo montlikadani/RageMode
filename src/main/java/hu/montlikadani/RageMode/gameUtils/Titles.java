@@ -32,9 +32,7 @@ public class Titles {
 
 			title = RageMode.getLang().colors(title);
 			e = Utils.getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0].getField("TIMES").get((Object) null);
-			chatTitle = Utils.getNMSClass("IChatBaseComponent").getDeclaredClasses()[0]
-					.getMethod("a", new Class[] { String.class })
-					.invoke((Object) null, new Object[] { "{\"text\":\"" + title + "\"}" });
+			chatTitle = Utils.getAsIChatBaseComponent(title);
 			subtitleConstructor = Utils.getNMSClass("PacketPlayOutTitle")
 					.getConstructor(new Class[] { Utils.getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0],
 							Utils.getNMSClass("IChatBaseComponent"), Integer.TYPE, Integer.TYPE, Integer.TYPE });
@@ -54,9 +52,7 @@ public class Titles {
 
 			subtitle = RageMode.getLang().colors(subtitle);
 			e = Utils.getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0].getField("TIMES").get((Object) null);
-			chatSubtitle = Utils.getNMSClass("IChatBaseComponent").getDeclaredClasses()[0]
-					.getMethod("a", new Class[] { String.class })
-					.invoke((Object) null, new Object[] { "{\"text\":\"" + title + "\"}" });
+			chatSubtitle = Utils.getAsIChatBaseComponent(title);
 			subtitleConstructor = Utils.getNMSClass("PacketPlayOutTitle")
 					.getConstructor(new Class[] { Utils.getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0],
 							Utils.getNMSClass("IChatBaseComponent"), Integer.TYPE, Integer.TYPE, Integer.TYPE });
@@ -65,9 +61,7 @@ public class Titles {
 			Utils.sendPacket(player, subtitlePacket);
 
 			e = Utils.getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0].getField("SUBTITLE").get((Object) null);
-			chatSubtitle = Utils.getNMSClass("IChatBaseComponent").getDeclaredClasses()[0]
-					.getMethod("a", new Class[] { String.class })
-					.invoke((Object) null, new Object[] { "{\"text\":\"" + subtitle + "\"}" });
+			chatSubtitle = Utils.getAsIChatBaseComponent(subtitle);
 			subtitleConstructor = Utils.getNMSClass("PacketPlayOutTitle")
 					.getConstructor(new Class[] { Utils.getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0],
 							Utils.getNMSClass("IChatBaseComponent"), Integer.TYPE, Integer.TYPE, Integer.TYPE });
@@ -81,7 +75,6 @@ public class Titles {
 
 	/**
 	 * Clears the current set title.
-	 * 
 	 * @param player Player
 	 */
 	public static void clearTitle(Player player) {

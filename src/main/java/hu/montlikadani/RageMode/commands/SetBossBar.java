@@ -1,12 +1,11 @@
 package hu.montlikadani.ragemode.commands;
 
-import java.io.IOException;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class SetBossBar extends RmCommand {
@@ -33,13 +32,13 @@ public class SetBossBar extends RmCommand {
 				return false;
 			}
 
-			plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".bossbar", Boolean.parseBoolean(args[2]));
-			try {
-				plugin.getConfiguration().getArenasCfg().save(plugin.getConfiguration().getArenasFile());
-			} catch (IOException e) {
-				e.printStackTrace();
-				plugin.throwMsg();
+			if (!(args[2].equalsIgnoreCase("true") && args[2].equalsIgnoreCase("false"))) {
+				sendMessage(p, RageMode.getLang().get("not-a-boolean", "%value%", args[2]));
+				return false;
 			}
+
+			plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".bossbar", Boolean.parseBoolean(args[2]));
+			Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 			sendMessage(p, RageMode.getLang().get("setup.success"));
 		} else
 			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm bossbar <gameName> <true|false>"));

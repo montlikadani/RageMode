@@ -6,6 +6,7 @@ no-permission-to-interact-sign: "&cYou don't have permission to interact signs!"
 missing-arguments: "&cMissing arguments! Usage:&e %usage%"
 missing-dependencies: "&e%depend%&c must be installed to use this!"
 not-a-number: "&e%number%&c is not a number."
+not-a-boolean: "&e%value%&c is not a boolean."
 invalid-game: "&e%game%&4 is not a valid RageMode Map."
 player-non-existent: "&cThat player doesn't even exist."
 not-played-yet: "&cThat player&7 %player%&c hasn't played on this server yet."
@@ -66,6 +67,9 @@ commands:
     player-not-in-lobby: "&cYou are not in the lobby to increase the time."
     time-can-not-less: "&cTime should not be less than 1."
     lobby-timer-increased: "&aThe lobby time is increased by&e %newtime%&a seconds."
+  listplayers:
+    game-not-running: "&cThis game is currently not running."
+    player-currently-not-playing: "&cYou are not currently playing."
 
 hologram-list:
 - "&6Rank:&a %rank%"

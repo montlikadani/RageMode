@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
-import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Debug;
 
 public class MySQLConnect {
 
@@ -27,13 +27,13 @@ public class MySQLConnect {
 						+ autoReconnect + "&useSSL=" + useSSL;
 				connection = DriverManager.getConnection(url, userName, password);
 			} catch (SQLException e) {
-				RageMode.logConsole(Level.WARNING, "[RageMode] Could not connect to the MySQL database.");
-				RageMode.logConsole("[RageMode] Problem: " + e.getMessage());
+				Debug.logConsole(Level.WARNING, "Could not connect to the MySQL database.");
+				Debug.logConsole("Problem: " + e.getMessage());
 				return;
 			}
 		} catch (ClassNotFoundException c) {
 			c.printStackTrace();
-			RageMode.logConsole(Level.WARNING, "[RageMode] Could not connect to the MySQL database. No MySql found.");
+			Debug.logConsole(Level.WARNING, "Could not connect to the MySQL database. No MySql found.");
 			return;
 		}
 
@@ -45,7 +45,7 @@ public class MySQLConnect {
 	public void createDefaultTable() {
 		try {
 			if (isConnected()) {
-				String query = "CREATE TABLE IF NOT EXISTS `" + prefix + "stats_players` (`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY , name VARCHAR(255) , uuid VARCHAR(255) , kills INT(11) , axe_kills INT(11) , direct_arrow_kills INT(11) , explosion_kills INT(11) , knife_kills INT(11) , deaths INT(11) , axe_deaths INT(11) , direct_arrow_deaths INT(11) , explosion_deaths INT(11) , knife_deaths INT(11) , wins INT(11) , score INT(11) , games INT(11) , kd DOUBLE, UNIQUE(uuid));";
+				String query = "CREATE TABLE IF NOT EXISTS `" + prefix + "stats_players` (`id` INT NOT NULL PRIMARY KEY , name VARCHAR(255) , uuid VARCHAR(255) , kills INT(11) , axe_kills INT(11) , direct_arrow_kills INT(11) , explosion_kills INT(11) , knife_kills INT(11) , deaths INT(11) , axe_deaths INT(11) , direct_arrow_deaths INT(11) , explosion_deaths INT(11) , knife_deaths INT(11) , wins INT(11) , score INT(11) , games INT(11) , kd DOUBLE, UNIQUE(uuid));";
 				connection.createStatement().executeUpdate(query);
 			}
 		} catch (SQLException e) {
@@ -57,7 +57,7 @@ public class MySQLConnect {
 		try {
 			return connection != null && !connection.isClosed();
 		} catch (SQLException e) {
-			RageMode.logConsole(e.getMessage());
+			Debug.logConsole(e.getMessage());
 		}
 		return false;
 	}
@@ -66,7 +66,7 @@ public class MySQLConnect {
 		try {
 			return connection != null && connection.isValid(2);
 		} catch (SQLException e) {
-			RageMode.logConsole(e.getMessage());
+			Debug.logConsole(e.getMessage());
 		}
 		return false;
 	}

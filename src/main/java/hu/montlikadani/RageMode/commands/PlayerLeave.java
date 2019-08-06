@@ -15,12 +15,16 @@ public class PlayerLeave extends RmCommand {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return false;
 		}
+
 		Player p = (Player) sender;
 		if (!hasPerm(p, "ragemode.leave")) {
 			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return false;
 		}
-		GameUtils.runCommands(PlayerList.getPlayersGame(p), "leave");
+
+		GameUtils.runCommands(p, PlayerList.getPlayersGame(p), "leave");
+		GameUtils.sendActionBarMessages(p, PlayerList.getPlayersGame(p), "leave");
+		p.removeMetadata("killedWith", RageMode.getInstance());
 		PlayerList.removePlayer(p);
 		PlayerList.removeSpectatorPlayer(p);
 		return false;

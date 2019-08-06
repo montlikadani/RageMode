@@ -21,7 +21,7 @@ public class SignPlaceholder {
 		return lines;
 	}
 
-	public List<String> parsePlaceholder(String game) {
+	protected List<String> parsePlaceholder(String game) {
 		List<String> variables = new ArrayList<>();
 
 		for (String line : lines) {
@@ -29,14 +29,14 @@ public class SignPlaceholder {
 				line = line.replace("%game%", game);
 
 			if (line.contains("%current-players%"))
-				line = line.replace("%current-players%", Integer.toString(PlayerList.getPlayersInGame(game).length));
+				line = line.replace("%current-players%", Integer.toString(PlayerList.getPlayers().size()));
 
 			if (line.contains("%max-players%"))
 				line = line.replace("%max-players%", Integer.toString(GetGames.getMaxPlayers(game)));
 
 			if (line.contains("%running%")) {
 				if (GameUtils.getStatus() == GameStatus.WAITING) {
-					if (PlayerList.getPlayersInGame(game).length == GetGames.getMaxPlayers(game))
+					if (PlayerList.getPlayers().size() == GetGames.getMaxPlayers(game))
 						line = line.replace("%running%", RageMode.getInstance().getConfiguration().getCfg().getString("signs.game.full"));
 					else
 						line = line.replace("%running%", RageMode.getInstance().getConfiguration().getCfg().getString("signs.game.waiting"));

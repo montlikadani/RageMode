@@ -4,9 +4,11 @@ rewards:
       cash: 15.0
       commands:
       - "console: say %player% &aWe waiting you to the next game!"
+
       messages:
       #- "&aYou have won this game&c %game%&a!"
       #- "&eYour reward:&7 %reward%"
+
       items:
         stone:
           type: COBBLESTONE
@@ -31,8 +33,10 @@ rewards:
       cash: 2.0
       commands:
       - "console: say %player% &2We waiting you to the next game!"
+
       #messages:
       #- "&eYour reward:&7 %reward%"
+
       items:
         granite:
           type: STONE

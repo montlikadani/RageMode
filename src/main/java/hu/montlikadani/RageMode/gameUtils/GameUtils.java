@@ -1,7 +1,7 @@
 package hu.montlikadani.ragemode.gameUtils;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
@@ -9,11 +9,13 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 
+import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
@@ -21,8 +23,13 @@ import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.holder.HoloHolder;
+import hu.montlikadani.ragemode.items.CombatAxe;
 import hu.montlikadani.ragemode.items.ForceStarter;
+import hu.montlikadani.ragemode.items.Grenade;
 import hu.montlikadani.ragemode.items.LeaveGame;
+import hu.montlikadani.ragemode.items.RageArrow;
+import hu.montlikadani.ragemode.items.RageBow;
+import hu.montlikadani.ragemode.items.RageKnife;
 import hu.montlikadani.ragemode.signs.SignCreator;
 
 public class GameUtils {
@@ -31,25 +38,21 @@ public class GameUtils {
 
 	/**
 	 * Broadcast for in-game players to the specified game
-	 * 
 	 * @param game Game
 	 * @param message Message
 	 */
 	public static void broadcastToGame(String game, String message) {
-		String[] playersInGame = PlayerList.getPlayersInGame(game);
-		int i = 0;
-		int imax = playersInGame.length;
-
-		while (i < imax) {
-			if (playersInGame[i] != null && Bukkit.getPlayer(UUID.fromString(playersInGame[i])) != null)
-				Bukkit.getPlayer(UUID.fromString(playersInGame[i])).sendMessage(message);
-			i++;
+		for (Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
+			if (players != null) {
+				Player p = Bukkit.getPlayer(UUID.fromString(players.getValue()));
+				if (p != null && PlayerList.getPlayersGame(p).equals(game))
+					p.sendMessage(message);
+			}
 		}
 	}
 
 	/**
 	 * Checks whatever the specified game is exists or no.
-	 * 
 	 * @param game Game
 	 * @return true if game exists
 	 */
@@ -58,45 +61,7 @@ public class GameUtils {
 	}
 
 	/**
-	 * Gets the game by name.
-	 * 
-	 * @param name Game name
-	 * @return game name if exist
-	 */
-	public static String getGameByName(String name) {
-		String gName = null;
-		if (isGameWithNameExists(name))
-			gName = name;
-
-		return gName;
-	}
-
-	/**
-	 * Get the player who in game.
-	 * 
-	 * @param game Game
-	 * @return Player
-	 */
-	public static Player getPlayerInGame(String game) {
-		String[] players = PlayerList.getPlayersInGame(game);
-		Player player = null;
-		if (players != null) {
-			int i = 0;
-			int imax = players.length;
-
-			while (i < imax) {
-				if (players[i] != null)
-					player = Bukkit.getPlayer(UUID.fromString(players[i]));
-
-				i++;
-			}
-		}
-		return player != null ? player : null;
-	}
-
-	/**
 	 * Get the game spawn by name.
-	 * 
 	 * @param name Game name
 	 * @return GameSpawnGetter
 	 */
@@ -109,10 +74,51 @@ public class GameUtils {
 	}
 
 	/**
+	 * Give game items to the specified player. If the item slot not found
+	 * in configuration, then adds the item to the inventory.
+	 * @param p Player
+	 * @param clear - if true clears the player inventory before add items
+	 */
+	public static void addGameItems(Player p, boolean clear) {
+		PlayerInventory inv = p.getInventory();
+		if (clear)
+			Utils.clearPlayerInventory(p);
+
+		ItemStack result = null;
+		FileConfiguration f = RageMode.getInstance().getConfiguration().getCfg();
+		String path = "items.";
+		if (f.contains(path + "rageBow.slot"))
+			inv.setItem(f.getInt("items.rageBow.slot"), RageBow.getItem());
+		else
+			result = RageBow.getItem();
+
+		if (f.contains(path + "rageKnife.slot"))
+			inv.setItem(f.getInt("items.rageKnife.slot"), RageKnife.getItem());
+		else
+			result = RageKnife.getItem();
+
+		if (f.contains(path + "combatAxe.slot"))
+			inv.setItem(f.getInt("items.combatAxe.slot"), CombatAxe.getItem());
+		else
+			result = CombatAxe.getItem();
+
+		if (f.contains(path + "rageArrow.slot"))
+			inv.setItem(f.getInt("items.rageArrow.slot"), RageArrow.getItem());
+		else
+			result = RageArrow.getItem();
+
+		if (f.contains(path + "grenade.slot"))
+			inv.setItem(f.getInt("items.grenade.slot"), Grenade.getItem());
+		else
+			result = Grenade.getItem();
+
+		if (result != null)
+			inv.addItem(result);
+	}
+
+	/**
 	 * Saves the player data to a yaml file
-	 * <p>
-	 * This prevents losing the player data when the server has stopped randomly.
-	 * 
+	 * <p>This prevents losing the player data when the server has stopped randomly.
 	 * @param p Player
 	 */
 	public static void savePlayerData(Player p) {
@@ -182,12 +188,7 @@ public class GameUtils {
 				data.set(path + "vehicle", p.getVehicle().getLocation());
 			}
 
-			try {
-				data.save(conf.getDatasFile());
-			} catch (IOException o) {
-				o.printStackTrace();
-				RageMode.getInstance().throwMsg();
-			}
+			Configuration.saveFile(data, conf.getDatasFile());
 		}
 
 		clearPlayerTools(p);
@@ -252,19 +253,11 @@ public class GameUtils {
 				} else if (conf.getCfg().getBoolean("save-player-datas-to-file"))
 					savePlayerData(p);
 
-				if (!conf.getCfg().getBoolean("save-player-datas-to-file")) {
-					clearPlayerTools(p);
-
-					// We still need some data saving
-					PlayerList.oldLocations.addToBoth(p, p.getLocation());
-					PlayerList.oldGameMode.addToBoth(p, p.getGameMode());
-					p.setGameMode(GameMode.SURVIVAL);
-				}
-
 				if (PlayerList.addPlayer(p, game)) {
 					p.teleport(GetGameLobby.getLobbyLocation(game));
 
-					runCommands(game, "join");
+					runCommands(p, game, "join");
+					sendActionBarMessages(p, game, "join");
 
 					if (conf.getCfg().contains("items.leavegameitem"))
 						inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getItem());
@@ -284,7 +277,7 @@ public class GameUtils {
 					}
 					SignCreator.updateAllSigns(game);
 				} else
-					RageMode.logConsole(RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", game));
+					Bukkit.getConsoleSender().sendMessage(RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", game));
 			} else
 				p.sendMessage(mapChecker.getMessage());
 		}
@@ -292,7 +285,6 @@ public class GameUtils {
 
 	/**
 	 * Kicks the specified player from the game and server.
-	 * 
 	 * @param p Player
 	 */
 	public static void kickPlayer(Player p) {
@@ -301,7 +293,7 @@ public class GameUtils {
 
 		if (status == GameStatus.RUNNING && PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
 			if (PlayerList.removePlayer(p)) {
-				RageMode.logConsole("[RageMode] Player " + p.getName() + " left the server while playing.");
+				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
 
 				List<String> list = RageMode.getInstance().getConfiguration().getCfg()
 						.getStringList("game.global.run-commands-for-player-left-while-playing");
@@ -315,10 +307,16 @@ public class GameUtils {
 				}
 			}
 		}
+
 		HoloHolder.deleteHoloObjectsOfPlayer(p);
 	}
 
-	private static void clearPlayerTools(Player p) {
+	/**
+	 * Fully clears the specified player inventory, remove effects, food and health set to 0 and
+	 * more related to player.
+	 * @param p Player
+	 */
+	public static void clearPlayerTools(Player p) {
 		Utils.clearPlayerInventory(p);
 		p.setGameMode(GameMode.SURVIVAL);
 		p.setFlying(false);
@@ -338,18 +336,32 @@ public class GameUtils {
 
 	/**
 	 * Run commands in game, when the player doing something in game
-	 * such as it died, joining, starting game, stopping game.
+	 * such as it died, joining, starting or stopping game.
 	 * @param game Game name
 	 * @param cmdType Command type, such as death, join or other
 	 */
-	public static void runCommands(String game, String cmdType) {
+	public static void runCommandsForAll(String game, String cmdType) {
+		for (Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
+			Player p = PlayerList.getPlayerByUUID(players.getValue());
+			runCommands(p, game, cmdType);
+		}
+	}
+
+	/**
+	 * Run commands in game, when the player doing something in game
+	 * such as it died, joining, starting or stopping game.
+	 * @param p Player
+	 * @param game Game name
+	 * @param cmdType Command type, such as death, join or other
+	 */
+	public static void runCommands(Player p, String game, String cmdType) {
 		List<String> list = RageMode.getInstance().getConfiguration().getRewardsCfg()
 				.getStringList("rewards.in-game.run-commands");
 
 		if (list != null && !list.isEmpty()) {
 			for (String cmd : list) {
 				if (cmd.split(":").length < 3 && cmd.split(":").length > 4) {
-					RageMode.logConsole(Level.WARNING, "In the rewards file the in-game commands the split length is equal to 3.");
+					Debug.logConsole(Level.WARNING, "In the rewards file the in-game commands the split length is equal to 3.");
 					continue;
 				}
 
@@ -366,11 +378,11 @@ public class GameUtils {
 					String type = cmd.split(":")[0];
 					if (type.equals(cmdType)) {
 						String consoleOrPlayer = cmd.split(":")[1];
-						Player p = getPlayerInGame(game);
 
 						cmd = cmd.split(":")[2].replace("%world%", p.getWorld().getName())
 								.replace("%game%", game)
 								.replace("%player%", p.getName());
+						cmd = RageMode.getLang().colors(cmd);
 
 						if (consoleOrPlayer.equals("console"))
 							Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
@@ -381,11 +393,11 @@ public class GameUtils {
 					String type = cmd.split(":")[0];
 					if (type.equals(cmdType)) {
 						String consoleOrPlayer = cmd.split(":")[1];
-						Player p = getPlayerInGame(game);
 
 						cmd = cmd.split(":")[2].replace("%world%", p.getWorld().getName())
 								.replace("%game%", game)
 								.replace("%player%", p.getName());
+						cmd = RageMode.getLang().colors(cmd);
 
 						if (consoleOrPlayer.equals("console"))
 							Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
@@ -398,8 +410,43 @@ public class GameUtils {
 	}
 
 	/**
+	 * Send action bar messages to the player when doing something,
+	 * such as joining, leave, starting or stopping game.
+	 * <p>This returns if the actionbar option is disabled in configurations.
+	 * @param p Player
+	 * @param game Game name
+	 * @param type Action type
+	 */
+	public static void sendActionBarMessages(Player p, String game, String type) {
+		Configuration conf = RageMode.getInstance().getConfiguration();
+
+		if (conf.getArenasCfg().isSet("arenas." + game + ".actionbar")) {
+			if (!conf.getArenasCfg().getBoolean("arenas." + game + ".actionbar"))
+				return;
+		} else if (!conf.getCfg().getBoolean("game.global.defaults.actionbar"))
+			return;
+
+		List<String> list = conf.getCfg().getStringList("actionbar-messages.actions");
+
+		if (list != null && !list.isEmpty()) {
+			for (String msg : list) {
+				if (msg.split(":").length < 2 && msg.split(":").length > 2) {
+					Debug.logConsole(Level.WARNING, "In the config file the actionbar messages the split length is equal to 2.");
+					continue;
+				}
+
+				String action = msg.split(":")[0];
+				if (action.equals(type)) {
+					String message = msg.split(":")[1];
+					message = message.replace("%game%", game).replace("%player%", p.getName());
+					ActionBar.sendActionBar(p, RageMode.getLang().colors(message));
+				}
+			}
+		}
+	}
+
+	/**
 	 * Get the GameStatus
-	 * 
 	 * @return {@link GameStatus}
 	 */
 	public static GameStatus getStatus() {
@@ -408,8 +455,7 @@ public class GameUtils {
 
 	/**
 	 * Sets the game status to new status
-	 * 
-	 * @param status
+	 * @param status the status to be set
 	 */
 	public static void setStatus(GameStatus status) {
 		GameUtils.status = status;

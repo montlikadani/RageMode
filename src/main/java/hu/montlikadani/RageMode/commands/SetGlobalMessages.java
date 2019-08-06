@@ -1,12 +1,11 @@
 package hu.montlikadani.ragemode.commands;
 
-import java.io.IOException;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class SetGlobalMessages extends RmCommand {
@@ -34,12 +33,7 @@ public class SetGlobalMessages extends RmCommand {
 			}
 
 			plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".death-messages", Boolean.parseBoolean(args[2]));
-			try {
-				plugin.getConfiguration().getArenasCfg().save(plugin.getConfiguration().getArenasFile());
-			} catch (IOException e) {
-				e.printStackTrace();
-				plugin.throwMsg();
-			}
+			Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 			sendMessage(p, RageMode.getLang().get("setup.success"));
 		} else
 			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName> <true|false>"));

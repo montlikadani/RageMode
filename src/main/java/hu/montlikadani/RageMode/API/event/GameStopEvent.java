@@ -1,11 +1,13 @@
 package hu.montlikadani.ragemode.API.event;
 
+import java.util.List;
+
 public class GameStopEvent extends BaseEvent {
 
 	private String game;
-	private String[] players;
+	private List<String> players;
 
-	public GameStopEvent(String game, String[] players) {
+	public GameStopEvent(String game, List<String> players) {
 		this.game = game;
 		this.players = players;
 	}
@@ -14,7 +16,7 @@ public class GameStopEvent extends BaseEvent {
 		return game;
 	}
 
-	public String[] getPlayers() {
+	public List<String> getPlayers() {
 		return players;
 	}
 }

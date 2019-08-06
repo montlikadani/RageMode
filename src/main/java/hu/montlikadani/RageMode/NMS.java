@@ -59,7 +59,7 @@ public class NMS {
 	public static Enchantment getEnchant(String type) {
 		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1))
 			return Enchantment.getByKey(org.bukkit.NamespacedKey.minecraft(type.toLowerCase()));
-		else
-			return Enchantment.getByName(type.toUpperCase());
+
+		return Enchantment.getByName(type.toUpperCase());
 	}
 }

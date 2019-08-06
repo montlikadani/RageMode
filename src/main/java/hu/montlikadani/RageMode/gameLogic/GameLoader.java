@@ -1,7 +1,7 @@
 package hu.montlikadani.ragemode.gameLogic;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Timer;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -10,40 +10,35 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.GameStartEvent;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.gameUtils.ActionBar;
 import hu.montlikadani.ragemode.gameUtils.BossMessenger;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
-import hu.montlikadani.ragemode.items.CombatAxe;
-import hu.montlikadani.ragemode.items.Grenade;
-import hu.montlikadani.ragemode.items.RageArrow;
-import hu.montlikadani.ragemode.items.RageBow;
-import hu.montlikadani.ragemode.items.RageKnife;
 import hu.montlikadani.ragemode.signs.SignCreator;
 
 public class GameLoader {
 
 	private String gameName;
 
-	private Configuration conf;
+	private Configuration conf = RageMode.getInstance().getConfiguration();
 	private GameTimer gameTimer;
 
 	public GameLoader(String gameName) {
 		this.gameName = gameName;
-		conf = RageMode.getInstance().getConfiguration();
 
 		checkTeleport();
 
-		GameStartEvent gameStartEvent = new GameStartEvent(gameName, PlayerList.getPlayersInGame(gameName));
+		PlayerList.removeLobbyTimer();
+
+		GameStartEvent gameStartEvent = new GameStartEvent(gameName, PlayerList.getPlayersFromList());
 		Bukkit.getPluginManager().callEvent(gameStartEvent);
 
 		PlayerList.setGameRunning(gameName);
@@ -60,12 +55,11 @@ public class GameLoader {
 		Timer t = new Timer();
 		t.scheduleAtFixedRate(gameTimer, 0, 60 * 20L);
 
-		GameUtils.runCommands(gameName, "start");
+		GameUtils.runCommandsForAll(gameName, "start");
 		SignCreator.updateAllSigns(gameName);
 
-		List<String> players = Arrays.asList(PlayerList.getPlayersInGame(gameName));
-		for (String player : players) {
-			Player p = Bukkit.getPlayer(UUID.fromString(player));
+		for (Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
+			Player p = Bukkit.getPlayer(UUID.fromString(players.getValue()));
 
 			if (Version.isCurrentEqualOrHigher(Version.v1_9_R1)) {
 				String bossMessage = conf.getCfg().getString("bossbar-messages.join.message");
@@ -88,63 +82,43 @@ public class GameLoader {
 					}
 				}
 			} else {
-				RageMode.logConsole(Level.WARNING, "[RageMode] Your server version does not support for Bossbar. Only 1.9+");
+				Debug.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
 			}
 
-			String actionbarMsg = conf.getCfg().getString("actionbar-messages.join.message");
-			if (actionbarMsg != null && !actionbarMsg.equals("")) {
-				actionbarMsg = actionbarMsg.replace("%game%", gameName);
-				actionbarMsg = actionbarMsg.replace("%player%", p.getName());
-				actionbarMsg = RageMode.getLang().colors(actionbarMsg);
-
-				if (conf.getArenasCfg().isSet("arenas." + gameName + ".actionbar")) {
-					if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".actionbar"))
-						ActionBar.sendActionBar(p, actionbarMsg);
-				} else if (conf.getCfg().getBoolean("game.global.defaults.actionbar"))
-					ActionBar.sendActionBar(p, actionbarMsg);
-			}
+			GameUtils.sendActionBarMessages(p, gameName, "start");
 		}
 	}
 
 	private void checkTeleport() {
 		GameSpawnGetter gameSpawnGetter = GameUtils.getGameSpawnByName(gameName);
 		if (gameSpawnGetter.isGameReady()) {
-			teleportPlayersToGameSpawns();
+			teleportPlayersToGameSpawns(gameSpawnGetter);
 		} else {
 			GameUtils.broadcastToGame(gameName, RageMode.getLang().get("game.not-set-up"));
-			String[] players = PlayerList.getPlayersInGame(gameName);
-			for (String player : players) {
-				Player thisPlayer = Bukkit.getPlayer(UUID.fromString(player));
-				PlayerList.removePlayer(thisPlayer);
+			for (Entry<String, String> uuids : PlayerList.getPlayers().entrySet()) {
+				Player p = Bukkit.getPlayer(UUID.fromString(uuids.getValue()));
+				PlayerList.removePlayer(p);
 			}
 		}
 	}
 
-	private void teleportPlayersToGameSpawns() {
-		String[] players = PlayerList.getPlayersInGame(gameName);
-		for (int i = 0; i < players.length; i++) {
-			Player player = Bukkit.getPlayer(UUID.fromString(players[i]));
-			Location location = GameUtils.getGameSpawnByName(gameName).getSpawnLocations().get(i);
-			player.teleport(location);
+	private void teleportPlayersToGameSpawns(GameSpawnGetter spawn) {
+		for (Entry<String, String> uuids : PlayerList.getPlayers().entrySet()) {
+			Player player = Bukkit.getPlayer(UUID.fromString(uuids.getValue()));
+
+			Random r = new Random();
+			if (spawn.getSpawnLocations().size() > 0) {
+				int x = r.nextInt(spawn.getSpawnLocations().size());
+				Location location = spawn.getSpawnLocations().get(x);
+				player.teleport(location);
+			}
 		}
 	}
 
 	private void setInventories() {
-		String[] players = PlayerList.getPlayersInGame(gameName);
-		for (String playerUUID : players) {
-			Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
-
-			org.bukkit.inventory.PlayerInventory inv = player.getInventory();
-
-			// Removing the lobby items
-			inv.clear();
-
-			FileConfiguration f = conf.getCfg();
-			inv.setItem(f.getInt("items.rageBow.slot"), RageBow.getItem());
-			inv.setItem(f.getInt("items.rageKnife.slot"), RageKnife.getItem());
-			inv.setItem(f.getInt("items.combatAxe.slot"), CombatAxe.getItem());
-			inv.setItem(f.getInt("items.rageArrow.slot"), RageArrow.getItem());
-			inv.setItem(f.getInt("items.grenade.slot"), Grenade.getItem());
+		for (Entry<String, String> uuids : PlayerList.getPlayers().entrySet()) {
+			Player player = Bukkit.getPlayer(UUID.fromString(uuids.getValue()));
+			GameUtils.addGameItems(player, true);
 		}
 	}
 
@@ -162,9 +136,9 @@ public class GameLoader {
 
 	public static boolean getLookingAt(Player player, LivingEntity livingEntity) {
 		Location eye = player.getEyeLocation();
-		Vector toEntity = livingEntity.getEyeLocation().toVector().subtract(eye.toVector());
+		Vector toEntity = livingEntity.getLocation().toVector().subtract(eye.toVector());
 		double dot = toEntity.normalize().dot(eye.getDirection());
 
-		return dot > 0.99D;
+		return dot >= 0.99D;
 	}
 }

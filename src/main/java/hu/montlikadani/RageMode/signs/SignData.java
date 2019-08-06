@@ -68,7 +68,7 @@ public class SignData {
 		return placeholder;
 	}
 
-	public void updateSign() {
+	protected void updateSign() {
 		Location location = getLocation();
 
 		if (location.getWorld().getChunkAt(location).isLoaded()) {
@@ -78,15 +78,15 @@ public class SignData {
 				if (placeholder != null && game != null && GameUtils.isGameWithNameExists(game)) {
 					List<String> lines = placeholder.parsePlaceholder(game);
 					if (placeholder.getLines().size() >= 5 || placeholder.getLines().size() <= 3) {
-						Bukkit.getLogger().log(Level.INFO, "[RageMode] In the configuration the signs lines not more/less than 4.");
+						Bukkit.getLogger().log(Level.INFO, "In the configuration the signs lines is equal to 4.");
 						return;
 					}
 
+					FileConfiguration cfg = RageMode.getInstance().getConfiguration().getCfg();
+					String path = "signs.background.";
 					for (int i = 0; i < 4; i++) {
 						sign.setLine(i, lines.get(i).toString());
 
-						FileConfiguration cfg = RageMode.getInstance().getConfiguration().getCfg();
-						String path = "signs.background.";
 						if (cfg.getBoolean(path + "enable")) {
 							if (Version.isCurrentEqualOrHigher(Version.v1_14_R1)) {
 								if (org.bukkit.Tag.WALL_SIGNS.isTagged(sign.getType())) {
@@ -96,15 +96,15 @@ public class SignData {
 								chooseFromType(cfg, path, sign);
 							}
 						}
-						sign.update();
 					}
 				} else {
 					String[] errorLines = { "\u00a74ERROR:", "\u00a76Game", "\u00a7e" + game, "\u00a76not found!" };
 					for (int i = 0; i < 4; i++) {
 						sign.setLine(i, editLine(errorLines[i], i));
 					}
-					sign.update();
 				}
+
+				sign.update();
 			}
 		}
 	}
@@ -164,7 +164,7 @@ public class SignData {
 
 		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
 			if (GameUtils.getStatus() == GameStatus.WAITING) {
-				if (PlayerList.getPlayersInGame(game).length == GetGames.getMaxPlayers(game)) {
+				if (PlayerList.getPlayers().size() == GetGames.getMaxPlayers(game)) {
 					if (type.equals("wool"))
 						updateBackground(Material.BLUE_WOOL);
 					else if (type.equals("glass"))
@@ -199,7 +199,7 @@ public class SignData {
 		} else {
 			if (sign != null && sign.getType() == Material.getMaterial("WALL_SIGN")) {
 				if (GameUtils.getStatus() == GameStatus.WAITING) {
-					if (PlayerList.getPlayersInGame(game).length == GetGames.getMaxPlayers(game)) {
+					if (PlayerList.getPlayers().size() == GetGames.getMaxPlayers(game)) {
 						if (type.equals("wool"))
 							updateBackground(Material.getMaterial("WOOL"), 11);
 						else if (type.equals("glass"))

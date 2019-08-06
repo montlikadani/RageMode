@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.commands;
 
-import java.io.IOException;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -10,8 +9,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
+import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
@@ -65,7 +66,7 @@ public class RemoveSpawn extends RmCommand {
 		}
 
 		if (loc == null) {
-			RageMode.logConsole(Level.WARNING, "Something went wrong with locations. Try again.");
+			Debug.logConsole(Level.WARNING, "Something went wrong with locations. Try again.");
 			return false;
 		}
 
@@ -82,12 +83,7 @@ public class RemoveSpawn extends RmCommand {
 		}
 
 		aFile.set(path + ".spawns." + i, null);
-		try {
-			aFile.save(plugin.getConfiguration().getArenasFile());
-		} catch (IOException e) {
-			e.printStackTrace();
-			plugin.throwMsg();
-		}
+		Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
 		sendMessage(sender, RageMode.getLang().get("commands.removespawn.remove-success", "%number%", i, "%game%", args[1]));
 

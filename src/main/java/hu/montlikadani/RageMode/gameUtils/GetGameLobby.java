@@ -12,8 +12,6 @@ public class GetGameLobby {
 
 	/**
 	 * Gets the specified game lobby location.
-	 * 
-	 * @param p Player
 	 * @param game Game
 	 * @return Lobby location
 	 */
@@ -37,7 +35,6 @@ public class GetGameLobby {
 
 	/**
 	 * Get the specified game lobby time from file.
-	 * 
 	 * @param game Game
 	 * @return time
 	 */

@@ -17,6 +17,7 @@ import com.google.common.base.StandardSystemProperty;
 
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.commands.RmCommand;
+import hu.montlikadani.ragemode.commands.StopGame;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.Language;
 import hu.montlikadani.ragemode.database.MySQLConnect;
@@ -104,6 +105,7 @@ public class RageMode extends JavaPlugin {
 
 			if (conf.getCfg().getBoolean("bungee.enable")) {
 				bungee = new BungeeUtils(this);
+
 				getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 			}
 
@@ -119,8 +121,6 @@ public class RageMode extends JavaPlugin {
 				initYamlStatistics();
 			else if (conf.getCfg().getString("statistics").equals("mysql"))
 				connectMySQL();
-
-			RageScores.load();
 
 			if (conf.getCfg().getBoolean("signs.enable")) {
 				sign = new SignScheduler(this);
@@ -152,7 +152,7 @@ public class RageMode extends JavaPlugin {
 						} else
 							GameUtils.setStatus(GameStatus.READY);
 
-						logConsole("[RageMode] Loaded " + game + " game!");
+						Debug.logConsole("Loaded " + game + " game!");
 					}
 				}
 			}
@@ -176,11 +176,11 @@ public class RageMode extends JavaPlugin {
 
 				metrics.addCustomChart(new Metrics.SimplePie("statistic_type", () -> conf.getCfg().getString("statistics")));
 
-				logConsole("[RageMode] Metrics enabled.");
+				Debug.logConsole("Metrics enabled.");
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
-			throwMsg();
+			Debug.throwMsg();
 		}
 	}
 
@@ -189,7 +189,7 @@ public class RageMode extends JavaPlugin {
 		if (instance == null) return;
 
 		Thread thread = new Thread(() -> {
-			logConsole("[RageMode] Searching games to stop...");
+			Debug.logConsole("Searching games to stop...");
 
 			String[] games = GetGames.getGameNames();
 			if (games != null) {
@@ -198,32 +198,24 @@ public class RageMode extends JavaPlugin {
 
 				while (i < imax) {
 					if (games[i] != null && PlayerList.isGameRunning(games[i])) {
-						logConsole("[RageMode] Stopping " + games[i] + " ...");
+						Debug.logConsole("Stopping " + games[i] + " ...");
 
-						String[] players = PlayerList.getPlayersInGame(games[i]);
-						RageScores.calculateWinner(games[i], players);
+						RageScores.calculateWinner(games[i], PlayerList.getPlayersFromList());
 
-						if (players != null) {
-							int n = 0;
-							int nmax = players.length;
+						for (java.util.Map.Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
+							org.bukkit.entity.Player p = Bukkit.getPlayer(UUID.fromString(players.getValue()));
 
-							while (n < nmax) {
-								if (players[n] != null) {
-									PlayerList.removePlayerSynced(Bukkit.getPlayer(UUID.fromString(players[n])));
-									PlayerList.removePlayer(Bukkit.getPlayer(UUID.fromString(players[n])));
-
-									Bukkit.getPlayer(UUID.fromString(players[n])).removeMetadata("killedWith", instance);
-								}
-								n++;
-							}
+							p.removeMetadata("killedWith", instance);
+							PlayerList.removePlayer(p);
+							RageScores.removePointsForPlayer(players.getValue());
 						}
-						PlayerList.specPlayer.values().forEach(key -> PlayerList.removeSpectatorPlayer(key));
-						RageScores.removePointsForPlayers(players);
+
+						PlayerList.specPlayer.values().forEach(PlayerList::removeSpectatorPlayer);
 
 						PlayerList.setGameNotRunning(games[i]);
 						GameUtils.setStatus(GameStatus.STOPPED);
 
-						logConsole("[RageMode] " + games[i] + " has been stopped.");
+						Debug.logConsole(games[i] + " has been stopped.");
 					}
 					i++;
 				}
@@ -247,8 +239,9 @@ public class RageMode extends JavaPlugin {
 
 	private void initYamlStatistics() {
 		YAMLStats.initS();
+		YAMLStats.loadPlayerStatistics();
 
-		Bukkit.getServer().getScheduler().runTaskAsynchronously(this, () -> RuntimeRPPManager.getRPPListFromYAML());
+		RuntimeRPPManager.getRPPListFromYAML();
 	}
 
 	public void connectMySQL() {
@@ -266,24 +259,15 @@ public class RageMode extends JavaPlugin {
 		boolean autoReconnect = conf.getCfg().getBoolean("MySQL.auto-reconnect");
 		boolean useSSL = conf.getCfg().getBoolean("MySQL.use-SSL");
 
-		mySQLConnect = new MySQLConnect(host, port, database, username, password, serverCertificate,
-				useUnicode, characterEnc, autoReconnect, useSSL, prefix);
+		if (mySQLConnect != null) {
+			MySQLStats.loadPlayerStatistics(mySQLConnect);
 
-		if (mySQLConnect != null)
-			Bukkit.getServer().getScheduler().runTaskAsynchronously(this,
-					() -> RuntimeRPPManager.getRPPListFromMySQL());
+			RuntimeRPPManager.getRPPListFromMySQL();
+		} else {
+			mySQLConnect = new MySQLConnect(host, port, database, username, password, serverCertificate,
+					useUnicode, characterEnc, autoReconnect, useSSL, prefix);
+		}
 	}
-
-	/*private void initActionBar() {
-		ActionBar.nmsver = Bukkit.getServer().getClass().getPackage().getName();
-		ActionBar.nmsver = ActionBar.nmsver.substring(ActionBar.nmsver.lastIndexOf(".") + 1);
-
-		/*if (ActionBar.nmsver.equalsIgnoreCase("v1_8_") && ActionBar.nmsver.equalsIgnoreCase("v1_9_")
-				&& ActionBar.nmsver.equalsIgnoreCase("v1_10_") && ActionBar.nmsver.equalsIgnoreCase("v1_11_")
-				&& ActionBar.nmsver.equalsIgnoreCase("v1_12_") && ActionBar.nmsver.equalsIgnoreCase("v1_13_")
-				&& ActionBar.nmsver.equalsIgnoreCase("v1_14_"))
-			ActionBar.useOldMethods = true;
-	}*/
 
 	private void initEconomy() {
 		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
@@ -295,26 +279,41 @@ public class RageMode extends JavaPlugin {
 			return;
 	}
 
-	public synchronized void loadListeners() {
+	public synchronized void reload() {
 		HandlerList.unregisterAll(this);
 
-		signTask.cancel();
+		if (signTask != null) {
+			signTask.cancel();
+			signTask = null;
+		}
+
+		conf.loadConfig();
+		lang.loadLanguage(conf.getCfg().getString("language"));
 
 		if (conf.getArenasCfg().contains("arenas")) {
 			spawns.clear();
 
 			for (String game : GetGames.getGameNames()) {
 				if (game != null) {
+					if (PlayerList.isGameRunning(game)) {
+						GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
+					}
+
 					if (conf.getCfg().getBoolean("bungee.enable"))
 						getManager().registerEvents(new BungeeListener(game), this);
 
 					spawns.add(new GameSpawnGetter(game));
+
+					SignCreator.updateAllSigns(game);
 				}
 			}
+
+			StopGame.stopAllGames();
 		}
 
 		if (conf.getCfg().getBoolean("signs.enable")) {
 			getManager().registerEvents(sign, this);
+			SignConfiguration.initSignConfiguration();
 
 			signTask = Bukkit.getScheduler().runTaskLater(this, sign, 40L);
 		}
@@ -324,6 +323,20 @@ public class RageMode extends JavaPlugin {
 			getManager().registerEvents(new Listeners_1_8(), this);
 		else
 			getManager().registerEvents(new Listeners_1_9(), this);
+
+		if (conf.getCfg().getString("statistics").equals("") || conf.getCfg().getString("statistics").equals("yaml")) {
+			YAMLStats.initS();
+			YAMLStats.loadPlayerStatistics();
+		} else if (conf.getCfg().getString("statistics").equals("mysql")) {
+			if (!mySQLConnect.isConnected()) {
+				connectMySQL();
+			} else {
+				MySQLStats.loadPlayerStatistics(mySQLConnect);
+			}
+		}
+
+		if (hologram)
+			HoloHolder.initHoloHolder();
 	}
 
 	private void registerCommands() {
@@ -336,12 +349,12 @@ public class RageMode extends JavaPlugin {
 		File dataFolder = getDataFolder();
 		if (!dataFolder.exists())
 			dataFolder.mkdir();
+
 		return dataFolder;
 	}
 
 	/**
 	 * Gets the plugin instance
-	 * 
 	 * @return RageMode instance
 	 */
 	public static RageMode getInstance() {
@@ -350,7 +363,6 @@ public class RageMode extends JavaPlugin {
 
 	/**
 	 * Gets the {@link MySQLConnect} class
-	 * 
 	 * @return mySQLConnect class
 	 */
 	public static MySQLConnect getMySQL() {
@@ -359,7 +371,6 @@ public class RageMode extends JavaPlugin {
 
 	/**
 	 * Gets the {@link Language} class
-	 * 
 	 * @return Language class
 	 */
 	public static Language getLang() {
@@ -368,7 +379,6 @@ public class RageMode extends JavaPlugin {
 
 	/**
 	 * Gets the {@link MinecraftVersion} class
-	 * 
 	 * @return MinecraftVersion class
 	 */
 	public static MinecraftVersion getMCVersion() {
@@ -403,32 +413,6 @@ public class RageMode extends JavaPlugin {
 		return spawns;
 	}
 
-	public void throwMsg() {
-		logConsole(Level.WARNING, "[RageMode] There was an error. Please report it here:\nhttps://github.com/montlikadani/RageMode/issues");
-		return;
-	}
-
-	/**
-	 * Logging to console to write debug messages<br>
-	 * Using the <b>Level.INFO</b> level by default
-	 * 
-	 * @param msg Error message
-	 */
-	public static void logConsole(String msg) {
-		logConsole(Level.INFO, msg);
-	}
-
-	/**
-	 * Logging to console to write debug messages
-	 * 
-	 * @param lvl Logging level
-	 * @param msg Error message
-	 */
-	public static void logConsole(Level lvl, String msg) {
-		if (msg != null && !msg.equals("") && instance.conf.getCfg().getBoolean("log-console"))
-			Bukkit.getLogger().log(lvl, msg);
-	}
-
 	public PluginManager getManager() {
 		return Bukkit.getPluginManager();
 	}
@@ -440,11 +424,11 @@ public class RageMode extends JavaPlugin {
 	private boolean checkJavaVersion() {
 		try {
 			if (Float.parseFloat(StandardSystemProperty.JAVA_CLASS_VERSION.value()) < 52.0) {
-				logConsole(Level.WARNING, "[RageMode] You are using an older Java that is not supported. Please use 1.8 or higher versions!");
+				Debug.logConsole(Level.WARNING, "You are using an older Java that is not supported. Please use 1.8 or higher versions!");
 				return false;
 			}
 		} catch (NumberFormatException e) {
-			logConsole(Level.WARNING, "[RageMode] Failed to detect Java version.");
+			Debug.logConsole(Level.WARNING, "Failed to detect Java version.");
 			return false;
 		}
 		return true;

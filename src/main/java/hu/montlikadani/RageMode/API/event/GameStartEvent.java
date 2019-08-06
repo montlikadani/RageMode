@@ -1,20 +1,22 @@
 package hu.montlikadani.ragemode.API.event;
 
+import java.util.List;
+
 public class GameStartEvent extends BaseEvent {
 
 	private String game;
-	private String[] players;
+	private List<String> playerUUIDs;
 
-	public GameStartEvent(String game, String[] players) {
+	public GameStartEvent(String game, List<String> playerUUIDs) {
 		this.game = game;
-		this.players = players;
+		this.playerUUIDs = playerUUIDs;
 	}
 
 	public String getGame() {
 		return game;
 	}
 
-	public String[] getPlayers() {
-		return players;
+	public List<String> getPlayers() {
+		return playerUUIDs;
 	}
 }

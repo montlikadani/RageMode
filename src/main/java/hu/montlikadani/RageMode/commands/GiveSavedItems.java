@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 
 public class GiveSavedItems extends RmCommand {
@@ -28,7 +29,7 @@ public class GiveSavedItems extends RmCommand {
 		}
 
 		if (args.length < 2) {
-			sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%", "/rm givesaveditems <player>"));
+			sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%", "/rm givesaveditems <player> [true]"));
 			return false;
 		}
 
@@ -57,13 +58,22 @@ public class GiveSavedItems extends RmCommand {
 				target.getInventory().setContents(contentList.toArray(new ItemStack[contentList.size()]));
 
 				List<?> armorList = (List<?>) datas.get("datas." + names + ".armor-contents");
-				target.getInventory().setArmorContents((ItemStack[]) armorList.toArray(new ItemStack[armorList.size()]));
+				target.getInventory().setArmorContents(armorList.toArray(new ItemStack[armorList.size()]));
 
 				target.setExp(datas.getInt("datas." + names + ".exp"));
 				target.setLevel(datas.getInt("datas." + names + ".level"));
 				target.setGameMode(GameMode.valueOf(datas.getString("datas." + names + ".game-mode")));
-			} else if (datas.getConfigurationSection("datas").getKeys(false).isEmpty())
+			} else if (datas.getConfigurationSection("datas").getKeys(false).isEmpty()) {
 				sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.no-player-saved-inventory"));
+				return false;
+			}
+		}
+
+		if (args.length == 3) {
+			if (args[2].equalsIgnoreCase("true") || args[2].equalsIgnoreCase("yes")) {
+				datas.set("datas." + args[1], null);
+				Configuration.saveFile(datas, plugin.getConfiguration().getDatasFile());
+			}
 		}
 		return false;
 	}

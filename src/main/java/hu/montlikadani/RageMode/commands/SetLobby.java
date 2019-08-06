@@ -1,7 +1,5 @@
 package hu.montlikadani.ragemode.commands;
 
-import java.io.IOException;
-
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -9,6 +7,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class SetLobby extends RmCommand {
@@ -43,12 +42,7 @@ public class SetLobby extends RmCommand {
 				aCfg.set(path + ".z", loc.getZ());
 				aCfg.set(path + ".yaw", loc.getYaw());
 				aCfg.set(path + ".pitch", loc.getPitch());
-				try {
-					aCfg.save(plugin.getConfiguration().getArenasFile());
-				} catch (IOException e) {
-					e.printStackTrace();
-					plugin.throwMsg();
-				}
+				Configuration.saveFile(aCfg, plugin.getConfiguration().getArenasFile());
 				sendMessage(p, RageMode.getLang().get("setup.lobby.set-success", "%game%", gameName));
 			}
 		} else

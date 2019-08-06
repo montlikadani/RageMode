@@ -4,19 +4,125 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 
+import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.database.MySQLConnect;
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 
 public class MySQLStats {
+
+	private static List<RetPlayerPoints> points = new ArrayList<>();
+
+	public static void loadPlayerStatistics(MySQLConnect mySQLConnect) {
+		if (!mySQLConnect.isConnected())
+			return;
+
+		int totalPlayers = 0;
+
+		points.clear();
+
+		Connection connection = mySQLConnect.getConnection();
+
+		Statement statement = null;
+		String query = "SELECT * FROM " + mySQLConnect.getPrefix() + "stats_players;";
+
+		int currentKills = 0;
+		int currentAxeKills = 0;
+		int currentDirectArrowKills = 0;
+		int currentExplosionKills = 0;
+		int currentKnifeKills = 0;
+
+		int currentDeaths = 0;
+		int currentAxeDeaths = 0;
+		int currentDirectArrowDeaths = 0;
+		int currentExplosionDeaths = 0;
+		int currentKnifeDeaths = 0;
+
+		int currentWins = 0;
+		int currentScore = 0;
+		int currentGames = 0;
+		double currentKD = 0;
+
+		try {
+			statement = connection.createStatement();
+			ResultSet rs = statement.executeQuery(query);
+			while (rs.next()) {
+				currentKills = rs.getInt("kills");
+				currentAxeKills = rs.getInt("axe_kills");
+				currentDirectArrowKills = rs.getInt("direct_arrow_kills");
+				currentExplosionKills = rs.getInt("explosion_kills");
+				currentKnifeKills = rs.getInt("knife_kills");
+
+				currentDeaths = rs.getInt("deaths");
+				currentAxeDeaths = rs.getInt("axe_deaths");
+				currentDirectArrowDeaths = rs.getInt("direct_arrow_deaths");
+				currentExplosionDeaths = rs.getInt("explosion_deaths");
+				currentKnifeDeaths = rs.getInt("knife_deaths");
+
+				currentWins = rs.getInt("wins");
+				currentScore = rs.getInt("score");
+				currentGames = rs.getInt("games");
+				currentKD = rs.getDouble("kd");
+
+				String playerUUID = rs.getString("uuid");
+				RetPlayerPoints rPP = RuntimeRPPManager.getRPPForPlayer(playerUUID);
+				if (rPP == null) {
+					rPP = new RetPlayerPoints(playerUUID);
+					RageScores.getPlayerPointsMap().put(UUID.fromString(playerUUID).toString(), rPP);
+				}
+
+				rPP.setKills(currentKills);
+				rPP.setAxeKills(currentAxeKills);
+				rPP.setDirectArrowKills(currentDirectArrowKills);
+				rPP.setExplosionKills(currentExplosionKills);
+				rPP.setKnifeKills(currentKnifeKills);
+
+				rPP.setDeaths(currentDeaths);
+				rPP.setAxeDeaths(currentAxeDeaths);
+				rPP.setDirectArrowDeaths(currentDirectArrowDeaths);
+				rPP.setExplosionDeaths(currentExplosionDeaths);
+				rPP.setKnifeDeaths(currentKnifeDeaths);
+
+				rPP.setWins(currentWins);
+				rPP.setPoints(currentScore);
+				rPP.setGames(currentGames);
+				rPP.setKD(currentKD);
+
+				points.add(rPP);
+
+				++totalPlayers;
+			}
+			rs.close();
+		} catch (SQLException e) {
+			try {
+				connection.close();
+			} catch (SQLException e2) {
+				e2.printStackTrace();
+			}
+			return;
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		if (totalPlayers > 0)
+			Debug.logConsole("Loaded " + totalPlayers + " player" + (totalPlayers > 1 ? "s" : "") + " database.");
+	}
 
 	/**
 	 * {@link #addPlayerStatistics(PlayerPoints, MySQLConnect)}
@@ -80,7 +186,7 @@ public class MySQLStats {
 			}
 			rs.close();
 		} catch (SQLException e) {
-			RageMode.logConsole("[RageMode] " + Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID()))
+			Debug.logConsole(Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID()))
 					+ " has no statistics yet! Creating one special row for him...");
 		}
 		if (statement != null) {
@@ -135,196 +241,73 @@ public class MySQLStats {
 	}
 
 	/**
-	 * Gets the {@link #getPlayerStatistics(String, MySQLConnect)}
-	 * @param playerUUID Player uuid
-	 */
-	public static RetPlayerPoints getPlayerStatistics(String playerUUID) {
-		return getPlayerStatistics(playerUUID, RageMode.getMySQL());
-	}
-
-	/**
 	 * Returns an RetPlayerPoints instance with the statistics from the database
 	 * connection for the given Player.
 	 * 
-	 * @param player The Player instance for which the statistic should be gotten.
-	 * @param mySQLConnect The MySQLConnect which holds the Connection instance for the database.
-	 * @return
+	 * @param playerUUID The Player instance for which the statistic should be gotten.
+	 * @return {@link RetPlayerPoints} class
 	 */
-	public static RetPlayerPoints getPlayerStatistics(String playerUUID, MySQLConnect mySQLConnector) {
-		if (!mySQLConnector.isValid())
+	public static RetPlayerPoints getPlayerStatistics(String playerUUID) {
+		if (points.isEmpty())
 			return null;
 
-		Connection connection = mySQLConnector.getConnection();
-
-		Statement statement = null;
-		String query = "SELECT * FROM " + mySQLConnector.getPrefix() + "stats_players WHERE uuid LIKE '" + playerUUID + "';";
-
-		int currentKills = 0;
-		int currentAxeKills = 0;
-		int currentDirectArrowKills = 0;
-		int currentExplosionKills = 0;
-		int currentKnifeKills = 0;
-
-		int currentDeaths = 0;
-		int currentAxeDeaths = 0;
-		int currentDirectArrowDeaths = 0;
-		int currentExplosionDeaths = 0;
-		int currentKnifeDeaths = 0;
-
-		int currentWins = 0;
-		int currentScore = 0;
-		int currentGames = 0;
-		double currentKD = 0;
-
-		try {
-			statement = connection.createStatement();
-			ResultSet rs = statement.executeQuery(query);
-			while (rs.next()) {
-				currentKills = rs.getInt("kills");
-				currentAxeKills = rs.getInt("axe_kills");
-				currentDirectArrowKills = rs.getInt("direct_arrow_kills");
-				currentExplosionKills = rs.getInt("explosion_kills");
-				currentKnifeKills = rs.getInt("knife_kills");
-
-				currentDeaths = rs.getInt("deaths");
-				currentAxeDeaths = rs.getInt("axe_deaths");
-				currentDirectArrowDeaths = rs.getInt("direct_arrow_deaths");
-				currentExplosionDeaths = rs.getInt("explosion_deaths");
-				currentKnifeDeaths = rs.getInt("knife_deaths");
-
-				currentWins = rs.getInt("wins");
-				currentScore = rs.getInt("score");
-				currentGames = rs.getInt("games");
-				currentKD = rs.getDouble("kd");
-			}
-			rs.close();
-		} catch (SQLException e) {
-			return null;
-		}
-		if (statement != null) {
-			try {
-				statement.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
+		RetPlayerPoints pp = null;
+		for (RetPlayerPoints rpp : points) {
+			if (rpp.getPlayerUUID().equals(playerUUID)) {
+				pp = rpp;
 			}
 		}
 
-		if (currentGames == 0)
-			return null;
-
-		RetPlayerPoints retPlayerPoints = new RetPlayerPoints(playerUUID);
-		retPlayerPoints.setKills(currentKills);
-		retPlayerPoints.setAxeKills(currentAxeKills);
-		retPlayerPoints.setDirectArrowKills(currentDirectArrowKills);
-		retPlayerPoints.setExplosionKills(currentExplosionKills);
-		retPlayerPoints.setKnifeKills(currentKnifeKills);
-
-		retPlayerPoints.setDeaths(currentDeaths);
-		retPlayerPoints.setAxeDeaths(currentAxeDeaths);
-		retPlayerPoints.setDirectArrowDeaths(currentDirectArrowDeaths);
-		retPlayerPoints.setExplosionDeaths(currentExplosionDeaths);
-		retPlayerPoints.setKnifeDeaths(currentKnifeDeaths);
-
-		retPlayerPoints.setWins(currentWins);
-		retPlayerPoints.setPoints(currentScore);
-		retPlayerPoints.setGames(currentGames);
-		retPlayerPoints.setKD(currentKD);
-
-		return retPlayerPoints;
+		return pp;
 	}
 
 	/**
-	 * Retrieves all rows from the mySQL database and returns them as a List of RetPlayerPoints.
-	 * 
+	 * Retrieves the list of RetPlayerPoints.
 	 * @return A List of all RetPlayerPoints objects which are stored in the mySQL database.
 	 */
 	public static List<RetPlayerPoints> getAllPlayerStatistics() {
-		List<RetPlayerPoints> rppList = new java.util.ArrayList<>();
-
-		if (!RageMode.getMySQL().isConnected())
+		MySQLConnect connect = RageMode.getMySQL();
+		if (!connect.isValid())
 			return Collections.emptyList();
 
-		Connection connection = RageMode.getMySQL().getConnection();
+		String uuid = null;
+		List<RetPlayerPoints> allRPPs = new ArrayList<>();
 
+		Connection connection = connect.getConnection();
 		Statement statement = null;
-		String query = "SELECT * FROM " + RageMode.getMySQL().getPrefix() + "stats_players;";
-
-		int currentKills = 0;
-		int currentAxeKills = 0;
-		int currentDirectArrowKills = 0;
-		int currentExplosionKills = 0;
-		int currentKnifeKills = 0;
-
-		int currentDeaths = 0;
-		int currentAxeDeaths = 0;
-		int currentDirectArrowDeaths = 0;
-		int currentExplosionDeaths = 0;
-		int currentKnifeDeaths = 0;
-
-		int currentWins = 0;
-		int currentScore = 0;
-		int currentGames = 0;
-		double currentKD = 0;
-
+		String query = "SELECT * FROM " + connect.getPrefix() + "stats_players";
 		try {
 			statement = connection.createStatement();
 			ResultSet rs = statement.executeQuery(query);
 			while (rs.next()) {
-				currentKills = rs.getInt("kills");
-				currentAxeKills = rs.getInt("axe_kills");
-				currentDirectArrowKills = rs.getInt("direct_arrow_kills");
-				currentExplosionKills = rs.getInt("explosion_kills");
-				currentKnifeKills = rs.getInt("knife_kills");
-
-				currentDeaths = rs.getInt("deaths");
-				currentAxeDeaths = rs.getInt("axe_deaths");
-				currentDirectArrowDeaths = rs.getInt("direct_arrow_deaths");
-				currentExplosionDeaths = rs.getInt("explosion_deaths");
-				currentKnifeDeaths = rs.getInt("knife_deaths");
-
-				currentWins = rs.getInt("wins");
-				currentScore = rs.getInt("score");
-				currentGames = rs.getInt("games");
-				currentKD = rs.getDouble("kd");
-
-				String playerUUID = rs.getString("uuid");
-				RetPlayerPoints retPlayerPoints = new RetPlayerPoints(playerUUID);
-				retPlayerPoints.setKills(currentKills);
-				retPlayerPoints.setAxeKills(currentAxeKills);
-				retPlayerPoints.setDirectArrowKills(currentDirectArrowKills);
-				retPlayerPoints.setExplosionKills(currentExplosionKills);
-				retPlayerPoints.setKnifeKills(currentKnifeKills);
-
-				retPlayerPoints.setDeaths(currentDeaths);
-				retPlayerPoints.setAxeDeaths(currentAxeDeaths);
-				retPlayerPoints.setDirectArrowDeaths(currentDirectArrowDeaths);
-				retPlayerPoints.setExplosionDeaths(currentExplosionDeaths);
-				retPlayerPoints.setKnifeDeaths(currentKnifeDeaths);
-
-				retPlayerPoints.setWins(currentWins);
-				retPlayerPoints.setPoints(currentScore);
-				retPlayerPoints.setGames(currentGames);
-				retPlayerPoints.setKD(currentKD);
-
-				rppList.add(retPlayerPoints);
+				uuid = rs.getString("uuid");
 			}
 			rs.close();
 		} catch (SQLException e) {
-			return null;
-		}
-		if (statement != null) {
 			try {
-				statement.close();
+				connection.close();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			return Collections.emptyList();
+		} finally {
+			try {
+				if (statement != null)
+					statement.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}
-		return rppList;
+
+		if (uuid != null) {
+			allRPPs.add(getPlayerStatistics(uuid));
+		}
+
+		return allRPPs;
 	}
 
 	/**
 	 * Restores all data of the specified player to 0
-	 * 
 	 * @param uuid UUID of player
 	 * @return true if the player found in database
 	 */
@@ -364,13 +347,19 @@ public class MySQLStats {
 			}
 			rs.close();
 		} catch (SQLException e) {
-			return false;
-		}
-		if (statement != null) {
 			try {
-				statement.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
+				connection.close();
+			} catch (SQLException e2) {
+				e2.printStackTrace();
+			}
+			return false;
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -389,6 +378,14 @@ public class MySQLStats {
 			statement.executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 		return true;
 	}

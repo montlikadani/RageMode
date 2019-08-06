@@ -4,7 +4,7 @@ import org.bukkit.Bukkit;
 
 public class MinecraftVersion {
 
-	MinecraftVersion() {
+	public MinecraftVersion() {
 	}
 
 	public Version getVersion() {

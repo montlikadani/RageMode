@@ -39,7 +39,7 @@ public class BossMessenger {
 					else
 						boss.removeAll();
 				}
-			}, (long) (20 * i));
+			}, 20 * i);
 		}
 	}
 }

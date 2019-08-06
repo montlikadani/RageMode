@@ -12,14 +12,16 @@ public class KickPlayer extends RmCommand {
 
 	@Override
 	public boolean run(CommandSender sender, String[] args) {
-		if (!hasPerm(sender, "ragemode.admin.kick")) {
+		if (sender instanceof Player && !hasPerm(sender, "ragemode.admin.kick")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}
+
 		if (args.length < 3) {
 			sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName> <playerName>"));
 			return false;
 		}
+
 		String game = args[1];
 		if (game == null) {
 			sendMessage(sender, RageMode.getLang().get("commands.kick.game-not-null"));
@@ -39,6 +41,7 @@ public class KickPlayer extends RmCommand {
 				sendMessage(sender, RageMode.getLang().get("commands.kick.player-not-found"));
 				return false;
 			}
+
 			if (PlayerList.isPlayerPlaying(target.getUniqueId().toString())) {
 				PlayerList.removePlayer(target);
 

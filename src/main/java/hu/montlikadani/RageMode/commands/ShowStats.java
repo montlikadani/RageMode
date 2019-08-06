@@ -13,20 +13,23 @@ public class ShowStats extends RmCommand {
 
 	@Override
 	public boolean run(CommandSender sender, String[] args) {
-		if (!hasPerm(sender, "ragemode.stats")) {
+		if (sender instanceof Player && !hasPerm(sender, "ragemode.stats")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}
+
 		if (!(sender instanceof Player)) {
 			if (args.length < 2) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-null"));
 				return false;
 			}
+
 			Player target = Bukkit.getPlayer(args[1]);
 			if (target == null) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-found"));
 				return false;
 			}
+
 			showStats(sender, target);
 			return false;
 		}
@@ -38,6 +41,7 @@ public class ShowStats extends RmCommand {
 				sendMessage(p, RageMode.getLang().get("commands.stats.player-not-found"));
 				return false;
 			}
+
 			showStats(p, target);
 			return false;
 		}
@@ -56,9 +60,9 @@ public class ShowStats extends RmCommand {
 
 		for (String list : RageMode.getLang().getList("statistic-list")) {
 			list = list.replace("%player%", t.getName());
-
 			list = Utils.setPlaceholders(list, t);
 			list = list.replace("%rank%", Integer.toString(rpp.getRank()));
+
 			sendMessage(sender, list);
 		}
 	}

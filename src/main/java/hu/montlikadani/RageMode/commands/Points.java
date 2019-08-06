@@ -16,7 +16,7 @@ import hu.montlikadani.ragemode.statistics.YAMLStats;
 public class Points extends RmCommand {
 
 	private enum Actions {
-		Set, Add, Take
+		Set, Add, Take;
 	}
 
 	@Override
@@ -43,24 +43,13 @@ public class Points extends RmCommand {
 		case "take":
 			action = Actions.Take;
 			break;
+		default:
+			break;
 		}
 
 		Player target = Bukkit.getPlayer(args[2]);
 		if (target == null) {
 			sendMessage(sender, RageMode.getLang().get("commands.points.player-not-found"));
-			return false;
-		}
-
-		int amount = 0;
-		try {
-			amount = Integer.parseInt(args[3]);
-		} catch (NumberFormatException e) {
-			sendMessage(sender, RageMode.getLang().get("not-a-number", "%number%", args[3]));
-			return false;
-		}
-
-		if (amount < 0) {
-			sendMessage(sender, RageMode.getLang().get("commands.points.amount-not-less"));
 			return false;
 		}
 
@@ -75,6 +64,19 @@ public class Points extends RmCommand {
 			return false;
 		}
 
+		int amount = 0;
+		try {
+			amount = Integer.parseInt(args[3]);
+		} catch (NumberFormatException e) {
+			sendMessage(sender, RageMode.getLang().get("not-a-number", "%number%", args[3]));
+			return false;
+		}
+
+		if (amount <= 0) {
+			sendMessage(sender, RageMode.getLang().get("commands.points.amount-not-less"));
+			return false;
+		}
+
 		switch (action) {
 		case Set:
 			rpp.setPoints(amount);
@@ -84,6 +86,8 @@ public class Points extends RmCommand {
 			break;
 		case Take:
 			rpp.takePoints(amount);
+			break;
+		default:
 			break;
 		}
 

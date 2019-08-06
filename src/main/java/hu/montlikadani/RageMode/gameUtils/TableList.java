@@ -72,8 +72,8 @@ public class TableList<S1, S2> {
 	public int getLength() {
 		if (firstList.size() >= secondList.size())
 			return firstList.size();
-		else
-			return secondList.size();
+
+		return secondList.size();
 	}
 
 	private void createLists() {

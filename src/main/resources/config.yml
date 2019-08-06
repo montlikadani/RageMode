@@ -77,10 +77,12 @@ signs:
 
 # Actionbar messages
 actionbar-messages:
-  join:
-    # Actionbar message when started the game and sends to player.
-    # This be ignored, when empty or not found.
-    message: ""
+  # Actionbar message when started the game and sends to player.
+  # This will be ignored, when the actionbar option is disabled,
+  # this list is empty or not found.
+  actions:
+  #- "join:&cHello&a %player%&c in this game!"
+  - "start:&aGame has started!&2 We wish you a good game!"
 
 # Bossbar messages
 bossbar-messages:

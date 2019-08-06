@@ -34,7 +34,7 @@ public class ForceStart extends RmCommand {
 			sendMessage(p, RageMode.getLang().get("commands.forcestart.player-not-in-game"));
 			return false;
 		}
-		if (PlayerList.getPlayersInGame(game).length < 2) {
+		if (PlayerList.getPlayers().size() < 2) {
 			sendMessage(p, RageMode.getLang().get("commands.forcestart.not-enough-players"));
 			return false;
 		}

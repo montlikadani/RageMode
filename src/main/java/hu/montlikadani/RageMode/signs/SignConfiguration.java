@@ -6,7 +6,9 @@ import java.io.IOException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.Configuration;
 
 public class SignConfiguration {
 
@@ -17,8 +19,8 @@ public class SignConfiguration {
 	public static void initSignConfiguration() {
 		if (inited)
 			return;
-		else
-			inited = true;
+
+		inited = true;
 
 		File file = new File(RageMode.getInstance().getFolder(), "signs.yml");
 		FileConfiguration config = null;
@@ -32,35 +34,25 @@ public class SignConfiguration {
 				file.createNewFile();
 			} catch (IOException e1) {
 				e1.printStackTrace();
-				RageMode.getInstance().throwMsg();
+				Debug.throwMsg();
 			}
 
 			config = new YamlConfiguration();
 			config.createSection("signs");
 
-			try {
-				config.save(file);
-			} catch (IOException e2) {
-				e2.printStackTrace();
-				RageMode.getInstance().throwMsg();
-			}
+			Configuration.saveFile(config, file);
 		} else
 			config = YamlConfiguration.loadConfiguration(file);
 
 		signConfig = config;
-		try {
-			config.save(file);
-		} catch (IOException e) {
-			e.printStackTrace();
-			RageMode.getInstance().throwMsg();
-		}
+		Configuration.saveFile(config, file);
 	}
 
-	public static File getYamlSignsFile() {
+	public static File getFile() {
 		return yamlSignsFile;
 	}
 
-	public static FileConfiguration getSignConfig() {
+	public static FileConfiguration getConf() {
 		return signConfig;
 	}
 }

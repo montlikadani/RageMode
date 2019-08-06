@@ -11,8 +11,8 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
-import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 
 public class TabTitles {
@@ -37,6 +37,7 @@ public class TabTitles {
 	 * can be accessed with the getTabList(String gameName) method.
 	 * 
 	 * @param gameName the unique game-name for which the TabList element should be saved for.
+	 * @param forceReplace force the game put to the list
 	 * @return Whether the TabList was stored successfully or not.
 	 */
 	public boolean addToTabList(String gameName, boolean forceReplace) {
@@ -53,7 +54,6 @@ public class TabTitles {
 
 	/**
 	 * Returns the players who added to the list.
-	 * 
 	 * @return List player
 	 */
 	public List<Player> getPlayers() {
@@ -62,7 +62,6 @@ public class TabTitles {
 
 	/**
 	 * Sends TabList to all online players that are currently playing in the game.
-	 * 
 	 * @param header TabList header
 	 * @param footer TabList footer
 	 */
@@ -105,7 +104,7 @@ public class TabTitles {
 			Utils.sendPacket(player, packet);
 		} catch (Throwable e) {
 			e.printStackTrace();
-			RageMode.getInstance().throwMsg();
+			Debug.throwMsg();
 		}
 	}
 
@@ -121,7 +120,6 @@ public class TabTitles {
 	/**
 	 * Removes the tablist from the specified player that are currently
 	 * playing the game.
-	 * 
 	 * @param player Player name
 	 */
 	public void removeTabList(Player player) {

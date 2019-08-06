@@ -9,8 +9,6 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.ragemode.RageMode;
-
 public class ScoreTeam {
 
 	public static HashMap<String, ScoreTeam> allTeams = new HashMap<>();
@@ -33,6 +31,7 @@ public class ScoreTeam {
 	 * can be accessed with the getScore(String gameName) method.
 	 * 
 	 * @param gameName the unique game-name for which the ScoreTeam element should be saved for.
+	 * @param forceReplace force the game put to the list
 	 * @return Whether the ScoreTeam was stored successfully or not.
 	 */
 	public boolean addToTeam(String gameName, boolean forceReplace) {
@@ -49,7 +48,6 @@ public class ScoreTeam {
 
 	/**
 	 * Returns the stored players who added to the list.
-	 * 
 	 * @return List player
 	 */
 	public List<Player> getPlayers() {
@@ -58,7 +56,6 @@ public class ScoreTeam {
 
 	/**
 	 * Sends ScoreTeam to all online players that are currently playing in the game.
-	 * 
 	 * @param prefix String
 	 * @param suffix String
 	 */
@@ -70,18 +67,16 @@ public class ScoreTeam {
 
 	/**
 	 * Sets the current player prefix/suffix.
-	 * 
 	 * @param player Player
 	 * @param prefix String
 	 * @param suffix String
 	 */
 	public void setTeam(Player player, String prefix, String suffix) {
-		player.setPlayerListName(RageMode.getLang().colors(prefix + player.getName() + suffix));
+		player.setPlayerListName(prefix + player.getName() + suffix);
 	}
 
 	/**
 	 * Removes the team from player
-	 * 
 	 * @param player Player
 	 */
 	public void removeTeam(Player player) {

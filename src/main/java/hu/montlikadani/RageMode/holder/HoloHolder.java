@@ -17,7 +17,9 @@ import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.gmail.filoghost.holographicdisplays.api.VisibilityManager;
 
+import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
@@ -41,12 +43,7 @@ public class HoloHolder {
 		holos.add(loc);
 		holosConf.set("data.holos", holos);
 
-		try {
-			holosConf.save(holosFile);
-		} catch (IOException e) {
-			e.printStackTrace();
-			RageMode.getInstance().throwMsg();
-		}
+		Configuration.saveFile(holosConf, holosFile);
 
 		Bukkit.getOnlinePlayers().forEach(player -> displayHoloToPlayer(player, loc));
 	}
@@ -164,12 +161,7 @@ public class HoloHolder {
 		holos.remove(holo.getLocation());
 		holosConf.set("data.holos", holos);
 
-		try {
-			holosConf.save(holosFile);
-		} catch (IOException e) {
-			e.printStackTrace();
-			RageMode.getInstance().throwMsg();
-		}
+		Configuration.saveFile(holosConf, holosFile);
 
 		holo.delete();
 		loadHolos();
@@ -220,28 +212,18 @@ public class HoloHolder {
 				file.createNewFile();
 			} catch (IOException e) {
 				e.printStackTrace();
-				RageMode.getInstance().throwMsg();
+				Debug.throwMsg();
 			}
 
 			config = new YamlConfiguration();
 			config.createSection("data");
 
-			try {
-				config.save(file);
-			} catch (IOException e2) {
-				e2.printStackTrace();
-				RageMode.getInstance().throwMsg();
-			}
+			Configuration.saveFile(config, file);
 		} else
 			config = YamlConfiguration.loadConfiguration(file);
 
 		holosConf = config;
-		try {
-			config.save(file);
-		} catch (IOException e) {
-			e.printStackTrace();
-			RageMode.getInstance().throwMsg();
-		}
+		Configuration.saveFile(config, file);
 		loadHolos();
 	}
 

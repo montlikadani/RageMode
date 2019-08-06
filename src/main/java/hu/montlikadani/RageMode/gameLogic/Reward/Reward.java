@@ -2,7 +2,6 @@ package hu.montlikadani.ragemode.gameLogic.Reward;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -20,6 +19,7 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
+import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
@@ -76,47 +76,40 @@ public class Reward {
 			getItems("winner", winner);
 	}
 
-	public void rewardForPlayers(Player winner) {
+	public void rewardForPlayers(Player winner, Player pls) {
 		if (!enable)
 			return;
 
-		for (String playerUUID : PlayerList.getPlayersInGame(game)) {
-			Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
-			if (winner != null && player == winner)
-				return;
+		if (winner != null && pls == winner)
+			return;
 
-			List<String> cmds = conf.getStringList("rewards.end-game.players.commands");
-			List<String> msgs = conf.getStringList("rewards.end-game.players.messages");
-			double cash = conf.getDouble("rewards.end-game.players.cash");
-			ConfigurationSection item = conf.getConfigurationSection("rewards.end-game.players.items");
+		List<String> cmds = conf.getStringList("rewards.end-game.players.commands");
+		List<String> msgs = conf.getStringList("rewards.end-game.players.messages");
+		double cash = conf.getDouble("rewards.end-game.players.cash");
+		ConfigurationSection item = conf.getConfigurationSection("rewards.end-game.players.items");
 
-			if (cmds != null && !cmds.isEmpty()) {
-				for (String path : cmds) {
-					String[] arg = path.split(": ");
-					String cmd = arg[1];
-					cmd = replacePlaceholders(cmd, player, false);
+		if (cmds != null && !cmds.isEmpty()) {
+			for (String path : cmds) {
+				String[] arg = path.split(": ");
+				String cmd = arg[1];
+				cmd = replacePlaceholders(cmd, pls, false);
 
-					if (arg[0].equals("console"))
-						Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), cmd);
-					else if (arg[0].equals("player"))
-						player.performCommand(cmd);
-				}
+				if (arg[0].equals("console"))
+					Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), cmd);
+				else if (arg[0].equals("player"))
+					pls.performCommand(cmd);
 			}
-
-			if (msgs != null && !msgs.isEmpty()) {
-				for (String path : msgs) {
-					path = replacePlaceholders(path, player, false);
-
-					player.sendMessage(path);
-				}
-			}
-
-			if (cash > 0D && RageMode.getInstance().isVaultEnabled())
-				RageMode.getInstance().getEconomy().depositPlayer(player, cash);
-
-			if (item != null && conf.isConfigurationSection("rewards.end-game.players.items"))
-				getItems("players", player);
 		}
+
+		if (msgs != null && !msgs.isEmpty()) {
+			msgs.forEach(path -> pls.sendMessage(replacePlaceholders(path, pls, false)));
+		}
+
+		if (cash > 0D && RageMode.getInstance().isVaultEnabled())
+			RageMode.getInstance().getEconomy().depositPlayer(pls, cash);
+
+		if (item != null && conf.isConfigurationSection("rewards.end-game.players.items"))
+			getItems("players", pls);
 	}
 
 	private String replacePlaceholders(String path, Player p, boolean winner) {
@@ -124,7 +117,7 @@ public class Reward {
 
 		path = path.replace("%game%", game);
 		path = path.replace("%player%", p.getName());
-		path = path.replace("%online-ingame-players%", Integer.toString(PlayerList.getPlayersInGame(game).length));
+		path = path.replace("%online-ingame-players%", Integer.toString(PlayerList.getPlayers().size()));
 		path = path.replace("%reward%", cash > 0D ? Double.toString(cash) : "");
 		path = Utils.setPlaceholders(path, p);
 		return RageMode.getLang().colors(path);
@@ -138,14 +131,14 @@ public class Reward {
 				try {
 					Material mat = Material.valueOf(type.toUpperCase());
 					if (mat == null) {
-						RageMode.logConsole(Level.WARNING, "[RageMode] Unknown item name: " + type);
-						RageMode.logConsole("[RageMode] Find and double check item names using this page:");
-						RageMode.logConsole("[RageMode] https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html");
+						Debug.logConsole(Level.WARNING, "Unknown item name: " + type);
+						Debug.logConsole("Find and double check item names using this page:");
+						Debug.logConsole("https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html");
 						return;
 					}
 
 					if (mat.equals(Material.AIR)) {
-						RageMode.logConsole("[RageMode] AIR is not supported.");
+						Debug.logConsole("AIR is not supported.");
 						return;
 					}
 
@@ -214,7 +207,7 @@ public class Reward {
 									} else
 										itemStack.addUnsafeEnchantment(NMS.getEnchant(split[0]), Integer.parseInt(split[1]));
 								} catch (IllegalArgumentException b) {
-									RageMode.logConsole(Level.WARNING, "[RageMode] Bad enchantment name: " + split[0]);
+									Debug.logConsole(Level.WARNING, "Bad enchantment name: " + split[0]);
 									continue;
 								}
 							}
@@ -226,10 +219,10 @@ public class Reward {
 						else
 							p.getInventory().addItem(itemStack);
 					} catch (IllegalArgumentException i) {
-						RageMode.logConsole(Level.WARNING, "[RageMode] Slot is not between 0 and 8 inclusive.");
+						Debug.logConsole(Level.WARNING, "Slot is not between 0 and 8 inclusive.");
 					}
 				} catch (Exception e) {
-					RageMode.logConsole(Level.WARNING, "[RageMode] Problem occured with your item: " + e.getMessage());
+					Debug.logConsole(Level.WARNING, "Problem occured with your item: " + e.getMessage());
 				}
 			}
 		}
