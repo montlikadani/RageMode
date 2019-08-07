@@ -671,6 +671,10 @@ public class PlayerList {
 	}
 
 	public static boolean hasRoomForVIP(String game) {
+		if (players != null) {
+			return false;
+		}
+
 		int vipsInGame = 0;
 
 		for (Entry<String, String> playerUUIDs : players.entrySet()) {
@@ -826,8 +830,10 @@ public class PlayerList {
 	public static List<String> getPlayersFromList() {
 		List<String> list = new ArrayList<>();
 
-		for (Entry<String, String> entries : players.entrySet()) {
-			list.add(entries.getValue());
+		if (players != null) {
+			for (Entry<String, String> entries : players.entrySet()) {
+				list.add(entries.getValue());
+			}
 		}
 
 		return list;
@@ -839,7 +845,7 @@ public class PlayerList {
 	 * @return Player who in game currently.
 	 */
 	public static Player getPlayerInGame(String game) {
-		return Bukkit.getPlayer(UUID.fromString(players.get(game)));
+		return players != null ? Bukkit.getPlayer(UUID.fromString(players.get(game))) : null;
 	}
 
 	/**
@@ -858,9 +864,11 @@ public class PlayerList {
 	 */
 	public static Player getPlayerByUUID(String uuid) {
 		Player player = null;
-		for (Entry<String, String> list : players.entrySet()) {
-			if (list.getValue().equals(uuid)) {
-				player = Bukkit.getPlayer(list.getValue());
+		if (players != null) {
+			for (Entry<String, String> list : players.entrySet()) {
+				if (list.getValue().equals(uuid)) {
+					player = Bukkit.getPlayer(list.getValue());
+				}
 			}
 		}
 

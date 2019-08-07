@@ -39,7 +39,6 @@ commands:
   signupdate:
     usage: "&cHasználat:&7 '/rm signupdate <játéknév>'&c."
   togglegame:
-    game-not-exist: "&cEz a játék nem létezik."
     game-is-running: "&cEz a játék jelenleg fut, kérlek állítsd le előbb."
     successfully-toggled: "&2Ez a játék&7 %game%&2 sikeresen átváltva %status%&2-ra/re."
     status:
@@ -58,6 +57,7 @@ commands:
   removespawn:
     not-valid-spawn-id: "&cJáték spawn azonosító&e %id%&c nem egy érvényes spawn."
     remove-success: "&cA spawn&e %number%&3 %game%&c játékhoz törölve!"
+    no-more-spawn: "&cNincs több spawn, hogy töröld, mert már törölted az összes spawn-t..."
   givesaveditems:
     not-enabled: "&cEz az opció nincs engedélyezve a konfigurációs fájlban."
     player-not-found-in-data-file: "&cEz a játékos&7 %player%&c nem található az adat fájlban."

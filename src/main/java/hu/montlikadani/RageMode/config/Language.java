@@ -102,6 +102,7 @@ public class Language {
 		l.get("commands.points.player-is-in-game", "&cThis player&7 %player%&c is in game, so the points can not be modifiable while playing.");
 		l.get("commands.removespawn.not-valid-spawn-id", "&cGame spawn with id&e %id%&c is not a valid spawn.");
 		l.get("commands.removespawn.remove-success", "&cSpawn&e %number%&c for the game&3 %game%&c was removed successfully!");
+		l.get("commands.removespawn.no-more-spawn", "&cNo more spawn to delete, because you removed all spawns...");
 		l.get("commands.givesaveditems.not-enabled", "&cThis option is not enabled in the configuration file.");
 		l.get("commands.givesaveditems.player-not-found-in-data-file", "&cThis player&7 %player%&c not found in the data file.");
 		l.get("commands.givesaveditems.no-player-saved-inventory", "&cThere are no player found in the data file that have been saved their inventory.");
@@ -208,13 +209,16 @@ public class Language {
 		if (key == null || key.equals(""))
 			return msg;
 
-		if (yc.isString(key))
-			msg = colors(yc.getString(key));
-		else {
+		if (!yc.contains(key) || !yc.isString(key)) {
 			msg = missing;
 			Debug.sendMessage("[RageMode]&c Can't read language file for:&7 " + key);
 			return msg;
 		}
+
+		if (yc.getString(key).equals(""))
+			return msg;
+
+		msg = colors(yc.getString(key));
 
 		if (variables.length > 0) {
 			for (int i = 0; i < variables.length; i++) {
@@ -234,7 +238,7 @@ public class Language {
 			return Collections.emptyList();
 
 		List<String> ls = null;
-		if (yc.isList(key))
+		if (yc.contains(key) && yc.isList(key))
 			ls = Utils.colorList(yc.getStringList(key));
 		else {
 			ls = Arrays.asList(missing);
@@ -245,13 +249,16 @@ public class Language {
 		if (variables.length > 0) {
 			for (int i = 0; i < ls.size(); i++) {
 				String msg = ls.get(i);
+
 				for (int y = 0; y < variables.length; y += 2) {
 					msg = msg.replace(String.valueOf(variables[y]), String.valueOf(variables[y + 1]));
 				}
+
 				msg = filterNewLine(msg);
 				ls.set(i, colors(msg));
 			}
 		}
+
 		return ls;
 	}
 
@@ -276,6 +283,10 @@ public class Language {
 				file = new File(localeFolder, "locale_" + l + ".yml");
 		}
 
-		return file != null ? file : null;
+		if (file == null) {
+			loadLanguage(plugin.getConfiguration().getCfg().getString("language"));
+		}
+
+		return file;
 	}
 }

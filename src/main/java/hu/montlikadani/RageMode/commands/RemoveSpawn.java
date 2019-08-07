@@ -26,12 +26,26 @@ public class RemoveSpawn extends RmCommand {
 		}
 
 		if (args.length < 3) {
-			sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%", "/rm removespawn <gameName> <id>"));
+			sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%", "/rm removespawn <gameName> <id/all>"));
 			return false;
 		}
 
 		if (!GameUtils.isGameWithNameExists(args[1])) {
 			sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", args[1]));
+			return false;
+		}
+
+		FileConfiguration aFile = plugin.getConfiguration().getArenasCfg();
+
+		if (args[2].equalsIgnoreCase("all")) {
+			if (!aFile.contains("arenas." + args[1] + ".spawns")) {
+				sendMessage(sender, RageMode.getLang().get("commands.removespawn.no-more-spawn"));
+				return false;
+			}
+
+			aFile.set("arenas." + args[1] + ".spawns", null);
+			Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
+			sendMessage(sender, RageMode.getLang().get("commands.removespawn.remove-success", "%number%", "all", "%game%", args[1]));
 			return false;
 		}
 
@@ -41,7 +55,6 @@ public class RemoveSpawn extends RmCommand {
 		}
 
 		int i = Integer.parseInt(args[2]);
-		FileConfiguration aFile = plugin.getConfiguration().getArenasCfg();
 		String path = "arenas." + args[1];
 
 		if (!aFile.isSet(path + ".spawns." + i)) {
@@ -70,9 +83,7 @@ public class RemoveSpawn extends RmCommand {
 			return false;
 		}
 
-		for (int x = 0; x < plugin.getSpawns().size(); x++) {
-			GameSpawnGetter spawn = plugin.getSpawns().get(x);
-
+		for (GameSpawnGetter spawn : plugin.getSpawns()) {
 			if (spawn.getGameName().equalsIgnoreCase(args[1])) {
 				for (int y = 0; y < spawn.getSpawnLocations().size(); y++) {
 					if (spawn.getSpawnLocations().get(y).equals(loc)) {

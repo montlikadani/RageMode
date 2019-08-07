@@ -71,4 +71,15 @@ public class GameSpawnGetter {
 	public List<Location> getSpawnLocations() {
 		return spawnLocations;
 	}
+
+	public Location getSpawnByLocation(Location location) {
+		Location loc = null;
+		for (Location locs : spawnLocations) {
+			if (location.equals(locs)) {
+				loc = locs;
+			}
+		}
+
+		return loc;
+	}
 }

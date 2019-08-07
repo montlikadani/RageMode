@@ -39,7 +39,6 @@ commands:
   signupdate:
     usage: "&cUsage:&7 '/rm signupdate <gameName>'&c."
   togglegame:
-    game-not-exist: "&cThis game not exists."
     game-is-running: "&cThis game is currently running, please stop it firstly."
     successfully-toggled: "&2This game&7 %game%&2 successfully toggled %status%&2."
     status:
@@ -58,6 +57,7 @@ commands:
   removespawn:
     not-valid-spawn-id: "&cGame spawn with id&e %id%&c is not a valid spawn."
     remove-success: "&cSpawn&e %number%&c for the game&3 %game%&c was removed successfully!"
+    no-more-spawn: "&cNo more spawn to delete, because you removed all spawns..."
   givesaveditems:
     not-enabled: "&cThis option is not enabled in the configuration file."
     player-not-found-in-data-file: "&cThis player&7 %player%&c not found in the data file."

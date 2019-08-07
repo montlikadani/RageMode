@@ -145,7 +145,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 						msg += "&7-&6 /rm addspawn <gameName>&a - Adds a new spawn location.\n";
 
 					if (hasPerm(sender, "ragemode.admin.removespawn"))
-						msg += "&7-&6 /rm removespawn <gameName> <id>&a - Removes the game spawn from id.\n";
+						msg += "&7-&6 /rm removespawn <gameName> <id/all>&a - Removes the game spawn from id, or removes all.\n";
 
 					if (hasPerm(sender, "ragemode.admin.holostats"))
 						msg += "&7-&6 /rm holostats <add/remove/tp>&a - Adds/remove/teleports a new hologram.\n";
@@ -277,9 +277,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 				partOfCommand = args[0];
 			} else if (args.length < 3) {
 				if (args[0].equalsIgnoreCase("holostats")) {
-					for (String hcmd : Arrays.asList("add", "remove", "tp")) {
-						cmds.add(hcmd);
-					}
+					Arrays.asList("add", "remove", "tp").forEach(hcmd -> cmds.add(hcmd));
 
 					partOfCommand = args[1];
 				} else {
@@ -296,9 +294,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 			} else if (args.length < 4) {
 				for (int i = 0; i < getValueListCmds().size(); i++) {
 					if (args[0].equalsIgnoreCase(getValueListCmds().get(i))) {
-						for (String tf : Arrays.asList("true", "false")) {
-							cmds.add(tf);
-						}
+						Arrays.asList("true", "false").forEach(tf -> cmds.add(tf));
 
 						partOfCommand = args[2];
 					}

@@ -141,7 +141,7 @@ public class Utils {
 	 * Sends the packet to the specified player
 	 * @param player Player
 	 * @param packet Packet name
-	 * @throws Throwable if class/method not found
+	 * @throws Exception if class/method not found
 	 */
 	public static void sendPacket(Player player, Object packet) throws Exception {
 		Object handle = player.getClass().getMethod("getHandle", new Class[0]).invoke(player, new Object[0]);

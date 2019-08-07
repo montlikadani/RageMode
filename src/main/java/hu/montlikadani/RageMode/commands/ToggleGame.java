@@ -41,8 +41,12 @@ public class ToggleGame extends RmCommand {
 			Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 
 			// Something wrong with this... But what??
-			sendMessage(sender, RageMode.getLang().get("commands.togglegame.successfully-toggled", "%game%", args[1], "%status%",
-					!toggle ? RageMode.getLang().get("commands.togglegame.status.on") : RageMode.getLang().get("commands.togglegame.status.off")));
+			// Seems the Java is broken for me, because if a string has 3 or less length then it will show as null
+			// or probably FileConfiguration is broken?
+			sendMessage(sender,
+					RageMode.getLang().get("commands.togglegame.successfully-toggled", "%game%", args[1], "%status%",
+							!toggle ? RageMode.getLang().get("commands.togglegame.status.on")
+									: RageMode.getLang().get("commands.togglegame.status.off")));
 		} else
 			sendMessage(sender, RageMode.getLang().get("commands.togglegame.game-is-running"));
 
