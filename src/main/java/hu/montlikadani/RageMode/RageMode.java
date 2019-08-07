@@ -293,8 +293,6 @@ public class RageMode extends JavaPlugin {
 		if (conf.getArenasCfg().contains("arenas")) {
 			spawns.clear();
 
-			StopGame.stopAllGames();
-
 			for (String game : GetGames.getGameNames()) {
 				if (game != null) {
 					if (PlayerList.isGameRunning(game)) {
@@ -309,6 +307,8 @@ public class RageMode extends JavaPlugin {
 					SignCreator.updateAllSigns(game);
 				}
 			}
+
+			StopGame.stopAllGames();
 		}
 
 		if (conf.getCfg().getBoolean("signs.enable")) {
