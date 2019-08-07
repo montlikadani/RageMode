@@ -1,6 +1,7 @@
 package hu.montlikadani.ragemode.gameUtils;
 
 import java.util.List;
+import java.util.Random;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -8,12 +9,15 @@ import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.util.Vector;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
@@ -443,6 +447,41 @@ public class GameUtils {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Teleports players to a random location.
+	 * This will return if the spawns size 0 because with value 0 are not possible.
+	 * @param spawn GameSpawnGetter
+	 */
+	public static void teleportPlayersToGameSpawns(GameSpawnGetter spawn) {
+		for (Entry<String, String> uuids : PlayerList.getPlayers().entrySet()) {
+			Player player = Bukkit.getPlayer(UUID.fromString(uuids.getValue()));
+			teleportPlayerToGameSpawn(player, spawn);
+		}
+	}
+
+	/**
+	 * Teleports the specified player to a random location.
+	 * This will return if the spawns size 0 because with value 0 are not possible.
+	 * @param p Player who is in game
+	 * @param spawn GameSpawnGetter
+	 */
+	public static void teleportPlayerToGameSpawn(Player p, GameSpawnGetter spawn) {
+		Random r = new Random();
+		if (spawn.getSpawnLocations().size() > 0) {
+			int x = r.nextInt(spawn.getSpawnLocations().size());
+			Location location = spawn.getSpawnLocations().get(x);
+			p.teleport(location);
+		}
+	}
+
+	public static boolean getLookingAt(Player player, LivingEntity livingEntity) {
+		Location eye = player.getEyeLocation();
+		Vector toEntity = livingEntity.getLocation().toVector().subtract(eye.toVector());
+		double dot = toEntity.normalize().dot(eye.getDirection());
+
+		return dot >= 0.99D;
 	}
 
 	/**

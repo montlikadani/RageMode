@@ -405,15 +405,11 @@ public class RageMode extends JavaPlugin {
 		return sign;
 	}
 
-	public BukkitTask getSignTask() {
-		return signTask;
-	}
-
 	public List<GameSpawnGetter> getSpawns() {
 		return spawns;
 	}
 
-	public PluginManager getManager() {
+	private PluginManager getManager() {
 		return Bukkit.getPluginManager();
 	}
 

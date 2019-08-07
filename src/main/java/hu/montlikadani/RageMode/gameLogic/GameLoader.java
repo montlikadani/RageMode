@@ -1,18 +1,14 @@
 package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Timer;
 import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
@@ -43,7 +39,6 @@ public class GameLoader {
 
 		PlayerList.setGameRunning(gameName);
 		GameUtils.setStatus(GameStatus.RUNNING);
-		setInventories();
 
 		int time = !conf.getArenasCfg().isSet("arenas." + gameName + ".gametime")
 				? conf.getCfg().getInt("game.global.defaults.gametime") < 0 ? 5 * 60
@@ -60,6 +55,8 @@ public class GameLoader {
 
 		for (Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
 			Player p = Bukkit.getPlayer(UUID.fromString(players.getValue()));
+
+			GameUtils.addGameItems(p, true);
 
 			if (Version.isCurrentEqualOrHigher(Version.v1_9_R1)) {
 				String bossMessage = conf.getCfg().getString("bossbar-messages.join.message");
@@ -92,7 +89,7 @@ public class GameLoader {
 	private void checkTeleport() {
 		GameSpawnGetter gameSpawnGetter = GameUtils.getGameSpawnByName(gameName);
 		if (gameSpawnGetter.isGameReady()) {
-			teleportPlayersToGameSpawns(gameSpawnGetter);
+			GameUtils.teleportPlayersToGameSpawns(gameSpawnGetter);
 		} else {
 			GameUtils.broadcastToGame(gameName, RageMode.getLang().get("game.not-set-up"));
 			for (Entry<String, String> uuids : PlayerList.getPlayers().entrySet()) {
@@ -102,43 +99,7 @@ public class GameLoader {
 		}
 	}
 
-	private void teleportPlayersToGameSpawns(GameSpawnGetter spawn) {
-		for (Entry<String, String> uuids : PlayerList.getPlayers().entrySet()) {
-			Player player = Bukkit.getPlayer(UUID.fromString(uuids.getValue()));
-
-			Random r = new Random();
-			if (spawn.getSpawnLocations().size() > 0) {
-				int x = r.nextInt(spawn.getSpawnLocations().size());
-				Location location = spawn.getSpawnLocations().get(x);
-				player.teleport(location);
-			}
-		}
-	}
-
-	private void setInventories() {
-		for (Entry<String, String> uuids : PlayerList.getPlayers().entrySet()) {
-			Player player = Bukkit.getPlayer(UUID.fromString(uuids.getValue()));
-			GameUtils.addGameItems(player, true);
-		}
-	}
-
-	/*public static List<Entity> getEntities(Player player) {
-		List<Entity> entitys = new ArrayList<>();
-		for (Entity e : player.getNearbyEntities(5, 5, 5)) {
-			if (e instanceof LivingEntity) {
-				if (getLookingAt(player, (LivingEntity) e))
-					entitys.add(e);
-			}
-		}
-
-		return entitys;
-	}*/
-
-	public static boolean getLookingAt(Player player, LivingEntity livingEntity) {
-		Location eye = player.getEyeLocation();
-		Vector toEntity = livingEntity.getLocation().toVector().subtract(eye.toVector());
-		double dot = toEntity.normalize().dot(eye.getDirection());
-
-		return dot >= 0.99D;
+	public String getGame() {
+		return gameName;
 	}
 }

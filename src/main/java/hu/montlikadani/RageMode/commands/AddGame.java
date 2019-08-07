@@ -50,7 +50,7 @@ public class AddGame extends RmCommand {
 		}
 
 		if (plugin.getConfiguration().getCfg().getBoolean("bungee.enable"))
-			plugin.getManager().registerEvents(new BungeeListener(game), plugin);
+			plugin.getServer().getPluginManager().registerEvents(new BungeeListener(game), plugin);
 
 		new PlayerList();
 

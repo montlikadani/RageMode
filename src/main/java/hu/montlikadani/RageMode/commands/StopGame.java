@@ -134,9 +134,6 @@ public class StopGame extends RmCommand {
 				EventListener.waitingGames.put(game, true);
 			}
 
-			// Cancels the sign task to reduce the memory leak
-			//RageMode.getInstance().getSignTask().cancel();
-
 			GameUtils.setStatus(GameStatus.GAMEFREEZE);
 
 			final Player winner = winnerUUID != null ? Bukkit.getPlayer(UUID.fromString(winnerUUID)) : null;

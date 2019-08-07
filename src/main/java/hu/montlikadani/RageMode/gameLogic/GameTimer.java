@@ -118,7 +118,7 @@ public class GameTimer extends TimerTask {
 					p.setCustomNameVisible(false);
 
 					// TODO fix issue when the player looks through the block and the name appears within the 10 radius
-					if (GameLoader.getLookingAt(player, p))
+					if (GameUtils.getLookingAt(player, p))
 						p.setCustomNameVisible(true);
 				}
 			}
