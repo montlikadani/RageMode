@@ -45,6 +45,11 @@ public class RemoveSpawn extends RmCommand {
 
 			aFile.set("arenas." + args[1] + ".spawns", null);
 			Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
+			for (GameSpawnGetter spawn : plugin.getSpawns()) {
+				if (spawn.getGameName().equalsIgnoreCase(args[1])) {
+					spawn.getSpawnLocations().clear();
+				}
+			}
 			sendMessage(sender, RageMode.getLang().get("commands.removespawn.remove-success", "%number%", "all", "%game%", args[1]));
 			return false;
 		}

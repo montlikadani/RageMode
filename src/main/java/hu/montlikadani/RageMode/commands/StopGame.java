@@ -2,7 +2,6 @@ package hu.montlikadani.ragemode.commands;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -45,7 +44,7 @@ public class StopGame extends RmCommand {
 			if (PlayerList.isGameRunning(game)) {
 				RageScores.calculateWinner(game, PlayerList.getPlayersFromList());
 
-				for (Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
+				for (java.util.Map.Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
 					Player player = Bukkit.getPlayer(UUID.fromString(players.getValue()));
 
 					player.removeMetadata("killedWith", RageMode.getInstance());

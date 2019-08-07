@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class AddSpawn extends RmCommand {
@@ -54,9 +55,9 @@ public class AddSpawn extends RmCommand {
 		aFile.set(path + ".spawns." + i + ".pitch", loc.getPitch());
 		Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
-		for (int y = 0; y < plugin.getSpawns().size(); y++) {
-			if (plugin.getSpawns().get(y).getGameName().equalsIgnoreCase(args[1]))
-				plugin.getSpawns().get(y).getSpawnLocations().add(loc);
+		for (GameSpawnGetter spawn : plugin.getSpawns()) {
+			if (spawn.getGameName().equalsIgnoreCase(args[1]))
+				spawn.getSpawnLocations().add(loc);
 		}
 
 		sendMessage(p, RageMode.getLang().get("setup.spawn-set-success", "%number%", i, "%game%", args[1]));
