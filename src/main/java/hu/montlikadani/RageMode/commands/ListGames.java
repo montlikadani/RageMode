@@ -5,8 +5,12 @@ import org.bukkit.command.CommandSender;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.utils.ICommand;
 
-public class ListGames extends RmCommand {
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
+public class ListGames extends ICommand {
 
 	@Override
 	public boolean run(CommandSender sender) {

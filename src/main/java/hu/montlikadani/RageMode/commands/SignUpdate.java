@@ -5,8 +5,12 @@ import org.bukkit.command.CommandSender;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.signs.SignCreator;
+import hu.montlikadani.ragemode.utils.ICommand;
 
-public class SignUpdate extends RmCommand {
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
+public class SignUpdate extends ICommand {
 
 	@Override
 	public boolean run(CommandSender sender, String[] args) {
@@ -14,6 +18,7 @@ public class SignUpdate extends RmCommand {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}
+
 		if (!RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable"))
 			return false;
 

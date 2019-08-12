@@ -12,8 +12,12 @@ import hu.montlikadani.ragemode.events.BungeeListener;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.utils.ICommand;
 
-public class AddGame extends RmCommand {
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
+public class AddGame extends ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
@@ -21,15 +25,18 @@ public class AddGame extends RmCommand {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return false;
 		}
+
 		Player p = (Player) sender;
 		if (!hasPerm(p, "ragemode.admin.addgame")) {
 			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return false;
 		}
+
 		if (args.length < 3) {
 			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm addgame <gameName> <maxPlayers>"));
 			return false;
 		}
+
 		int x;
 		try {
 			x = Integer.parseInt(args[2]);

@@ -8,8 +8,12 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.RetPlayerPoints;
+import hu.montlikadani.ragemode.utils.ICommand;
 
-public class ShowStats extends RmCommand {
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
+public class ShowStats extends ICommand {
 
 	@Override
 	public boolean run(CommandSender sender, String[] args) {

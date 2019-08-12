@@ -19,6 +19,9 @@ import org.bukkit.util.StringUtil;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
 public class RmCommand implements CommandExecutor, TabCompleter {
 
 	private Map<String, String> arg = new WeakHashMap<>();
@@ -278,11 +281,10 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 			} else if (args.length < 3) {
 				if (args[0].equalsIgnoreCase("holostats")) {
 					Arrays.asList("add", "remove", "tp").forEach(hcmd -> cmds.add(hcmd));
-
 					partOfCommand = args[1];
 				} else {
-					for (int i = 0; i < getGameListCmds().size(); i++) {
-						if (args[0].equalsIgnoreCase(getGameListCmds().get(i))) {
+					for (String game : getGameListCmds()) {
+						if (args[0].equalsIgnoreCase(game)) {
 							for (String scmd : GetGames.getGameNames()) {
 								cmds.add(scmd);
 							}
@@ -292,12 +294,16 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 					}
 				}
 			} else if (args.length < 4) {
-				for (int i = 0; i < getValueListCmds().size(); i++) {
-					if (args[0].equalsIgnoreCase(getValueListCmds().get(i))) {
+				for (String val : getValueListCmds()) {
+					if (args[0].equalsIgnoreCase(val)) {
 						Arrays.asList("true", "false").forEach(tf -> cmds.add(tf));
-
 						partOfCommand = args[2];
 					}
+				}
+
+				if (args[0].equalsIgnoreCase("removespawn")) {
+					cmds.add("all");
+					partOfCommand = args[2];
 				}
 			}
 			StringUtil.copyPartialMatches(partOfCommand, cmds, completionList);
@@ -347,36 +353,5 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 
 	private List<String> getValueListCmds() {
 		return Arrays.asList("actionbar", "bossbar", "globalmessages");
-	}
-
-	boolean hasPerm(CommandSender sender, String perm) {
-		if (sender.hasPermission(perm))
-			return true;
-		return false;
-	}
-
-	void sendMessage(CommandSender sender, String msg) {
-		if (sender != null && msg != null && !msg.equals(""))
-			sender.sendMessage(msg);
-	}
-
-	boolean run(CommandSender sender) {
-		return false;
-	}
-
-	boolean run(RageMode plugin, CommandSender sender) {
-		return false;
-	}
-
-	boolean run(CommandSender sender, String[] args) {
-		return false;
-	}
-
-	boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		return false;
-	}
-
-	boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
-		return false;
 	}
 }

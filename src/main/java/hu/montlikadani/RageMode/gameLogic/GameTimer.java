@@ -86,25 +86,26 @@ public class GameTimer extends TimerTask {
 			return;
 		}
 
-		time--;
-
-		String tFormat = Utils.getFormattedTime(time);
-		Configuration conf = RageMode.getInstance().getConfiguration();
-
-		List<Integer> values = conf.getCfg().getIntegerList("game.global.values-to-send-game-end-broadcast");
-		if (values != null && !values.isEmpty()) {
-			for (int i = 0; i < values.size(); i++) {
-				if (time == values.get(i)) {
-					GameUtils.broadcastToGame(gameName,
-							RageMode.getLang().get("game.broadcast.game-end", "%time%", Utils.getFormattedTime(time)));
-				}
-			}
-		}
-
 		Player player = PlayerList.getPlayerInGame(gameName);
 
 		if (player == null || !player.isOnline())
 			return;
+
+		String tFormat = Utils.getFormattedTime(time);
+		Configuration conf = RageMode.getInstance().getConfiguration();
+
+		// Broadcast time message should be in this place, before counting
+		List<Integer> values = conf.getCfg().getIntegerList("game.global.values-to-send-game-end-broadcast");
+		if (values != null && !values.isEmpty()) {
+			for (int val : values) {
+				if (time == val) {
+					GameUtils.broadcastToGame(gameName,
+							RageMode.getLang().get("game.broadcast.game-end", "%time%", tFormat));
+				}
+			}
+		}
+
+		time--;
 
 		if (conf.getCfg().getBoolean("game.global.show-name-above-player-when-look")) {
 			// making the game more difficult

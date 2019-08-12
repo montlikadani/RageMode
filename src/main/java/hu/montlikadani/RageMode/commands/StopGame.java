@@ -28,8 +28,12 @@ import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.statistics.MySQLThread;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
+import hu.montlikadani.ragemode.utils.ICommand;
 
-public class StopGame extends RmCommand {
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
+public class StopGame extends ICommand {
 
 	@Override
 	public boolean run(CommandSender sender, String[] args) {
@@ -100,16 +104,16 @@ public class StopGame extends RmCommand {
 							youWonSubtitle = replaceVariables(youWonSubtitle, winnerUUID);
 
 							if (player != winner) {
-								Titles.sendTitle(player, conf.getInt("titles.player-won.fade-in"), conf.getInt("titles.player-won.stay"),
+								Titles.sendTitle(player, conf.getInt("titles.player-won.fade-in"),
+										conf.getInt("titles.player-won.stay"),
 										conf.getInt("titles.player-won.fade-out"), wonTitle, wonSubtitle);
 
 								if (conf.getBoolean("game.global.switch-gamemode-to-spectator-at-end-of-game"))
 									player.setGameMode(GameMode.SPECTATOR);
-							}
-
-							if (player == winner)
-								Titles.sendTitle(winner, conf.getInt("titles.you-won.fade-in"), conf.getInt("titles.you-won.stay"),
-										conf.getInt("titles.you-won.fade-out"), youWonTitle, youWonSubtitle);
+							} else
+								Titles.sendTitle(winner, conf.getInt("titles.you-won.fade-in"),
+										conf.getInt("titles.you-won.stay"), conf.getInt("titles.you-won.fade-out"),
+										youWonTitle, youWonSubtitle);
 
 							PlayerList.removePlayerSynced(player);
 						}
@@ -197,7 +201,6 @@ public class StopGame extends RmCommand {
 			for (String playersUUID : players) {
 				if (playersUUID != null) {
 					GameUtils.sendActionBarMessages(Bukkit.getPlayer(UUID.fromString(playersUUID)), game, "stop");
-
 					PlayerList.removePlayer(Bukkit.getPlayer(UUID.fromString(playersUUID)));
 				}
 			}

@@ -6,7 +6,7 @@ language: en
 statistics: yaml
 
 # Logging console messages, such as error description
-log-console: false
+log-console: true
 
 # This saves the player datas, such as inventory, effects etc. to a file.
 # This can be useful for a random server shutdown.

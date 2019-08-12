@@ -7,8 +7,12 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.GameLoader;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.utils.ICommand;
 
-public class ForceStart extends RmCommand {
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
+public class ForceStart extends ICommand {
 
 	@Override
 	public boolean run(CommandSender sender, String[] args) {
@@ -47,8 +51,8 @@ public class ForceStart extends RmCommand {
 		// Set level back to 0
 		p.setLevel(0);
 
-		new GameLoader(game);
 		sendMessage(p, RageMode.getLang().get("commands.forcestart.game-start", "%game%", game));
+		new GameLoader(game);
 		return false;
 	}
 }

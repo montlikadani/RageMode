@@ -7,8 +7,12 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.utils.ICommand;
 
-public class SetGlobalMessages extends RmCommand {
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
+public class SetGlobalMessages extends ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
@@ -16,11 +20,13 @@ public class SetGlobalMessages extends RmCommand {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return false;
 		}
+
 		Player p = (Player) sender;
 		if (!hasPerm(p, "ragemode.admin.setglobalmessages")) {
 			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return false;
 		}
+
 		if (args.length >= 3) {
 			if (!GameUtils.isGameWithNameExists(args[1])) {
 				sendMessage(p, RageMode.getLang().get("invalid-game", "%game%", args[1]));

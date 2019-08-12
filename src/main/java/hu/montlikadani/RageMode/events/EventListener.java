@@ -123,8 +123,8 @@ public class EventListener implements Listener {
 			if (GameUtils.getStatus() == GameStatus.RUNNING) {
 				if (!plugin.getConfiguration().getCfg().getBoolean("game.global.enable-chat-in-game")
 						&& !p.hasPermission("ragemode.bypass.game.lockchat")) {
-					event.setCancelled(true);
 					p.sendMessage(RageMode.getLang().get("game.chat-is-disabled"));
+					event.setCancelled(true);
 					return;
 				}
 
@@ -144,8 +144,8 @@ public class EventListener implements Listener {
 
 			if (GameUtils.getStatus() == GameStatus.GAMEFREEZE) {
 				if (!plugin.getConfiguration().getCfg().getBoolean("game.global.enable-chat-after-end")) {
-					event.setCancelled(true);
 					p.sendMessage(RageMode.getLang().get("game.game-freeze.chat-is-disabled"));
+					event.setCancelled(true);
 				}
 			}
 		}
@@ -295,10 +295,8 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void onBowShoot(EntityShootBowEvent e) {
 		if (e.getEntity() instanceof Player && PlayerList.isPlayerPlaying(e.getEntity().getUniqueId().toString())) {
-			Player p = (Player) e.getEntity();
-
-			if (waitingGames.containsKey(PlayerList.getPlayersGame(p))) {
-				if (waitingGames.get(PlayerList.getPlayersGame(p)))
+			if (waitingGames.containsKey(PlayerList.getPlayersGame((Player) e.getEntity()))) {
+				if (waitingGames.get(PlayerList.getPlayersGame((Player) e.getEntity())))
 					e.setCancelled(true);
 			}
 		}
@@ -306,13 +304,10 @@ public class EventListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerDeath(PlayerDeathEvent event) {
-		Player deceased;
-		if (event.getEntity() != null && event.getEntity() instanceof Player)
-			deceased = event.getEntity();
-		else {
-			deceased = null;
+		if (event.getEntity() == null)
 			return;
-		}
+
+		Player deceased = event.getEntity();
 
 		if (deceased != null && PlayerList.isPlayerPlaying(deceased.getUniqueId().toString()) &&
 				GameUtils.getStatus() == GameStatus.RUNNING) {
@@ -687,8 +682,8 @@ public class EventListener implements Listener {
 							// Set level counter back to 0
 							p.setLevel(0);
 
-							new GameLoader(game);
 							p.sendMessage(RageMode.getLang().get("commands.forcestart.game-start", "%game%", game));
+							new GameLoader(game);
 						}
 
 						if (meta.getDisplayName().equals(LeaveGame.getName())) {

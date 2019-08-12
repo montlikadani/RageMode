@@ -8,8 +8,12 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.utils.ICommand;
 
-public class SetLobbyDelay extends RmCommand {
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
+public class SetLobbyDelay extends ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
@@ -17,11 +21,13 @@ public class SetLobbyDelay extends RmCommand {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return false;
 		}
+
 		Player p = (Player) sender;
 		if (!hasPerm(p, "ragemode.admin.setlobbydelay")) {
 			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return false;
 		}
+
 		if (args.length >= 3) {
 			if (!GameUtils.isGameWithNameExists(args[1])) {
 				sendMessage(p, RageMode.getLang().get("invalid-game", "%game%", args[1]));
@@ -37,6 +43,7 @@ public class SetLobbyDelay extends RmCommand {
 				sendMessage(p, RageMode.getLang().get("setup.lobby.not-set", "%game%", args[1]));
 				return false;
 			}
+
 			if (Utils.isInt(args[2])) {
 				plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".lobbydelay", Integer.parseInt(args[2]));
 				Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());

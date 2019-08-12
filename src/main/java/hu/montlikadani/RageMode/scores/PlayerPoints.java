@@ -15,7 +15,7 @@ public class PlayerPoints implements Comparable<PlayerPoints> {
 	private int knifeDeaths = 0;
 	private int currentStreak = 0;
 	private int longestStreak = 0;
-	private Integer points = 0;
+	private Integer points = Integer.valueOf(0);
 	private boolean isWinner = false;
 
 	public PlayerPoints(String playerUUID) {

@@ -585,6 +585,7 @@ public class PlayerList {
 
 	public static void removePlayerSynced(Player player) {
 		String game = getPlayersGame(player);
+		// Just a null check if the player not find in the list
 		if (game == null) {
 			return;
 		}
@@ -599,6 +600,11 @@ public class PlayerList {
 			ScoreTeam.allTeams.get(game).removeTeam(player);
 	}
 
+	/**
+	 * Checks whatever the game is running or not.
+	 * @param game Game
+	 * @return true if game is running.
+	 */
 	public static boolean isGameRunning(String game) {
 		int i = 0;
 		int imax = runningGames.length;
@@ -612,10 +618,19 @@ public class PlayerList {
 		return false;
 	}
 
+	/**
+	 * Gets all games added to list.
+	 * @return list
+	 */
 	public static String[] getAllRunningGames() {
 		return runningGames;
 	}
 
+	/**
+	 * Sets the game running.
+	 * @param game Game
+	 * @return true if game exist
+	 */
 	public static boolean setGameRunning(String game) {
 		if (!GetGames.isGameExistent(game))
 			return false;
@@ -640,6 +655,11 @@ public class PlayerList {
 		return false;
 	}
 
+	/**
+	 * Sets the game not running
+	 * @param game Game
+	 * @return true if game exist
+	 */
 	public static boolean setGameNotRunning(String game) {
 		if (!GetGames.isGameExistent(game))
 			return false;
@@ -659,6 +679,11 @@ public class PlayerList {
 		return false;
 	}
 
+	/**
+	 * Check if the specified player is currently in game.
+	 * @param playerUUID Player UUID
+	 * @return true if player is in list and playing
+	 */
 	public static boolean isPlayerPlaying(String playerUUID) {
 		if (playerUUID == null) {
 			throw new NullPointerException("Player UUID can not be null!");
@@ -670,6 +695,11 @@ public class PlayerList {
 		return false;
 	}
 
+	/**
+	 * Check whatever has free room for VIP players.
+	 * @param game Game
+	 * @return true if the players size not equal to vips size
+	 */
 	public static boolean hasRoomForVIP(String game) {
 		if (players != null) {
 			return false;
@@ -788,6 +818,11 @@ public class PlayerList {
 		}
 	}
 
+	/**
+	 * Gets the specified player game from list.
+	 * @param player Player
+	 * @return game if player playing
+	 */
 	public static String getPlayersGame(Player player) {
 		String game = null;
 
@@ -811,6 +846,11 @@ public class PlayerList {
 		return null;
 	}
 
+	/**
+	 * Gets the game by player uuid from list.
+	 * @param uuid Player UUID
+	 * @return game if player playing
+	 */
 	public static String getPlayersGame(String uuid) {
 		return getPlayersGame(Bukkit.getPlayer(UUID.fromString(uuid)));
 	}
@@ -863,16 +903,15 @@ public class PlayerList {
 	 * @return Player
 	 */
 	public static Player getPlayerByUUID(String uuid) {
-		Player player = null;
 		if (players != null) {
 			for (Entry<String, String> list : players.entrySet()) {
 				if (list.getValue().equals(uuid)) {
-					player = Bukkit.getPlayer(list.getValue());
+					return Bukkit.getPlayer(list.getValue());
 				}
 			}
 		}
 
-		return player;
+		return null;
 	}
 
 	public static LobbyTimer getLobbyTimer() {

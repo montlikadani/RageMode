@@ -62,8 +62,8 @@ public class LobbyTimer extends TimerTask {
 
 		List<Integer> values = conf.getIntegerList("game.global.lobby.values-to-send-start-message");
 		if (values != null && !values.isEmpty()) {
-			for (int i = 0; i < values.size(); i++) {
-				if (time == values.get(i)) {
+			for (int val : values) {
+				if (time == val) {
 					GameUtils.broadcastToGame(gameName,
 							RageMode.getLang().get("game.lobby.start-message", "%time%", Integer.toString(time)));
 				}
@@ -86,8 +86,8 @@ public class LobbyTimer extends TimerTask {
 
 				if (title != null && sTitle != null) {
 					if (titleValues != null && !titleValues.isEmpty()) {
-						for (int i = 0; i < titleValues.size(); i++) {
-							if (time == titleValues.get(i)) {
+						for (int val : titleValues) {
+							if (time == val) {
 								Titles.sendTitle(player,
 										conf.getInt("titles.lobby-waiting.fade-in"),
 										conf.getInt("titles.lobby-waiting.stay"),

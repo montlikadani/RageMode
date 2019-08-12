@@ -7,8 +7,12 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.utils.ICommand;
 
-public class SetActionBar extends RmCommand {
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
+public class SetActionBar extends ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {

@@ -12,8 +12,12 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.utils.ICommand;
 
-public class ListPlayers extends RmCommand {
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
+public class ListPlayers extends ICommand {
 
 	@Override
 	public boolean run(CommandSender sender, String[] args) {

@@ -9,8 +9,12 @@ import hu.montlikadani.ragemode.API.event.GameDeleteEvent;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.utils.ICommand;
 
-public class RemoveGame extends RmCommand {
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
+public class RemoveGame extends ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
@@ -32,23 +36,24 @@ public class RemoveGame extends RmCommand {
 				return false;
 			}
 
-			if (PlayerList.isGameRunning(game))
+			if (PlayerList.isGameRunning(game)) {
 				sendMessage(p, RageMode.getLang().get("game.running"));
-			else {
-				GameDeleteEvent event = new GameDeleteEvent(game);
-				Bukkit.getPluginManager().callEvent(event);
-
-				for (int x = 0; x < plugin.getSpawns().size(); x++) {
-					if (plugin.getSpawns().get(x).getGameName().equalsIgnoreCase(game))
-						plugin.getSpawns().remove(x);
-				}
-				PlayerList.deleteGameFromList(game);
-
-				plugin.getConfiguration().getArenasCfg().set("arenas." + game, null);
-				Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
-
-				sendMessage(p, RageMode.getLang().get("setup.success-removed", "%game%", game));
+				return false;
 			}
+
+			GameDeleteEvent event = new GameDeleteEvent(game);
+			Bukkit.getPluginManager().callEvent(event);
+
+			for (int x = 0; x < plugin.getSpawns().size(); x++) {
+				if (plugin.getSpawns().get(x).getGameName().equalsIgnoreCase(game))
+					plugin.getSpawns().remove(x);
+			}
+			PlayerList.deleteGameFromList(game);
+
+			plugin.getConfiguration().getArenasCfg().set("arenas." + game, null);
+			Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
+
+			sendMessage(p, RageMode.getLang().get("setup.success-removed", "%game%", game));
 		} else
 			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName>"));
 		return false;

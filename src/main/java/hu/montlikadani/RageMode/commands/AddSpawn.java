@@ -9,8 +9,12 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.utils.ICommand;
 
-public class AddSpawn extends RmCommand {
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
+public class AddSpawn extends ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
@@ -48,11 +52,11 @@ public class AddSpawn extends RmCommand {
 
 		Location loc = p.getLocation();
 		aFile.set(path + ".spawns." + i + ".world", p.getWorld().getName());
-		aFile.set(path + ".spawns." + i + ".x", loc.getX());
-		aFile.set(path + ".spawns." + i + ".y", loc.getY());
-		aFile.set(path + ".spawns." + i + ".z", loc.getZ());
-		aFile.set(path + ".spawns." + i + ".yaw", loc.getYaw());
-		aFile.set(path + ".spawns." + i + ".pitch", loc.getPitch());
+		aFile.set(path + ".spawns." + i + ".x", Double.valueOf(loc.getX()));
+		aFile.set(path + ".spawns." + i + ".y", Double.valueOf(loc.getY()));
+		aFile.set(path + ".spawns." + i + ".z", Double.valueOf(loc.getZ()));
+		aFile.set(path + ".spawns." + i + ".yaw", Double.valueOf(loc.getYaw()));
+		aFile.set(path + ".spawns." + i + ".pitch", Double.valueOf(loc.getPitch()));
 		Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
 		for (GameSpawnGetter spawn : plugin.getSpawns()) {

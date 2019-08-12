@@ -15,8 +15,12 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.utils.ICommand;
 
-public class RemoveSpawn extends RmCommand {
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
+public class RemoveSpawn extends ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {

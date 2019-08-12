@@ -12,8 +12,12 @@ import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
+import hu.montlikadani.ragemode.utils.ICommand;
 
-public class Points extends RmCommand {
+import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+
+public class Points extends ICommand {
 
 	private enum Actions {
 		Set, Add, Take;

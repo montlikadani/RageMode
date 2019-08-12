@@ -58,7 +58,9 @@ public class GameLoader {
 
 			GameUtils.addGameItems(p, true);
 
-			if (Version.isCurrentEqualOrHigher(Version.v1_9_R1)) {
+			if (Version.isCurrentEqualOrHigher(Version.v1_9_R1) && conf.getArenasCfg().isSet("arenas." + gameName + ".bossbar")
+					&& conf.getArenasCfg().getBoolean("arenas." + gameName + ".bossbar")
+					|| conf.getCfg().getBoolean("game.global.defaults.bossbar")) {
 				String bossMessage = conf.getCfg().getString("bossbar-messages.join.message");
 
 				if (bossMessage != null && !bossMessage.equals("")) {
@@ -66,21 +68,12 @@ public class GameLoader {
 					bossMessage = bossMessage.replace("%player%", p.getName());
 					bossMessage = RageMode.getLang().colors(bossMessage);
 
-					if (conf.getArenasCfg().isSet("arenas." + gameName + ".bossbar")) {
-						if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".bossbar"))
-							new BossMessenger(gameName).sendBossBar(bossMessage, p,
-									BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")),
-									BarColor.valueOf(conf.getCfg().getString("bossbar-messages.join.color")));
-					} else {
-						if (conf.getCfg().getBoolean("game.global.defaults.bossbar"))
-							new BossMessenger(gameName).sendBossBar(bossMessage, p,
-									BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")),
-									BarColor.valueOf(conf.getCfg().getString("bossbar-messages.join.color")));
-					}
+					new BossMessenger(gameName).sendBossBar(bossMessage, p,
+							BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")),
+							BarColor.valueOf(conf.getCfg().getString("bossbar-messages.join.color")));
 				}
-			} else {
+			} else if (Version.isCurrentLower(Version.v1_9_R1))
 				Debug.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
-			}
 
 			GameUtils.sendActionBarMessages(p, gameName, "start");
 		}
