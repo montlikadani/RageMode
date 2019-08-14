@@ -44,16 +44,16 @@ public class SignData {
 		return world;
 	}
 
-	public int getX() {
-		return x;
+	public void setX(int x) {
+		this.x = x;
 	}
 
-	public int getY() {
-		return y;
+	public void setY(int y) {
+		this.y = y;
 	}
 
-	public int getZ() {
-		return z;
+	public void setZ(int z) {
+		this.z = z;
 	}
 
 	public Location getLocation() {
@@ -115,7 +115,7 @@ public class SignData {
 
 	private void updateBackground(Material mat, int color) {
 		Location loc = getLocation();
-		BlockState s = (Sign) loc.getBlock().getState();
+		BlockState s = loc.getBlock().getState();
 		BlockFace bf = null;
 		try {
 			bf = ((Directional) s.getData()).getFacing();

@@ -157,7 +157,8 @@ public class RageMode extends JavaPlugin {
 				}
 			}
 
-			if (conf.getCfg().getBoolean("metrics")) {
+			// Metrics has changed the JsonObject and causing the break, so disable under 1.8.5
+			if (conf.getCfg().getBoolean("metrics") && Version.isCurrentEqualOrHigher(Version.v1_8_R3)) {
 				Metrics metrics = new Metrics(this);
 				metrics.addCustomChart(
 						new Metrics.SimplePie("games_amount", () -> GetGames.getConfigGamesCount() + ""));
@@ -244,7 +245,7 @@ public class RageMode extends JavaPlugin {
 		RuntimeRPPManager.getRPPListFromYAML();
 	}
 
-	public void connectMySQL() {
+	private void connectMySQL() {
 		String host = conf.getCfg().getString("MySQL.host");
 		String port = conf.getCfg().getString("MySQL.port");
 		String database = conf.getCfg().getString("MySQL.database");

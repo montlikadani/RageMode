@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -20,7 +19,7 @@ import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
 public class GiveSavedItems extends RmCommand {
 
-	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
+	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!plugin.getConfiguration().getCfg().getBoolean("save-player-datas-to-file")) {
 			sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.not-enabled"));
 			return false;

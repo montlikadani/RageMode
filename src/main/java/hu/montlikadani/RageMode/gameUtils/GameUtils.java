@@ -16,7 +16,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 
 import hu.montlikadani.ragemode.Debug;
@@ -329,11 +328,12 @@ public class GameUtils {
 		p.setFireTicks(0);
 		p.setExp(0);
 		p.setLevel(0);
+
 		if (p.isInsideVehicle())
 			p.leaveVehicle();
-		for (PotionEffect e : p.getActivePotionEffects()) {
-			p.removePotionEffect(e.getType());
-		}
+
+		p.getActivePotionEffects().forEach(e -> p.removePotionEffect(e.getType()));
+
 		p.setDisplayName(p.getName());
 		p.setPlayerListName(p.getName());
 	}

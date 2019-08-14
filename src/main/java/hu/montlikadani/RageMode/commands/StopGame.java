@@ -75,7 +75,12 @@ public class StopGame extends ICommand {
 			final List<String> players = PlayerList.getPlayersFromList();
 
 			GameStopEvent gameStopEvent = new GameStopEvent(game, players);
-			Bukkit.getPluginManager().callEvent(gameStopEvent);
+			if (!gameStopEvent.isAsynchronous()) {
+				Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
+						() -> Bukkit.getPluginManager().callEvent(gameStopEvent));
+			} else {
+				Bukkit.getPluginManager().callEvent(gameStopEvent);
+			}
 
 			String winnerUUID = RageScores.calculateWinner(game, players);
 			if (winnerUUID != null) {

@@ -248,17 +248,15 @@ public class MySQLStats {
 	 * @return {@link RetPlayerPoints} class
 	 */
 	public static RetPlayerPoints getPlayerStatistics(String playerUUID) {
-		if (points.isEmpty())
-			return null;
-
-		RetPlayerPoints pp = null;
-		for (RetPlayerPoints rpp : points) {
-			if (rpp.getPlayerUUID().equals(playerUUID)) {
-				pp = rpp;
+		if (!points.isEmpty()) {
+			for (RetPlayerPoints rpp : points) {
+				if (rpp.getPlayerUUID().equals(playerUUID)) {
+					return rpp;
+				}
 			}
 		}
 
-		return pp;
+		return null;
 	}
 
 	/**

@@ -206,20 +206,16 @@ public class YAMLStats {
 			throw new IllegalArgumentException("player uuid is null");
 		}
 
-		if (!inited)
+		if (!inited || points.isEmpty())
 			return null;
 
-		if (points.isEmpty())
-			return null;
-
-		RetPlayerPoints pp = null;
 		for (RetPlayerPoints rpp : points) {
 			if (rpp.getPlayerUUID().equals(sUUID)) {
-				pp = rpp;
+				return rpp;
 			}
 		}
 
-		return pp;
+		return null;
 	}
 
 	/**

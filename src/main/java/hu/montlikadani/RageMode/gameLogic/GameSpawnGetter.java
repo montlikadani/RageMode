@@ -72,14 +72,18 @@ public class GameSpawnGetter {
 		return spawnLocations;
 	}
 
+	/**
+	 * Gets the spawn by location.
+	 * @param location Location
+	 * @return location if the specified loc is correct.
+	 */
 	public Location getSpawnByLocation(Location location) {
-		Location loc = null;
 		for (Location locs : spawnLocations) {
 			if (location.equals(locs)) {
-				loc = locs;
+				return locs;
 			}
 		}
 
-		return loc;
+		return null;
 	}
 }
