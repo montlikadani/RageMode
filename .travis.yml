@@ -1,0 +1,10 @@
+language: java
+jdk:
+  - oraclejdk8
+  - oraclejdk9
+  - openjdk8
+
+script: mvn '-Dmaven.antrun.skip=true' clean package
+install: skip
+deploy:
+  skip_cleanup: true
