@@ -1,6 +1,0 @@
-language: java
-install: skip
-deploy:
-  skip_cleanup: true
-jdk:
-- oraclejdk8
