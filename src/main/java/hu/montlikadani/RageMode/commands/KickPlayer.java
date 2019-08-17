@@ -5,6 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.API.event.PlayerKickedFromGame;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.ICommand;
@@ -48,6 +49,9 @@ public class KickPlayer extends ICommand {
 
 			if (PlayerList.isPlayerPlaying(target.getUniqueId().toString())) {
 				PlayerList.removePlayer(target);
+
+				PlayerKickedFromGame event = new PlayerKickedFromGame(game, sender, target);
+				Bukkit.getPluginManager().callEvent(event);
 
 				sendMessage(sender, RageMode.getLang().get("commands.kick.player-kicked", "%player%", target.getName(), "%game%", game));
 			} else

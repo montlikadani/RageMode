@@ -6,7 +6,6 @@ public class RageModeAPI {
 
 	/**
 	 * Gets the RageMode instance
-	 *
 	 * @return Instance
 	 */
 	public static RageMode getRageMode() {

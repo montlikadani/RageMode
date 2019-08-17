@@ -468,8 +468,8 @@ public class GameUtils {
 	 * @param spawn GameSpawnGetter
 	 */
 	public static void teleportPlayerToGameSpawn(Player p, GameSpawnGetter spawn) {
-		Random r = new Random();
 		if (spawn.getSpawnLocations().size() > 0) {
+			Random r = new Random();
 			int x = r.nextInt(spawn.getSpawnLocations().size());
 			Location location = spawn.getSpawnLocations().get(x);
 			p.teleport(location);

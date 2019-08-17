@@ -58,6 +58,7 @@ import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.API.event.RMPlayerKilledEvent;
 import hu.montlikadani.ragemode.gameLogic.GameLoader;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
@@ -107,8 +108,10 @@ public class EventListener implements Listener {
 		Player p = event.getPlayer();
 
 		// Cancels the spectator player chat
-		if (PlayerList.specPlayer.containsKey(p.getUniqueId()))
+		if (PlayerList.specPlayer.containsKey(p.getUniqueId())) {
 			event.setCancelled(true);
+			return;
+		}
 
 		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
 			if (GameUtils.getStatus() == GameStatus.WAITING) {
@@ -327,6 +330,7 @@ public class EventListener implements Listener {
 
 				String deceaseName = deceased.getName();
 				List<MetadataValue> data = deceased.getMetadata("killedWith");
+				RMPlayerKilledEvent killed = null;
 
 				if (data != null && !data.isEmpty()) {
 					switch (data.get(0).asString()) {
@@ -345,6 +349,8 @@ public class EventListener implements Listener {
 							RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "ragebow");
 						}
 
+						killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller() != null ?
+								deceased.getKiller() : null, "arrow");
 						break;
 					case "snowball":
 						if (deceased.getKiller() == null) {
@@ -360,6 +366,9 @@ public class EventListener implements Listener {
 
 							RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "combataxe");
 						}
+
+						killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller() != null ?
+								deceased.getKiller() : null, "snowball");
 						break;
 					case "explosion":
 						if (explosionVictims.containsKey(deceased.getUniqueId())) {
@@ -383,6 +392,9 @@ public class EventListener implements Listener {
 
 							deceased.sendMessage(RageMode.getLang().get("game.unknown-killer"));
 						}
+
+						killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller() != null ?
+								deceased.getKiller() : null, "explosion");
 						break;
 					case "grenade":
 						if (deceased.getKiller() == null) {
@@ -398,6 +410,9 @@ public class EventListener implements Listener {
 
 							RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "grenade");
 						}
+
+						killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller() != null ?
+								deceased.getKiller() : null, "grenade");
 						break;
 					case "knife":
 						if (deceased.getKiller() == null) {
@@ -413,6 +428,9 @@ public class EventListener implements Listener {
 
 							RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "rageknife");
 						}
+
+						killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller() != null ?
+								deceased.getKiller() : null, "knife");
 						break;
 
 					default:
@@ -423,6 +441,9 @@ public class EventListener implements Listener {
 					}
 
 					deceased.removeMetadata("killedWith", plugin);
+					if (killed != null) {
+						Bukkit.getPluginManager().callEvent(killed);
+					}
 				}
 
 				// Remove arrows from player body
@@ -458,8 +479,8 @@ public class EventListener implements Listener {
 			}
 
 			GameSpawnGetter gsg = GameUtils.getGameSpawnByName(PlayerList.getPlayersGame(e.getPlayer()));
-			Random rand = new Random();
 			if (gsg.getSpawnLocations().size() > 0) {
+				Random rand = new Random();
 				int x = rand.nextInt(gsg.getSpawnLocations().size());
 				e.setRespawnLocation(gsg.getSpawnLocations().get(x));
 			}
@@ -857,8 +878,8 @@ public class EventListener implements Listener {
 		if (plugin.getConfiguration().getCfg().getBoolean("signs.enable")
 				&& event.getLine(0).contains("[rm]") || event.getLine(0).contains("[ragemode]")) {
 			if (!event.getPlayer().hasPermission("ragemode.admin.signs")) {
-				event.setCancelled(true);
 				event.getPlayer().sendMessage(RageMode.getLang().get("no-permission-to-interact-sign"));
+				event.setCancelled(true);
 				return;
 			}
 

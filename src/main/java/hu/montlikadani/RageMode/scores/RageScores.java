@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.API.event.PlayerWinEvent;
 
 public class RageScores {
 
@@ -260,12 +261,16 @@ public class RageScores {
 
 		getPlayerPoints(highest).setWinner(true);
 
+		Player winner = Bukkit.getPlayer(UUID.fromString(highest));
 		if (resultPlayer.equals(highest))
-			Bukkit.getPlayer(UUID.fromString(highest))
-					.sendMessage(RageMode.getLang().get("game.message.you-won", "%game%", game));
+			winner.sendMessage(RageMode.getLang().get("game.message.you-won", "%game%", game));
 		else
 			Bukkit.getPlayer(UUID.fromString(resultPlayer)).sendMessage(RageMode.getLang().get("game.message.player-won",
-					"%player%", Bukkit.getPlayer(UUID.fromString(highest)).getName(), "%game%", game));
+					"%player%", winner.getName(), "%game%", game));
+
+		PlayerWinEvent event = new PlayerWinEvent(game, winner);
+		Bukkit.getPluginManager().callEvent(event);
+
 		return highest;
 	}
 }

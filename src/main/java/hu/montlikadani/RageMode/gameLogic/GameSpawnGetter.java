@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -25,7 +24,7 @@ public class GameSpawnGetter {
 		loadSpawns();
 	}
 
-	public void loadSpawns() {
+	private void loadSpawns() {
 		FileConfiguration aCfg = RageMode.getInstance().getConfiguration().getArenasCfg();
 		if (new MapChecker(gameName).isValid()) {
 			String path = "arenas." + gameName + ".spawns";
@@ -48,10 +47,12 @@ public class GameSpawnGetter {
 			isGameReady = false;
 	}
 
+	/**
+	 * Teleports the specified player to a random location in game.
+	 * This will not execute if spawns are not set correctly.
+	 * @param player Player
+	 */
 	public void randomSpawn(Player player) {
-		if (!player.getGameMode().equals(GameMode.SPECTATOR))
-			player.setHealth(20);
-
 		if (spawnLocations.size() > 0) {
 			Random rand = new Random();
 			int x = rand.nextInt(spawnLocations.size());

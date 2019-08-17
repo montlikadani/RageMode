@@ -54,7 +54,7 @@ public class Language {
 			try {
 				BufferedReader reader = new BufferedReader(
 						new InputStreamReader(new FileInputStream(langFile), "UTF-8"));
-				lf = YamlConfiguration.loadConfiguration((reader));
+				lf = YamlConfiguration.loadConfiguration(reader);
 				reader.close();
 			} catch (IOException e) {
 				e.printStackTrace();

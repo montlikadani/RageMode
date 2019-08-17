@@ -1,5 +1,8 @@
 package hu.montlikadani.ragemode.gameUtils;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -10,6 +13,7 @@ public class GetGames {
 
 	/**
 	 * Get arenas games count
+	 * <p>This will return 0 if the section not found in the file.
 	 * @return int games count
 	 */
 	public static int getConfigGamesCount() {
@@ -23,6 +27,7 @@ public class GetGames {
 
 	/**
 	 * Get max players from a file
+	 * <p>This will return -1 if the value not found in the file.
 	 * @param game Game
 	 * @return int number
 	 */
@@ -36,7 +41,7 @@ public class GetGames {
 	 * @return World name
 	 */
 	public static String getWorld(String game) {
-		return !fi.isSet("arenas." + game + ".world") ? "" : fi.getString("arenas." + game + ".world");
+		return !fi.isSet("arenas." + game + ".world") ? null : fi.getString("arenas." + game + ".world");
 	}
 
 	/**
@@ -68,11 +73,20 @@ public class GetGames {
 
 	/**
 	 * Get game names from file
+	 * <p>This will returns null if the section not found in the file.
 	 * @return config section
 	 */
 	public static String[] getGameNames() {
 		return fi.contains("arenas") ? fi.getConfigurationSection("arenas").getKeys(false).toArray(new String[getConfigGamesCount()])
 				: null;
+	}
+
+	/**
+	 * Gets all games converted to list.
+	 * @return all games
+	 */
+	public static List<String> getGames() {
+		return Arrays.asList(getGameNames());
 	}
 
 	/**
