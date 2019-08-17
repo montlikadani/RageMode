@@ -141,18 +141,17 @@ public class SignCreator {
 	}
 
 	/**
-	 * Checks whether the given sign is properly configured to be an JoinSign or not.
-	 * 
+	 * Checks whether the given sign is properly configured to be an RageMode Sign or not.
 	 * @param loc The sign location
 	 * @return True if the block found in the specified location.
 	 */
-	public static boolean isJoinSign(Location loc) {
+	public static boolean isSign(Location loc) {
 		List<String> signs = fileConf.getStringList("signs");
 		if (signs != null && !signs.isEmpty()) {
 			for (String signString : signs) {
 				String game = getGameFromString(signString);
 				for (String gameName : GetGames.getGameNames()) {
-					if (game.contains(gameName)) {
+					if (game.equalsIgnoreCase(gameName)) {
 						Location signLocation = stringToLocationSign(signString);
 						if (signLocation.getBlock().getState() instanceof Sign && signLocation.equals(loc))
 							return true;

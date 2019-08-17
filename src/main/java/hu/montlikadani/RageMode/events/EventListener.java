@@ -515,7 +515,7 @@ public class EventListener implements Listener {
 		if (event.isCancelled() || !plugin.getConfiguration().getCfg().getBoolean("signs.enable")) return;
 
 		org.bukkit.block.BlockState blockState = event.getBlock().getState();
-		if (blockState instanceof Sign) {
+		if (blockState instanceof Sign && SignCreator.isSign(blockState.getLocation())) {
 			if (!event.getPlayer().hasPermission("ragemode.admin.signs")) {
 				event.getPlayer().sendMessage(RageMode.getLang().get("no-permission-to-interact-sign"));
 				event.setCancelled(true);
@@ -718,7 +718,7 @@ public class EventListener implements Listener {
 			org.bukkit.block.Block b = event.getClickedBlock();
 
 			if (b.getState() instanceof Sign && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-				if (SignCreator.isJoinSign(b.getLocation())) {
+				if (SignCreator.isSign(b.getLocation())) {
 					if (p.hasPermission("ragemode.join.sign")) {
 						String game = SignCreator.getGameFromString();
 						GameUtils.joinPlayer(p, game);
