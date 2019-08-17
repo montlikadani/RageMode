@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import hu.montlikadani.ragemode.API.event.BaseEvent;
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 
@@ -57,6 +58,20 @@ public class Utils {
 			}
 		}
 		return colour == 0 ? ChatColor.RESET : ChatColor.getByChar(colour);
+	}
+
+	/**
+	 * Calls an event.
+	 * <p>If the event is Asynchronous then delays the calling, preventing an error.
+	 * @param event BaseEvent
+	 */
+	public static void callEvent(BaseEvent event) {
+		if (!event.isAsynchronous()) {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
+					() -> Bukkit.getPluginManager().callEvent(event));
+		} else {
+			Bukkit.getPluginManager().callEvent(event);
+		}
 	}
 
 	/**

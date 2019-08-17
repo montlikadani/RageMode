@@ -56,10 +56,10 @@ public class GiveSavedItems extends RmCommand {
 			if (names.equalsIgnoreCase(args[1])) {
 				Utils.clearPlayerInventory(target);
 
-				List<?> contentList = (List<?>) datas.get("datas." + names + ".contents");
+				List<?> contentList = datas.getList("datas." + names + ".contents");
 				target.getInventory().setContents(contentList.toArray(new ItemStack[contentList.size()]));
 
-				List<?> armorList = (List<?>) datas.get("datas." + names + ".armor-contents");
+				List<?> armorList = datas.getList("datas." + names + ".armor-contents");
 				target.getInventory().setArmorContents(armorList.toArray(new ItemStack[armorList.size()]));
 
 				target.setExp(datas.getInt("datas." + names + ".exp"));

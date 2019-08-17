@@ -78,21 +78,19 @@ public class LobbyTimer extends TimerTask {
 				String title = conf.getString("titles.lobby-waiting.title");
 				String sTitle = conf.getString("titles.lobby-waiting.subtitle");
 
-				title = title.replace("%time%", Integer.toString(time));
-				title = title.replace("%game%", gameName);
-
-				sTitle = sTitle.replace("%time%", Integer.toString(time));
-				sTitle = sTitle.replace("%game%", gameName);
-
 				if (title != null && sTitle != null) {
+					title = title.replace("%time%", Integer.toString(time));
+					title = title.replace("%game%", gameName);
+
+					sTitle = sTitle.replace("%time%", Integer.toString(time));
+					sTitle = sTitle.replace("%game%", gameName);
+
 					if (titleValues != null && !titleValues.isEmpty()) {
 						for (int val : titleValues) {
 							if (time == val) {
-								Titles.sendTitle(player,
-										conf.getInt("titles.lobby-waiting.fade-in"),
+								Titles.sendTitle(player, conf.getInt("titles.lobby-waiting.fade-in"),
 										conf.getInt("titles.lobby-waiting.stay"),
-										conf.getInt("titles.lobby-waiting.fade-out"),
-										title, sTitle);
+										conf.getInt("titles.lobby-waiting.fade-out"), title, sTitle);
 							}
 						}
 					}

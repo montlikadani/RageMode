@@ -1,7 +1,9 @@
 package hu.montlikadani.ragemode.commands;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -48,14 +50,17 @@ public class StopGame extends ICommand {
 			if (PlayerList.isGameRunning(game)) {
 				RageScores.calculateWinner(game, PlayerList.getPlayersFromList());
 
-				for (java.util.Map.Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
+				for (Map.Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
 					Player player = Bukkit.getPlayer(UUID.fromString(players.getValue()));
 
 					player.removeMetadata("killedWith", RageMode.getInstance());
 					PlayerList.removePlayer(player);
 				}
 
-				PlayerList.specPlayer.values().forEach(PlayerList::removeSpectatorPlayer);
+				for (Iterator<Map.Entry<UUID, Player>> it = PlayerList.specPlayer.entrySet().iterator(); it.hasNext();) {
+					Player pl = it.next().getValue();
+					PlayerList.removeSpectatorPlayer(pl);
+				}
 
 				GameUtils.broadcastToGame(game, RageMode.getLang().get("game.stopped", "%game%", game));
 
@@ -75,12 +80,7 @@ public class StopGame extends ICommand {
 			final List<String> players = PlayerList.getPlayersFromList();
 
 			GameStopEvent gameStopEvent = new GameStopEvent(game, players);
-			if (!gameStopEvent.isAsynchronous()) {
-				Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-						() -> Bukkit.getPluginManager().callEvent(gameStopEvent));
-			} else {
-				Bukkit.getPluginManager().callEvent(gameStopEvent);
-			}
+			Utils.callEvent(gameStopEvent);
 
 			String winnerUUID = RageScores.calculateWinner(game, players);
 			if (winnerUUID != null) {
@@ -210,7 +210,10 @@ public class StopGame extends ICommand {
 				}
 			}
 
-			PlayerList.specPlayer.values().forEach(PlayerList::removeSpectatorPlayer);
+			for (Iterator<Map.Entry<UUID, Player>> it = PlayerList.specPlayer.entrySet().iterator(); it.hasNext();) {
+				Player pl = it.next().getValue();
+				PlayerList.removeSpectatorPlayer(pl);
+			}
 
 			GameUtils.broadcastToGame(game, RageMode.getLang().get("game.stopped", "%game%", game));
 			PlayerList.setGameNotRunning(game);
@@ -247,7 +250,10 @@ public class StopGame extends ICommand {
 				PlayerList.getPlayersFromList()
 						.forEach(uuids -> PlayerList.removePlayer(Bukkit.getPlayer(UUID.fromString(uuids))));
 
-				PlayerList.specPlayer.values().forEach(PlayerList::removeSpectatorPlayer);
+				for (Iterator<Map.Entry<UUID, Player>> it = PlayerList.specPlayer.entrySet().iterator(); it.hasNext();) {
+					Player pl = it.next().getValue();
+					PlayerList.removeSpectatorPlayer(pl);
+				}
 
 				PlayerList.setGameNotRunning(games[i]);
 				GameUtils.setStatus(GameStatus.STOPPED);

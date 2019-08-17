@@ -120,7 +120,7 @@ public class GetGames {
 		int imax = getConfigGamesCount();
 		String[] games = getGameNames();
 		while (i < imax) {
-			if (games[i].equals(game))
+			if (games[i].equalsIgnoreCase(game))
 				return true;
 			i++;
 		}

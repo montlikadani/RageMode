@@ -116,7 +116,9 @@ public class YAMLStats {
 		int imax = pP.size();
 		String uuid = pP.get(i).getPlayerUUID();
 		while (i < imax) {
+			PlayerPoints points = pP.get(i);
 			String path = "data." + uuid + ".";
+
 			if (statsConf.isConfigurationSection("data") &&
 					statsConf.getConfigurationSection("data").getKeys(false).contains(uuid)) {
 				statsConf.set(path + "name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
@@ -136,57 +138,57 @@ public class YAMLStats {
 				int wins = statsConf.getInt(path + "wins");
 				int games = statsConf.getInt(path + "games");
 
-				statsConf.set(path + "kills", (kills + pP.get(i).getKills()));
-				statsConf.set(path + "axe_kills", (axeKills + pP.get(i).getAxeKills()));
-				statsConf.set(path + "direct_arrow_kills", (directArrowKills + pP.get(i).getDirectArrowKills()));
-				statsConf.set(path + "explosion_kills", (explosionKills + pP.get(i).getExplosionKills()));
-				statsConf.set(path + "knife_kills", (knifeKills + pP.get(i).getKnifeKills()));
+				statsConf.set(path + "kills", (kills + points.getKills()));
+				statsConf.set(path + "axe_kills", (axeKills + points.getAxeKills()));
+				statsConf.set(path + "direct_arrow_kills", (directArrowKills + points.getDirectArrowKills()));
+				statsConf.set(path + "explosion_kills", (explosionKills + points.getExplosionKills()));
+				statsConf.set(path + "knife_kills", (knifeKills + points.getKnifeKills()));
 
-				statsConf.set(path + "deaths", (deaths + pP.get(i).getDeaths()));
-				statsConf.set(path + "axe_deaths", (axeDeaths + pP.get(i).getAxeDeaths()));
-				statsConf.set(path + "direct_arrow_deaths", (directArrowDeaths + pP.get(i).getDirectArrowDeaths()));
-				statsConf.set(path + "explosion_deaths", (explosionDeaths + pP.get(i).getExplosionDeaths()));
-				statsConf.set(path + "knife_deaths", (knifeDeaths + pP.get(i).getKnifeDeaths()));
+				statsConf.set(path + "deaths", (deaths + points.getDeaths()));
+				statsConf.set(path + "axe_deaths", (axeDeaths + points.getAxeDeaths()));
+				statsConf.set(path + "direct_arrow_deaths", (directArrowDeaths + points.getDirectArrowDeaths()));
+				statsConf.set(path + "explosion_deaths", (explosionDeaths + points.getExplosionDeaths()));
+				statsConf.set(path + "knife_deaths", (knifeDeaths + points.getKnifeDeaths()));
 
-				if (pP.get(i).isWinner())
+				if (points.isWinner())
 					statsConf.set(path + "wins", (wins + 1));
 				else
 					statsConf.set(path + "wins", wins);
 
 				// Do not add previous points to the current one, as it will be a dupe
-				statsConf.set(path + "score", pP.get(i).getPoints());
+				statsConf.set(path + "score", points.getPoints());
 				statsConf.set(path + "games", (games + 1));
-				if ((deaths + pP.get(i).getDeaths()) != 0)
-					statsConf.set(path + "KD", ((double) ((kills + pP.get(i).getKills())) / ((double)
-							(deaths + pP.get(i).getDeaths()))));
+				if ((deaths + points.getDeaths()) != 0)
+					statsConf.set(path + "KD", ((double) ((kills + points.getKills())) / ((double)
+							(deaths + points.getDeaths()))));
 				else
 					statsConf.set(path + "KD", 1.0d);
 
 			} else {
 				statsConf.set(path + "name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
 
-				statsConf.set(path + "kills", pP.get(i).getKills());
-				statsConf.set(path + "axe_kills", pP.get(i).getAxeKills());
-				statsConf.set(path + "direct_arrow_kills", pP.get(i).getDirectArrowKills());
-				statsConf.set(path + "explosion_kills", pP.get(i).getExplosionKills());
-				statsConf.set(path + "knife_kills", pP.get(i).getKnifeKills());
+				statsConf.set(path + "kills", points.getKills());
+				statsConf.set(path + "axe_kills", points.getAxeKills());
+				statsConf.set(path + "direct_arrow_kills", points.getDirectArrowKills());
+				statsConf.set(path + "explosion_kills", points.getExplosionKills());
+				statsConf.set(path + "knife_kills", points.getKnifeKills());
 
-				statsConf.set(path + "deaths", pP.get(i).getDeaths());
-				statsConf.set(path + "axe_deaths", pP.get(i).getAxeDeaths());
-				statsConf.set(path + "direct_arrow_deaths", pP.get(i).getDirectArrowDeaths());
-				statsConf.set(path + "explosion_deaths", pP.get(i).getExplosionDeaths());
-				statsConf.set(path + "knife_deaths", pP.get(i).getKnifeDeaths());
+				statsConf.set(path + "deaths", points.getDeaths());
+				statsConf.set(path + "axe_deaths", points.getAxeDeaths());
+				statsConf.set(path + "direct_arrow_deaths", points.getDirectArrowDeaths());
+				statsConf.set(path + "explosion_deaths", points.getExplosionDeaths());
+				statsConf.set(path + "knife_deaths", points.getKnifeDeaths());
 
-				if (pP.get(i).isWinner())
+				if (points.isWinner())
 					statsConf.set(path + "wins", 1);
 				else
 					statsConf.set(path + "wins", 0);
 
-				statsConf.set(path + "score", pP.get(i).getPoints());
+				statsConf.set(path + "score", points.getPoints());
 				statsConf.set(path + "games", 1);
-				if (pP.get(i).getDeaths() != 0)
+				if (points.getDeaths() != 0)
 					statsConf.set(path + "KD",
-							((double) pP.get(i).getKills()) / ((double) pP.get(i).getDeaths()));
+							((double) points.getKills()) / ((double) points.getDeaths()));
 				else
 					statsConf.set(path + "KD", 1.0d);
 			}

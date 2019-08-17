@@ -94,7 +94,7 @@ public class PlayerList {
 		}
 
 		GameJoinAttemptEvent event = new GameJoinAttemptEvent(player, game);
-		Bukkit.getPluginManager().callEvent(event);
+		Utils.callEvent(event);
 		if (event.isCancelled())
 			return false;
 
@@ -396,7 +396,7 @@ public class PlayerList {
 		String game = getPlayersGame(player);
 
 		GameLeaveAttemptEvent gameLeaveEvent = new GameLeaveAttemptEvent(player, game);
-		Bukkit.getPluginManager().callEvent(gameLeaveEvent);
+		Utils.callEvent(gameLeaveEvent);
 		if (gameLeaveEvent.isCancelled())
 			return false;
 

@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.events.SignsUpdateEvent;
 
 public class SignScheduler implements Runnable, Listener {
@@ -22,7 +23,7 @@ public class SignScheduler implements Runnable, Listener {
 	public void run() {
 		List<SignData> signs = SignCreator.getSignData();
 		SignsUpdateEvent event = new SignsUpdateEvent(signs);
-		Bukkit.getPluginManager().callEvent(event);
+		Utils.callEvent(event);
 		Bukkit.getScheduler().runTaskLater(plugin, this, plugin.getConfiguration().getCfg().getInt("signs.update-time") * 20L);
 	}
 

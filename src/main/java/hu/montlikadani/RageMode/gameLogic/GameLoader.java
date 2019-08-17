@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.GameStartEvent;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.BossMessenger;
@@ -35,7 +36,7 @@ public class GameLoader {
 		PlayerList.removeLobbyTimer();
 
 		GameStartEvent gameStartEvent = new GameStartEvent(gameName, PlayerList.getPlayersFromList());
-		Bukkit.getPluginManager().callEvent(gameStartEvent);
+		Utils.callEvent(gameStartEvent);
 
 		PlayerList.setGameRunning(gameName);
 		GameUtils.setStatus(GameStatus.RUNNING);

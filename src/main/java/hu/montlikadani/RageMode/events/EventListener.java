@@ -74,7 +74,6 @@ import hu.montlikadani.ragemode.items.RageKnife;
 import hu.montlikadani.ragemode.libs.Sounds;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
-import hu.montlikadani.ragemode.signs.SignData;
 
 public class EventListener implements Listener {
 
@@ -517,17 +516,13 @@ public class EventListener implements Listener {
 
 		org.bukkit.block.BlockState blockState = event.getBlock().getState();
 		if (blockState instanceof Sign) {
-			for (SignData data : SignCreator.getSignData()) {
-				if (blockState.getLocation().equals(data.getLocation())) {
-					if (!event.getPlayer().hasPermission("ragemode.admin.signs")) {
-						event.getPlayer().sendMessage(RageMode.getLang().get("no-permission-to-interact-sign"));
-						event.setCancelled(true);
-						return;
-					}
-
-					SignCreator.removeSign((Sign) blockState);
-				}
+			if (!event.getPlayer().hasPermission("ragemode.admin.signs")) {
+				event.getPlayer().sendMessage(RageMode.getLang().get("no-permission-to-interact-sign"));
+				event.setCancelled(true);
+				return;
 			}
+
+			SignCreator.removeSign((Sign) blockState);
 		}
 	}
 

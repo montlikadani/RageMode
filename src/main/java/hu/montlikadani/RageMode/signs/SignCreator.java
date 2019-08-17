@@ -1,7 +1,7 @@
 package hu.montlikadani.ragemode.signs;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -19,7 +19,7 @@ public class SignCreator {
 	private static FileConfiguration fileConf;
 	private static SignPlaceholder signPlaceholder = null;
 
-	private static List<SignData> signData = new CopyOnWriteArrayList<>();
+	private static List<SignData> signData = new ArrayList<>();
 
 	public synchronized static boolean loadSigns() {
 		fileConf = SignConfiguration.getConf();
@@ -73,9 +73,13 @@ public class SignCreator {
 	}
 
 	public synchronized static boolean removeSign(Sign sign) {
+		if (signData == null || signData.isEmpty())
+			return false;
+
 		List<String> signs = fileConf.getStringList("signs");
 
-		for (SignData data : signData) {
+		for (java.util.Iterator<SignData> it = signData.iterator(); it.hasNext();) {
+			SignData data = it.next();
 			if (data.getLocation().equals(sign.getLocation())) {
 				String index = locationSignToString(data.getLocation(), data.getGame());
 
@@ -95,6 +99,9 @@ public class SignCreator {
 	 * @return True if a sign is found on the set location.
 	 */
 	public static boolean updateSign(Location loc) {
+		if (signData == null || signData.isEmpty())
+			return false;
+
 		for (SignData data : signData) {
 			if (loc.equals(data.getLocation())) {
 				data.updateSign();
@@ -117,12 +124,10 @@ public class SignCreator {
 				for (String signString : signs) {
 					String game = getGameFromString(signString);
 					if (game != null && gameName != null) {
-						if (game.trim().contains(gameName.trim())) {
+						if (game.contains(gameName)) {
 							Location signLocation = stringToLocationSign(signString);
 							if (signLocation != null && signLocation.getBlock().getState() instanceof Sign) {
-								for (SignData data : signData) {
-									data.updateSign();
-								}
+								signData.forEach(data -> data.updateSign());
 								return true;
 							}
 						}
@@ -147,7 +152,7 @@ public class SignCreator {
 			for (String signString : signs) {
 				String game = getGameFromString(signString);
 				for (String gameName : GetGames.getGameNames()) {
-					if (game.trim().contains(gameName.trim())) {
+					if (game.contains(gameName)) {
 						Location signLocation = stringToLocationSign(signString);
 						if (signLocation.getBlock().getState() instanceof Sign && signLocation.equals(loc))
 							return true;
@@ -168,7 +173,7 @@ public class SignCreator {
 			for (String signString : signs) {
 				String game = getGameFromString(signString);
 				for (String gameName : GetGames.getGameNames()) {
-					if (game.trim().contains(gameName.trim()))
+					if (game.contains(gameName))
 						return game;
 				}
 			}

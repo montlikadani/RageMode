@@ -238,56 +238,61 @@ public class GameUtils {
 			}
 
 			MapChecker mapChecker = new MapChecker(game);
-			if (mapChecker.isValid()) {
-				if (conf.getCfg().getBoolean("require-empty-inventory-to-join")) {
-					for (ItemStack armor : inv.getArmorContents()) {
-						if (armor != null && !armor.getType().equals(Material.AIR)) {
-							p.sendMessage(RageMode.getLang().get("commands.join.empty-inventory.armor"));
-							return;
-						}
-					}
-
-					for (ItemStack content : inv.getContents()) {
-						if (content != null && !content.getType().equals(Material.AIR)) {
-							p.sendMessage(RageMode.getLang().get("commands.join.empty-inventory.contents"));
-							return;
-						}
-					}
-				} else if (conf.getCfg().getBoolean("save-player-datas-to-file"))
-					savePlayerData(p);
-
-				if (PlayerList.addPlayer(p, game)) {
-					p.teleport(GetGameLobby.getLobbyLocation(game));
-
-					runCommands(p, game, "join");
-					sendActionBarMessages(p, game, "join");
-
-					if (conf.getCfg().contains("items.leavegameitem"))
-						inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getItem());
-
-					if (conf.getCfg().contains("items.force-start") && p.hasPermission("ragemode.admin.item.forcestart"))
-						inv.setItem(conf.getCfg().getInt("items.force-start.slot"), ForceStarter.getItem());
-
-					broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
-
-					String title = conf.getCfg().getString("titles.join-game.title");
-					String subtitle = conf.getCfg().getString("titles.join-game.subtitle");
-					if (title != null || subtitle != null) {
-						title = title.replace("%game%", game);
-						subtitle = subtitle.replace("%game%", game);
-						Titles.sendTitle(p, conf.getCfg().getInt("titles.join-game.fade-in"), conf.getCfg().getInt("titles.join-game.stay"),
-								conf.getCfg().getInt("titles.join-game.fade-out"), title, subtitle);
-					}
-					SignCreator.updateAllSigns(game);
-				} else
-					Bukkit.getConsoleSender().sendMessage(RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", game));
-			} else
+			if (!mapChecker.isValid()) {
 				p.sendMessage(mapChecker.getMessage());
+				return;
+			}
+
+			if (conf.getCfg().getBoolean("require-empty-inventory-to-join")) {
+				for (ItemStack armor : inv.getArmorContents()) {
+					if (armor != null && !armor.getType().equals(Material.AIR)) {
+						p.sendMessage(RageMode.getLang().get("commands.join.empty-inventory.armor"));
+						return;
+					}
+				}
+
+				for (ItemStack content : inv.getContents()) {
+					if (content != null && !content.getType().equals(Material.AIR)) {
+						p.sendMessage(RageMode.getLang().get("commands.join.empty-inventory.contents"));
+						return;
+					}
+				}
+			} else if (conf.getCfg().getBoolean("save-player-datas-to-file"))
+				savePlayerData(p);
+
+			if (PlayerList.addPlayer(p, game)) {
+				p.teleport(GetGameLobby.getLobbyLocation(game));
+
+				runCommands(p, game, "join");
+				sendActionBarMessages(p, game, "join");
+
+				if (conf.getCfg().contains("items.leavegameitem"))
+					inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getItem());
+
+				if (conf.getCfg().contains("items.force-start") && p.hasPermission("ragemode.admin.item.forcestart"))
+					inv.setItem(conf.getCfg().getInt("items.force-start.slot"), ForceStarter.getItem());
+
+				broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
+
+				String title = conf.getCfg().getString("titles.join-game.title");
+				String subtitle = conf.getCfg().getString("titles.join-game.subtitle");
+				if (title != null || subtitle != null) {
+					title = title.replace("%game%", game);
+					subtitle = subtitle.replace("%game%", game);
+					Titles.sendTitle(p, conf.getCfg().getInt("titles.join-game.fade-in"),
+							conf.getCfg().getInt("titles.join-game.stay"),
+							conf.getCfg().getInt("titles.join-game.fade-out"), title, subtitle);
+				}
+
+				SignCreator.updateAllSigns(game);
+			} else
+				Bukkit.getConsoleSender().sendMessage(
+						RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", game));
 		}
 	}
 
 	/**
-	 * Kicks the specified player from the game and server.
+	 * Kicks the specified player from the game.
 	 * @param p Player
 	 */
 	public static void kickPlayer(Player p) {
@@ -332,7 +337,8 @@ public class GameUtils {
 		if (p.isInsideVehicle())
 			p.leaveVehicle();
 
-		p.getActivePotionEffects().forEach(e -> p.removePotionEffect(e.getType()));
+		if (!p.getActivePotionEffects().isEmpty())
+			p.getActivePotionEffects().forEach(e -> p.removePotionEffect(e.getType()));
 
 		p.setDisplayName(p.getName());
 		p.setPlayerListName(p.getName());

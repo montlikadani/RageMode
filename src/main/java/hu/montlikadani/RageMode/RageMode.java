@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -211,7 +212,11 @@ public class RageMode extends JavaPlugin {
 							RageScores.removePointsForPlayer(players.getValue());
 						}
 
-						PlayerList.specPlayer.values().forEach(PlayerList::removeSpectatorPlayer);
+						for (java.util.Iterator<java.util.Map.Entry<UUID, Player>> it = PlayerList.specPlayer.entrySet()
+								.iterator(); it.hasNext();) {
+							Player pl = it.next().getValue();
+							PlayerList.removeSpectatorPlayer(pl);
+						}
 
 						PlayerList.setGameNotRunning(games[i]);
 						GameUtils.setStatus(GameStatus.STOPPED);
