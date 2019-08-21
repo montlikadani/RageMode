@@ -22,6 +22,7 @@ import hu.montlikadani.ragemode.commands.StopGame;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.Language;
 import hu.montlikadani.ragemode.database.MySQLConnect;
+import hu.montlikadani.ragemode.database.SQLConnect;
 import hu.montlikadani.ragemode.events.BungeeListener;
 import hu.montlikadani.ragemode.events.EventListener;
 import hu.montlikadani.ragemode.events.Listeners_1_8;
@@ -40,6 +41,7 @@ import hu.montlikadani.ragemode.signs.SignConfiguration;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.signs.SignScheduler;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
+import hu.montlikadani.ragemode.statistics.SQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 import net.milkbowl.vault.economy.Economy;
 
@@ -48,8 +50,10 @@ public class RageMode extends JavaPlugin {
 	private Configuration conf = null;
 	private SignScheduler sign = null;
 	private BungeeUtils bungee = null;
+	private PlayerList pList = null;
 	private static Language lang = null;
 	private static MySQLConnect mySQLConnect = null;
+	private static SQLConnect sqlConnect = null;
 	private static MinecraftVersion mcVersion = null;
 
 	private static Economy econ = null;
@@ -110,12 +114,7 @@ public class RageMode extends JavaPlugin {
 				getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 			}
 
-			getManager().registerEvents(new EventListener(this), this);
-			if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
-				getManager().registerEvents(new Listeners_1_8(), this);
-			else
-				getManager().registerEvents(new Listeners_1_9(), this);
-
+			registerListeners();
 			registerCommands();
 
 			if (conf.getCfg().getString("statistics").equals("") || conf.getCfg().getString("statistics").equals("yaml"))
@@ -139,7 +138,7 @@ public class RageMode extends JavaPlugin {
 						if (conf.getCfg().getBoolean("bungee.enable"))
 							getManager().registerEvents(new BungeeListener(game), this);
 
-						new PlayerList();
+						pList = new PlayerList();
 
 						spawns.add(new GameSpawnGetter(game));
 
@@ -267,11 +266,19 @@ public class RageMode extends JavaPlugin {
 
 		if (mySQLConnect != null) {
 			MySQLStats.loadPlayerStatistics(mySQLConnect);
-
 			RuntimeRPPManager.getRPPListFromMySQL();
 		} else {
 			mySQLConnect = new MySQLConnect(host, port, database, username, password, serverCertificate,
 					useUnicode, characterEnc, autoReconnect, useSSL, prefix);
+		}
+	}
+
+	private void connectSQL() {
+		if (sqlConnect != null) {
+			SQLStats.loadPlayerStatistics(sqlConnect);
+			RuntimeRPPManager.getRPPListFromSQL();
+		} else {
+			sqlConnect = new SQLConnect(getFolder(), "ragemode_");
 		}
 	}
 
@@ -324,21 +331,43 @@ public class RageMode extends JavaPlugin {
 			signTask = Bukkit.getScheduler().runTaskLater(this, sign, 40L);
 		}
 
-		getManager().registerEvents(new EventListener(this), this);
-		if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
-			getManager().registerEvents(new Listeners_1_8(), this);
-		else
-			getManager().registerEvents(new Listeners_1_9(), this);
+		registerListeners();
 
-		if (conf.getCfg().getString("statistics").equals("") || conf.getCfg().getString("statistics").equals("yaml")) {
-			YAMLStats.initS();
-			YAMLStats.loadPlayerStatistics();
-		} else if (conf.getCfg().getString("statistics").equals("mysql")) {
-			if (!mySQLConnect.isConnected()) {
+		switch (conf.getCfg().getString("statistics")) {
+		case "mysql":
+			if (!mySQLConnect.getConnection().isConnected()) {
+				try {
+					Class.forName("com.mysql.jdbc.Driver");
+				} catch (ClassNotFoundException c) {
+					c.printStackTrace();
+					Debug.logConsole(Level.WARNING, "Could not connect to the MySQL database. No MySql found.");
+					break;
+				}
+
 				connectMySQL();
 			} else {
 				MySQLStats.loadPlayerStatistics(mySQLConnect);
 			}
+			break;
+		case "sql":
+			if (!sqlConnect.getConnection().isConnected()) {
+				try {
+					Class.forName("org.sqlite.JDBC");
+				} catch (ClassNotFoundException c) {
+					c.printStackTrace();
+					Debug.logConsole(Level.WARNING, "Could not connect to the SQL database. No Sql found.");
+					return;
+				}
+
+				connectSQL();
+			} else {
+				SQLStats.loadPlayerStatistics(sqlConnect);
+			}
+			break;
+		default:
+			YAMLStats.initS();
+			YAMLStats.loadPlayerStatistics();
+			break;
 		}
 
 		if (hologram)
@@ -349,6 +378,14 @@ public class RageMode extends JavaPlugin {
 		RmCommand rm = new RmCommand();
 		getCommand("ragemode").setExecutor(rm);
 		getCommand("ragemode").setTabCompleter(rm);
+	}
+
+	private void registerListeners() {
+		getManager().registerEvents(new EventListener(this), this);
+		if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
+			getManager().registerEvents(new Listeners_1_8(), this);
+		else
+			getManager().registerEvents(new Listeners_1_9(), this);
 	}
 
 	public File getFolder() {
@@ -376,6 +413,14 @@ public class RageMode extends JavaPlugin {
 	}
 
 	/**
+	 * Gets the {@link SQLConnect} class
+	 * @return SQLConnect class
+	 */
+	public static SQLConnect getSQL() {
+		return sqlConnect;
+	}
+
+	/**
 	 * Gets the {@link Language} class
 	 * @return Language class
 	 */
@@ -397,6 +442,10 @@ public class RageMode extends JavaPlugin {
 
 	public boolean isVaultEnabled() {
 		return vault;
+	}
+
+	public PlayerList getPlayerList() {
+		return pList;
 	}
 
 	public Configuration getConfiguration() {

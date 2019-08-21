@@ -6,6 +6,7 @@ import hu.montlikadani.ragemode.gameUtils.MergeSort;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
+import hu.montlikadani.ragemode.statistics.SQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 
 public class RuntimeRPPManager {
@@ -14,6 +15,12 @@ public class RuntimeRPPManager {
 
 	public static void getRPPListFromMySQL() {
 		RuntimeRPPList = MySQLStats.getAllPlayerStatistics();
+		MergeSort ms = new MergeSort();
+		ms.sort(RuntimeRPPList);
+	}
+
+	public static void getRPPListFromSQL() {
+		RuntimeRPPList = SQLStats.getAllPlayerStatistics();
 		MergeSort ms = new MergeSort();
 		ms.sort(RuntimeRPPList);
 	}

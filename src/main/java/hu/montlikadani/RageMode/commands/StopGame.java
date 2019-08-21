@@ -29,6 +29,7 @@ import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.statistics.MySQLThread;
+import hu.montlikadani.ragemode.statistics.SQLThread;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 import hu.montlikadani.ragemode.utils.ICommand;
 
@@ -185,8 +186,11 @@ public class StopGame extends ICommand {
 					lPP.add(pP);
 
 					if (RageMode.getInstance().getConfiguration().getCfg().getString("statistics").equals("mysql")) {
-						Thread sthread = new Thread(new MySQLThread(pP));
-						sthread.start();
+						Thread th = new Thread(new MySQLThread(pP));
+						th.start();
+					} else if (RageMode.getInstance().getConfiguration().getCfg().getString("statistics").equals("sql")) {
+						Thread th = new Thread(new SQLThread(pP));
+						th.start();
 					}
 
 					Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {

@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.gameLogic;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,12 +73,12 @@ public class PlayerList {
 		runningGames = Arrays.copyOf(runningGames, GetGames.getConfigGamesCount());
 	}
 
-	public static void addPlayerToList(String game, String uuid) {
-		players.put(game, uuid);
+	public Map<String, String> getPlayersInList() {
+		return Collections.unmodifiableMap(players);
 	}
 
-	public static void removePlayerFromList(String game) {
-		players.remove(game);
+	public Map<UUID, Player> getSpectatorPlayers() {
+		return Collections.unmodifiableMap(specPlayer);
 	}
 
 	public static boolean containsPlayerInList(String uuid) {
@@ -132,7 +133,8 @@ public class PlayerList {
 					int time = GetGameLobby.getLobbyTime(game);
 
 					while (n <= (GetGames.getMaxPlayers(game) + i)) {
-						addPlayerToList(game, uuid);
+						players.put(game, uuid);
+
 						player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", game));
 
 						if (conf.getCfg().getInt("game.global.lobby.min-players-to-start-lobby-timer") > 1) {
@@ -323,7 +325,7 @@ public class PlayerList {
 						}
 
 						playerToKick.sendMessage(RageMode.getLang().get("game.player-kicked-for-vip"));
-						removePlayerFromList(game);
+						players.remove(game);
 
 						if (conf.getCfg().getInt("game.global.lobby.min-players-to-start-lobby-timer") > 1) {
 							if (players.size() == conf.getCfg()
@@ -567,7 +569,7 @@ public class PlayerList {
 					}
 				}
 
-				removePlayerFromList(game);
+				players.remove(game);
 				if (players.size() < RageMode.getInstance().getConfiguration().getCfg()
 						.getInt("game.global.lobby.min-players-to-start-lobby-timer")) {
 					lobbyTimer = null; // Remove the lobby timer instance when not enough players to start

@@ -1,18 +1,13 @@
 package hu.montlikadani.ragemode.database;
 
+import java.io.File;
 import java.sql.SQLException;
 
-public class MySQLConnect extends Database {
+public class SQLConnect extends Database {
 
 
-	public MySQLConnect(String host, String port, String database, String userName, String password,
-			boolean serverCertificate, boolean useUnicode, String characterEncode, boolean autoReconnect,
-			boolean useSSL, String prefix) {
-		super("jdbc:mysql://" + host + ":" + port + "/" + database + "?verifyServerCertificate=" + serverCertificate
-				+ "&useUnicode=" + useUnicode + "&characterEncoding=" + characterEncode + "&autoReConnect="
-				+ autoReconnect + "&useSSL=" + useSSL, userName, password, prefix);
-
-		createDefaultTable();
+	public SQLConnect(File folder, String prefix) {
+		super("jdbc:sqlite:" + new File(folder, "rm.sqlite.db").getPath(), null, null, prefix);
 	}
 
 	public void createDefaultTable() {
