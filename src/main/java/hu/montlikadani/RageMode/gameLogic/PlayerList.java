@@ -24,6 +24,8 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.GameJoinAttemptEvent;
 import hu.montlikadani.ragemode.API.event.GameLeaveAttemptEvent;
+import hu.montlikadani.ragemode.API.event.SpectatorJoinToGameEvent;
+import hu.montlikadani.ragemode.API.event.SpectatorLeaveFromGameEvent;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GetGameLobby;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
@@ -48,7 +50,7 @@ public class PlayerList {
 	public static TableList<Player, Integer> oldExpLevel = new TableList<>();
 	public static TableList<Player, Entity> oldVehicle = new TableList<>();
 
-	public static Map<UUID, Player> specPlayer = new HashMap<>();
+	private static Map<UUID, String> specPlayer = new HashMap<>();
 	static Location loc;
 	static GameMode gMode = GameMode.SURVIVAL;
 	static boolean fly = false;
@@ -73,11 +75,11 @@ public class PlayerList {
 		runningGames = Arrays.copyOf(runningGames, GetGames.getConfigGamesCount());
 	}
 
-	public Map<String, String> getPlayersInList() {
+	public static Map<String, String> getPlayersInList() {
 		return Collections.unmodifiableMap(players);
 	}
 
-	public Map<UUID, Player> getSpectatorPlayers() {
+	public static Map<UUID, String> getSpectatorPlayers() {
 		return Collections.unmodifiableMap(specPlayer);
 	}
 
@@ -126,7 +128,7 @@ public class PlayerList {
 
 		while (i < imax) {
 			if (list[i] != null) {
-				if (list[i].equals(game)) {
+				if (list[i].equalsIgnoreCase(game)) {
 					n = i;
 					n++; // should increase performance because the game name in the list isn't checked for null
 
@@ -365,14 +367,18 @@ public class PlayerList {
 		return false;
 	}
 
-	public static boolean addSpectatorPlayer(Player player) {
+	public static boolean addSpectatorPlayer(Player player, String game) {
 		if (!RageMode.getInstance().getConfiguration().getCfg().getBoolean("bungee.enable")) {
 			loc = player.getLocation();
 			gMode = player.getGameMode();
 			fly = player.isFlying();
 			allowFly = player.getAllowFlight();
 		}
-		specPlayer.put(player.getUniqueId(), player);
+
+		SpectatorJoinToGameEvent spec = new SpectatorJoinToGameEvent(game, player);
+		Utils.callEvent(spec);
+
+		specPlayer.put(player.getUniqueId(), game);
 		return specPlayer.containsKey(player.getUniqueId());
 	}
 
@@ -388,6 +394,9 @@ public class PlayerList {
 				player.setAllowFlight(allowFly);
 			}
 
+			SpectatorLeaveFromGameEvent spec = new SpectatorLeaveFromGameEvent(specPlayer.get(player.getUniqueId()), player);
+			Utils.callEvent(spec);
+
 			specPlayer.remove(player.getUniqueId());
 			return true;
 		}
@@ -396,6 +405,9 @@ public class PlayerList {
 
 	public static boolean removePlayer(Player player) {
 		String game = getPlayersGame(player);
+		if (game == null) {
+			return false;
+		}
 
 		GameLeaveAttemptEvent gameLeaveEvent = new GameLeaveAttemptEvent(player, game);
 		Utils.callEvent(gameLeaveEvent);
@@ -641,7 +653,7 @@ public class PlayerList {
 		int imax = runningGames.length;
 		while (i < imax) {
 			if (runningGames[i] != null) {
-				if (runningGames[i].equals(game))
+				if (runningGames[i].equalsIgnoreCase(game))
 					return false;
 			}
 			i++;
@@ -671,7 +683,7 @@ public class PlayerList {
 
 		while (i < imax) {
 			if (runningGames[i] != null) {
-				if (runningGames[i].equals(game)) {
+				if (runningGames[i].equalsIgnoreCase(game)) {
 					runningGames[i] = null;
 					return true;
 				}
@@ -779,7 +791,7 @@ public class PlayerList {
 
 		while (i < imax) {
 			if (list[i] != null) {
-				if (list[i].equals(game)) {
+				if (list[i].equalsIgnoreCase(game)) {
 					gamePos = i;
 					int n = 0;
 					int nmax = GetGames.getOverallMaxPlayers() + 1;

@@ -63,7 +63,7 @@ public class AddGame extends ICommand {
 
 		plugin.getSpawns().add(new GameSpawnGetter(game));
 
-		GameCreateEvent event = new GameCreateEvent(game);
+		GameCreateEvent event = new GameCreateEvent(game, Integer.parseInt(args[2]));
 		Bukkit.getPluginManager().callEvent(event);
 
 		PlayerList.addGameToList(game, x);

@@ -38,7 +38,7 @@ public class SetBossBar extends ICommand {
 				return false;
 			}
 
-			if (!(args[2].equalsIgnoreCase("true") && args[2].equalsIgnoreCase("false"))) {
+			if (!(args[2].equalsIgnoreCase("true") || args[2].equalsIgnoreCase("false"))) {
 				sendMessage(p, RageMode.getLang().get("not-a-boolean", "%value%", args[2]));
 				return false;
 			}

@@ -212,7 +212,7 @@ public class GameUtils {
 		if (status == GameStatus.RUNNING) {
 			if (conf.getCfg().getBoolean("spectator.enable")) {
 				if (!PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
-					if (PlayerList.addSpectatorPlayer(p)) {
+					if (PlayerList.addSpectatorPlayer(p, game)) {
 						getGameSpawnByName(game).randomSpawn(p);
 
 						p.setAllowFlight(true);

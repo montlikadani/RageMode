@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -58,8 +59,9 @@ public class StopGame extends ICommand {
 					PlayerList.removePlayer(player);
 				}
 
-				for (Iterator<Map.Entry<UUID, Player>> it = PlayerList.specPlayer.entrySet().iterator(); it.hasNext();) {
-					Player pl = it.next().getValue();
+				for (Iterator<Entry<UUID, String>> it = PlayerList.getSpectatorPlayers().entrySet().iterator(); it
+						.hasNext();) {
+					Player pl = Bukkit.getPlayer(it.next().getKey());
 					PlayerList.removeSpectatorPlayer(pl);
 				}
 
@@ -214,8 +216,9 @@ public class StopGame extends ICommand {
 				}
 			}
 
-			for (Iterator<Map.Entry<UUID, Player>> it = PlayerList.specPlayer.entrySet().iterator(); it.hasNext();) {
-				Player pl = it.next().getValue();
+			for (Iterator<Entry<UUID, String>> it = PlayerList.getSpectatorPlayers().entrySet().iterator(); it
+					.hasNext();) {
+				Player pl = Bukkit.getPlayer(it.next().getKey());
 				PlayerList.removeSpectatorPlayer(pl);
 			}
 
@@ -254,8 +257,9 @@ public class StopGame extends ICommand {
 				PlayerList.getPlayersFromList()
 						.forEach(uuids -> PlayerList.removePlayer(Bukkit.getPlayer(UUID.fromString(uuids))));
 
-				for (Iterator<Map.Entry<UUID, Player>> it = PlayerList.specPlayer.entrySet().iterator(); it.hasNext();) {
-					Player pl = it.next().getValue();
+				for (Iterator<Entry<UUID, String>> it = PlayerList.getSpectatorPlayers().entrySet().iterator(); it
+						.hasNext();) {
+					Player pl = Bukkit.getPlayer(it.next().getKey());
 					PlayerList.removeSpectatorPlayer(pl);
 				}
 

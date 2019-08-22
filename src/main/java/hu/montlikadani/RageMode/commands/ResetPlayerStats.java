@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
+import hu.montlikadani.ragemode.statistics.SQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 import hu.montlikadani.ragemode.utils.ICommand;
 
@@ -80,8 +81,21 @@ public class ResetPlayerStats extends ICommand {
 
 	private boolean reset(String uuid) {
 		String type = RageMode.getInstance().getConfiguration().getCfg().getString("statistics");
+		switch (type) {
+		case "yaml":
+			YAMLStats.resetPlayerStatistic(uuid);
+			return true;
+		case "mysql":
+			MySQLStats.resetPlayerStatistic(uuid);
+			return true;
+		case "sql":
+		case "sqlite":
+			SQLStats.resetPlayerStatistic(uuid);
+			return true;
+		default:
+			break;
+		}
 
-		return type.equals("yaml") ? YAMLStats.resetPlayerStatistic(uuid)
-				: type.equals("mysql") ? MySQLStats.resetPlayerStatistic(uuid) : false;
+		return false;
 	}
 }

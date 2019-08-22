@@ -107,7 +107,7 @@ public class EventListener implements Listener {
 		Player p = event.getPlayer();
 
 		// Cancels the spectator player chat
-		if (PlayerList.specPlayer.containsKey(p.getUniqueId())) {
+		if (PlayerList.getSpectatorPlayers().containsKey(p.getUniqueId())) {
 			event.setCancelled(true);
 			return;
 		}
@@ -535,7 +535,8 @@ public class EventListener implements Listener {
 		String arg = event.getMessage().trim().toLowerCase();
 		List<String> cmds = null;
 
-		if (plugin.getConfiguration().getCfg().getBoolean("spectator.enable") && PlayerList.specPlayer.containsKey(p.getUniqueId())) {
+		if (plugin.getConfiguration().getCfg().getBoolean("spectator.enable")
+				&& PlayerList.getSpectatorPlayers().containsKey(p.getUniqueId())) {
 			cmds = plugin.getConfiguration().getCfg().getStringList("spectator.allowed-spectator-commands");
 			if (cmds != null && !cmds.isEmpty()) {
 				if (!cmds.contains(arg) && !p.hasPermission("ragemode.bypass.spectatorcommands")) {

@@ -1,6 +1,7 @@
 package hu.montlikadani.ragemode.gameUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.bukkit.configuration.file.FileConfiguration;
@@ -9,7 +10,11 @@ import hu.montlikadani.ragemode.RageMode;
 
 public class GetGames {
 
-	private static FileConfiguration fi = RageMode.getInstance().getConfiguration().getArenasCfg();
+	private static FileConfiguration fi;
+
+	static {
+		fi = RageMode.getInstance().getConfiguration().getArenasCfg();
+	}
 
 	/**
 	 * Get arenas games count
@@ -77,16 +82,18 @@ public class GetGames {
 	 * @return config section
 	 */
 	public static String[] getGameNames() {
-		return fi.contains("arenas") ? fi.getConfigurationSection("arenas").getKeys(false).toArray(new String[getConfigGamesCount()])
+		return fi.contains("arenas")
+				? fi.getConfigurationSection("arenas").getKeys(false).toArray(new String[getConfigGamesCount()])
 				: null;
 	}
 
 	/**
 	 * Gets all games converted to list.
+	 * <p>This will returns empty list if there are no games found.
 	 * @return all games
 	 */
 	public static List<String> getGames() {
-		return Arrays.asList(getGameNames());
+		return getGameNames() != null ? Arrays.asList(getGameNames()) : Collections.emptyList();
 	}
 
 	/**

@@ -49,7 +49,7 @@ public class Spectate extends ICommand {
 			return false;
 		}
 
-		if (PlayerList.addSpectatorPlayer(p)) {
+		if (PlayerList.addSpectatorPlayer(p, map)) {
 			GameUtils.getGameSpawnByName(map).randomSpawn(p);
 
 			p.setAllowFlight(true);

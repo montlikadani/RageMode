@@ -2,8 +2,10 @@ package hu.montlikadani.ragemode;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -50,7 +52,6 @@ public class RageMode extends JavaPlugin {
 	private Configuration conf = null;
 	private SignScheduler sign = null;
 	private BungeeUtils bungee = null;
-	private PlayerList pList = null;
 	private static Language lang = null;
 	private static MySQLConnect mySQLConnect = null;
 	private static SQLConnect sqlConnect = null;
@@ -117,10 +118,18 @@ public class RageMode extends JavaPlugin {
 			registerListeners();
 			registerCommands();
 
-			if (conf.getCfg().getString("statistics").equals("") || conf.getCfg().getString("statistics").equals("yaml"))
-				initYamlStatistics();
-			else if (conf.getCfg().getString("statistics").equals("mysql"))
+			switch (conf.getCfg().getString("statistics")) {
+			case "mysql":
 				connectMySQL();
+				break;
+			case "sql":
+			case "sqlite":
+				connectSQL();
+				break;
+			default:
+				initYamlStatistics();
+				break;
+			}
 
 			if (conf.getCfg().getBoolean("signs.enable")) {
 				sign = new SignScheduler(this);
@@ -138,7 +147,7 @@ public class RageMode extends JavaPlugin {
 						if (conf.getCfg().getBoolean("bungee.enable"))
 							getManager().registerEvents(new BungeeListener(game), this);
 
-						pList = new PlayerList();
+						new PlayerList();
 
 						spawns.add(new GameSpawnGetter(game));
 
@@ -211,9 +220,9 @@ public class RageMode extends JavaPlugin {
 							RageScores.removePointsForPlayer(players.getValue());
 						}
 
-						for (java.util.Iterator<java.util.Map.Entry<UUID, Player>> it = PlayerList.specPlayer.entrySet()
+						for (Iterator<Entry<UUID, String>> it = PlayerList.getSpectatorPlayers().entrySet()
 								.iterator(); it.hasNext();) {
-							Player pl = it.next().getValue();
+							Player pl = Bukkit.getPlayer(it.next().getKey());
 							PlayerList.removeSpectatorPlayer(pl);
 						}
 
@@ -282,6 +291,48 @@ public class RageMode extends JavaPlugin {
 		}
 	}
 
+	private void loadDatabases() {
+		switch (conf.getCfg().getString("statistics")) {
+		case "mysql":
+			if (mySQLConnect == null || !mySQLConnect.getConnection().isConnected()) {
+				try {
+					Class.forName("com.mysql.jdbc.Driver");
+				} catch (ClassNotFoundException c) {
+					c.printStackTrace();
+					Debug.logConsole(Level.WARNING, "Could not connect to the MySQL database. No MySql found.");
+					break;
+				}
+
+				connectMySQL();
+			} else {
+				MySQLStats.loadPlayerStatistics(mySQLConnect);
+			}
+
+			break;
+		case "sql":
+		case "sqlite":
+			if (sqlConnect == null || !sqlConnect.getConnection().isConnected()) {
+				try {
+					Class.forName("org.sqlite.JDBC");
+				} catch (ClassNotFoundException c) {
+					c.printStackTrace();
+					Debug.logConsole(Level.WARNING, "Could not connect to the SQL database. No Sql found.");
+					return;
+				}
+
+				connectSQL();
+			} else {
+				SQLStats.loadPlayerStatistics(sqlConnect);
+			}
+
+			break;
+		default:
+			YAMLStats.initS();
+			YAMLStats.loadPlayerStatistics();
+			break;
+		}
+	}
+
 	private void initEconomy() {
 		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
 		if (rsp == null)
@@ -300,12 +351,12 @@ public class RageMode extends JavaPlugin {
 			signTask = null;
 		}
 
+		spawns.clear();
+
 		conf.loadConfig();
 		lang.loadLanguage(conf.getCfg().getString("language"));
 
 		if (conf.getArenasCfg().contains("arenas")) {
-			spawns.clear();
-
 			for (String game : GetGames.getGameNames()) {
 				if (game != null) {
 					if (PlayerList.isGameRunning(game)) {
@@ -332,43 +383,7 @@ public class RageMode extends JavaPlugin {
 		}
 
 		registerListeners();
-
-		switch (conf.getCfg().getString("statistics")) {
-		case "mysql":
-			if (!mySQLConnect.getConnection().isConnected()) {
-				try {
-					Class.forName("com.mysql.jdbc.Driver");
-				} catch (ClassNotFoundException c) {
-					c.printStackTrace();
-					Debug.logConsole(Level.WARNING, "Could not connect to the MySQL database. No MySql found.");
-					break;
-				}
-
-				connectMySQL();
-			} else {
-				MySQLStats.loadPlayerStatistics(mySQLConnect);
-			}
-			break;
-		case "sql":
-			if (!sqlConnect.getConnection().isConnected()) {
-				try {
-					Class.forName("org.sqlite.JDBC");
-				} catch (ClassNotFoundException c) {
-					c.printStackTrace();
-					Debug.logConsole(Level.WARNING, "Could not connect to the SQL database. No Sql found.");
-					return;
-				}
-
-				connectSQL();
-			} else {
-				SQLStats.loadPlayerStatistics(sqlConnect);
-			}
-			break;
-		default:
-			YAMLStats.initS();
-			YAMLStats.loadPlayerStatistics();
-			break;
-		}
+		loadDatabases();
 
 		if (hologram)
 			HoloHolder.initHoloHolder();
@@ -442,10 +457,6 @@ public class RageMode extends JavaPlugin {
 
 	public boolean isVaultEnabled() {
 		return vault;
-	}
-
-	public PlayerList getPlayerList() {
-		return pList;
 	}
 
 	public Configuration getConfiguration() {

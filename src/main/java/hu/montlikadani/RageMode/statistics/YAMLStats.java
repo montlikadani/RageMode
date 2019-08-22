@@ -114,6 +114,11 @@ public class YAMLStats {
 
 		int i = 0;
 		int imax = pP.size();
+
+		if (pP.get(i) == null) {
+			return; // Do not throw exception if the player not found
+		}
+
 		String uuid = pP.get(i).getPlayerUUID();
 		while (i < imax) {
 			PlayerPoints points = pP.get(i);

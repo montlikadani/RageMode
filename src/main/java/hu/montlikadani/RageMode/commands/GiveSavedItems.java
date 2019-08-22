@@ -71,6 +71,7 @@ public class GiveSavedItems extends RmCommand {
 			}
 		}
 
+		// Confirmation to remove from file
 		if (args.length == 3) {
 			if (args[2].equalsIgnoreCase("true") || args[2].equalsIgnoreCase("yes")) {
 				datas.set("datas." + args[1], null);

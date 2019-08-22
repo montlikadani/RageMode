@@ -271,23 +271,21 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 		if (cmd.getName().equals("ragemode") || cmd.getName().equals("rm")) {
 			List<String> cmds = new ArrayList<>();
 			if (args.length < 2) {
-				getDefaultCmds(sender).forEach(com -> cmds.add(com));
+				getDefaultCmds(sender).forEach(cmds::add);
 
-				getAdminCmds(sender).forEach(aCom -> cmds.add(aCom));
+				getAdminCmds(sender).forEach(cmds::add);
 
-				getSomeCmds(sender).forEach(sCom -> cmds.add(sCom));
+				getSomeCmds(sender).forEach(cmds::add);
 
 				partOfCommand = args[0];
 			} else if (args.length < 3) {
 				if (args[0].equalsIgnoreCase("holostats")) {
-					Arrays.asList("add", "remove", "tp").forEach(hcmd -> cmds.add(hcmd));
+					Arrays.asList("add", "remove", "tp").forEach(cmds::add);
 					partOfCommand = args[1];
 				} else {
 					for (String game : getGameListCmds()) {
-						if (args[0].equalsIgnoreCase(game)) {
-							for (String scmd : GetGames.getGameNames()) {
-								cmds.add(scmd);
-							}
+						if (args[0].equalsIgnoreCase(game) && !GetGames.getGames().isEmpty()) {
+							GetGames.getGames().forEach(cmds::add);
 
 							partOfCommand = args[1];
 						}
@@ -296,7 +294,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 			} else if (args.length < 4) {
 				for (String val : getValueListCmds()) {
 					if (args[0].equalsIgnoreCase(val)) {
-						Arrays.asList("true", "false").forEach(tf -> cmds.add(tf));
+						Arrays.asList("true", "false").forEach(cmds::add);
 						partOfCommand = args[2];
 					}
 				}
