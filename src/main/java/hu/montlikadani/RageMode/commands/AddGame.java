@@ -40,7 +40,7 @@ public class AddGame extends ICommand {
 		int x;
 		try {
 			x = Integer.parseInt(args[2]);
-		} catch (Throwable e) {
+		} catch (NumberFormatException e) {
 			sendMessage(p, RageMode.getLang().get("not-a-number", "%wrong-number%", args[2]));
 			return false;
 		}
@@ -56,7 +56,7 @@ public class AddGame extends ICommand {
 			return false;
 		}
 
-		if (plugin.getConfiguration().getCfg().getBoolean("bungee.enable"))
+		if (plugin.getConfiguration().getCV().isBungee())
 			plugin.getServer().getPluginManager().registerEvents(new BungeeListener(game), plugin);
 
 		new PlayerList();

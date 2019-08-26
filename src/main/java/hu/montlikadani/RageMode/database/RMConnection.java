@@ -1,6 +1,8 @@
 package hu.montlikadani.ragemode.database;
 
+import java.sql.Statement;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import hu.montlikadani.ragemode.Debug;
@@ -43,5 +45,9 @@ public class RMConnection {
 
 	public synchronized void executeUpdate(String query) throws SQLException {
 		conn.createStatement().executeUpdate(query);
+	}
+
+	public synchronized ResultSet executeQuery(Statement statement, String query) throws SQLException {
+		return statement.executeQuery(query);
 	}
 }

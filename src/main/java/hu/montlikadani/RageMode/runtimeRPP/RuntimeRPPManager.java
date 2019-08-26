@@ -49,6 +49,11 @@ public class RuntimeRPPManager {
 	}
 
 	public synchronized static void updatePlayerEntry(PlayerPoints pp) {
+		if (RuntimeRPPList == null || RuntimeRPPList.isEmpty()) {
+			return; // Do not throw exception if the database not loaded
+					// the players successfully
+		}
+
 		RetPlayerPoints oldRPP = getRPPForPlayer(pp.getPlayerUUID());
 		if (oldRPP == null) {
 			int i = RuntimeRPPList.size();

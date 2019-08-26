@@ -83,11 +83,12 @@ public class PlayerList {
 		return Collections.unmodifiableMap(specPlayer);
 	}
 
-	public static boolean containsPlayerInList(String uuid) {
-		if (players != null && players.containsValue(uuid))
-			return true;
+	public static boolean isSpectator(UUID uuid) {
+		return specPlayer != null && specPlayer.containsKey(uuid);
+	}
 
-		return false;
+	public static boolean containsPlayerInList(String uuid) {
+		return players != null && players.containsValue(uuid);
 	}
 
 	public static boolean addPlayer(Player player, String game) {
@@ -110,7 +111,7 @@ public class PlayerList {
 
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
-		if (!conf.getCfg().getBoolean("save-player-datas-to-file")) {
+		if (!conf.getCV().isSavePlayerData()) {
 			// We still need some data saving
 			oldLocations.addToBoth(player, player.getLocation());
 			oldGameMode.addToBoth(player, player.getGameMode());
@@ -139,9 +140,8 @@ public class PlayerList {
 
 						player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", game));
 
-						if (conf.getCfg().getInt("game.global.lobby.min-players-to-start-lobby-timer") > 1) {
-							if (players.size() == conf.getCfg()
-									.getInt("game.global.lobby.min-players-to-start-lobby-timer")) {
+						if (conf.getCV().getMinPlayers() > 1) {
+							if (players.size() == conf.getCV().getMinPlayers()) {
 								if (lobbyTimer == null) { // do not create double class instance
 									lobbyTimer = new LobbyTimer(game, time);
 									lobbyTimer.loadTimer();
@@ -173,9 +173,9 @@ public class PlayerList {
 
 						Utils.clearPlayerInventory(playerToKick);
 
-						if (conf.getCfg().getBoolean("bungee.enable"))
+						if (conf.getCV().isBungee())
 							RageMode.getInstance().getBungeeUtils().connectToHub(playerToKick);
-						else if (conf.getCfg().getBoolean("save-player-datas-to-file")) {
+						else if (conf.getCV().isSavePlayerData()) {
 							while (n < oldLocations.getFirstLength()) { // Get him back to his old location.
 								if (oldLocations.getFromFirstObject(n) == playerToKick) {
 									playerToKick.teleport(oldLocations.getFromSecondObject(n));
@@ -327,11 +327,11 @@ public class PlayerList {
 						}
 
 						playerToKick.sendMessage(RageMode.getLang().get("game.player-kicked-for-vip"));
-						players.remove(game);
+						final Player pl = playerToKick;
+						players.entrySet().removeIf(u -> u.getValue().equals(pl.getUniqueId().toString()));
 
-						if (conf.getCfg().getInt("game.global.lobby.min-players-to-start-lobby-timer") > 1) {
-							if (players.size() == conf.getCfg()
-									.getInt("game.global.lobby.min-players-to-start-lobby-timer")) {
+						if (conf.getCV().getMinPlayers() > 1) {
+							if (players.size() == conf.getCV().getMinPlayers()) {
 								if (lobbyTimer == null) {
 									lobbyTimer = new LobbyTimer(game, time);
 									lobbyTimer.loadTimer();
@@ -368,7 +368,7 @@ public class PlayerList {
 	}
 
 	public static boolean addSpectatorPlayer(Player player, String game) {
-		if (!RageMode.getInstance().getConfiguration().getCfg().getBoolean("bungee.enable")) {
+		if (!RageMode.getInstance().getConfiguration().getCV().isBungee()) {
 			loc = player.getLocation();
 			gMode = player.getGameMode();
 			fly = player.isFlying();
@@ -383,11 +383,11 @@ public class PlayerList {
 	}
 
 	public static boolean removeSpectatorPlayer(Player player) {
-		if (!RageMode.getInstance().getConfiguration().getCfg().getBoolean("spectator.enable"))
+		if (!RageMode.getInstance().getConfiguration().getCV().isSpectatorEnabled())
 			return false;
 
-		if (specPlayer.containsKey(player.getUniqueId())) {
-			if (!RageMode.getInstance().getConfiguration().getCfg().getBoolean("bungee.enable")) {
+		if (isSpectator(player.getUniqueId())) {
+			if (!RageMode.getInstance().getConfiguration().getCV().isBungee()) {
 				player.teleport(loc);
 				player.setGameMode(gMode);
 				player.setFlying(fly);
@@ -414,7 +414,6 @@ public class PlayerList {
 		if (gameLeaveEvent.isCancelled())
 			return false;
 
-
 		if (!player.hasMetadata("leavingRageMode")) {
 			player.setMetadata("leavingRageMode", new FixedMetadataValue(RageMode.getInstance(), true));
 
@@ -427,9 +426,9 @@ public class PlayerList {
 
 				player.setMetadata("Leaving", new FixedMetadataValue(RageMode.getInstance(), true));
 
-				if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("bungee.enable"))
+				if (RageMode.getInstance().getConfiguration().getCV().isBungee())
 					RageMode.getInstance().getBungeeUtils().connectToHub(player);
-				else if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("save-player-datas-to-file")) {
+				else if (RageMode.getInstance().getConfiguration().getCV().isSavePlayerData()) {
 					while (n < oldLocations.getFirstLength()) { // Bring him back to his old location
 						if (oldLocations.getFromFirstObject(n) == player) {
 							player.teleport(oldLocations.getFromSecondObject(n));
@@ -581,9 +580,9 @@ public class PlayerList {
 					}
 				}
 
-				players.remove(game);
-				if (players.size() < RageMode.getInstance().getConfiguration().getCfg()
-						.getInt("game.global.lobby.min-players-to-start-lobby-timer")) {
+				players.entrySet().removeIf(u -> u.getValue().equals(player.getUniqueId().toString()));
+
+				if (players.size() < RageMode.getInstance().getConfiguration().getCV().getMinPlayers()) {
 					lobbyTimer = null; // Remove the lobby timer instance when not enough players to start
 				}
 
@@ -899,7 +898,8 @@ public class PlayerList {
 	 * @return Player who in game currently.
 	 */
 	public static Player getPlayerInGame(String game) {
-		return players != null ? Bukkit.getPlayer(UUID.fromString(players.get(game))) : null;
+		return players != null && players.get(game) != null ? Bukkit.getPlayer(UUID.fromString(players.get(game)))
+				: null;
 	}
 
 	/**

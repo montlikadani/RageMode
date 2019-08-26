@@ -24,8 +24,6 @@ import hu.montlikadani.ragemode.signs.SignCreator;
 public class GameLoader {
 
 	private String gameName;
-
-	private Configuration conf = RageMode.getInstance().getConfiguration();
 	private GameTimer gameTimer;
 
 	public GameLoader(String gameName) {
@@ -41,9 +39,10 @@ public class GameLoader {
 		PlayerList.setGameRunning(gameName);
 		GameUtils.setStatus(GameStatus.RUNNING);
 
+		Configuration conf = RageMode.getInstance().getConfiguration();
+
 		int time = !conf.getArenasCfg().isSet("arenas." + gameName + ".gametime")
-				? conf.getCfg().getInt("game.global.defaults.gametime") < 0 ? 5 * 60
-						: conf.getCfg().getInt("game.global.defaults.gametime") * 60
+				? conf.getCV().getGameTime() < 0 ? 5 * 60 : conf.getCV().getGameTime() * 60
 				: GetGames.getGameTime(gameName) * 60;
 
 		gameTimer = new GameTimer(gameName, time);
@@ -59,22 +58,22 @@ public class GameLoader {
 
 			GameUtils.addGameItems(p, true);
 
-			if (Version.isCurrentEqualOrHigher(Version.v1_9_R1) && conf.getArenasCfg().isSet("arenas." + gameName + ".bossbar")
-					&& conf.getArenasCfg().getBoolean("arenas." + gameName + ".bossbar")
-					|| conf.getCfg().getBoolean("game.global.defaults.bossbar")) {
-				String bossMessage = conf.getCfg().getString("bossbar-messages.join.message");
+			if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".bossbar") || conf.getCV().isBossbarEnabled()) {
+				if (Version.isCurrentEqualOrHigher(Version.v1_9_R1)) {
+					String bossMessage = conf.getCV().getBossbarMsg();
 
-				if (bossMessage != null && !bossMessage.equals("")) {
-					bossMessage = bossMessage.replace("%game%", gameName);
-					bossMessage = bossMessage.replace("%player%", p.getName());
-					bossMessage = RageMode.getLang().colors(bossMessage);
+					if (bossMessage != null && !bossMessage.equals("")) {
+						bossMessage = bossMessage.replace("%game%", gameName);
+						bossMessage = bossMessage.replace("%player%", p.getName());
+						bossMessage = RageMode.getLang().colors(bossMessage);
 
-					new BossMessenger(gameName).sendBossBar(bossMessage, p,
-							BarStyle.valueOf(conf.getCfg().getString("bossbar-messages.join.style")),
-							BarColor.valueOf(conf.getCfg().getString("bossbar-messages.join.color")));
-				}
-			} else if (Version.isCurrentLower(Version.v1_9_R1))
-				Debug.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
+						new BossMessenger(gameName).sendBossBar(bossMessage, p,
+								BarStyle.valueOf(conf.getCV().getBossbarStyle()),
+								BarColor.valueOf(conf.getCV().getBossbarColor()));
+					}
+				} else
+					Debug.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
+			}
 
 			GameUtils.sendActionBarMessages(p, gameName, "start");
 		}

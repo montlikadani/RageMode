@@ -24,7 +24,7 @@ public class SignScheduler implements Runnable, Listener {
 		List<SignData> signs = SignCreator.getSignData();
 		SignsUpdateEvent event = new SignsUpdateEvent(signs);
 		Utils.callEvent(event);
-		Bukkit.getScheduler().runTaskLater(plugin, this, plugin.getConfiguration().getCfg().getInt("signs.update-time") * 20L);
+		Bukkit.getScheduler().runTaskLater(plugin, this, plugin.getConfiguration().getCV().getSignsUpdateTime() * 20L);
 	}
 
 	@EventHandler

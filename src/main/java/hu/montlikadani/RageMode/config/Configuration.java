@@ -19,6 +19,8 @@ public class Configuration {
 
 	private double configVersion = 1.2;
 
+	private ConfigValues cv;
+
 	public Configuration(RageMode plugin) {
 		this.plugin = plugin;
 
@@ -26,6 +28,8 @@ public class Configuration {
 		arenas_file = new File(plugin.getFolder(), "arenas.yml");
 		rewards_file = new File(plugin.getFolder(), "rewards.yml");
 		datas_file = new File(plugin.getFolder(), "datas.yml");
+
+		cv = new ConfigValues();
 	}
 
 	public void loadConfig() {
@@ -33,12 +37,8 @@ public class Configuration {
 
 		try {
 			if (config_file.exists()) {
-				config = YamlConfiguration.loadConfiguration(config_file);
-				config.load(config_file);
-
-				if (!config.isSet("config-version") || !config.get("config-version").equals(configVersion)) {
-					Debug.logConsole(Level.WARNING, "Found outdated configuration (config.yml)! (Your version: "
-							+ config.getDouble("config-version") + " | Newest version: " + configVersion + ")");
+				if (config == null) {
+					config = YamlConfiguration.loadConfiguration(config_file);
 				}
 			} else {
 				plugin.saveResource("config.yml", false);
@@ -46,8 +46,17 @@ public class Configuration {
 				msg += "The 'config.yml' file successfully created!";
 			}
 
+			cv.loadValues(new FileConfig(config));
+
+			if (!config.isSet("config-version") || !config.get("config-version").equals(configVersion)) {
+				Debug.logConsole(Level.WARNING, "Found outdated configuration (config.yml)! (Your version: "
+						+ config.getDouble("config-version") + " | Newest version: " + configVersion + ")");
+			}
+
 			if (arenas_file.exists()) {
-				arenas = YamlConfiguration.loadConfiguration(arenas_file);
+				if (arenas == null) {
+					arenas = YamlConfiguration.loadConfiguration(arenas_file);
+				}
 				arenas.load(arenas_file);
 				saveFile(arenas, arenas_file);
 			} else {
@@ -56,9 +65,11 @@ public class Configuration {
 				msg += "The 'arenas.yml' file successfully created!";
 			}
 
-			if (config.getBoolean("rewards.enable")) {
+			if (cv.isRewardEnabled()) {
 				if (rewards_file.exists()) {
-					rewards = YamlConfiguration.loadConfiguration(rewards_file);
+					if (rewards == null) {
+						rewards = YamlConfiguration.loadConfiguration(rewards_file);
+					}
 					rewards.load(rewards_file);
 				} else {
 					plugin.saveResource("rewards.yml", false);
@@ -67,9 +78,11 @@ public class Configuration {
 				}
 			}
 
-			if (config.getBoolean("save-player-datas-to-file")) {
+			if (cv.isSavePlayerData()) {
 				if (datas_file.exists()) {
-					datas = YamlConfiguration.loadConfiguration(datas_file);
+					if (datas == null) {
+						datas = YamlConfiguration.loadConfiguration(datas_file);
+					}
 					datas.load(datas_file);
 					saveFile(datas, datas_file);
 				} else {
@@ -86,6 +99,10 @@ public class Configuration {
 			e.printStackTrace();
 			Debug.throwMsg();
 		}
+	}
+
+	public ConfigValues getCV() {
+		return cv;
 	}
 
 	public FileConfiguration getCfg() {

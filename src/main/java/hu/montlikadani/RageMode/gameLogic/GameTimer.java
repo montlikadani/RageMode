@@ -2,8 +2,11 @@ package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.TimerTask;
+import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -56,17 +59,17 @@ public class GameTimer extends TimerTask {
 		List<String> listPlayers = PlayerList.getPlayersFromList();
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
-		if (conf.getCfg().getBoolean("game.global.scoreboard.enable")) {
+		if (conf.getCV().isScoreboardEnabled()) {
 			gameBoard = new ScoreBoard(listPlayers, false);
 			gameBoard.addToScoreBoards(gameName, true);
 		}
 
-		if (conf.getCfg().getBoolean("game.global.tablist.list.enable")) {
+		if (conf.getCV().isTabEnabled()) {
 			gameTab = new TabTitles(listPlayers);
 			gameTab.addToTabList(gameName, true);
 		}
 
-		if (conf.getCfg().getBoolean("game.global.tablist.player-format.enable")) {
+		if (conf.getCV().isTabFormatEnabled()) {
 			scoreTeam = new ScoreTeam(listPlayers);
 			scoreTeam.addToTeam(gameName, true);
 		}
@@ -87,16 +90,11 @@ public class GameTimer extends TimerTask {
 				return;
 			}
 
-			Player player = PlayerList.getPlayerInGame(gameName);
-
-			if (player == null || !player.isOnline())
-				return;
-
 			String tFormat = Utils.getFormattedTime(time);
 			Configuration conf = RageMode.getInstance().getConfiguration();
 
 			// Broadcast time message should be in this place, before counting
-			List<Integer> values = conf.getCfg().getIntegerList("game.global.values-to-send-game-end-broadcast");
+			List<Integer> values = conf.getCV().getGameEndBcs();
 			if (values != null && !values.isEmpty()) {
 				for (int val : values) {
 					if (time == val) {
@@ -108,27 +106,35 @@ public class GameTimer extends TimerTask {
 
 			time--;
 
-			if (conf.getCfg().getBoolean("game.global.show-name-above-player-when-look")) {
-				// making the game more difficult
-				for (Entity e : player.getNearbyEntities(25, 10, 25)) {
-					if (e instanceof Player) {
-						Player p = (Player) e;
+			for (Entry<String, String> entry : PlayerList.getPlayers().entrySet()) {
+				Player player = Bukkit.getPlayer(UUID.fromString(entry.getValue()));
 
-						if (!le.contains(p))
-							le.add(p);
+				if (conf.getCfg().getBoolean("game.global.show-name-above-player-when-look")) {
+					// making the game more difficult
+					for (Entity e : player.getNearbyEntities(25, 10, 25)) {
+						if (e instanceof Player) {
+							Player p = (Player) e;
 
-						p.setCustomNameVisible(false);
+							if (!le.contains(p))
+								le.add(p);
 
-						// TODO fix issue when the player looks through the block and the name appears within the 10 radius
-						if (GameUtils.getLookingAt(player, p))
-							p.setCustomNameVisible(true);
+							p.setCustomNameVisible(false);
+
+							// TODO fix issue when the player looks through the block and the name appears within the 10 radius
+							if (GameUtils.getLookingAt(player, p))
+								p.setCustomNameVisible(true);
+						}
 					}
 				}
 			}
 
+			Player player = PlayerList.getPlayerInGame(gameName);
+			if (player == null || !player.isOnline())
+				return;
+
 			if (gameTab != null) {
-				List<String> tabHeader = conf.getCfg().getStringList("game.global.tablist.list.header");
-				List<String> tabFooter = conf.getCfg().getStringList("game.global.tablist.list.footer");
+				List<String> tabHeader = conf.getCV().getTabHeader();
+				List<String> tabFooter = conf.getCV().getTabFooter();
 
 				String he = "";
 				String fo = "";
@@ -159,8 +165,8 @@ public class GameTimer extends TimerTask {
 			}
 
 			if (scoreTeam != null) {
-				String prefix = conf.getCfg().getString("game.global.tablist.player-format.prefix");
-				String suffix = conf.getCfg().getString("game.global.tablist.player-format.suffix");
+				String prefix = conf.getCV().getTabPrefix();
+				String suffix = conf.getCV().getTabSuffix();
 
 				prefix = Utils.setPlaceholders(prefix, player);
 				suffix = Utils.setPlaceholders(suffix, player);
@@ -169,11 +175,11 @@ public class GameTimer extends TimerTask {
 			}
 
 			if (gameBoard != null) {
-				String boardTitle = conf.getCfg().getString("game.global.scoreboard.title");
+				String boardTitle = conf.getCV().getSbTitle();
 				if (boardTitle != null && !boardTitle.equals(""))
 					gameBoard.setTitle(RageMode.getLang().colors(boardTitle));
 
-				List<String> rows = conf.getCfg().getStringList("game.global.scoreboard.content");
+				List<String> rows = conf.getCV().getSbContent();
 				if (rows != null && !rows.isEmpty()) {
 					int rowMax = rows.size();
 

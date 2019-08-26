@@ -23,6 +23,7 @@ import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
+import hu.montlikadani.ragemode.statistics.SQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 
 public class HoloHolder {
@@ -75,40 +76,58 @@ public class HoloHolder {
 		visibilityManager.showTo(player);
 		visibilityManager.setVisibleByDefault(false);
 
-		if (RageMode.getInstance().getConfiguration().getCfg().getString("statistics").equals("mysql")) {
-			final Player mySQLPlayer = player;
-			final Hologram mySQLHologram = hologram;
+		final Player dataPlayer = player;
+		final Hologram dataHologram = hologram;
 
+		switch (RageMode.getInstance().getConfiguration().getCV().getStatistics()) {
+		case "mysql":
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final RetPlayerPoints rpp;
-				if (RuntimeRPPManager.getRPPForPlayer(mySQLPlayer.getUniqueId().toString()) == null)
-					rpp = MySQLStats.getPlayerStatistics(mySQLPlayer.getUniqueId().toString());
+				if (RuntimeRPPManager.getRPPForPlayer(dataPlayer.getUniqueId().toString()) == null)
+					rpp = MySQLStats.getPlayerStatistics(dataPlayer.getUniqueId().toString());
 				else
-					rpp = RuntimeRPPManager.getRPPForPlayer(mySQLPlayer.getUniqueId().toString());
+					rpp = RuntimeRPPManager.getRPPForPlayer(dataPlayer.getUniqueId().toString());
 
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 					if (rpp != null)
-						setHologramLines(mySQLHologram, rpp);
+						setHologramLines(dataHologram, rpp);
 					return "Done";
 				});
 			});
-		} else if (RageMode.getInstance().getConfiguration().getCfg().getString("statistics").equals("yaml")) {
-			final Player yamlPlayer = player;
-			final Hologram yamlHologram = hologram;
-
+			break;
+		case "yaml":
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final RetPlayerPoints rpp;
-				if (RuntimeRPPManager.getRPPForPlayer(yamlPlayer.getUniqueId().toString()) == null)
-					rpp = YAMLStats.getPlayerStatistics(yamlPlayer.getUniqueId().toString());
+				if (RuntimeRPPManager.getRPPForPlayer(dataPlayer.getUniqueId().toString()) == null)
+					rpp = YAMLStats.getPlayerStatistics(dataPlayer.getUniqueId().toString());
 				else
-					rpp = RuntimeRPPManager.getRPPForPlayer(yamlPlayer.getUniqueId().toString());
+					rpp = RuntimeRPPManager.getRPPForPlayer(dataPlayer.getUniqueId().toString());
 
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 					if (rpp != null)
-						setHologramLines(yamlHologram, rpp);
+						setHologramLines(dataHologram, rpp);
 					return "Done";
 				});
 			});
+			break;
+		case "sql":
+		case "sqlite":
+			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
+				final RetPlayerPoints rpp;
+				if (RuntimeRPPManager.getRPPForPlayer(dataPlayer.getUniqueId().toString()) == null)
+					rpp = SQLStats.getPlayerStatistics(dataPlayer.getUniqueId().toString());
+				else
+					rpp = RuntimeRPPManager.getRPPForPlayer(dataPlayer.getUniqueId().toString());
+
+				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
+					if (rpp != null)
+						setHologramLines(dataHologram, rpp);
+					return "Done";
+				});
+			});
+			break;
+		default:
+			break;
 		}
 	}
 

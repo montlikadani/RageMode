@@ -1,6 +1,7 @@
 package hu.montlikadani.ragemode;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -79,7 +80,7 @@ public class RageMode extends JavaPlugin {
 
 			mcVersion = new MinecraftVersion();
 
-			if (Utils.getVersion().contains("1.7")) {
+			if (Version.isCurrentLower(Version.v1_8_R1)) {
 				Bukkit.getLogger().log(Level.SEVERE, "[RageMode] This version is not supported by this plugin! Please use larger 1.8+");
 				getManager().disablePlugin(this);
 				return;
@@ -92,7 +93,7 @@ public class RageMode extends JavaPlugin {
 			conf.loadConfig();
 
 			lang = new Language(this);
-			lang.loadLanguage(conf.getCfg().getString("language"));
+			lang.loadLanguage(conf.getCV().getLang());
 
 			if (getManager().isPluginEnabled("HolographicDisplays")) {
 				hologram = true;
@@ -109,7 +110,7 @@ public class RageMode extends JavaPlugin {
 			if (getManager().isPluginEnabled("PlaceholderAPI"))
 				new Placeholder().register();
 
-			if (conf.getCfg().getBoolean("bungee.enable")) {
+			if (conf.getCV().isBungee()) {
 				bungee = new BungeeUtils(this);
 
 				getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
@@ -118,7 +119,7 @@ public class RageMode extends JavaPlugin {
 			registerListeners();
 			registerCommands();
 
-			switch (conf.getCfg().getString("statistics")) {
+			switch (conf.getCV().getStatistics()) {
 			case "mysql":
 				connectMySQL();
 				break;
@@ -131,7 +132,7 @@ public class RageMode extends JavaPlugin {
 				break;
 			}
 
-			if (conf.getCfg().getBoolean("signs.enable")) {
+			if (conf.getCV().isSignsEnable()) {
 				sign = new SignScheduler(this);
 				getManager().registerEvents(sign, this);
 
@@ -144,14 +145,14 @@ public class RageMode extends JavaPlugin {
 			if (conf.getArenasCfg().contains("arenas")) {
 				for (String game : GetGames.getGameNames()) {
 					if (game != null) {
-						if (conf.getCfg().getBoolean("bungee.enable"))
+						if (conf.getCV().isBungee())
 							getManager().registerEvents(new BungeeListener(game), this);
 
 						new PlayerList();
 
 						spawns.add(new GameSpawnGetter(game));
 
-						if (conf.getCfg().getBoolean("signs.enable"))
+						if (conf.getCV().isSignsEnable())
 							SignCreator.updateAllSigns(game);
 
 						// Loads the game locker
@@ -167,24 +168,32 @@ public class RageMode extends JavaPlugin {
 			}
 
 			// Metrics has changed the JsonObject and causing the break, so disable under 1.8.5
-			if (conf.getCfg().getBoolean("metrics") && Version.isCurrentEqualOrHigher(Version.v1_8_R3)) {
+			if (Version.isCurrentEqualOrHigher(Version.v1_8_R3)) {
 				Metrics metrics = new Metrics(this);
 				metrics.addCustomChart(
 						new Metrics.SimplePie("games_amount", () -> GetGames.getConfigGamesCount() + ""));
 
 				metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
 					int totalPlayers = 0;
-					if (conf.getCfg().getString("statistics").equals("mysql"))
+					switch (conf.getCV().getStatistics()) {
+					case "mysql":
 						totalPlayers = MySQLStats.getAllPlayerStatistics().size();
-					else if (conf.getCfg().getString("statistics").equals("yaml"))
+						break;
+					case "sql":
+					case "sqlite":
+						totalPlayers = SQLStats.getAllPlayerStatistics().size();
+						break;
+					case "yaml":
 						totalPlayers = YAMLStats.getAllPlayerStatistics().size();
-
-					totalPlayers++;
+						break;
+					default:
+						break;
+					}
 
 					return String.valueOf(totalPlayers);
 				}));
 
-				metrics.addCustomChart(new Metrics.SimplePie("statistic_type", () -> conf.getCfg().getString("statistics")));
+				metrics.addCustomChart(new Metrics.SimplePie("statistic_type", () -> conf.getCV().getStatistics()));
 
 				Debug.logConsole("Metrics enabled.");
 			}
@@ -259,50 +268,65 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void connectMySQL() {
-		String host = conf.getCfg().getString("MySQL.host");
-		String port = conf.getCfg().getString("MySQL.port");
-		String database = conf.getCfg().getString("MySQL.database");
-		String username = conf.getCfg().getString("MySQL.username");
-		String password = conf.getCfg().getString("MySQL.password");
-		String characterEnc = conf.getCfg().getString("MySQL.character-encoding").equals("") ? "UTF-8"
-				: conf.getCfg().getString("MySQL.character-encoding");
-		String prefix = conf.getCfg().getString("MySQL.table-prefix").equals("") ? "rm_"
-				: conf.getCfg().getString("MySQL.table-prefix");
-		boolean serverCertificate = conf.getCfg().getBoolean("MySQL.verify-server-certificate");
-		boolean useUnicode = conf.getCfg().getBoolean("MySQL.use-unicode");
-		boolean autoReconnect = conf.getCfg().getBoolean("MySQL.auto-reconnect");
-		boolean useSSL = conf.getCfg().getBoolean("MySQL.use-SSL");
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+		} catch (ClassNotFoundException c) {
+			c.printStackTrace();
+			Debug.logConsole(Level.WARNING, "Could not connect to the MySQL database. No MySql found.");
+			return;
+		}
 
-		if (mySQLConnect != null) {
-			MySQLStats.loadPlayerStatistics(mySQLConnect);
-			RuntimeRPPManager.getRPPListFromMySQL();
-		} else {
+		String host = conf.getCV().getHost();
+		String port = conf.getCV().getPort();
+		String database = conf.getCV().getDatabase();
+		String username = conf.getCV().getUsername();
+		String password = conf.getCV().getPassword();
+		String characterEnc = conf.getCV().getEncoding().equals("") ? "UTF-8" : conf.getCV().getEncoding();
+		String prefix = conf.getCV().getTablePrefix().equals("") ? "rm_" : conf.getCV().getTablePrefix();
+		boolean serverCertificate = conf.getCV().isCertificate();
+		boolean useUnicode = conf.getCV().isUnicode();
+		boolean autoReconnect = conf.getCV().isAutoReconnect();
+		boolean useSSL = conf.getCV().isUseSSL();
+
+		if (mySQLConnect == null) {
 			mySQLConnect = new MySQLConnect(host, port, database, username, password, serverCertificate,
 					useUnicode, characterEnc, autoReconnect, useSSL, prefix);
 		}
+
+		MySQLStats.loadPlayerStatistics(mySQLConnect);
+		RuntimeRPPManager.getRPPListFromMySQL();
 	}
 
 	private void connectSQL() {
-		if (sqlConnect != null) {
-			SQLStats.loadPlayerStatistics(sqlConnect);
-			RuntimeRPPManager.getRPPListFromSQL();
-		} else {
-			sqlConnect = new SQLConnect(getFolder(), "ragemode_");
+		try {
+			Class.forName("org.sqlite.JDBC");
+		} catch (ClassNotFoundException c) {
+			c.printStackTrace();
+			Debug.logConsole(Level.WARNING, "Could not connect to the SQL database. No Sql found.");
+			return;
 		}
+
+		File sqlFile = new File(getFolder(), conf.getCV().getSqlFileName() + ".db");
+		if (!sqlFile.exists()) {
+			try {
+				sqlFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		if (sqlConnect == null) {
+			sqlConnect = new SQLConnect(getFolder(), conf.getCV().getSqlTablePrefix());
+		}
+
+		SQLStats.loadPlayerStatistics(sqlConnect);
+		RuntimeRPPManager.getRPPListFromSQL();
 	}
 
 	private void loadDatabases() {
-		switch (conf.getCfg().getString("statistics")) {
+		switch (conf.getCV().getStatistics()) {
 		case "mysql":
 			if (mySQLConnect == null || !mySQLConnect.getConnection().isConnected()) {
-				try {
-					Class.forName("com.mysql.jdbc.Driver");
-				} catch (ClassNotFoundException c) {
-					c.printStackTrace();
-					Debug.logConsole(Level.WARNING, "Could not connect to the MySQL database. No MySql found.");
-					break;
-				}
-
 				connectMySQL();
 			} else {
 				MySQLStats.loadPlayerStatistics(mySQLConnect);
@@ -312,14 +336,6 @@ public class RageMode extends JavaPlugin {
 		case "sql":
 		case "sqlite":
 			if (sqlConnect == null || !sqlConnect.getConnection().isConnected()) {
-				try {
-					Class.forName("org.sqlite.JDBC");
-				} catch (ClassNotFoundException c) {
-					c.printStackTrace();
-					Debug.logConsole(Level.WARNING, "Could not connect to the SQL database. No Sql found.");
-					return;
-				}
-
 				connectSQL();
 			} else {
 				SQLStats.loadPlayerStatistics(sqlConnect);
@@ -354,7 +370,7 @@ public class RageMode extends JavaPlugin {
 		spawns.clear();
 
 		conf.loadConfig();
-		lang.loadLanguage(conf.getCfg().getString("language"));
+		lang.loadLanguage(conf.getCV().getLang());
 
 		if (conf.getArenasCfg().contains("arenas")) {
 			for (String game : GetGames.getGameNames()) {
@@ -363,7 +379,7 @@ public class RageMode extends JavaPlugin {
 						GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
 					}
 
-					if (conf.getCfg().getBoolean("bungee.enable"))
+					if (conf.getCV().isBungee())
 						getManager().registerEvents(new BungeeListener(game), this);
 
 					spawns.add(new GameSpawnGetter(game));
@@ -375,7 +391,7 @@ public class RageMode extends JavaPlugin {
 			StopGame.stopAllGames();
 		}
 
-		if (conf.getCfg().getBoolean("signs.enable")) {
+		if (conf.getCV().isSignsEnable()) {
 			getManager().registerEvents(sign, this);
 			SignConfiguration.initSignConfiguration();
 
@@ -384,6 +400,7 @@ public class RageMode extends JavaPlugin {
 
 		registerListeners();
 		loadDatabases();
+		SignCreator.loadSigns();
 
 		if (hologram)
 			HoloHolder.initHoloHolder();

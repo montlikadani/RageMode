@@ -37,15 +37,19 @@ public class SignPlaceholder {
 			if (line.contains("%running%")) {
 				if (GameUtils.getStatus() == GameStatus.WAITING) {
 					if (PlayerList.getPlayers().size() == GetGames.getMaxPlayers(game))
-						line = line.replace("%running%", RageMode.getInstance().getConfiguration().getCfg().getString("signs.game.full"));
+						line = line.replace("%running%",
+								RageMode.getInstance().getConfiguration().getCV().getSignGameFull());
 					else
-						line = line.replace("%running%", RageMode.getInstance().getConfiguration().getCfg().getString("signs.game.waiting"));
+						line = line.replace("%running%",
+								RageMode.getInstance().getConfiguration().getCV().getSignGameWaiting());
 				}
-				line = line.replace("%running%", PlayerList.isGameRunning(game)
-						? RageMode.getInstance().getConfiguration().getCfg().getString("signs.game.running")
-						: GameUtils.getStatus() == GameStatus.NOTREADY ? RageMode.getInstance().getConfiguration()
-								.getCfg().getString("signs.game.locked")
-								: RageMode.getInstance().getConfiguration().getCfg().getString("signs.game.waiting"));
+
+				line = line.replace("%running%",
+						PlayerList.isGameRunning(game)
+								? RageMode.getInstance().getConfiguration().getCV().getSignGameRunning()
+								: GameUtils.getStatus() == GameStatus.NOTREADY
+										? RageMode.getInstance().getConfiguration().getCV().getSignGameLocked()
+										: RageMode.getInstance().getConfiguration().getCV().getSignGameRunning());
 			}
 
 			line = RageMode.getLang().colors(line);

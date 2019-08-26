@@ -41,8 +41,8 @@ public class GetGameLobby {
 	public static int getLobbyTime(String game) {
 		int time = 0;
 		if (game == null || !fi.isSet("arenas." + game + ".lobbydelay")) {
-			time = RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.delay") > 0
-					? RageMode.getInstance().getConfiguration().getCfg().getInt("game.global.lobby.delay")
+			time = RageMode.getInstance().getConfiguration().getCV().getLobbyDelay() > 0
+					? RageMode.getInstance().getConfiguration().getCV().getLobbyDelay()
 					: 30;
 		} else
 			time = fi.getInt("arenas." + game + ".lobbydelay");

@@ -9,7 +9,6 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
@@ -74,6 +73,7 @@ import hu.montlikadani.ragemode.items.RageKnife;
 import hu.montlikadani.ragemode.libs.Sounds;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
+import hu.montlikadani.ragemode.utils.MaterialUtil;
 
 public class EventListener implements Listener {
 
@@ -114,7 +114,7 @@ public class EventListener implements Listener {
 
 		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
 			if (GameUtils.getStatus() == GameStatus.WAITING) {
-				if (!plugin.getConfiguration().getCfg().getBoolean("game.global.lobby.enable-chat-in-lobby")
+				if (!plugin.getConfiguration().getCV().isChatEnabledinLobby()
 						&& !p.hasPermission("ragemode.bypass.lobby.lockchat")) {
 					event.setCancelled(true);
 					p.sendMessage(RageMode.getLang().get("game.lobby.chat-is-disabled"));
@@ -123,16 +123,16 @@ public class EventListener implements Listener {
 			}
 
 			if (GameUtils.getStatus() == GameStatus.RUNNING) {
-				if (!plugin.getConfiguration().getCfg().getBoolean("game.global.enable-chat-in-game")
+				if (!plugin.getConfiguration().getCV().isEnableChatInGame()
 						&& !p.hasPermission("ragemode.bypass.game.lockchat")) {
 					p.sendMessage(RageMode.getLang().get("game.chat-is-disabled"));
 					event.setCancelled(true);
 					return;
 				}
 
-				if (plugin.getConfiguration().getCfg().getBoolean("game.global.chat-format.enable")) {
+				if (plugin.getConfiguration().getCV().isChatFormatEnabled()) {
 					String game = PlayerList.getPlayersGame(p);
-					String format = plugin.getConfiguration().getCfg().getString("game.global.chat-format.format");
+					String format = plugin.getConfiguration().getCV().getChatFormat();
 					format = format.replace("%player%", p.getName());
 					format = format.replace("%player-displayname%", p.getDisplayName());
 					format = format.replace("%game%", game);
@@ -145,7 +145,7 @@ public class EventListener implements Listener {
 			}
 
 			if (GameUtils.getStatus() == GameStatus.GAMEFREEZE) {
-				if (!plugin.getConfiguration().getCfg().getBoolean("game.global.enable-chat-after-end")) {
+				if (!plugin.getConfiguration().getCV().isEnableChatAfterEnd()) {
 					p.sendMessage(RageMode.getLang().get("game.game-freeze.chat-is-disabled"));
 					event.setCancelled(true);
 				}
@@ -268,8 +268,8 @@ public class EventListener implements Listener {
 		// Hit player event
 		if (GameUtils.getStatus() == GameStatus.RUNNING) {
 			if (e instanceof Player && PlayerList.isPlayerPlaying(e.getUniqueId().toString())) {
-				if (event.getCause().equals(DamageCause.FALL) && !plugin.getConfiguration().getCfg()
-						.getBoolean("game.global.damage-player-fall")) {
+				if (event.getCause().equals(DamageCause.FALL)
+						&& !plugin.getConfiguration().getCV().isDamagePlayerFall()) {
 					event.setCancelled(true);
 					return;
 				}
@@ -317,7 +317,7 @@ public class EventListener implements Listener {
 
 			if ((deceased.getKiller() != null && PlayerList.isPlayerPlaying(deceased.getKiller().getUniqueId().toString()))
 					|| deceased.getKiller() == null) {
-				boolean doDeathBroadcast = plugin.getConfiguration().getCfg().getBoolean("game.global.death-messages");
+				boolean doDeathBroadcast = plugin.getConfiguration().getCV().isDeathMsgs();
 
 				if (plugin.getConfiguration().getArenasCfg().isSet("arenas." + game + ".death-messages")) {
 					String gameBroadcast = plugin.getConfiguration().getArenasCfg().getString("arenas." + game + ".death-messages");
@@ -512,7 +512,7 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onSignBreak(BlockBreakEvent event) {
-		if (event.isCancelled() || !plugin.getConfiguration().getCfg().getBoolean("signs.enable")) return;
+		if (event.isCancelled() || !plugin.getConfiguration().getCV().isSignsEnable()) return;
 
 		org.bukkit.block.BlockState blockState = event.getBlock().getState();
 		if (blockState instanceof Sign && SignCreator.isSign(blockState.getLocation())) {
@@ -535,9 +535,9 @@ public class EventListener implements Listener {
 		String arg = event.getMessage().trim().toLowerCase();
 		List<String> cmds = null;
 
-		if (plugin.getConfiguration().getCfg().getBoolean("spectator.enable")
+		if (plugin.getConfiguration().getCV().isSpectatorEnabled()
 				&& PlayerList.getSpectatorPlayers().containsKey(p.getUniqueId())) {
-			cmds = plugin.getConfiguration().getCfg().getStringList("spectator.allowed-spectator-commands");
+			cmds = plugin.getConfiguration().getCV().getSpectatorCmds();
 			if (cmds != null && !cmds.isEmpty()) {
 				if (!cmds.contains(arg) && !p.hasPermission("ragemode.bypass.spectatorcommands")) {
 					p.sendMessage(RageMode.getLang().get("game.this-command-is-disabled-in-game"));
@@ -556,7 +556,7 @@ public class EventListener implements Listener {
 				}
 			}
 
-			cmds = plugin.getConfiguration().getCfg().getStringList("game.global.allowed-commands");
+			cmds = plugin.getConfiguration().getCV().getAllowedCmds();
 			if (cmds != null && !cmds.isEmpty()) {
 				if (!cmds.contains(arg) && !p.hasPermission("ragemode.bypass.disabledcommands")) {
 					p.sendMessage(RageMode.getLang().get("game.this-command-is-disabled-in-game"));
@@ -657,14 +657,6 @@ public class EventListener implements Listener {
 
 		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
 			if (GameUtils.getStatus() == GameStatus.RUNNING) {
-				// Should fix inventoryOpen when the top of the chest opened
-				/*if (event.getAction() == Action.RIGHT_CLICK_BLOCK &&
-						event.getClickedBlock() != null && !event.getClickedBlock().getType().equals(Material.AIR) ||
-						event.getClickedBlock().getType().equals(Material.CHEST) ||
-						event.getClickedBlock().getType().equals(Material.ENDER_CHEST)) {
-					event.setCancelled(true);
-				}*/
-
 				Player thrower = event.getPlayer();
 				if (waitingGames.containsKey(PlayerList.getPlayersGame(thrower))) {
 					if (waitingGames.get(PlayerList.getPlayersGame(thrower)))
@@ -714,7 +706,7 @@ public class EventListener implements Listener {
 			}
 		}
 
-		if (plugin.getConfiguration().getCfg().getBoolean("signs.enable") && event.getClickedBlock() != null
+		if (plugin.getConfiguration().getCV().isSignsEnable() && event.getClickedBlock() != null
 				&& event.getClickedBlock().getState() != null) {
 			org.bukkit.block.Block b = event.getClickedBlock();
 
@@ -738,6 +730,8 @@ public class EventListener implements Listener {
 			if (type == InventoryType.ENCHANTING
 					|| type == InventoryType.CRAFTING
 					|| type == InventoryType.ANVIL
+					|| type == InventoryType.CHEST
+					|| type == InventoryType.ENDER_CHEST
 					|| type == InventoryType.BREWING
 					|| type == InventoryType.FURNACE
 					|| type == InventoryType.WORKBENCH
@@ -762,20 +756,12 @@ public class EventListener implements Listener {
 					if (t == Material.FARMLAND) {
 						ev.setUseInteractedBlock(Event.Result.DENY);
 						ev.setCancelled(true);
-					} else if (plugin.getConfiguration().getCfg().getBoolean("game.global.cancel-redstone-activating-blocks")
-							&& GameUtils.getStatus() == GameStatus.RUNNING || GameUtils.getStatus() == GameStatus.GAMEFREEZE) {
-						if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
-							if (Tag.WOODEN_PRESSURE_PLATES.isTagged(t)) {
-								ev.setUseInteractedBlock(Event.Result.DENY);
-								ev.setCancelled(true);
-							}
-						}
-
-						if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
-							if (t.equals(Material.OAK_PRESSURE_PLATE) || t.equals(Material.STONE_PRESSURE_PLATE)) {
-								ev.setUseInteractedBlock(Event.Result.DENY);
-								ev.setCancelled(true);
-							}
+					} else if (RageMode.getInstance().getConfiguration().getCV().isCancelRedstoneActivate()
+							&& GameUtils.getStatus() == GameStatus.RUNNING
+							|| GameUtils.getStatus() == GameStatus.GAMEFREEZE) {
+						if (MaterialUtil.isWoodenPressurePlate(t)) {
+							ev.setUseInteractedBlock(Event.Result.DENY);
+							ev.setCancelled(true);
 						}
 
 						if (t.equals(Material.STONE_PRESSURE_PLATE) || t.equals(Material.HEAVY_WEIGHTED_PRESSURE_PLATE)
@@ -784,57 +770,48 @@ public class EventListener implements Listener {
 							ev.setCancelled(true);
 						}
 					}
-				} else if (plugin.getConfiguration().getCfg().getBoolean("game.global.cancel-redstone-activating-blocks")
+				} else if (RageMode.getInstance().getConfiguration().getCV().isCancelRedstoneActivate()
 						&& ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					if (GameUtils.getStatus() == GameStatus.RUNNING || GameUtils.getStatus() == GameStatus.GAMEFREEZE) {
-						if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
-							if (Tag.TRAPDOORS.isTagged(t) || Tag.BUTTONS.isTagged(t) || Tag.WOODEN_BUTTONS.isTagged(t)
-									|| Tag.WOODEN_TRAPDOORS.isTagged(t)) {
-								ev.setUseInteractedBlock(Event.Result.DENY);
-								ev.setCancelled(true);
-							}
+						if (MaterialUtil.isTrapdoor(t) || MaterialUtil.isButton(t)) {
+							ev.setUseInteractedBlock(Event.Result.DENY);
+							ev.setCancelled(true);
 						}
 
 						if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
-							if (t.equals(Material.valueOf("WOOD_BUTTON")) || t.equals(Material.valueOf("TRAP_DOOR"))
-									|| t.equals(Material.valueOf("STONE_BUTTON"))
-									|| t.equals(Material.valueOf("REDSTONE_COMPARATOR"))
+							if (t.equals(Material.valueOf("REDSTONE_COMPARATOR"))
 									|| t.equals(Material.valueOf("REDSTONE_COMPARATOR_ON"))
 									|| t.equals(Material.valueOf("REDSTONE_COMPARATOR_OFF"))) {
 								ev.setUseInteractedBlock(Event.Result.DENY);
 								ev.setCancelled(true);
 							}
+						} else {
+							if (t.equals(Material.COMPARATOR) || t.equals(Material.REPEATER)) {
+								ev.setUseInteractedBlock(Event.Result.DENY);
+								ev.setCancelled(true);
+							}
 						}
 
-						if (t.equals(Material.LEVER) || t.equals(Material.COMPARATOR) || t.equals(Material.REPEATER)
-								|| t.equals(Material.DAYLIGHT_DETECTOR)) {
+						if (t.equals(Material.LEVER) || t.equals(Material.DAYLIGHT_DETECTOR)) {
 							ev.setUseInteractedBlock(Event.Result.DENY);
 							ev.setCancelled(true);
 						}
 					}
 				}
 
-				if (plugin.getConfiguration().getCfg().getBoolean("game.global.cancel-door-use") && ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
+				if (RageMode.getInstance().getConfiguration().getCV().isCancelDoorUse()
+						&& ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					if (GameUtils.getStatus() == GameStatus.RUNNING || GameUtils.getStatus() == GameStatus.GAMEFREEZE) {
-						if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
-							if (Tag.DOORS.isTagged(t)) {
-								ev.setUseInteractedBlock(Event.Result.DENY);
-								ev.setCancelled(true);
-							}
-						}
-
-						if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
-							if (t.equals(Material.valueOf("WOODEN_DOOR"))) {
-								ev.setUseInteractedBlock(Event.Result.DENY);
-								ev.setCancelled(true);
-							}
+						if (MaterialUtil.isWoodenDoor(t)) {
+							ev.setUseInteractedBlock(Event.Result.DENY);
+							ev.setCancelled(true);
 						}
 					}
 				}
 
 				// Just prevent usage of bush
 				if (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
-					if (t.equals(Material.SWEET_BERRY_BUSH)) {
+					if (t.equals(Material.SWEET_BERRY_BUSH) || t.equals(Material.COMPOSTER)) {
 						ev.setUseInteractedBlock(Event.Result.DENY);
 						ev.setCancelled(true);
 					}
@@ -871,7 +848,7 @@ public class EventListener implements Listener {
 	public void onSignChange(SignChangeEvent event) {
 		if (event.isCancelled() || event.getPlayer() == null || event.getBlock() == null) return;
 
-		if (plugin.getConfiguration().getCfg().getBoolean("signs.enable")
+		if (plugin.getConfiguration().getCV().isSignsEnable()
 				&& event.getLine(0).contains("[rm]") || event.getLine(0).contains("[ragemode]")) {
 			if (!event.getPlayer().hasPermission("ragemode.admin.signs")) {
 				event.getPlayer().sendMessage(RageMode.getLang().get("no-permission-to-interact-sign"));

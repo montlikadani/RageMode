@@ -3,6 +3,8 @@ package hu.montlikadani.ragemode.database;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import hu.montlikadani.ragemode.Debug;
+
 public class Database {
 
 	private RMConnection conn = null;
@@ -22,9 +24,13 @@ public class Database {
 	public RMConnection getConnection() {
 		if (conn == null) {
 			try {
-				conn = new RMConnection(DriverManager.getConnection(url, username, password));
+				if (username == null && password == null) {
+					conn = new RMConnection(DriverManager.getConnection(url));
+				} else {
+					conn = new RMConnection(DriverManager.getConnection(url, username, password));
+				}
 			} catch (SQLException e) {
-				e.printStackTrace();
+				Debug.logConsole(java.util.logging.Level.WARNING, "Could not connect to the database: " + e.getMessage());
 			}
 		}
 

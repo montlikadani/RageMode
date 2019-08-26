@@ -80,7 +80,7 @@ public class ResetPlayerStats extends ICommand {
 	}
 
 	private boolean reset(String uuid) {
-		String type = RageMode.getInstance().getConfiguration().getCfg().getString("statistics");
+		String type = RageMode.getInstance().getConfiguration().getCV().getStatistics();
 		switch (type) {
 		case "yaml":
 			YAMLStats.resetPlayerStatistic(uuid);

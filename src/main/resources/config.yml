@@ -21,9 +21,6 @@ save-player-datas-to-file: false
 # loses his items from inventory.
 require-empty-inventory-to-join: true
 
-# bStats metrics for sending some statistic.
-metrics: true
-
 # Hook into bungee
 # For server game join signs use:
 # https://www.spigotmc.org/resources/37446/
@@ -32,7 +29,7 @@ bungee:
   # Bungeecord server name when the game end and teleport players to this server.
   hub-name: "lobby"
 
-# MySQL database to save the players statistic.
+# MySQL database settings.
 MySQL:
   auto-reconnect: false
   use-SSL: true
@@ -45,6 +42,11 @@ MySQL:
   use-unicode: true
   verify-server-certificate: false
   character-encoding: "UTF-8"
+
+# SQLite database settings.
+SQL:
+  file-name: rm.sqlite
+  table-prefix: ragemode_
 
 # Sign texts
 signs:
@@ -105,21 +107,20 @@ titles:
   join-game:
     title: "&e%game%"
     subtitle: "&3by yourname"
-    # The time it takes for the title to fade into the screen. (In ticks)
-    fade-in: 20
-    # The time it takes for the title to stay on the screen. (In ticks)
-    stay: 50
-    # The time it takes for the title to fade out of the screen. (In ticks)
-    fade-out: 20
+
+    # Title time settings (in ticks)
+    # First number (fade-in): The time it takes for the title to fade into the screen.
+    # Second number (stay): The time it takes for the title to stay on the screen.
+    # Third number (fade-out): The time it takes for the title to fade out of the screen.
+    time: "20, 50, 20"
 
   # Lobby waiting timer title.
   lobby-waiting:
     enable: true
     title: ""
     subtitle: "&9%time%"
-    fade-in: 10
-    stay: 30
-    fade-out: 10
+    time: "10, 30, 10"
+
     # Intervals when the lobby timer reaches e.g. 5 intervals, then send it on the screen.
     values-to-send-start-message: [5, 4, 3, 2, 1]
 
@@ -127,17 +128,13 @@ titles:
   player-won:
     title: "&2Congratulations!"
     subtitle: "&e%winner%&6 won this round!"
-    fade-in: 20
-    stay: 80
-    fade-out: 20
+    time: "20, 80, 20"
 
   # When you won a game, and send title for him that in the game currently.
   you-won:
     title: "&aCongratulations!"
     subtitle: "&2You won this round!"
-    fade-in: 20
-    stay: 80
-    fade-out: 20
+    time: "20, 80, 20"
 
 # Enables the spectator mode in the already running game, to see what happens in that game.
 spectator:
@@ -158,9 +155,6 @@ game:
       # If this is less than 1, then 2 defaults.
       min-players-to-start-lobby-timer: 2
 
-      # Lobby delay to start the game in seconds.
-      delay: 30
-
       # Sending lobby waiting message to start game in seconds.
       time-to-send-message: 9
 
@@ -173,10 +167,6 @@ game:
 
       # Time intervals when the lobby timer reaches, for example, 10 seconds, write it into the chat.
       values-to-send-start-message: [30, 20, 10, 5, 4, 3, 2, 1]
-
-    # Death messages
-    # This ignores, when the boolean is contains in the arenas file.
-    death-messages: true
 
     # If this false if player has fallen to ground then not damage.
     damage-player-fall: false
@@ -207,6 +197,10 @@ game:
 
     # Defaults values when in the setup not specify e.g bossbar.
     defaults:
+      # Death messages
+      # This ignores, when the boolean is contains in the arenas file.
+      death-messages: true
+
       # Bossbar messages when a player killed someone.
       # This ignores, when the boolean is contains in the arenas file.
       bossbar: false
@@ -214,6 +208,9 @@ game:
       # Actionbar messages when a player get points or killed someone.
       # This ignores, when the boolean is contains in the arenas file.
       actionbar: true
+
+      # Lobby delay to start the game in seconds.
+      lobby-delay: 30
 
       # Game time in minutes.
       # This ignores, when the integer is contains in the arenas file.
@@ -233,6 +230,7 @@ game:
         enable: false
         prefix: ""
         suffix: "&e %kills%"
+
       # Tablist header/footer formats.
       list:
         enable: false
@@ -289,6 +287,7 @@ points:
   axedeath: -50
   knifekill: 15
   explosionkill: 25
+  grenadeKill: 45
   # If 0 ignoring the loss.
   suicide: -20
 

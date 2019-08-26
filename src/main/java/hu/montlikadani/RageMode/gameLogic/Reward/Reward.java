@@ -30,19 +30,14 @@ public class Reward {
 
 	private String game;
 	private FileConfiguration conf;
-	private boolean enable = false;
 
 	public Reward(String game) {
 		this.game = game;
 
 		conf = RageMode.getInstance().getConfiguration().getRewardsCfg();
-		enable = RageMode.getInstance().getConfiguration().getCfg().getBoolean("rewards.enable");
 	}
 
 	public void rewardForWinner(Player winner) {
-		if (!enable)
-			return;
-
 		List<String> cmds = conf.getStringList("rewards.end-game.winner.commands");
 		List<String> msgs = conf.getStringList("rewards.end-game.winner.messages");
 		double cash = conf.getDouble("rewards.end-game.winner.cash");
@@ -77,9 +72,6 @@ public class Reward {
 	}
 
 	public void rewardForPlayers(Player winner, Player pls) {
-		if (!enable)
-			return;
-
 		if (winner != null && pls == winner)
 			return;
 
@@ -226,9 +218,5 @@ public class Reward {
 				}
 			}
 		}
-	}
-
-	public boolean isEnabled() {
-		return enable;
 	}
 }

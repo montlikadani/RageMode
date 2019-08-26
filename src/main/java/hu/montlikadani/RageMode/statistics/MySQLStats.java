@@ -23,18 +23,19 @@ public class MySQLStats {
 
 	private static List<RetPlayerPoints> points = new ArrayList<>();
 
-	public static void loadPlayerStatistics(MySQLConnect mySQLConnect) {
-		if (!mySQLConnect.getConnection().isConnected())
+	public static void loadPlayerStatistics(MySQLConnect mySQL) {
+		if (mySQL.getConnection() == null || !mySQL.getConnection().isConnected()) {
 			return;
+		}
 
 		int totalPlayers = 0;
 
 		points.clear();
 
-		Connection connection = mySQLConnect.getConnection().getConnection();
+		Connection connection = mySQL.getConnection().getConnection();
 
 		Statement statement = null;
-		String query = "SELECT * FROM " + mySQLConnect.getPrefix() + "stats_players;";
+		String query = "SELECT * FROM " + mySQL.getPrefix() + "stats_players;";
 
 		int currentKills = 0;
 		int currentAxeKills = 0;
@@ -55,7 +56,7 @@ public class MySQLStats {
 
 		try {
 			statement = connection.createStatement();
-			ResultSet rs = statement.executeQuery(query);
+			ResultSet rs = mySQL.getConnection().executeQuery(statement, query);
 			while (rs.next()) {
 				currentKills = rs.getInt("kills");
 				currentAxeKills = rs.getInt("axe_kills");
@@ -125,7 +126,7 @@ public class MySQLStats {
 	}
 
 	/**
-	 * {@link #addPlayerStatistics(PlayerPoints, MySQLConnect)}
+	 * {@link #addPlayerStatistics(PlayerPoints, MySQLStats)}
 	 * @param playerPoints PlayerPoints
 	 */
 	public static void addPlayerStatistics(PlayerPoints playerPoints) {
@@ -134,19 +135,19 @@ public class MySQLStats {
 
 	/**
 	 * Adds the statistics from the given PlayerPoints instance to the database
-	 * connection from the given MySQLConnect instance.
+	 * connection from the given MySQLStats instance.
 	 * 
 	 * @param playerPoints The PlayerPoints instance from which the statistics should be gotten.
-	 * @param mySQLConnect The MySQLConnect instance which holds the Connection for the database.
+	 * @param MySQLStats The MySQLStats instance which holds the Connection for the database.
 	 */
-	public static void addPlayerStatistics(PlayerPoints playerPoints, MySQLConnect mySQLConnect) {
-		if (!mySQLConnect.getConnection().isValid())
+	public static void addPlayerStatistics(PlayerPoints playerPoints, MySQLConnect mySQL) {
+		if (mySQL.getConnection() == null || !mySQL.getConnection().isValid())
 			return;
 
-		Connection connection = mySQLConnect.getConnection().getConnection();
+		Connection connection = mySQL.getConnection().getConnection();
 
 		Statement statement = null;
-		String query = "SELECT * FROM " + mySQLConnect.getPrefix() + "stats_players WHERE uuid LIKE '" + playerPoints.getPlayerUUID() + "';";
+		String query = "SELECT * FROM " + mySQL.getPrefix() + "stats_players WHERE uuid LIKE '" + playerPoints.getPlayerUUID() + "';";
 
 		int oldKills = 0;
 		int oldAxeKills = 0;
@@ -166,7 +167,7 @@ public class MySQLStats {
 
 		try {
 			statement = connection.createStatement();
-			ResultSet rs = statement.executeQuery(query);
+			ResultSet rs = mySQL.getConnection().executeQuery(statement, query);
 			while (rs.next()) {
 				oldKills = rs.getInt("kills");
 				oldAxeKills = rs.getInt("axe_kills");
@@ -214,8 +215,7 @@ public class MySQLStats {
 		int newGames = oldGames + 1;
 		double newKD = (newDeaths != 0) ? (((double) newKills) / ((double) newDeaths)) : 1;
 
-		statement = null;
-		query = "REPLACE INTO " + mySQLConnect.getPrefix() + "stats_players (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills, knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths, knife_deaths, wins, score, games, kd) VALUES ("
+		query = "REPLACE INTO " + mySQL.getPrefix() + "stats_players (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills, knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths, knife_deaths, wins, score, games, kd) VALUES ("
 				+ "'" + Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID())).getName() + "', " + "'"
 				+ playerPoints.getPlayerUUID() + "', " + Integer.toString(newKills) + ", "
 				+ Integer.toString(newAxeKills) + ", " + Integer.toString(newDirectArrowKills) + ", "
@@ -225,18 +225,9 @@ public class MySQLStats {
 				+ Integer.toString(newKnifeDeaths) + ", " + Integer.toString(newWins) + ", "
 				+ Integer.toString(newScore) + ", " + Integer.toString(newGames) + ", " + Double.toString(newKD) + ");";
 		try {
-			statement = connection.createStatement();
-			statement.executeUpdate(query);
+			mySQL.getConnection().executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}
-
-		if (statement != null) {
-			try {
-				statement.close();
-			} catch (SQLException s) {
-				s.printStackTrace();
-			}
 		}
 	}
 
@@ -261,11 +252,11 @@ public class MySQLStats {
 
 	/**
 	 * Retrieves the list of RetPlayerPoints.
-	 * @return A List of all RetPlayerPoints objects which are stored in the mySQL database.
+	 * @return A List of all RetPlayerPoints objects which are stored in the SQL database.
 	 */
 	public static List<RetPlayerPoints> getAllPlayerStatistics() {
 		MySQLConnect connect = RageMode.getMySQL();
-		if (!connect.getConnection().isValid())
+		if (connect.getConnection() == null || !connect.getConnection().isValid())
 			return Collections.emptyList();
 
 		String uuid = null;
@@ -276,7 +267,7 @@ public class MySQLStats {
 		String query = "SELECT * FROM " + connect.getPrefix() + "stats_players";
 		try {
 			statement = connection.createStatement();
-			ResultSet rs = statement.executeQuery(query);
+			ResultSet rs = connect.getConnection().executeQuery(statement, query);
 			while (rs.next()) {
 				uuid = rs.getString("uuid");
 			}
@@ -310,7 +301,7 @@ public class MySQLStats {
 	 * @return true if the player found in database
 	 */
 	public static boolean resetPlayerStatistic(String uuid) {
-		if (!RageMode.getMySQL().getConnection().isConnected())
+		if (RageMode.getMySQL().getConnection() == null || !RageMode.getMySQL().getConnection().isConnected())
 			return false;
 
 		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(uuid);
@@ -324,7 +315,7 @@ public class MySQLStats {
 
 		try {
 			statement = connection.createStatement();
-			ResultSet rs = statement.executeQuery(query);
+			ResultSet rs = RageMode.getMySQL().getConnection().executeQuery(statement, query);
 			while (rs.next()) {
 				rpp.setKills(0);
 				rpp.setAxeKills(0);
@@ -361,7 +352,6 @@ public class MySQLStats {
 			}
 		}
 
-		statement = null;
 		query = "REPLACE INTO " + RageMode.getMySQL().getPrefix() + "stats_players (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills, knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths, knife_deaths, wins, score, games, kd) VALUES ("
 				+ "'" + Bukkit.getPlayer(UUID.fromString(rpp.getPlayerUUID())).getName() + "', " + "'"
 				+ rpp.getPlayerUUID() + "', " + Integer.toString(0) + ", "
@@ -372,18 +362,9 @@ public class MySQLStats {
 				+ Integer.toString(0) + ", " + Integer.toString(0) + ", "
 				+ Integer.toString(0) + ", " + Integer.toString(0) + ", " + Double.toString(0d) + ");";
 		try {
-			statement = connection.createStatement();
-			statement.executeUpdate(query);
+			RageMode.getMySQL().getConnection().executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			if (statement != null) {
-				try {
-					statement.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
 		}
 		return true;
 	}

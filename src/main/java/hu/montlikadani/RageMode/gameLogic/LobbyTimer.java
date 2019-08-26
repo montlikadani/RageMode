@@ -53,14 +53,14 @@ public class LobbyTimer extends TimerTask {
 			return;
 		}
 
-		org.bukkit.configuration.file.FileConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
-		if (PlayerList.getPlayers().size() < conf.getInt("game.global.lobby.min-players-to-start-lobby-timer")) {
+		hu.montlikadani.ragemode.config.ConfigValues fc = RageMode.getInstance().getConfiguration().getCV();
+		if (PlayerList.getPlayers().size() < fc.getMinPlayers()) {
 			GameUtils.setStatus(GameStatus.STOPPED);
 			cancel();
 			return;
 		}
 
-		List<Integer> values = conf.getIntegerList("game.global.lobby.values-to-send-start-message");
+		List<Integer> values = fc.getLobbyTimeMsgs();
 		if (values != null && !values.isEmpty()) {
 			for (int val : values) {
 				if (time == val) {
@@ -73,10 +73,10 @@ public class LobbyTimer extends TimerTask {
 		for (Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
 			Player player = Bukkit.getPlayer(UUID.fromString(players.getValue()));
 
-			if (conf.getBoolean("titles.lobby-waiting.enable")) {
-				List<Integer> titleValues = conf.getIntegerList("titles.lobby-waiting.values-to-send-start-message");
-				String title = conf.getString("titles.lobby-waiting.title");
-				String sTitle = conf.getString("titles.lobby-waiting.subtitle");
+			if (fc.isLobbyTitle()) {
+				List<Integer> titleValues = fc.getLobbyTitleStartMsgs();
+				String title = fc.getLobbyTitle();
+				String sTitle = fc.getLobbySubTitle();
 
 				if (title != null && sTitle != null) {
 					title = title.replace("%time%", Integer.toString(time));
@@ -88,16 +88,18 @@ public class LobbyTimer extends TimerTask {
 					if (titleValues != null && !titleValues.isEmpty()) {
 						for (int val : titleValues) {
 							if (time == val) {
-								Titles.sendTitle(player, conf.getInt("titles.lobby-waiting.fade-in"),
-										conf.getInt("titles.lobby-waiting.stay"),
-										conf.getInt("titles.lobby-waiting.fade-out"), title, sTitle);
+								String[] split = fc.getLobbyTitleTime().split(", ");
+								if (split.length == 3) {
+									Titles.sendTitle(player, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
+											Integer.parseInt(split[2]), title, sTitle);
+								}
 							}
 						}
 					}
 				}
 			}
 
-			if (conf.getBoolean("game.global.lobby.player-level-as-time-counter"))
+			if (fc.isPlayerLevelAsTimeCounter())
 				player.setLevel(time);
 		}
 

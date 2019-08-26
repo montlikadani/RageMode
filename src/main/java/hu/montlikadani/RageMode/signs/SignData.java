@@ -10,7 +10,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.material.Directional;
 
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
@@ -19,6 +18,7 @@ import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.utils.MaterialUtil;
 
 public class SignData {
 
@@ -77,24 +77,17 @@ public class SignData {
 				Sign sign = (Sign) b.getState();
 				if (placeholder != null && game != null && GameUtils.isGameWithNameExists(game)) {
 					List<String> lines = placeholder.parsePlaceholder(game);
-					if (placeholder.getLines().size() >= 5 || placeholder.getLines().size() <= 3) {
+					if (placeholder.getLines().size() > 4 || placeholder.getLines().size() < 4) {
 						Bukkit.getLogger().log(Level.INFO, "In the configuration the signs lines is equal to 4.");
 						return;
 					}
 
-					FileConfiguration cfg = RageMode.getInstance().getConfiguration().getCfg();
-					String path = "signs.background.";
 					for (int i = 0; i < 4; i++) {
-						sign.setLine(i, lines.get(i).toString());
+						sign.setLine(i, lines.get(i));
 
-						if (cfg.getBoolean(path + "enable")) {
-							if (Version.isCurrentEqualOrHigher(Version.v1_14_R1)) {
-								if (org.bukkit.Tag.WALL_SIGNS.isTagged(sign.getType())) {
-									chooseFromType(cfg, path, null);
-								}
-							} else if (b.getType() == Material.getMaterial("WALL_SIGN")) {
-								chooseFromType(cfg, path, sign);
-							}
+						if (RageMode.getInstance().getConfiguration().getCV().isSignBackground()
+								&& MaterialUtil.isWallSign(sign.getType())) {
+							chooseFromType();
 						}
 					}
 				} else {
@@ -123,9 +116,11 @@ public class SignData {
 			org.bukkit.block.data.type.WallSign data = (org.bukkit.block.data.type.WallSign) s.getBlockData();
 			bf = data.getFacing();
 		}
+
 		Location loc2 = new Location(loc.getWorld(), loc.getBlockX() - bf.getModX(), loc.getBlockY() - bf.getModY(),
 				loc.getBlockZ() - bf.getModZ());
 		Block wall = loc2.getBlock();
+
 		wall.setType(mat);
 		if (Version.isCurrentLower(Version.v1_13_R1)) {
 			try {
@@ -146,21 +141,20 @@ public class SignData {
 				return text;
 			}
 		}
-		if (Bukkit.getVersion().contains("1.14")) {
-			if (length > 25) {
-				text = text.substring(0, 25);
-			}
-		} else {
-			if (length > 16) {
-				text = text.substring(0, 16);
-			}
+
+		if (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && length > 25) {
+			return text = text.substring(0, 25);
+		}
+
+		if (length > 16) {
+			text = text.substring(0, 16);
 		}
 
 		return text;
 	}
 
-	private void chooseFromType(FileConfiguration cfg, String path, Sign sign) {
-		String type = cfg.getString(path + "type");
+	private void chooseFromType() {
+		String type = RageMode.getInstance().getConfiguration().getCV().getSignBackground();
 
 		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
 			if (GameUtils.getStatus() == GameStatus.WAITING) {
@@ -197,40 +191,38 @@ public class SignData {
 					updateBackground(Material.RED_TERRACOTTA);
 			}
 		} else {
-			if (sign != null && sign.getType() == Material.getMaterial("WALL_SIGN")) {
-				if (GameUtils.getStatus() == GameStatus.WAITING) {
-					if (PlayerList.getPlayers().size() == GetGames.getMaxPlayers(game)) {
-						if (type.equals("wool"))
-							updateBackground(Material.getMaterial("WOOL"), 11);
-						else if (type.equals("glass"))
-							updateBackground(Material.getMaterial("STAINED_GLASS"), 11);
-						else if (type.equals("terracotta") || type.equals("clay"))
-							updateBackground(Material.getMaterial("STAINED_CLAY"), 11);
-					} else {
-						if (type.equals("wool"))
-							updateBackground(Material.getMaterial("WOOL"), 5);
-						else if (type.equals("glass"))
-							updateBackground(Material.getMaterial("STAINED_GLASS"), 5);
-						else if (type.equals("terracotta") || type.equals("clay"))
-							updateBackground(Material.getMaterial("STAINED_CLAY"), 5);
-					}
-				}
-
-				if (GameUtils.getStatus() == GameStatus.RUNNING && PlayerList.isGameRunning(game)) {
+			if (GameUtils.getStatus() == GameStatus.WAITING) {
+				if (PlayerList.getPlayers().size() == GetGames.getMaxPlayers(game)) {
+					if (type.equals("wool"))
+						updateBackground(Material.getMaterial("WOOL"), 11);
+					else if (type.equals("glass"))
+						updateBackground(Material.getMaterial("STAINED_GLASS"), 11);
+					else if (type.equals("terracotta") || type.equals("clay"))
+						updateBackground(Material.getMaterial("STAINED_CLAY"), 11);
+				} else {
 					if (type.equals("wool"))
 						updateBackground(Material.getMaterial("WOOL"), 5);
 					else if (type.equals("glass"))
 						updateBackground(Material.getMaterial("STAINED_GLASS"), 5);
 					else if (type.equals("terracotta") || type.equals("clay"))
 						updateBackground(Material.getMaterial("STAINED_CLAY"), 5);
-				} else if (GameUtils.getStatus() == GameStatus.STOPPED) {
-					if (type.equals("wool"))
-						updateBackground(Material.getMaterial("WOOL"), 14);
-					else if (type.equals("glass"))
-						updateBackground(Material.getMaterial("STAINED_GLASS"), 14);
-					else if (type.equals("terracotta") || type.equals("clay"))
-						updateBackground(Material.getMaterial("STAINED_CLAY"), 14);
 				}
+			}
+
+			if (GameUtils.getStatus() == GameStatus.RUNNING && PlayerList.isGameRunning(game)) {
+				if (type.equals("wool"))
+					updateBackground(Material.getMaterial("WOOL"), 5);
+				else if (type.equals("glass"))
+					updateBackground(Material.getMaterial("STAINED_GLASS"), 5);
+				else if (type.equals("terracotta") || type.equals("clay"))
+					updateBackground(Material.getMaterial("STAINED_CLAY"), 5);
+			} else if (GameUtils.getStatus() == GameStatus.STOPPED) {
+				if (type.equals("wool"))
+					updateBackground(Material.getMaterial("WOOL"), 14);
+				else if (type.equals("glass"))
+					updateBackground(Material.getMaterial("STAINED_GLASS"), 14);
+				else if (type.equals("terracotta") || type.equals("clay"))
+					updateBackground(Material.getMaterial("STAINED_CLAY"), 14);
 			}
 		}
 	}

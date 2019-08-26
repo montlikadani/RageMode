@@ -210,7 +210,7 @@ public class GameUtils {
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
 		if (status == GameStatus.RUNNING) {
-			if (conf.getCfg().getBoolean("spectator.enable")) {
+			if (conf.getCV().isSpectatorEnabled()) {
 				if (!PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
 					if (PlayerList.addSpectatorPlayer(p, game)) {
 						getGameSpawnByName(game).randomSpawn(p);
@@ -243,7 +243,7 @@ public class GameUtils {
 				return;
 			}
 
-			if (conf.getCfg().getBoolean("require-empty-inventory-to-join")) {
+			if (conf.getCV().isRequireEmptyInv()) {
 				for (ItemStack armor : inv.getArmorContents()) {
 					if (armor != null && !armor.getType().equals(Material.AIR)) {
 						p.sendMessage(RageMode.getLang().get("commands.join.empty-inventory.armor"));
@@ -257,7 +257,7 @@ public class GameUtils {
 						return;
 					}
 				}
-			} else if (conf.getCfg().getBoolean("save-player-datas-to-file"))
+			} else if (conf.getCV().isSavePlayerData())
 				savePlayerData(p);
 
 			if (PlayerList.addPlayer(p, game)) {
@@ -274,14 +274,17 @@ public class GameUtils {
 
 				broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
 
-				String title = conf.getCfg().getString("titles.join-game.title");
-				String subtitle = conf.getCfg().getString("titles.join-game.subtitle");
-				if (title != null || subtitle != null) {
+				String title = conf.getCV().getTitleJoinGame();
+				String subtitle = conf.getCV().getSubTitleJoinGame();
+				if (title != null && subtitle != null) {
 					title = title.replace("%game%", game);
 					subtitle = subtitle.replace("%game%", game);
-					Titles.sendTitle(p, conf.getCfg().getInt("titles.join-game.fade-in"),
-							conf.getCfg().getInt("titles.join-game.stay"),
-							conf.getCfg().getInt("titles.join-game.fade-out"), title, subtitle);
+
+					String[] split = conf.getCV().getJoinTitleTime().split(", ");
+					if (split.length == 3) {
+						Titles.sendTitle(p, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
+								Integer.parseInt(split[2]), title, subtitle);
+					}
 				}
 
 				SignCreator.updateAllSigns(game);
@@ -303,8 +306,7 @@ public class GameUtils {
 			if (PlayerList.removePlayer(p)) {
 				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
 
-				List<String> list = RageMode.getInstance().getConfiguration().getCfg()
-						.getStringList("game.global.run-commands-for-player-left-while-playing");
+				List<String> list = RageMode.getInstance().getConfiguration().getCV().getCmdsForPlayerLeave();
 				if (list != null && !list.isEmpty()) {
 					for (String cmds : list) {
 						cmds = cmds.replace("%player%", p.getName());
@@ -433,10 +435,10 @@ public class GameUtils {
 		if (conf.getArenasCfg().isSet("arenas." + game + ".actionbar")) {
 			if (!conf.getArenasCfg().getBoolean("arenas." + game + ".actionbar"))
 				return;
-		} else if (!conf.getCfg().getBoolean("game.global.defaults.actionbar"))
+		} else if (!conf.getCV().isActionbarEnabled())
 			return;
 
-		List<String> list = conf.getCfg().getStringList("actionbar-messages.actions");
+		List<String> list = conf.getCV().getActionbarActions();
 
 		if (list != null && !list.isEmpty()) {
 			for (String msg : list) {

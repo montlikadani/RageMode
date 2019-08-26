@@ -18,7 +18,7 @@ public class BungeeUtils {
 	public void connectToHub(Player player) {
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
 		out.writeUTF("Connect");
-		out.writeUTF(plugin.getConfiguration().getCfg().getString("bungee.hub-name"));
+		out.writeUTF(plugin.getConfiguration().getCV().getHubName());
 		player.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
 	}
 }

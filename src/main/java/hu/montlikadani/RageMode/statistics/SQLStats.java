@@ -24,8 +24,9 @@ public class SQLStats {
 	private static List<RetPlayerPoints> points = new ArrayList<>();
 
 	public static void loadPlayerStatistics(SQLConnect sqlConnect) {
-		if (!sqlConnect.getConnection().isConnected())
+		if (sqlConnect.getConnection() == null || !sqlConnect.getConnection().isConnected()) {
 			return;
+		}
 
 		int totalPlayers = 0;
 
@@ -55,7 +56,7 @@ public class SQLStats {
 
 		try {
 			statement = connection.createStatement();
-			ResultSet rs = statement.executeQuery(query);
+			ResultSet rs = sqlConnect.getConnection().executeQuery(statement, query);
 			while (rs.next()) {
 				currentKills = rs.getInt("kills");
 				currentAxeKills = rs.getInt("axe_kills");
@@ -140,7 +141,7 @@ public class SQLStats {
 	 * @param sqlConnect The SQLConnect instance which holds the Connection for the database.
 	 */
 	public static void addPlayerStatistics(PlayerPoints playerPoints, SQLConnect sqlConnect) {
-		if (!sqlConnect.getConnection().isValid())
+		if (sqlConnect.getConnection() == null || !sqlConnect.getConnection().isValid())
 			return;
 
 		Connection connection = sqlConnect.getConnection().getConnection();
@@ -166,7 +167,7 @@ public class SQLStats {
 
 		try {
 			statement = connection.createStatement();
-			ResultSet rs = statement.executeQuery(query);
+			ResultSet rs = sqlConnect.getConnection().executeQuery(statement, query);
 			while (rs.next()) {
 				oldKills = rs.getInt("kills");
 				oldAxeKills = rs.getInt("axe_kills");
@@ -214,7 +215,6 @@ public class SQLStats {
 		int newGames = oldGames + 1;
 		double newKD = (newDeaths != 0) ? (((double) newKills) / ((double) newDeaths)) : 1;
 
-		statement = null;
 		query = "REPLACE INTO " + sqlConnect.getPrefix() + "stats_players (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills, knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths, knife_deaths, wins, score, games, kd) VALUES ("
 				+ "'" + Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID())).getName() + "', " + "'"
 				+ playerPoints.getPlayerUUID() + "', " + Integer.toString(newKills) + ", "
@@ -225,18 +225,9 @@ public class SQLStats {
 				+ Integer.toString(newKnifeDeaths) + ", " + Integer.toString(newWins) + ", "
 				+ Integer.toString(newScore) + ", " + Integer.toString(newGames) + ", " + Double.toString(newKD) + ");";
 		try {
-			statement = connection.createStatement();
-			statement.executeUpdate(query);
+			sqlConnect.getConnection().executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}
-
-		if (statement != null) {
-			try {
-				statement.close();
-			} catch (SQLException s) {
-				s.printStackTrace();
-			}
 		}
 	}
 
@@ -265,7 +256,7 @@ public class SQLStats {
 	 */
 	public static List<RetPlayerPoints> getAllPlayerStatistics() {
 		SQLConnect connect = RageMode.getSQL();
-		if (!connect.getConnection().isValid())
+		if (connect.getConnection() == null || !connect.getConnection().isValid())
 			return Collections.emptyList();
 
 		String uuid = null;
@@ -276,7 +267,7 @@ public class SQLStats {
 		String query = "SELECT * FROM " + connect.getPrefix() + "stats_players";
 		try {
 			statement = connection.createStatement();
-			ResultSet rs = statement.executeQuery(query);
+			ResultSet rs = connect.getConnection().executeQuery(statement, query);
 			while (rs.next()) {
 				uuid = rs.getString("uuid");
 			}
@@ -287,6 +278,7 @@ public class SQLStats {
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			}
+
 			return Collections.emptyList();
 		} finally {
 			try {
@@ -310,7 +302,7 @@ public class SQLStats {
 	 * @return true if the player found in database
 	 */
 	public static boolean resetPlayerStatistic(String uuid) {
-		if (!RageMode.getSQL().getConnection().isConnected())
+		if (RageMode.getSQL().getConnection() == null || !RageMode.getSQL().getConnection().isConnected())
 			return false;
 
 		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(uuid);
@@ -324,7 +316,7 @@ public class SQLStats {
 
 		try {
 			statement = connection.createStatement();
-			ResultSet rs = statement.executeQuery(query);
+			ResultSet rs = RageMode.getSQL().getConnection().executeQuery(statement, query);
 			while (rs.next()) {
 				rpp.setKills(0);
 				rpp.setAxeKills(0);
@@ -361,7 +353,6 @@ public class SQLStats {
 			}
 		}
 
-		statement = null;
 		query = "REPLACE INTO " + RageMode.getSQL().getPrefix() + "stats_players (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills, knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths, knife_deaths, wins, score, games, kd) VALUES ("
 				+ "'" + Bukkit.getPlayer(UUID.fromString(rpp.getPlayerUUID())).getName() + "', " + "'"
 				+ rpp.getPlayerUUID() + "', " + Integer.toString(0) + ", "
@@ -372,18 +363,9 @@ public class SQLStats {
 				+ Integer.toString(0) + ", " + Integer.toString(0) + ", "
 				+ Integer.toString(0) + ", " + Integer.toString(0) + ", " + Double.toString(0d) + ");";
 		try {
-			statement = connection.createStatement();
-			statement.executeUpdate(query);
+			RageMode.getSQL().getConnection().executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			if (statement != null) {
-				try {
-					statement.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
 		}
 		return true;
 	}

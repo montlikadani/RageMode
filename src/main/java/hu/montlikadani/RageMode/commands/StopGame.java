@@ -10,7 +10,6 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.Debug;
@@ -94,12 +93,13 @@ public class StopGame extends ICommand {
 
 						for (String playersUUID : players) {
 							Player player = Bukkit.getPlayer(UUID.fromString(playersUUID));
-							FileConfiguration conf = RageMode.getInstance().getConfiguration().getCfg();
-							String wonTitle = conf.getString("titles.player-won.title");
-							String wonSubtitle = conf.getString("titles.player-won.subtitle");
+							hu.montlikadani.ragemode.config.ConfigValues cv = RageMode.getInstance().getConfiguration()
+									.getCV();
+							String wonTitle = cv.getWonTitle();
+							String wonSubtitle = cv.getWonSubTitle();
 
-							String youWonTitle = conf.getString("titles.you-won.title");
-							String youWonSubtitle = conf.getString("titles.you-won.subtitle");
+							String youWonTitle = cv.getYouWonTitle();
+							String youWonSubtitle = cv.getYouWonSubTitle();
 
 							wonTitle = wonTitle.replace("%winner%", winner.getName());
 							wonTitle = replaceVariables(wonTitle, winnerUUID);
@@ -111,17 +111,23 @@ public class StopGame extends ICommand {
 
 							youWonSubtitle = replaceVariables(youWonSubtitle, winnerUUID);
 
+							String[] split = null;
 							if (player != winner) {
-								Titles.sendTitle(player, conf.getInt("titles.player-won.fade-in"),
-										conf.getInt("titles.player-won.stay"),
-										conf.getInt("titles.player-won.fade-out"), wonTitle, wonSubtitle);
+								split = cv.getWonTitleTime().split(", ");
+								if (split.length == 3) {
+									Titles.sendTitle(player, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
+											Integer.parseInt(split[2]), wonTitle, wonSubtitle);
+								}
 
-								if (conf.getBoolean("game.global.switch-gamemode-to-spectator-at-end-of-game"))
+								if (cv.isSwitchGMForPlayers())
 									player.setGameMode(GameMode.SPECTATOR);
-							} else
-								Titles.sendTitle(winner, conf.getInt("titles.you-won.fade-in"),
-										conf.getInt("titles.you-won.stay"), conf.getInt("titles.you-won.fade-out"),
-										youWonTitle, youWonSubtitle);
+							} else {
+								split = cv.getYouWonTitleTime().split(", ");
+								if (split.length == 3) {
+									Titles.sendTitle(winner, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
+											Integer.parseInt(split[2]), youWonTitle, youWonSubtitle);
+								}
+							}
 
 							PlayerList.removePlayerSynced(player);
 						}
@@ -132,7 +138,9 @@ public class StopGame extends ICommand {
 				for (String playerUUID : players) {
 					Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
 					GameUtils.broadcastToGame(game, RageMode.getLang().get("game.no-won"));
-					player.setGameMode(GameMode.SPECTATOR);
+					// Why?
+					Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
+							() -> player.setGameMode(GameMode.SPECTATOR));
 
 					PlayerList.removePlayerSynced(player);
 				}
@@ -156,24 +164,26 @@ public class StopGame extends ICommand {
 					if (EventListener.waitingGames.containsKey(game))
 						EventListener.waitingGames.remove(game);
 
-					Reward reward = new Reward(game);
-					for (String playerUUID : players) {
-						Utils.clearPlayerInventory(Bukkit.getPlayer(UUID.fromString(playerUUID)));
+					if (RageMode.getInstance().getConfiguration().getCV().isRewardEnabled()) {
+						Reward reward = new Reward(game);
 
-						if (winner != null) {
-							if (Bukkit.getPlayer(UUID.fromString(playerUUID)) == winner) {
-								Utils.clearPlayerInventory(winner);
+						for (String playerUUID : players) {
+							Utils.clearPlayerInventory(Bukkit.getPlayer(UUID.fromString(playerUUID)));
 
-								reward.rewardForWinner(winner);
-							} else
-								reward.rewardForPlayers(winner, Bukkit.getPlayer(UUID.fromString(playerUUID)));
+							if (winner != null) {
+								if (Bukkit.getPlayer(UUID.fromString(playerUUID)) == winner) {
+									Utils.clearPlayerInventory(winner);
+
+									reward.rewardForWinner(winner);
+								} else
+									reward.rewardForPlayers(winner, Bukkit.getPlayer(UUID.fromString(playerUUID)));
+							}
 						}
 					}
 
 					finishStopping(game);
 				}
-			}, RageMode.getInstance().getConfiguration().getCfg()
-					.getInt("game.global.game-freeze-time-at-end-game") * 20);
+			}, RageMode.getInstance().getConfiguration().getCV().getGameFreezeTime() * 20);
 		}
 	}
 
@@ -187,10 +197,10 @@ public class StopGame extends ICommand {
 					final PlayerPoints pP = RageScores.getPlayerPoints(playersUUID);
 					lPP.add(pP);
 
-					if (RageMode.getInstance().getConfiguration().getCfg().getString("statistics").equals("mysql")) {
+					if (RageMode.getInstance().getConfiguration().getCV().getStatistics().equals("mysql")) {
 						Thread th = new Thread(new MySQLThread(pP));
 						th.start();
-					} else if (RageMode.getInstance().getConfiguration().getCfg().getString("statistics").equals("sql")) {
+					} else if (RageMode.getInstance().getConfiguration().getCV().getStatistics().equals("sql")) {
 						Thread th = new Thread(new SQLThread(pP));
 						th.start();
 					}
@@ -204,7 +214,7 @@ public class StopGame extends ICommand {
 				}
 			}
 
-			if (RageMode.getInstance().getConfiguration().getCfg().getString("statistics").equals("yaml")) {
+			if (RageMode.getInstance().getConfiguration().getCV().getStatistics().equals("yaml")) {
 				Thread thread = new Thread(YAMLStats.createPlayersStats(lPP));
 				thread.start();
 			}
@@ -226,7 +236,7 @@ public class StopGame extends ICommand {
 			PlayerList.setGameNotRunning(game);
 			GameUtils.runCommandsForAll(game, "stop");
 			SignCreator.updateAllSigns(game);
-			if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game-stop.restart-server")) {
+			if (RageMode.getInstance().getConfiguration().getCV().isRestartServerEnabled()) {
 				try {
 					Class.forName("org.spigotmc.SpigotConfig");
 
@@ -234,7 +244,7 @@ public class StopGame extends ICommand {
 				} catch (ClassNotFoundException e) {
 					Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "restart");
 				}
-			} else if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("game-stop.stop-server"))
+			} else if (RageMode.getInstance().getConfiguration().getCV().isStopServerEnabled())
 				Bukkit.shutdown();
 		}
 	}

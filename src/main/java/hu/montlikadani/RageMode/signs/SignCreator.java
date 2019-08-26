@@ -22,14 +22,15 @@ public class SignCreator {
 	private static List<SignData> signData = new ArrayList<>();
 
 	public synchronized static boolean loadSigns() {
+		signData.clear();
+
 		fileConf = SignConfiguration.getConf();
 
 		List<String> list = fileConf.getStringList("signs");
-
 		if (list == null || list.isEmpty())
 			return false;
 
-		signPlaceholder = new SignPlaceholder(RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list"));
+		signPlaceholder = new SignPlaceholder(RageMode.getInstance().getConfiguration().getCV().getSignsList());
 
 		int totalSigns = 0;
 
@@ -118,7 +119,7 @@ public class SignCreator {
 	 * @return True if at least one sign was updated successfully for the given game.
 	 */
 	public static boolean updateAllSigns(String gameName) {
-		if (RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable")) {
+		if (RageMode.getInstance().getConfiguration().getCV().isSignsEnable()) {
 			List<String> signs = fileConf.getStringList("signs");
 			if (signs != null && !signs.isEmpty()) {
 				for (String signString : signs) {
@@ -153,7 +154,8 @@ public class SignCreator {
 				for (String gameName : GetGames.getGameNames()) {
 					if (game.equalsIgnoreCase(gameName)) {
 						Location signLocation = stringToLocationSign(signString);
-						if (signLocation.getBlock().getState() instanceof Sign && signLocation.equals(loc))
+						if (signLocation != null && signLocation.getBlock().getState() instanceof Sign
+								&& signLocation.equals(loc))
 							return true;
 					}
 				}

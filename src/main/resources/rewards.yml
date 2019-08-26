@@ -10,6 +10,7 @@ rewards:
       #- "&eYour reward:&7 %reward%"
 
       items:
+        # Any section name are accepted.
         stone:
           type: COBBLESTONE
           amount: 128
