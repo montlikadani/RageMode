@@ -236,7 +236,7 @@ public class SQLStats {
 	 * connection for the given Player.
 	 * 
 	 * @param playerUUID The Player instance for which the statistic should be gotten.
-	 * @return {@link RetPlayerPoints} class
+	 * @return the {@link RetPlayerPoints} class which contains the player stats.
 	 */
 	public static RetPlayerPoints getPlayerStatistics(String playerUUID) {
 		if (!points.isEmpty()) {

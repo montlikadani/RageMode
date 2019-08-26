@@ -126,7 +126,7 @@ public class MySQLStats {
 	}
 
 	/**
-	 * {@link #addPlayerStatistics(PlayerPoints, MySQLStats)}
+	 * {@link #addPlayerStatistics(PlayerPoints, MySQLConnect)}
 	 * @param playerPoints PlayerPoints
 	 */
 	public static void addPlayerStatistics(PlayerPoints playerPoints) {
@@ -135,10 +135,10 @@ public class MySQLStats {
 
 	/**
 	 * Adds the statistics from the given PlayerPoints instance to the database
-	 * connection from the given MySQLStats instance.
+	 * connection from the given MySQLConnect instance.
 	 * 
 	 * @param playerPoints The PlayerPoints instance from which the statistics should be gotten.
-	 * @param MySQLStats The MySQLStats instance which holds the Connection for the database.
+	 * @param mySQL The MySQLConnect instance which holds the Connection for the database.
 	 */
 	public static void addPlayerStatistics(PlayerPoints playerPoints, MySQLConnect mySQL) {
 		if (mySQL.getConnection() == null || !mySQL.getConnection().isValid())
@@ -252,7 +252,7 @@ public class MySQLStats {
 
 	/**
 	 * Retrieves the list of RetPlayerPoints.
-	 * @return A List of all RetPlayerPoints objects which are stored in the SQL database.
+	 * @return A List of all RetPlayerPoints objects which are stored in the MySQL database.
 	 */
 	public static List<RetPlayerPoints> getAllPlayerStatistics() {
 		MySQLConnect connect = RageMode.getMySQL();

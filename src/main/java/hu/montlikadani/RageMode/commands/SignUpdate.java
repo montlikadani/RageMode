@@ -27,22 +27,22 @@ public class SignUpdate extends ICommand {
 			return false;
 		}
 
-		String name = null;
 		if (args[1].equalsIgnoreCase("all")) {
 			for (String game : GetGames.getGameNames()) {
-				if (game != null)
-					name = game;
+				if (game != null) {
+					SignCreator.updateAllSigns(game);
+				}
 			}
 		} else {
-			name = args[1];
-
+			String name = args[1];
 			if (!GetGames.isGameExistent(name)) {
 				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", name));
 				return false;
 			}
+
+			SignCreator.updateAllSigns(name);
 		}
 
-		SignCreator.updateAllSigns(name);
 		return false;
 	}
 }
