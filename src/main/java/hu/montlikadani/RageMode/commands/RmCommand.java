@@ -288,6 +288,9 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 				if (args[0].equalsIgnoreCase("holostats")) {
 					Arrays.asList("add", "remove", "tp").forEach(cmds::add);
 					partOfCommand = args[1];
+				} else if (args[0].equalsIgnoreCase("points")) {
+					Arrays.asList("set", "add", "take").forEach(cmds::add);
+					partOfCommand = args[1];
 				} else {
 					for (String game : getGameListCmds()) {
 						if (args[0].equalsIgnoreCase(game) && !GetGames.getGames().isEmpty()) {

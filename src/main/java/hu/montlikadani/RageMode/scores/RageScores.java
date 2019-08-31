@@ -142,14 +142,14 @@ public class RageScores {
 			killer.sendMessage(RageMode.getLang().get("game.message.suicide"));
 
 			int pointLoss = RageMode.getInstance().getConfiguration().getCV().getSuicide();
-			PlayerPoints pointsHolder = null;
-
-			if (playerpoints.containsKey(killerUUID)) {
-				pointsHolder = getPlayerPoints(killerUUID);
-				if (pointsHolder.getPoints() < 1) {
-					killer.sendMessage(RageMode.getLang().get("game.no-enough-points"));
-				} else {
-					pointsHolder.addPoints(pointLoss);
+			PlayerPoints pointsHolder = getPlayerPoints(killerUUID);
+			if (pointsHolder != null) {
+				if (pointLoss != 0) {
+					if ((pointsHolder.getPoints() + pointLoss) < 0) {
+						killer.sendMessage(RageMode.getLang().get("game.no-enough-points"));
+					} else {
+						pointsHolder.addPoints(pointLoss);
+					}
 				}
 			} else {
 				pointsHolder = new PlayerPoints(killerUUID);

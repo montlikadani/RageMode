@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.gameUtils;
 
 import java.util.Set;
 
+import org.apache.commons.lang.Validate;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -16,9 +17,8 @@ public class MapChecker {
 	private int maxPlayers;
 
 	public MapChecker(String gameName) {
-		if (gameName == null) {
-			throw new NullPointerException("Game name cannot be null!");
-		}
+		Validate.notNull(gameName, "Game name cannot be null!");
+
 		this.gameName = gameName;
 
 		checkMapName();
@@ -148,12 +148,8 @@ public class MapChecker {
 	}
 
 	public static boolean isGameWorld(String gameName, World world) {
-		if (gameName == null) {
-			throw new NullPointerException("Game name can't be null!");
-		}
-		if (world == null) {
-			throw new NullPointerException("World can't be null!");
-		}
+		Validate.notNull(gameName, "Game name cannot be null!");
+		Validate.notNull(world, "World cannot be null!");
 
 		String spawnsPath = "arenas." + gameName + ".spawns";
 		Set<String> allSpawns = RageMode.getInstance().getConfiguration().getArenasCfg().getConfigurationSection(spawnsPath).getKeys(false);
