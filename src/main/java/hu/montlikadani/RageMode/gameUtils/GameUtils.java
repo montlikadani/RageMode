@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
+import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -21,10 +22,11 @@ import org.bukkit.util.Vector;
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.items.CombatAxe;
 import hu.montlikadani.ragemode.items.ForceStarter;
@@ -34,6 +36,8 @@ import hu.montlikadani.ragemode.items.RageArrow;
 import hu.montlikadani.ragemode.items.RageBow;
 import hu.montlikadani.ragemode.items.RageKnife;
 import hu.montlikadani.ragemode.signs.SignCreator;
+
+import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
 public class GameUtils {
 
@@ -45,14 +49,46 @@ public class GameUtils {
 	 * @param message Message
 	 */
 	public static void broadcastToGame(String game, String message) {
-		for (Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
+		for (Entry<String, String> players : Game.getPlayers().entrySet()) {
 			if (players != null) {
 				Player p = Bukkit.getPlayer(UUID.fromString(players.getValue()));
-				if (p != null && PlayerList.getPlayersGame(p).equals(game))
+				if (p != null && Game.getPlayersGame(p).equals(game))
 					p.sendMessage(message);
 			}
 		}
 	}
+
+	/**
+	 * Checks the game name if contains special chars, too long or contains
+	 * a ragemode command.
+	 * @param pl Player
+	 * @param name Game
+	 * @return false if:
+	 * <br>- contains special chars
+	 * <br>- the name is too long
+	 * <br>- in the name contains a ragemode command
+	 */
+	public static boolean checkName(Player pl, String name) {
+		if (!name.matches("^[a-zA-Z0-9\\_\\-]+$")) {
+			if (pl != null) {
+				sendMessage(pl, RageMode.getLang().get("setup.addgame.special-chars"));
+			}
+			return false;
+		} else if (name.length() > 20) {
+			if (pl != null) {
+				sendMessage(pl, RageMode.getLang().get("setup.addgame.name-greater"));
+			}
+			return false;
+		} else if (reservedNames.contains(name)) { // hehe
+			if (pl != null) {
+				sendMessage(pl, RageMode.getLang().get("setup.addgame.bad-name"));
+			}
+			return false;
+		}
+
+		return true;
+	}
+
 
 	/**
 	 * Checks whatever the specified game is exists or no.
@@ -69,6 +105,9 @@ public class GameUtils {
 	 * @return GameSpawnGetter
 	 */
 	public static GameSpawnGetter getGameSpawnByName(String name) {
+		Validate.notNull(name, "Game name can't be null!");
+		Validate.notEmpty(name, "Game name can't be empty!");
+
 		for (GameSpawnGetter gsg : RageMode.getInstance().getSpawns()) {
 			if (gsg.getGameName().equalsIgnoreCase(name))
 				return gsg;
@@ -128,33 +167,34 @@ public class GameUtils {
 		PlayerInventory inv = p.getInventory();
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
-		PlayerList.oldLocations.addToBoth(p, p.getLocation());
-		PlayerList.oldInventories.addToBoth(p, inv.getContents());
-		PlayerList.oldArmor.addToBoth(p, inv.getArmorContents());
-		PlayerList.oldHealth.addToBoth(p, p.getHealth());
-		PlayerList.oldHunger.addToBoth(p, p.getFoodLevel());
-		if (!p.getActivePotionEffects().isEmpty())
-			PlayerList.oldEffects.addToBoth(p, p.getActivePotionEffects());
+		Game.oldLocation = p.getLocation();
+		Game.oldInventories = inv.getContents();
+		Game.oldArmor = inv.getArmorContents();
+		Game.oldHealth = p.getHealth();
+		Game.oldHunger = p.getFoodLevel();
 
-		PlayerList.oldGameMode.addToBoth(p, p.getGameMode());
+		if (!p.getActivePotionEffects().isEmpty())
+			Game.oldEffects = p.getActivePotionEffects();
+
+		Game.oldGameMode = p.getGameMode();
 
 		if (!p.getDisplayName().equals(p.getDisplayName()))
-			PlayerList.oldDisplayName.addToBoth(p, p.getDisplayName());
+			Game.oldDisplayName = p.getDisplayName();
 
 		if (!p.getPlayerListName().equals(p.getPlayerListName()))
-			PlayerList.oldListName.addToBoth(p, p.getPlayerListName());
+			Game.oldListName = p.getPlayerListName();
 
 		if (p.getFireTicks() > 0)
-			PlayerList.oldFire.addToBoth(p, p.getFireTicks());
+			Game.oldFire = p.getFireTicks();
 
 		if (p.getExp() > 0d)
-			PlayerList.oldExp.addToBoth(p, p.getExp());
+			Game.oldExp = p.getExp();
 
 		if (p.getLevel() > 0)
-			PlayerList.oldExpLevel.addToBoth(p, p.getLevel());
+			Game.oldExpLevel = p.getLevel();
 
 		if (p.isInsideVehicle())
-			PlayerList.oldVehicle.addToBoth(p, p.getVehicle());
+			Game.oldVehicle = p.getVehicle();
 
 		if (conf.getDatasFile() != null && conf.getDatasFile().exists()) {
 			org.bukkit.configuration.file.FileConfiguration data = conf.getDatasCfg();
@@ -211,8 +251,8 @@ public class GameUtils {
 
 		if (status == GameStatus.RUNNING) {
 			if (conf.getCV().isSpectatorEnabled()) {
-				if (!PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
-					if (PlayerList.addSpectatorPlayer(p, game)) {
+				if (!Game.isPlayerPlaying(p.getUniqueId().toString())) {
+					if (Game.addSpectatorPlayer(p, game)) {
 						getGameSpawnByName(game).randomSpawn(p);
 
 						p.setAllowFlight(true);
@@ -232,7 +272,7 @@ public class GameUtils {
 				return;
 			}
 
-			if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+			if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
 				p.sendMessage(RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
 				return;
 			}
@@ -260,7 +300,7 @@ public class GameUtils {
 			} else if (conf.getCV().isSavePlayerData())
 				savePlayerData(p);
 
-			if (PlayerList.addPlayer(p, game)) {
+			if (Game.addPlayer(p, game)) {
 				p.teleport(GetGameLobby.getLobbyLocation(game));
 
 				runCommands(p, game, "join");
@@ -300,10 +340,10 @@ public class GameUtils {
 	 */
 	public static void kickPlayer(Player p) {
 		// Just removes the spec player
-		PlayerList.removeSpectatorPlayer(p);
+		Game.removeSpectatorPlayer(p);
 
-		if (status == GameStatus.RUNNING && PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
-			if (PlayerList.removePlayer(p)) {
+		if (status == GameStatus.RUNNING && Game.isPlayerPlaying(p.getUniqueId().toString())) {
+			if (Game.removePlayer(p)) {
 				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
 
 				List<String> list = RageMode.getInstance().getConfiguration().getCV().getCmdsForPlayerLeave();
@@ -353,8 +393,8 @@ public class GameUtils {
 	 * @param cmdType Command type, such as death, join or other
 	 */
 	public static void runCommandsForAll(String game, String cmdType) {
-		for (Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
-			Player p = PlayerList.getPlayerByUUID(players.getValue());
+		for (Entry<String, String> players : Game.getPlayers().entrySet()) {
+			Player p = Game.getPlayerByUUID(players.getValue());
 			runCommands(p, game, cmdType);
 		}
 	}
@@ -367,6 +407,10 @@ public class GameUtils {
 	 * @param cmdType Command type, such as death, join or other
 	 */
 	public static void runCommands(Player p, String game, String cmdType) {
+		if (!RageMode.getInstance().getConfiguration().getCV().isRewardEnabled()) {
+			return;
+		}
+
 		List<String> list = RageMode.getInstance().getConfiguration().getRewardsCfg()
 				.getStringList("rewards.in-game.run-commands");
 
@@ -463,7 +507,7 @@ public class GameUtils {
 	 * @param spawn GameSpawnGetter
 	 */
 	public static void teleportPlayersToGameSpawns(GameSpawnGetter spawn) {
-		for (Entry<String, String> uuids : PlayerList.getPlayers().entrySet()) {
+		for (Entry<String, String> uuids : Game.getPlayers().entrySet()) {
 			Player player = Bukkit.getPlayer(UUID.fromString(uuids.getValue()));
 			teleportPlayerToGameSpawn(player, spawn);
 		}
@@ -490,6 +534,17 @@ public class GameUtils {
 		double dot = toEntity.normalize().dot(eye.getDirection());
 
 		return dot >= 0.99D;
+	}
+
+	private static List<String> reservedNames = buildReservedNameList();
+
+	private static List<String> buildReservedNameList() {
+		List<String> reservedNames = new java.util.ArrayList<>();
+		for (Entry<String, String> cmds : RmCommand.arg.entrySet()) {
+			reservedNames.add(cmds.getKey());
+		}
+
+		return reservedNames;
 	}
 
 	/**

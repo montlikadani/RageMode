@@ -5,7 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.LeaveGame;
 import hu.montlikadani.ragemode.utils.ICommand;
@@ -39,17 +39,17 @@ public class Spectate extends ICommand {
 			return false;
 		}
 
-		if (!PlayerList.isGameRunning(map)) {
+		if (!Game.isGameRunning(map)) {
 			sendMessage(p, RageMode.getLang().get("game.not-running"));
 			return false;
 		}
 
-		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
 			sendMessage(p, RageMode.getLang().get("game.player-not-switch-spectate"));
 			return false;
 		}
 
-		if (PlayerList.addSpectatorPlayer(p, map)) {
+		if (Game.addSpectatorPlayer(p, map)) {
 			GameUtils.getGameSpawnByName(map).randomSpawn(p);
 
 			p.setAllowFlight(true);

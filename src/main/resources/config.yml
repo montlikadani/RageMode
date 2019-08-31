@@ -2,7 +2,7 @@
 # You can find all supported languages on: https://github.com/montlikadani/RageMode/wiki/Languages
 language: en
 
-# Statistic types: yaml, mysql
+# Statistic types: yaml, mysql, sqlite
 statistics: yaml
 
 # Logging console messages, such as error description

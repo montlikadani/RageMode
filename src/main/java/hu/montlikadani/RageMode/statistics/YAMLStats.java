@@ -17,11 +17,10 @@ import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
-import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 
 public class YAMLStats {
 
-	private static List<RetPlayerPoints> points = new ArrayList<>();
+	private static List<PlayerPoints> points = new ArrayList<>();
 	private static boolean inited = false;
 	private static File yamlStatsFile;
 	private static YamlConfiguration statsConf;
@@ -76,29 +75,15 @@ public class YAMLStats {
 
 		for (String one : section.getKeys(false)) {
 			String path = "data." + one + ".";
-			RetPlayerPoints plPo = RuntimeRPPManager.getRPPForPlayer(one);
+			PlayerPoints plPo = RuntimeRPPManager.getPPForPlayer(one);
 			if (plPo == null) {
-				plPo = new RetPlayerPoints(one);
+				plPo = new PlayerPoints(one);
 				RageScores.getPlayerPointsMap().put(UUID.fromString(one).toString(), plPo);
 			}
-
-			plPo.setKills(statsConf.getInt(path + "kills"));
-			plPo.setAxeKills(statsConf.getInt(path + "axe_kills"));
-			plPo.setDirectArrowKills(statsConf.getInt(path + "direct_arrow_kills"));
-			plPo.setExplosionKills(statsConf.getInt(path + "explosion_kills"));
-			plPo.setKnifeKills(statsConf.getInt(path + "knife_kills"));
-
-			plPo.setDeaths(statsConf.getInt(path + "deaths"));
-			plPo.setAxeDeaths(statsConf.getInt(path + "axe_deaths"));
-			plPo.setDirectArrowDeaths(statsConf.getInt(path + "direct_arrow_deaths"));
-			plPo.setExplosionDeaths(statsConf.getInt(path + "explosion_deaths"));
-			plPo.setKnifeDeaths(statsConf.getInt(path + "knife_deaths"));
 
 			plPo.setWins(statsConf.getInt(path + "wins"));
 			plPo.setPoints(statsConf.getInt(path + "score"));
 			plPo.setGames(statsConf.getInt(path + "games"));
-
-			plPo.setKD(statsConf.getDouble(path + "KD"));
 
 			points.add(plPo);
 		}
@@ -115,13 +100,13 @@ public class YAMLStats {
 		int i = 0;
 		int imax = pP.size();
 
-		if (pP.get(i) == null) {
-			return; // Do not throw exception if the player not found
-		}
-
-		String uuid = pP.get(i).getPlayerUUID();
 		while (i < imax) {
 			PlayerPoints points = pP.get(i);
+			if (points == null) {
+				return; // Do not throw exception if the player not found
+			}
+
+			String uuid = points.getPlayerUUID();
 			String path = "data." + uuid + ".";
 
 			if (statsConf.isConfigurationSection("data") &&
@@ -142,6 +127,7 @@ public class YAMLStats {
 
 				int wins = statsConf.getInt(path + "wins");
 				int games = statsConf.getInt(path + "games");
+				int score = statsConf.getInt(path + "score");
 
 				statsConf.set(path + "kills", (kills + points.getKills()));
 				statsConf.set(path + "axe_kills", (axeKills + points.getAxeKills()));
@@ -160,8 +146,7 @@ public class YAMLStats {
 				else
 					statsConf.set(path + "wins", wins);
 
-				// Do not add previous points to the current one, as it will be a dupe
-				statsConf.set(path + "score", points.getPoints());
+				statsConf.set(path + "score", score + points.getPoints());
 				statsConf.set(path + "games", (games + 1));
 				if ((deaths + points.getDeaths()) != 0)
 					statsConf.set(path + "KD", ((double) ((kills + points.getKills())) / ((double)
@@ -206,9 +191,9 @@ public class YAMLStats {
 	/**
 	 * Gets the specified uuid of player statistic
 	 * @param sUUID Player uuid
-	 * @return returns a RetPlayerPoints object containing the GLOBAL statistics of a player
+	 * @return returns a PlayerPoints object containing the GLOBAL statistics of a player
 	 */
-	public static RetPlayerPoints getPlayerStatistics(String sUUID) {
+	public static PlayerPoints getPlayerStatistics(String sUUID) {
 		if (sUUID == null) {
 			throw new IllegalArgumentException("player uuid is null");
 		}
@@ -216,7 +201,7 @@ public class YAMLStats {
 		if (!inited || points.isEmpty())
 			return null;
 
-		for (RetPlayerPoints rpp : points) {
+		for (PlayerPoints rpp : points) {
 			if (rpp.getPlayerUUID().equals(sUUID)) {
 				return rpp;
 			}
@@ -227,13 +212,13 @@ public class YAMLStats {
 
 	/**
 	 * Gets all player statistic
-	 * @return returns a List of all RetPlayerPoints that are stored
+	 * @return returns a List of all PlayerPoints that are stored
 	 */
-	public static List<RetPlayerPoints> getAllPlayerStatistics() {
+	public static List<PlayerPoints> getAllPlayerStatistics() {
 		if (!inited)
 			return Collections.emptyList();
 
-		List<RetPlayerPoints> allRPPs = new ArrayList<>();
+		List<PlayerPoints> allRPPs = new ArrayList<>();
 
 		if (statsConf.contains("data") && statsConf.isConfigurationSection("data")) {
 			for (String UUID : statsConf.getConfigurationSection("data").getKeys(false)) {
@@ -250,10 +235,6 @@ public class YAMLStats {
 	 */
 	public static boolean resetPlayerStatistic(String uuid) {
 		if (!inited)
-			return false;
-
-		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(uuid);
-		if (rpp == null)
 			return false;
 
 		if (statsConf.getConfigurationSection("data").getKeys(false).contains(uuid)) {
@@ -275,13 +256,17 @@ public class YAMLStats {
 			statsConf.set(path + "games", 0);
 
 			statsConf.set(path + "KD", 0d);
+		}
 
+		Configuration.saveFile(statsConf, yamlStatsFile);
+
+		PlayerPoints rpp = RuntimeRPPManager.getPPForPlayer(uuid);
+		if (rpp != null) {
 			rpp.setCurrentStreak(0);
 			rpp.setLongestStreak(0);
 			rpp.setRank(0);
 		}
 
-		Configuration.saveFile(statsConf, yamlStatsFile);
 		return true;
 	}
 

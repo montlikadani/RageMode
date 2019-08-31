@@ -18,7 +18,7 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.GameStopEvent;
 import hu.montlikadani.ragemode.events.EventListener;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.Reward.Reward;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
@@ -48,25 +48,25 @@ public class StopGame extends ICommand {
 		if (args.length >= 2) {
 			String game = args[1];
 
-			if (PlayerList.isGameRunning(game)) {
-				RageScores.calculateWinner(game, PlayerList.getPlayersFromList());
+			if (Game.isGameRunning(game)) {
+				RageScores.calculateWinner(game, Game.getPlayersFromList());
 
-				for (Map.Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
+				for (Map.Entry<String, String> players : Game.getPlayers().entrySet()) {
 					Player player = Bukkit.getPlayer(UUID.fromString(players.getValue()));
 
 					player.removeMetadata("killedWith", RageMode.getInstance());
-					PlayerList.removePlayer(player);
+					Game.removePlayer(player);
 				}
 
-				for (Iterator<Entry<UUID, String>> it = PlayerList.getSpectatorPlayers().entrySet().iterator(); it
+				for (Iterator<Entry<UUID, String>> it = Game.getSpectatorPlayers().entrySet().iterator(); it
 						.hasNext();) {
 					Player pl = Bukkit.getPlayer(it.next().getKey());
-					PlayerList.removeSpectatorPlayer(pl);
+					Game.removeSpectatorPlayer(pl);
 				}
 
 				GameUtils.broadcastToGame(game, RageMode.getLang().get("game.stopped", "%game%", game));
 
-				PlayerList.setGameNotRunning(game);
+				Game.setGameNotRunning(game);
 				GameUtils.setStatus(GameStatus.STOPPED);
 				SignCreator.updateAllSigns(game);
 			} else
@@ -78,8 +78,8 @@ public class StopGame extends ICommand {
 
 	public static void stopGame(final String game) {
 		boolean winnervalid = false;
-		if (PlayerList.isGameRunning(game)) {
-			final List<String> players = PlayerList.getPlayersFromList();
+		if (Game.isGameRunning(game)) {
+			final List<String> players = Game.getPlayersFromList();
 
 			GameStopEvent gameStopEvent = new GameStopEvent(game, players);
 			Utils.callEvent(gameStopEvent);
@@ -129,7 +129,7 @@ public class StopGame extends ICommand {
 								}
 							}
 
-							PlayerList.removePlayerSynced(player);
+							Game.removePlayerSynced(player);
 						}
 					}
 				}
@@ -142,7 +142,7 @@ public class StopGame extends ICommand {
 					Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 							() -> player.setGameMode(GameMode.SPECTATOR));
 
-					PlayerList.removePlayerSynced(player);
+					Game.removePlayerSynced(player);
 				}
 			}
 
@@ -188,20 +188,24 @@ public class StopGame extends ICommand {
 	}
 
 	private static void finishStopping(String game) {
-		if (PlayerList.isGameRunning(game)) {
+		if (Game.isGameRunning(game)) {
 			List<PlayerPoints> lPP = new ArrayList<>();
-			List<String> players = PlayerList.getPlayersFromList();
+			List<String> players = Game.getPlayersFromList();
 
+			String stats = RageMode.getInstance().getConfiguration().getCV().getStatistics();
 			for (String playersUUID : players) {
 				if (playersUUID != null && RageScores.getPlayerPoints(playersUUID) != null) {
 					final PlayerPoints pP = RageScores.getPlayerPoints(playersUUID);
 					lPP.add(pP);
 
-					if (RageMode.getInstance().getConfiguration().getCV().getStatistics().equals("mysql")) {
-						Thread th = new Thread(new MySQLThread(pP));
-						th.start();
-					} else if (RageMode.getInstance().getConfiguration().getCV().getStatistics().equals("sql")) {
-						Thread th = new Thread(new SQLThread(pP));
+					Thread th = null;
+					if (stats.equals("mysql")) {
+						th = new Thread(new MySQLThread(pP));
+					} else if (stats.equals("sql") || stats.equals("sqlite")) {
+						th = new Thread(new SQLThread(pP));
+					}
+
+					if (th != null) {
 						th.start();
 					}
 
@@ -214,7 +218,7 @@ public class StopGame extends ICommand {
 				}
 			}
 
-			if (RageMode.getInstance().getConfiguration().getCV().getStatistics().equals("yaml")) {
+			if (stats.equals("yaml")) {
 				Thread thread = new Thread(YAMLStats.createPlayersStats(lPP));
 				thread.start();
 			}
@@ -222,18 +226,19 @@ public class StopGame extends ICommand {
 			for (String playersUUID : players) {
 				if (playersUUID != null) {
 					GameUtils.sendActionBarMessages(Bukkit.getPlayer(UUID.fromString(playersUUID)), game, "stop");
-					PlayerList.removePlayer(Bukkit.getPlayer(UUID.fromString(playersUUID)));
+					RageScores.removePointsForPlayer(playersUUID);
+					Game.removePlayer(Bukkit.getPlayer(UUID.fromString(playersUUID)));
 				}
 			}
 
-			for (Iterator<Entry<UUID, String>> it = PlayerList.getSpectatorPlayers().entrySet().iterator(); it
+			for (Iterator<Entry<UUID, String>> it = Game.getSpectatorPlayers().entrySet().iterator(); it
 					.hasNext();) {
 				Player pl = Bukkit.getPlayer(it.next().getKey());
-				PlayerList.removeSpectatorPlayer(pl);
+				Game.removeSpectatorPlayer(pl);
 			}
 
 			GameUtils.broadcastToGame(game, RageMode.getLang().get("game.stopped", "%game%", game));
-			PlayerList.setGameNotRunning(game);
+			Game.setGameNotRunning(game);
 			GameUtils.runCommandsForAll(game, "stop");
 			SignCreator.updateAllSigns(game);
 			if (RageMode.getInstance().getConfiguration().getCV().isRestartServerEnabled()) {
@@ -260,20 +265,20 @@ public class StopGame extends ICommand {
 		int imax = games.length;
 
 		while (i < imax) {
-			if (games[i] != null && PlayerList.isGameRunning(games[i])) {
+			if (games[i] != null && Game.isGameRunning(games[i])) {
 
 				Debug.logConsole("Stopping " + games[i] + " ...");
 
-				PlayerList.getPlayersFromList()
-						.forEach(uuids -> PlayerList.removePlayer(Bukkit.getPlayer(UUID.fromString(uuids))));
+				Game.getPlayersFromList()
+						.forEach(uuids -> Game.removePlayer(Bukkit.getPlayer(UUID.fromString(uuids))));
 
-				for (Iterator<Entry<UUID, String>> it = PlayerList.getSpectatorPlayers().entrySet().iterator(); it
+				for (Iterator<Entry<UUID, String>> it = Game.getSpectatorPlayers().entrySet().iterator(); it
 						.hasNext();) {
 					Player pl = Bukkit.getPlayer(it.next().getKey());
-					PlayerList.removeSpectatorPlayer(pl);
+					Game.removeSpectatorPlayer(pl);
 				}
 
-				PlayerList.setGameNotRunning(games[i]);
+				Game.setGameNotRunning(games[i]);
 				GameUtils.setStatus(GameStatus.STOPPED);
 
 				Debug.logConsole(games[i] + " has been stopped.");

@@ -3,10 +3,12 @@ package hu.montlikadani.ragemode.scores;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.PlayerWinEvent;
@@ -260,6 +262,7 @@ public class RageScores {
 		}
 
 		if (resultPlayer == null) {
+			Debug.logConsole(Level.WARNING, "There was an error while calculating the winner player. Seems no winner player.");
 			return null;
 		}
 

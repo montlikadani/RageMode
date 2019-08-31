@@ -9,8 +9,8 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.GameCreateEvent;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.events.BungeeListener;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.ICommand;
 
@@ -47,7 +47,11 @@ public class AddGame extends ICommand {
 
 		String game = args[1];
 		if (GameUtils.isGameWithNameExists(game)) {
-			sendMessage(p, RageMode.getLang().get("setup.already-exists", "%game%", game));
+			sendMessage(p, RageMode.getLang().get("setup.addgame.already-exists", "%game%", game));
+			return false;
+		}
+
+		if (!GameUtils.checkName(p, game)) {
 			return false;
 		}
 
@@ -59,20 +63,18 @@ public class AddGame extends ICommand {
 		if (plugin.getConfiguration().getCV().isBungee())
 			plugin.getServer().getPluginManager().registerEvents(new BungeeListener(game), plugin);
 
-		new PlayerList();
+		plugin.getGames().add(new Game(game));
 
 		plugin.getSpawns().add(new GameSpawnGetter(game));
 
 		GameCreateEvent event = new GameCreateEvent(game, Integer.parseInt(args[2]));
 		Bukkit.getPluginManager().callEvent(event);
 
-		PlayerList.addGameToList(game, x);
-
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".maxplayers", Integer.parseInt(args[2]));
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".world", p.getWorld().getName());
 		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 
-		sendMessage(p, RageMode.getLang().get("setup.success-added", "%game%", game));
+		sendMessage(p, RageMode.getLang().get("setup.addgame.success-added", "%game%", game));
 		return false;
 	}
 }

@@ -1,44 +1,45 @@
 package hu.montlikadani.ragemode.runtimeRPP;
 
 import java.util.List;
+import java.util.logging.Level;
 
+import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.gameUtils.MergeSort;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
-import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.SQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 
 public class RuntimeRPPManager {
 
-	private static List<RetPlayerPoints> RuntimeRPPList;
+	private static List<PlayerPoints> RuntimePPList;
 
-	public static void getRPPListFromMySQL() {
-		RuntimeRPPList = MySQLStats.getAllPlayerStatistics();
+	public static void getPPListFromMySQL() {
+		RuntimePPList = MySQLStats.getAllPlayerStatistics();
 		MergeSort ms = new MergeSort();
-		ms.sort(RuntimeRPPList);
+		ms.sort(RuntimePPList);
 	}
 
-	public static void getRPPListFromSQL() {
-		RuntimeRPPList = SQLStats.getAllPlayerStatistics();
+	public static void getPPListFromSQL() {
+		RuntimePPList = SQLStats.getAllPlayerStatistics();
 		MergeSort ms = new MergeSort();
-		ms.sort(RuntimeRPPList);
+		ms.sort(RuntimePPList);
 	}
 
-	public static void getRPPListFromYAML() {
-		RuntimeRPPList = YAMLStats.getAllPlayerStatistics();
+	public static void getPPListFromYAML() {
+		RuntimePPList = YAMLStats.getAllPlayerStatistics();
 		MergeSort ms = new MergeSort();
-		ms.sort(RuntimeRPPList);
+		ms.sort(RuntimePPList);
 	}
 
-	public static RetPlayerPoints getRPPForPlayer(String sUUID) {
-		RetPlayerPoints rpp = null;
-		if (RuntimeRPPList != null) {
+	public static PlayerPoints getPPForPlayer(String sUUID) {
+		PlayerPoints rpp = null;
+		if (RuntimePPList != null) {
 			int i = 0;
-			int imax = RuntimeRPPList.size();
+			int imax = RuntimePPList.size();
 			while (i < imax) {
-				if (RuntimeRPPList.get(i).getPlayerUUID().equals(sUUID)) {
-					rpp = RuntimeRPPList.get(i);
+				if (RuntimePPList.get(i).getPlayerUUID().equals(sUUID)) {
+					rpp = RuntimePPList.get(i);
 					rpp.setRank(i + 1);
 					break;
 				}
@@ -49,18 +50,19 @@ public class RuntimeRPPManager {
 	}
 
 	public synchronized static void updatePlayerEntry(PlayerPoints pp) {
-		if (RuntimeRPPList == null || RuntimeRPPList.isEmpty()) {
-			return; // Do not throw exception if the database not loaded
-					// the players successfully
+		if (RuntimePPList == null || RuntimePPList.isEmpty()) {
+			Debug.logConsole(Level.WARNING, "The database does not loaded correctly when this plugin started.");
+			Debug.logConsole("Restart your server, or if this not helps, contact the developer.");
+			return;
 		}
 
-		RetPlayerPoints oldRPP = getRPPForPlayer(pp.getPlayerUUID());
+		PlayerPoints oldRPP = getPPForPlayer(pp.getPlayerUUID());
 		if (oldRPP == null) {
-			int i = RuntimeRPPList.size();
-			while (RuntimeRPPList.get(i).getPoints() < pp.getPoints())
+			int i = RuntimePPList.size();
+			while (RuntimePPList.get(i).getPoints() < pp.getPoints())
 				i--;
 
-			RetPlayerPoints newRPP = new RetPlayerPoints(pp.getPlayerUUID());
+			PlayerPoints newRPP = new PlayerPoints(pp.getPlayerUUID());
 			newRPP.setAxeDeaths(pp.getAxeDeaths());
 			newRPP.setAxeKills(pp.getAxeKills());
 			newRPP.setCurrentStreak(pp.getCurrentStreak());
@@ -87,27 +89,27 @@ public class RuntimeRPPManager {
 
 			newRPP.setGames(1);
 
-			RuntimeRPPList.add(i + 1, newRPP);
+			RuntimePPList.add(i + 1, newRPP);
 		} else if (pp.getPoints() == oldRPP.getPoints())
 			return;// TODO kills&deaths...
 		else if (pp.getPoints() > oldRPP.getPoints()) {
 			boolean norankchange = false;
 			int i = oldRPP.getRank() - 2;
 
-			if (RuntimeRPPList.get(i).getPoints() < pp.getPoints()) {
-				RuntimeRPPList.remove(i + 1);
+			if (RuntimePPList.get(i).getPoints() < pp.getPoints()) {
+				RuntimePPList.remove(i + 1);
 				i--;
 			} else
 				norankchange = true;
 
-			while (RuntimeRPPList.get(i).getPoints() < pp.getPoints()) {
+			while (RuntimePPList.get(i).getPoints() < pp.getPoints()) {
 				i--;
 				if (i < 0)
 					i = 0;
 				break;
 			}
 
-			RetPlayerPoints newRPP = new RetPlayerPoints(pp.getPlayerUUID());
+			PlayerPoints newRPP = new PlayerPoints(pp.getPlayerUUID());
 			newRPP.setAxeDeaths(pp.getAxeDeaths());
 			newRPP.setAxeKills(pp.getAxeKills());
 			newRPP.setCurrentStreak(pp.getCurrentStreak());
@@ -136,21 +138,21 @@ public class RuntimeRPPManager {
 			newRPP.setGames(oldRPP.getGames() + 1);
 
 			if (norankchange)
-				RuntimeRPPList.set(oldRPP.getRank() - 1, newRPP);
+				RuntimePPList.set(oldRPP.getRank() - 1, newRPP);
 			else
-				RuntimeRPPList.add(i + 1, newRPP);
+				RuntimePPList.add(i + 1, newRPP);
 		} else {
 			boolean norankchange = false;
 			boolean last = false;
 			int i = oldRPP.getRank();
-			int imax = RuntimeRPPList.size();
+			int imax = RuntimePPList.size();
 
-			if (RuntimeRPPList.get(i).getPoints() > pp.getPoints())
-				RuntimeRPPList.remove(i - 1);
+			if (RuntimePPList.get(i).getPoints() > pp.getPoints())
+				RuntimePPList.remove(i - 1);
 			else
 				norankchange = true;
 
-			while (RuntimeRPPList.get(i).getPoints() > pp.getPoints()) {
+			while (RuntimePPList.get(i).getPoints() > pp.getPoints()) {
 				i++;
 				if (i >= imax) {
 					i = imax;
@@ -159,7 +161,7 @@ public class RuntimeRPPManager {
 				}
 			}
 
-			RetPlayerPoints newRPP = new RetPlayerPoints(pp.getPlayerUUID());
+			PlayerPoints newRPP = new PlayerPoints(pp.getPlayerUUID());
 			newRPP.setAxeDeaths(pp.getAxeDeaths());
 			newRPP.setAxeKills(pp.getAxeKills());
 			newRPP.setCurrentStreak(pp.getCurrentStreak());
@@ -186,11 +188,11 @@ public class RuntimeRPPManager {
 
 			newRPP.setGames(oldRPP.getGames() + 1);
 			if (norankchange)
-				RuntimeRPPList.set(oldRPP.getRank() - 1, newRPP);
+				RuntimePPList.set(oldRPP.getRank() - 1, newRPP);
 			else if (last)
-				RuntimeRPPList.add(newRPP);
+				RuntimePPList.add(newRPP);
 			else
-				RuntimeRPPList.add(i, newRPP);
+				RuntimePPList.add(i, newRPP);
 		}
 	}
 }

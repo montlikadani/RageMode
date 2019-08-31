@@ -34,8 +34,16 @@ public class MapChecker {
 		if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + gameName)) {
 			message = RageMode.getLang().get("invalid-game", "%game%", gameName);
 			isValid = false;
-		} else
-			isValid = true;
+			return;
+		}
+
+		if (!GameUtils.checkName(null, gameName)) {
+			message = RageMode.getLang().get("bad-ragemode-name");
+			isValid = false;
+			return;
+		}
+
+		isValid = true;
 	}
 
 	private void checkBasics() {
@@ -96,24 +104,24 @@ public class MapChecker {
 
 	private void checkSpawns() {
 		FileConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
-		String path = "arenas." + gameName;
-		if (aFile.isSet(path + ".spawns")) {
-			Set<String> spawnNames = aFile.getConfigurationSection(path + ".spawns").getKeys(false);
+		String path = "arenas." + gameName + ".spawns";
+		if (aFile.isSet(path)) {
+			Set<String> spawnNames = aFile.getConfigurationSection(path).getKeys(false);
 			if (spawnNames.size() >= maxPlayers) {
 				for (String s : spawnNames) {
 					World world = null;
 					try {
-						world = org.bukkit.Bukkit.getWorld(aFile.getString(path + ".spawns." + s + ".world"));
+						world = org.bukkit.Bukkit.getWorld(aFile.getString(path + "." + s + ".world"));
 					} catch (Throwable e) {
 						isValid = false;
 						world = null;
 					}
 					if (world != null
-							&& Utils.isDouble(aFile.getString(path + ".spawns." + s + ".x"))
-							&& Utils.isDouble(aFile.getString(path + ".spawns." + s + ".y"))
-							&& Utils.isDouble(aFile.getString(path + ".spawns." + s + ".z"))
-							&& Utils.isDouble(aFile.getString(path + ".spawns." + s + ".yaw"))
-							&& Utils.isDouble(aFile.getString(path + ".spawns." + s + ".pitch")))
+							&& Utils.isDouble(aFile.getString(path + "." + s + ".x"))
+							&& Utils.isDouble(aFile.getString(path + "." + s + ".y"))
+							&& Utils.isDouble(aFile.getString(path + "." + s + ".z"))
+							&& Utils.isDouble(aFile.getString(path + "." + s + ".yaw"))
+							&& Utils.isDouble(aFile.getString(path + "." + s + ".pitch")))
 						isValid = true;
 					else {
 						message = RageMode.getLang().get("game.spawns-not-set-properly");
@@ -141,10 +149,10 @@ public class MapChecker {
 
 	public static boolean isGameWorld(String gameName, World world) {
 		if (gameName == null) {
-			throw new NullPointerException("Game name cannot be null!");
+			throw new NullPointerException("Game name can't be null!");
 		}
 		if (world == null) {
-			throw new NullPointerException("World cannot be null!");
+			throw new NullPointerException("World can't be null!");
 		}
 
 		String spawnsPath = "arenas." + gameName + ".spawns";

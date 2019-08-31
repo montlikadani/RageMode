@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -123,6 +124,9 @@ public class GetGames {
 	 * @return true if correct
 	 */
 	public static boolean isGameExistent(String game) {
+		Validate.notNull(game, "Game name can't be null!");
+		Validate.notEmpty(game, "Game name can't be empty!");
+
 		int i = 0;
 		int imax = getConfigGamesCount();
 		String[] games = getGameNames();
@@ -131,6 +135,7 @@ public class GetGames {
 				return true;
 			i++;
 		}
+
 		return false;
 	}
 }

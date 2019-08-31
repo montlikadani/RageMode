@@ -10,6 +10,7 @@ not-a-boolean: "&e%value%&c is not a boolean."
 invalid-game: "&e%game%&4 is not a valid RageMode Map."
 player-non-existent: "&cThat player doesn't even exist."
 not-played-yet: "&cThat player&7 %player%&c hasn't played on this server yet."
+bad-ragemode-name: "&cThe game name may contains special characters, ragemode commands, or the the name greater than 20."
 
 commands:
   listgames:
@@ -88,8 +89,12 @@ setup:
     coords-not-set: "&cThe lobby coordinates were not set properly. Ask an Admin to check the config.yml."
     not-set-properly: "&4The lobby was not set properly. Ask an Admin to check the config.yml."
     worldname-not-set: "&cThe world key can't be empty! Ask an Admin to check the config.yml."
-  success-added: "&2The game &3%game%&2 was added successfully!"
-  already-exists: "&cThis &e%game%&c game already exists."
+  addgame:
+    success-added: "&2The game &3%game%&2 was added successfully!"
+    already-exists: "&cThis &e%game%&c game already exists."
+    special-chars: "&cThe name of the ragemode map contains special characters."
+    name-greater: "&cThe name of the ragemode map is too long&7 (< 20)."
+    bad-name: "&cThe name of the ragemode map is contains the command name."
   at-least-two: "&cThe maxplayers value must be at least two."
   spawn-set-success: "&2Spawn&e %number%&2 for the game&3 %game%&2 was set successfully!"
   success: "&2Success!"

@@ -1,5 +1,6 @@
 package hu.montlikadani.ragemode.gameUtils;
 
+import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -16,8 +17,8 @@ public class GetGameLobby {
 	 * @return Lobby location
 	 */
 	public static Location getLobbyLocation(String game) {
-		if (game == null || game.equals(""))
-			throw new NullPointerException("Game name can not be null!");
+		Validate.notNull(game, "Game name can't be null!");
+		Validate.notEmpty(game, "Game name can't be empty!");
 
 		String path = "arenas." + game + ".lobby.";
 		String world = fi.getString(path + "world");

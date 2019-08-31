@@ -7,7 +7,8 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.GameDeleteEvent;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.ICommand;
 
@@ -36,7 +37,7 @@ public class RemoveGame extends ICommand {
 				return false;
 			}
 
-			if (PlayerList.isGameRunning(game)) {
+			if (Game.isGameRunning(game)) {
 				sendMessage(p, RageMode.getLang().get("game.running"));
 				return false;
 			}
@@ -44,11 +45,17 @@ public class RemoveGame extends ICommand {
 			GameDeleteEvent event = new GameDeleteEvent(game);
 			Bukkit.getPluginManager().callEvent(event);
 
-			for (int x = 0; x < plugin.getSpawns().size(); x++) {
-				if (plugin.getSpawns().get(x).getGameName().equalsIgnoreCase(game))
-					plugin.getSpawns().remove(x);
+			for (GameSpawnGetter spawn : plugin.getSpawns()) {
+				if (spawn.getGameName().equalsIgnoreCase(game)) {
+					plugin.getSpawns().remove(spawn);
+				}
 			}
-			PlayerList.deleteGameFromList(game);
+
+			for (Game name : plugin.getGames()) {
+				if (name.getName().equalsIgnoreCase(game)) {
+					plugin.getGames().remove(name);
+				}
+			}
 
 			plugin.getConfiguration().getArenasCfg().set("arenas." + game, null);
 			Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());

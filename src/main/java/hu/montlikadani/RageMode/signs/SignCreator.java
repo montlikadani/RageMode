@@ -16,7 +16,7 @@ import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class SignCreator {
 
-	private static FileConfiguration fileConf;
+	private static FileConfiguration fileConf = null;
 	private static SignPlaceholder signPlaceholder = null;
 
 	private static List<SignData> signData = new ArrayList<>();
@@ -24,7 +24,9 @@ public class SignCreator {
 	public synchronized static boolean loadSigns() {
 		signData.clear();
 
-		fileConf = SignConfiguration.getConf();
+		if (fileConf == null) {
+			fileConf = SignConfiguration.getConf();
+		}
 
 		List<String> list = fileConf.getStringList("signs");
 		if (list == null || list.isEmpty())
@@ -104,7 +106,7 @@ public class SignCreator {
 			return false;
 
 		for (SignData data : signData) {
-			if (loc.equals(data.getLocation())) {
+			if (data.getLocation().equals(loc)) {
 				data.updateSign();
 				return true;
 			}

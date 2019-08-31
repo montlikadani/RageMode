@@ -10,6 +10,7 @@ not-a-boolean: "&e%value%&c nem egy logikai érték."
 invalid-game: "&e%game%&4 nem egy érvényes RageMode Map."
 player-non-existent: "&cEz a játékos nem létezik."
 not-played-yet: "&cEz a játékos&7 %player%&c nem játszot ezen a szerveren még."
+bad-ragemode-name: "&cA játék név tartalmaz speciális karakter, ragemode parancsot vagy a név nagyobb 20-nál."
 
 commands:
   listgames:
@@ -88,8 +89,12 @@ setup:
     coords-not-set: "&cA lobby koordináták nincsenek beállítva megfelelően. Kérdezz meg egy Admin-t, hogy nézze meg a config-ot."
     not-set-properly: "&4A lobby nincs beállítva megfelelően. Kérdezz meg egy Admin-t, hogy nézze meg a config-ot."
     worldname-not-set: "&cA világ kulcs nem lehet üres! Kérdezz meg egy Admin-t, hogy nézze meg a config-ot."
-  success-added: "&2A játék &3%game%&2 sikeresen hozzáadva!"
-  already-exists: "&cEz a játék &e%game%&c már létezik."
+  addgame:
+    success-added: "&2A játék &3%game%&2 sikeresen hozzáadva!"
+    already-exists: "&cEz a játék &e%game%&c már létezik."
+    special-chars: "&cEz a név tartalmaz speciális karaktert a ragemode map-hoz."
+    name-greater: "&cEz a név túl hosszú a ragemode map-hoz&7 (< 20)."
+    bad-name: "&cEz a ragemode map név tartalmaz parancs neveket."
   at-least-two: "&cA max. játékosok értéke legalább 2-nek kell lennie."
   spawn-set-success: "&2A spawn&e %number%&3 %game%&2 játékhoz sikeresen beállítva!"
   success: "&2Sikeres!"

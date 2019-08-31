@@ -2,18 +2,18 @@ package hu.montlikadani.ragemode.gameUtils;
 
 import java.util.List;
 
-import hu.montlikadani.ragemode.scores.RetPlayerPoints;
+import hu.montlikadani.ragemode.scores.PlayerPoints;
 
 public class MergeSort {
 
-	private List<RetPlayerPoints> array;
-	private RetPlayerPoints[] tempMergArr;
+	private List<PlayerPoints> array;
+	private PlayerPoints[] tempMergArr;
 	private int length;
 
-	public void sort(List<RetPlayerPoints> rpp) {
+	public void sort(List<PlayerPoints> rpp) {
 		this.array = rpp;
 		this.length = rpp.size();
-		this.tempMergArr = new RetPlayerPoints[length];
+		this.tempMergArr = new PlayerPoints[length];
 
 		doMergeSort(0, length - 1);
 	}

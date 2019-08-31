@@ -7,9 +7,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
-import hu.montlikadani.ragemode.scores.RetPlayerPoints;
+import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 import hu.montlikadani.ragemode.utils.ICommand;
@@ -57,12 +57,12 @@ public class Points extends ICommand {
 			return false;
 		}
 
-		if (PlayerList.isPlayerPlaying(target.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(target.getUniqueId().toString())) {
 			sendMessage(sender, RageMode.getLang().get("commands.points.player-is-in-game", "%player%", args[2]));
 			return false;
 		}
 
-		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(target.getUniqueId().toString());
+		PlayerPoints rpp = RuntimeRPPManager.getPPForPlayer(target.getUniqueId().toString());
 		if (rpp == null) {
 			sendMessage(sender, RageMode.getLang().get("not-played-yet", "%player%", args[2]));
 			return false;

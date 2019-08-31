@@ -24,7 +24,7 @@ import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
 
 public class Reward {
 
@@ -109,7 +109,7 @@ public class Reward {
 
 		path = path.replace("%game%", game);
 		path = path.replace("%player%", p.getName());
-		path = path.replace("%online-ingame-players%", Integer.toString(PlayerList.getPlayers().size()));
+		path = path.replace("%online-ingame-players%", Integer.toString(Game.getPlayers().size()));
 		path = path.replace("%reward%", cash > 0D ? Double.toString(cash) : "");
 		path = Utils.setPlaceholders(path, p);
 		return RageMode.getLang().colors(path);

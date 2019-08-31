@@ -6,8 +6,6 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Preparation time: 10 hours 12 minutes and 36 seconds
- * 
  * @author montlikadani
  */
 public class ConfigValues {
@@ -143,19 +141,19 @@ public class ConfigValues {
 		bossbarColor = f.get("bossbar-messages.color", "GREEN");
 		titleJoinGame = f.get("titles.join-game.title", "&e%game%");
 		subtitleJoinGame = f.get("titles.join-game.subtitle", "&3by yourname");
-		joinTitleTime = f.get("titles.join-game.time", new String[] { "20", "50", "20" }.toString());
+		joinTitleTime = f.get("titles.join-game.time", Arrays.toString(new String[] { "20", "50", "20" }));
 		enableLobbyTitle = f.get("titles.lobby-waiting.enable", true);
 		lobbyTitle = f.get("titles.lobby-waiting.title", "");
 		subtitleLobby = f.get("titles.lobby-waiting.subtitle", "&9%time%");
-		lobbyTitleTime = f.get("titles.lobby-waiting.time", new String[] { "10", "30", "10" }.toString());
+		lobbyTitleTime = f.get("titles.lobby-waiting.time", Arrays.toString(new String[] { "10", "30", "10" }));
 		lobbyTitleStartMsgs = f.get("titles.lobby-waiting.values-to-send-start-message",
 				new ArrayList<Integer>(Arrays.asList(5, 4, 3, 2, 1)));
 		wonTitle = f.get("titles.player-won.title", "&2Congratulations!");
 		wonsubtitle = f.get("titles.player-won.subtitle", "&e%winner%&6 won this round!");
-		wonTitleTime = f.get("titles.player-won.time", new String[] { "20", "80", "20" }.toString());
+		wonTitleTime = f.get("titles.player-won.time", Arrays.toString(new String[] { "20", "80", "20" }));
 		youwonTitle = f.get("titles.you-won.title", "&aCongratulations!");
 		youwonsubtitle = f.get("titles.you-won.subtitle", "&2You won this round!");
-		youwonTitleTime = f.get("titles.you-won.time", new String[] { "20", "80", "20" }.toString());
+		youwonTitleTime = f.get("titles.you-won.time", Arrays.toString(new String[] { "20", "80", "20" }));
 		spectatorEnable = f.get("spectator.enable", true);
 		spectatorCmds = f.get("spectator.allowed-spectator-commands", Arrays.asList("/rm leave", "/ragemode leave"));
 		minPlayers = f.get("game.global.lobby.min-players-to-start-lobby-timer", 2);
@@ -194,7 +192,7 @@ public class ConfigValues {
 		cmdsForPlayerLeave = f.get("game.global.run-commands-for-player-left-while-playing", Collections.emptyList());
 		restartServer = f.get("game.global.game-stop.restart-server", false);
 		stopServer = f.get("game.global.game-stop.stop-server", false);
-		rewardEnable = f.get("game.global.rewards.enable", true);
+		rewardEnable = f.get("rewards.enable", true);
 		bowKill = f.get("points.bowkill", 25);
 		axeKill = f.get("points.axekill", 30);
 		axeDeath = f.get("points.axedeath", -50);

@@ -5,7 +5,7 @@ import org.bukkit.command.CommandSender;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.ICommand;
 
@@ -32,13 +32,13 @@ public class ToggleGame extends ICommand {
 		}
 
 		boolean toggle = true;
-		if (!PlayerList.isGameRunning(args[1])) {
+		if (!Game.isGameRunning(args[1])) {
 			if (GameUtils.getStatus() == GameStatus.NOTREADY) {
 				GameUtils.setStatus(GameStatus.READY);
 				toggle = false;
 			} else {
 				GameUtils.setStatus(GameStatus.NOTREADY);
-				PlayerList.setGameNotRunning(args[1]);
+				Game.setGameNotRunning(args[1]);
 			}
 
 			plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".lock", toggle);

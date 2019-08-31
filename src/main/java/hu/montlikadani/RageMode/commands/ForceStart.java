@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.GameLoader;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.ICommand;
 
@@ -34,20 +34,20 @@ public class ForceStart extends ICommand {
 			sendMessage(p, RageMode.getLang().get("commands.forcestart.game-not-exist"));
 			return false;
 		}
-		if (!PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (!Game.isPlayerPlaying(p.getUniqueId().toString())) {
 			sendMessage(p, RageMode.getLang().get("commands.forcestart.player-not-in-game"));
 			return false;
 		}
-		if (PlayerList.getPlayers().size() < 2) {
+		if (Game.getPlayers().size() < 2) {
 			sendMessage(p, RageMode.getLang().get("commands.forcestart.not-enough-players"));
 			return false;
 		}
-		if (PlayerList.isGameRunning(game)) {
+		if (Game.isGameRunning(game)) {
 			sendMessage(p, RageMode.getLang().get("game.running"));
 			return false;
 		}
 
-		PlayerList.getLobbyTimer().cancel();
+		Game.getLobbyTimer().cancel();
 		// Set level back to 0
 		p.setLevel(0);
 

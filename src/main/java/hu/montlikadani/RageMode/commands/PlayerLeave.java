@@ -4,7 +4,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.ICommand;
 
@@ -26,11 +26,11 @@ public class PlayerLeave extends ICommand {
 			return false;
 		}
 
-		GameUtils.runCommands(p, PlayerList.getPlayersGame(p), "leave");
-		GameUtils.sendActionBarMessages(p, PlayerList.getPlayersGame(p), "leave");
+		GameUtils.runCommands(p, Game.getPlayersGame(p), "leave");
+		GameUtils.sendActionBarMessages(p, Game.getPlayersGame(p), "leave");
 		p.removeMetadata("killedWith", RageMode.getInstance());
-		PlayerList.removePlayer(p);
-		PlayerList.removeSpectatorPlayer(p);
+		Game.removePlayer(p);
+		Game.removeSpectatorPlayer(p);
 		return false;
 	}
 }

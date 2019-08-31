@@ -81,6 +81,7 @@ public class Language {
 		l.getL("invalid-game", "&e%game%&4 is not a valid RageMode Map.");
 		l.getL("player-non-existent", "&cThat player doesn't even exist.");
 		l.getL("not-played-yet", "&cThat player&7 %player%&c hasn't played on this server yet.");
+		l.getL("bad-ragemode-name", "&cThe game name may contains special characters, ragemode commands, or the the name greater than 20.");
 
 		l.getL("commands.listgames.listing-games", "&6Listing all available ragemode games... There are&a %games%&6 available.");
 		l.getL("commands.listgames.no-games-available", "&cThere are currently no RageMode maps on this server.");
@@ -136,8 +137,11 @@ public class Language {
 		l.getL("setup.lobby.coords-not-set", "&cThe lobby coordinates were not set properly. Ask an Admin to check the config.yml.");
 		l.getL("setup.lobby.not-set-properly", "&4The lobby was not set properly. Ask an Admin to check the config.yml.");
 		l.getL("setup.lobby.worldname-not-set", "&cThe world key can't be empty! Ask an Admin to check the config.yml.");
-		l.getL("setup.success-added", "&2The game &3%game%&2 was added successfully!");
-		l.getL("setup.already-exists", "&cThis &e%game%&c game already exists.");
+		l.getL("setup.addgame.success-added", "&2The game &3%game%&2 was added successfully!");
+		l.getL("setup.addgame.already-exists", "&cThis &e%game%&c game already exists.");
+		l.getL("setup.addgame.special-chars", "&cThe name of the ragemode map contains special characters.");
+		l.getL("setup.addgame.name-greater", "&cThe name of the ragemode map is too long&7 (< 20).");
+		l.getL("setup.addgame.bad-name", "&cThe name of the ragemode map is contains the command name.");
 		l.getL("setup.at-least-two", "&cThe maxplayers value must be at least two.");
 		l.getL("setup.spawn-set-success", "&2Spawn&e %number%&2 for the game&3 %game%&2 was set successfully!");
 		l.getL("setup.success", "&2Success!");

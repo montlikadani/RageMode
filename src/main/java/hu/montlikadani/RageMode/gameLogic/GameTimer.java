@@ -56,7 +56,7 @@ public class GameTimer extends TimerTask {
 	}
 
 	public void loadModules() {
-		List<String> listPlayers = PlayerList.getPlayersFromList();
+		List<String> listPlayers = Game.getPlayersFromList();
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
 		if (conf.getCV().isScoreboardEnabled()) {
@@ -78,13 +78,13 @@ public class GameTimer extends TimerTask {
 	@Override
 	public void run() {
 		try { // Stop the game if something wrong or missing
-			if (!PlayerList.isGameRunning(gameName)) {
+			if (!Game.isGameRunning(gameName)) {
 				GameUtils.setStatus(GameStatus.STOPPED);
 				cancel();
 				return;
 			}
 
-			if (PlayerList.getPlayers().size() < 2) {
+			if (Game.getPlayers().size() < 2) {
 				StopGame.stopGame(gameName);
 				cancel();
 				return;
@@ -106,7 +106,7 @@ public class GameTimer extends TimerTask {
 
 			time--;
 
-			for (Entry<String, String> entry : PlayerList.getPlayers().entrySet()) {
+			for (Entry<String, String> entry : Game.getPlayers().entrySet()) {
 				Player player = Bukkit.getPlayer(UUID.fromString(entry.getValue()));
 
 				if (conf.getCfg().getBoolean("game.global.show-name-above-player-when-look")) {
@@ -128,7 +128,7 @@ public class GameTimer extends TimerTask {
 				}
 			}
 
-			Player player = PlayerList.getPlayerInGame(gameName);
+			Player player = Game.getPlayerInGame(gameName);
 			if (player == null || !player.isOnline())
 				return;
 

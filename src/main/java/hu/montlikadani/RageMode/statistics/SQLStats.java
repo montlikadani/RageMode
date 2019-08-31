@@ -17,11 +17,10 @@ import hu.montlikadani.ragemode.database.SQLConnect;
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
-import hu.montlikadani.ragemode.scores.RetPlayerPoints;
 
 public class SQLStats {
 
-	private static List<RetPlayerPoints> points = new ArrayList<>();
+	private static List<PlayerPoints> points = new ArrayList<>();
 
 	public static void loadPlayerStatistics(SQLConnect sqlConnect) {
 		if (sqlConnect.getConnection() == null || !sqlConnect.getConnection().isConnected()) {
@@ -37,67 +36,28 @@ public class SQLStats {
 		Statement statement = null;
 		String query = "SELECT * FROM " + sqlConnect.getPrefix() + "stats_players;";
 
-		int currentKills = 0;
-		int currentAxeKills = 0;
-		int currentDirectArrowKills = 0;
-		int currentExplosionKills = 0;
-		int currentKnifeKills = 0;
-
-		int currentDeaths = 0;
-		int currentAxeDeaths = 0;
-		int currentDirectArrowDeaths = 0;
-		int currentExplosionDeaths = 0;
-		int currentKnifeDeaths = 0;
-
 		int currentWins = 0;
 		int currentScore = 0;
 		int currentGames = 0;
-		double currentKD = 0;
 
 		try {
 			statement = connection.createStatement();
 			ResultSet rs = sqlConnect.getConnection().executeQuery(statement, query);
 			while (rs.next()) {
-				currentKills = rs.getInt("kills");
-				currentAxeKills = rs.getInt("axe_kills");
-				currentDirectArrowKills = rs.getInt("direct_arrow_kills");
-				currentExplosionKills = rs.getInt("explosion_kills");
-				currentKnifeKills = rs.getInt("knife_kills");
-
-				currentDeaths = rs.getInt("deaths");
-				currentAxeDeaths = rs.getInt("axe_deaths");
-				currentDirectArrowDeaths = rs.getInt("direct_arrow_deaths");
-				currentExplosionDeaths = rs.getInt("explosion_deaths");
-				currentKnifeDeaths = rs.getInt("knife_deaths");
-
 				currentWins = rs.getInt("wins");
 				currentScore = rs.getInt("score");
 				currentGames = rs.getInt("games");
-				currentKD = rs.getDouble("kd");
 
 				String playerUUID = rs.getString("uuid");
-				RetPlayerPoints rPP = RuntimeRPPManager.getRPPForPlayer(playerUUID);
+				PlayerPoints rPP = RuntimeRPPManager.getPPForPlayer(playerUUID);
 				if (rPP == null) {
-					rPP = new RetPlayerPoints(playerUUID);
+					rPP = new PlayerPoints(playerUUID);
 					RageScores.getPlayerPointsMap().put(UUID.fromString(playerUUID).toString(), rPP);
 				}
-
-				rPP.setKills(currentKills);
-				rPP.setAxeKills(currentAxeKills);
-				rPP.setDirectArrowKills(currentDirectArrowKills);
-				rPP.setExplosionKills(currentExplosionKills);
-				rPP.setKnifeKills(currentKnifeKills);
-
-				rPP.setDeaths(currentDeaths);
-				rPP.setAxeDeaths(currentAxeDeaths);
-				rPP.setDirectArrowDeaths(currentDirectArrowDeaths);
-				rPP.setExplosionDeaths(currentExplosionDeaths);
-				rPP.setKnifeDeaths(currentKnifeDeaths);
 
 				rPP.setWins(currentWins);
 				rPP.setPoints(currentScore);
 				rPP.setGames(currentGames);
-				rPP.setKD(currentKD);
 
 				points.add(rPP);
 
@@ -232,15 +192,15 @@ public class SQLStats {
 	}
 
 	/**
-	 * Returns an RetPlayerPoints instance with the statistics from the database
+	 * Returns an PlayerPoints instance with the statistics from the database
 	 * connection for the given Player.
 	 * 
 	 * @param playerUUID The Player instance for which the statistic should be gotten.
-	 * @return the {@link RetPlayerPoints} class which contains the player stats.
+	 * @return the {@link PlayerPoints} class which contains the player stats.
 	 */
-	public static RetPlayerPoints getPlayerStatistics(String playerUUID) {
+	public static PlayerPoints getPlayerStatistics(String playerUUID) {
 		if (!points.isEmpty()) {
-			for (RetPlayerPoints rpp : points) {
+			for (PlayerPoints rpp : points) {
 				if (rpp.getPlayerUUID().equals(playerUUID)) {
 					return rpp;
 				}
@@ -251,16 +211,16 @@ public class SQLStats {
 	}
 
 	/**
-	 * Retrieves the list of RetPlayerPoints.
-	 * @return A List of all RetPlayerPoints objects which are stored in the SQL database.
+	 * Retrieves the list of PlayerPoints.
+	 * @return A List of all PlayerPoints objects which are stored in the SQL database.
 	 */
-	public static List<RetPlayerPoints> getAllPlayerStatistics() {
+	public static List<PlayerPoints> getAllPlayerStatistics() {
 		SQLConnect connect = RageMode.getSQL();
 		if (connect.getConnection() == null || !connect.getConnection().isValid())
 			return Collections.emptyList();
 
 		String uuid = null;
-		List<RetPlayerPoints> allRPPs = new ArrayList<>();
+		List<PlayerPoints> allRPPs = new ArrayList<>();
 
 		Connection connection = connect.getConnection().getConnection();
 		Statement statement = null;
@@ -305,7 +265,7 @@ public class SQLStats {
 		if (RageMode.getSQL().getConnection() == null || !RageMode.getSQL().getConnection().isConnected())
 			return false;
 
-		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(uuid);
+		PlayerPoints rpp = RuntimeRPPManager.getPPForPlayer(uuid);
 		if (rpp == null)
 			return false;
 

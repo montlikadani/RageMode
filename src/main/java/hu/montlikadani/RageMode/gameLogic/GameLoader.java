@@ -31,12 +31,12 @@ public class GameLoader {
 
 		checkTeleport();
 
-		PlayerList.removeLobbyTimer();
+		Game.removeLobbyTimer();
 
-		GameStartEvent gameStartEvent = new GameStartEvent(gameName, PlayerList.getPlayersFromList());
+		GameStartEvent gameStartEvent = new GameStartEvent(gameName, Game.getPlayersFromList());
 		Utils.callEvent(gameStartEvent);
 
-		PlayerList.setGameRunning(gameName);
+		Game.setGameRunning(gameName);
 		GameUtils.setStatus(GameStatus.RUNNING);
 
 		Configuration conf = RageMode.getInstance().getConfiguration();
@@ -53,7 +53,7 @@ public class GameLoader {
 		GameUtils.runCommandsForAll(gameName, "start");
 		SignCreator.updateAllSigns(gameName);
 
-		for (Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
+		for (Entry<String, String> players : Game.getPlayers().entrySet()) {
 			Player p = Bukkit.getPlayer(UUID.fromString(players.getValue()));
 
 			GameUtils.addGameItems(p, true);
@@ -85,9 +85,9 @@ public class GameLoader {
 			GameUtils.teleportPlayersToGameSpawns(gameSpawnGetter);
 		} else {
 			GameUtils.broadcastToGame(gameName, RageMode.getLang().get("game.not-set-up"));
-			for (Entry<String, String> uuids : PlayerList.getPlayers().entrySet()) {
+			for (Entry<String, String> uuids : Game.getPlayers().entrySet()) {
 				Player p = Bukkit.getPlayer(UUID.fromString(uuids.getValue()));
-				PlayerList.removePlayer(p);
+				Game.removePlayer(p);
 			}
 		}
 	}

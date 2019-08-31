@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.ICommand;
 
@@ -34,7 +34,7 @@ public class LateStart extends ICommand {
 			return false;
 		}
 
-		if (!PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (!Game.isPlayerPlaying(p.getUniqueId().toString())) {
 			sendMessage(sender, RageMode.getLang().get("commands.latestart.player-not-in-lobby"));
 			return false;
 		}
@@ -55,7 +55,7 @@ public class LateStart extends ICommand {
 			return false;
 		}
 
-		PlayerList.getLobbyTimer().addLobbyTime(newTime);
+		Game.getLobbyTimer().addLobbyTime(newTime);
 		sendMessage(sender, RageMode.getLang().get("commands.latestart.lobby-timer-increased", "%newtime%", newTime));
 		return false;
 	}

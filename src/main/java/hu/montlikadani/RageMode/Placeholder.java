@@ -3,7 +3,7 @@ package hu.montlikadani.ragemode;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
-import hu.montlikadani.ragemode.scores.RetPlayerPoints;
+import hu.montlikadani.ragemode.scores.PlayerPoints;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
 public class Placeholder extends PlaceholderExpansion {
@@ -31,7 +31,7 @@ public class Placeholder extends PlaceholderExpansion {
 		if (p == null)
 			return "";
 
-		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(p.getUniqueId().toString());
+		PlayerPoints rpp = RuntimeRPPManager.getPPForPlayer(p.getUniqueId().toString());
 		if (rpp == null)
 			return "";
 

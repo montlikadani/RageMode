@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
-import hu.montlikadani.ragemode.scores.RetPlayerPoints;
+import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.utils.ICommand;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
@@ -55,7 +55,7 @@ public class ShowStats extends ICommand {
 	}
 
 	private void showStats(CommandSender sender, Player t) {
-		RetPlayerPoints rpp = RuntimeRPPManager.getRPPForPlayer(t.getUniqueId().toString());
+		PlayerPoints rpp = RuntimeRPPManager.getPPForPlayer(t.getUniqueId().toString());
 
 		if (rpp == null) {
 			sendMessage(sender, RageMode.getLang().get("not-played-yet", "%player%", t.getName()));
@@ -65,7 +65,6 @@ public class ShowStats extends ICommand {
 		for (String list : RageMode.getLang().getList("statistic-list")) {
 			list = list.replace("%player%", t.getName());
 			list = Utils.setPlaceholders(list, t);
-			list = list.replace("%rank%", Integer.toString(rpp.getRank()));
 
 			sendMessage(sender, list);
 		}

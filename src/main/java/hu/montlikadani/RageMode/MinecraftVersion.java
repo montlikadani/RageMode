@@ -23,7 +23,8 @@ public class MinecraftVersion {
 		v1_13_R1,
 		v1_13_R2,
 		v1_14_R1,
-		v1_14_R2;
+		v1_14_R2,
+		v1_15_R1;
 
 		private Integer value;
 		private String shortVersion;

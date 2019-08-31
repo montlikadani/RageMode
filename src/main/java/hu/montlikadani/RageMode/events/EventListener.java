@@ -61,7 +61,7 @@ import hu.montlikadani.ragemode.API.event.RMPlayerKilledEvent;
 import hu.montlikadani.ragemode.gameLogic.GameLoader;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.gameUtils.MapChecker;
@@ -107,12 +107,12 @@ public class EventListener implements Listener {
 		Player p = event.getPlayer();
 
 		// Cancels the spectator player chat
-		if (PlayerList.getSpectatorPlayers().containsKey(p.getUniqueId())) {
+		if (Game.getSpectatorPlayers().containsKey(p.getUniqueId())) {
 			event.setCancelled(true);
 			return;
 		}
 
-		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
 			if (GameUtils.getStatus() == GameStatus.WAITING) {
 				if (!plugin.getConfiguration().getCV().isChatEnabledinLobby()
 						&& !p.hasPermission("ragemode.bypass.lobby.lockchat")) {
@@ -131,12 +131,12 @@ public class EventListener implements Listener {
 				}
 
 				if (plugin.getConfiguration().getCV().isChatFormatEnabled()) {
-					String game = PlayerList.getPlayersGame(p);
+					String game = Game.getPlayersGame(p);
 					String format = plugin.getConfiguration().getCV().getChatFormat();
 					format = format.replace("%player%", p.getName());
 					format = format.replace("%player-displayname%", p.getDisplayName());
 					format = format.replace("%game%", game);
-					format = format.replace("%online-ingame-players%", Integer.toString(PlayerList.getPlayers().size()));
+					format = format.replace("%online-ingame-players%", Integer.toString(Game.getPlayers().size()));
 					format = format.replace("%message%", event.getMessage());
 					format = Utils.setPlaceholders(format, p);
 
@@ -162,9 +162,9 @@ public class EventListener implements Listener {
 
 				if (arrow.getShooter() != null && arrow.getShooter() instanceof Player) {
 					Player shooter = (Player) arrow.getShooter();
-					if (PlayerList.isPlayerPlaying(shooter.getUniqueId().toString())) {
-						if (waitingGames.containsKey(PlayerList.getPlayersGame(shooter))) {
-							if (waitingGames.get(PlayerList.getPlayersGame(shooter)))
+					if (Game.isPlayerPlaying(shooter.getUniqueId().toString())) {
+						if (waitingGames.containsKey(Game.getPlayersGame(shooter))) {
+							if (waitingGames.get(Game.getPlayersGame(shooter)))
 								return;
 						}
 
@@ -218,10 +218,10 @@ public class EventListener implements Listener {
 				if (event.getDamager() instanceof Player) {
 					Player killer = (Player) event.getDamager();
 
-					if (PlayerList.isPlayerPlaying(killer.getUniqueId().toString())
-							&& PlayerList.isPlayerPlaying(victim.getUniqueId().toString())) {
-						if (waitingGames.containsKey(PlayerList.getPlayersGame(killer))) {
-							if (waitingGames.get(PlayerList.getPlayersGame(killer))) {
+					if (Game.isPlayerPlaying(killer.getUniqueId().toString())
+							&& Game.isPlayerPlaying(victim.getUniqueId().toString())) {
+						if (waitingGames.containsKey(Game.getPlayersGame(killer))) {
+							if (waitingGames.get(Game.getPlayersGame(killer))) {
 								event.setCancelled(true);
 								return;
 							}
@@ -257,7 +257,7 @@ public class EventListener implements Listener {
 			}
 
 			// Prevent player damage in lobby
-			if (GameUtils.getStatus() == GameStatus.WAITING && PlayerList.isPlayerPlaying(victim.getUniqueId().toString()))
+			if (GameUtils.getStatus() == GameStatus.WAITING && Game.isPlayerPlaying(victim.getUniqueId().toString()))
 				event.setCancelled(true);
 		}
 	}
@@ -267,7 +267,7 @@ public class EventListener implements Listener {
 		Entity e = event.getEntity();
 		// Hit player event
 		if (GameUtils.getStatus() == GameStatus.RUNNING) {
-			if (e instanceof Player && PlayerList.isPlayerPlaying(e.getUniqueId().toString())) {
+			if (e instanceof Player && Game.isPlayerPlaying(e.getUniqueId().toString())) {
 				if (event.getCause().equals(DamageCause.FALL)
 						&& !plugin.getConfiguration().getCV().isDamagePlayerFall()) {
 					event.setCancelled(true);
@@ -275,19 +275,19 @@ public class EventListener implements Listener {
 				}
 
 				Player victim = (Player) e;
-				if (waitingGames.containsKey(PlayerList.getPlayersGame(victim))) {
-					if (waitingGames.get(PlayerList.getPlayersGame(victim))) {
+				if (waitingGames.containsKey(Game.getPlayersGame(victim))) {
+					if (waitingGames.get(Game.getPlayersGame(victim))) {
 						event.setCancelled(true);
 					}
 				}
 			}
 		} else if (GameUtils.getStatus() == GameStatus.WAITING && e instanceof Player
-				&& PlayerList.isPlayerPlaying(e.getUniqueId().toString()))
+				&& Game.isPlayerPlaying(e.getUniqueId().toString()))
 			event.setCancelled(true); // Prevent player damage in lobby
 		else if (GameUtils.getStatus() == GameStatus.GAMEFREEZE) { // Prevent damage in game freeze
-			if (e instanceof Player && PlayerList.isPlayerPlaying(e.getUniqueId().toString())) {
-				if (waitingGames.containsKey(PlayerList.getPlayersGame((Player) e))) {
-					if (waitingGames.get(PlayerList.getPlayersGame((Player) e)))
+			if (e instanceof Player && Game.isPlayerPlaying(e.getUniqueId().toString())) {
+				if (waitingGames.containsKey(Game.getPlayersGame((Player) e))) {
+					if (waitingGames.get(Game.getPlayersGame((Player) e)))
 						event.setCancelled(true);
 				}
 			}
@@ -296,9 +296,9 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onBowShoot(EntityShootBowEvent e) {
-		if (e.getEntity() instanceof Player && PlayerList.isPlayerPlaying(e.getEntity().getUniqueId().toString())) {
-			if (waitingGames.containsKey(PlayerList.getPlayersGame((Player) e.getEntity()))) {
-				if (waitingGames.get(PlayerList.getPlayersGame((Player) e.getEntity())))
+		if (e.getEntity() instanceof Player && Game.isPlayerPlaying(e.getEntity().getUniqueId().toString())) {
+			if (waitingGames.containsKey(Game.getPlayersGame((Player) e.getEntity()))) {
+				if (waitingGames.get(Game.getPlayersGame((Player) e.getEntity())))
 					e.setCancelled(true);
 			}
 		}
@@ -311,11 +311,11 @@ public class EventListener implements Listener {
 
 		Player deceased = event.getEntity();
 
-		if (deceased != null && PlayerList.isPlayerPlaying(deceased.getUniqueId().toString()) &&
+		if (deceased != null && Game.isPlayerPlaying(deceased.getUniqueId().toString()) &&
 				GameUtils.getStatus() == GameStatus.RUNNING) {
-			String game = PlayerList.getPlayersGame(deceased);
+			String game = Game.getPlayersGame(deceased);
 
-			if ((deceased.getKiller() != null && PlayerList.isPlayerPlaying(deceased.getKiller().getUniqueId().toString()))
+			if ((deceased.getKiller() != null && Game.isPlayerPlaying(deceased.getKiller().getUniqueId().toString()))
 					|| deceased.getKiller() == null) {
 				boolean doDeathBroadcast = plugin.getConfiguration().getCV().isDeathMsgs();
 
@@ -469,15 +469,15 @@ public class EventListener implements Listener {
 	//TODO fix 1.14 respawn bug: does not respawn suddenly the player
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onRespawn(PlayerRespawnEvent e) {
-		if (PlayerList.isPlayerPlaying(e.getPlayer().getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(e.getPlayer().getUniqueId().toString())) {
 			// If player still is in game with respawn screen then remove player
 			// 1.14 issue
-			if (!PlayerList.isGameRunning(PlayerList.getPlayersGame(e.getPlayer()))) {
-				PlayerList.removePlayer(e.getPlayer());
+			if (!Game.isGameRunning(Game.getPlayersGame(e.getPlayer()))) {
+				Game.removePlayer(e.getPlayer());
 				return;
 			}
 
-			GameSpawnGetter gsg = GameUtils.getGameSpawnByName(PlayerList.getPlayersGame(e.getPlayer()));
+			GameSpawnGetter gsg = GameUtils.getGameSpawnByName(Game.getPlayersGame(e.getPlayer()));
 			if (gsg.getSpawnLocations().size() > 0) {
 				Random rand = new Random();
 				int x = rand.nextInt(gsg.getSpawnLocations().size());
@@ -488,25 +488,25 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onHungerGain(FoodLevelChangeEvent event) {
-		if (event.getEntity() instanceof Player && PlayerList.isPlayerPlaying(event.getEntity().getUniqueId().toString()))
+		if (event.getEntity() instanceof Player && Game.isPlayerPlaying(event.getEntity().getUniqueId().toString()))
 			event.setCancelled(true);
 	}
 
 	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent ev) {
-		if (PlayerList.isPlayerPlaying(ev.getPlayer().getUniqueId().toString()))
+		if (Game.isPlayerPlaying(ev.getPlayer().getUniqueId().toString()))
 			ev.setCancelled(true);
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockBreak(BlockBreakEvent event) {
-		if (PlayerList.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
+		if (Game.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
 			event.setCancelled(true);
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onItemDrop(PlayerDropItemEvent event) {
-		if (PlayerList.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
+		if (Game.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
 			event.setCancelled(true);
 	}
 
@@ -536,7 +536,7 @@ public class EventListener implements Listener {
 		List<String> cmds = null;
 
 		if (plugin.getConfiguration().getCV().isSpectatorEnabled()
-				&& PlayerList.getSpectatorPlayers().containsKey(p.getUniqueId())) {
+				&& Game.getSpectatorPlayers().containsKey(p.getUniqueId())) {
 			cmds = plugin.getConfiguration().getCV().getSpectatorCmds();
 			if (cmds != null && !cmds.isEmpty()) {
 				if (!cmds.contains(arg) && !p.hasPermission("ragemode.bypass.spectatorcommands")) {
@@ -547,9 +547,9 @@ public class EventListener implements Listener {
 			}
 		}
 
-		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
-			if (waitingGames.containsKey(PlayerList.getPlayersGame(p))) {
-				if (waitingGames.get(PlayerList.getPlayersGame(p))) {
+		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
+			if (waitingGames.containsKey(Game.getPlayersGame(p))) {
+				if (waitingGames.get(Game.getPlayersGame(p))) {
 					p.sendMessage(RageMode.getLang().get("game.command-disabled-in-end-game"));
 					event.setCancelled(true);
 					return;
@@ -571,7 +571,7 @@ public class EventListener implements Listener {
 		if (event.getPlayer() == null || !event.getPlayer().isOnline()) return;
 
 		final Player p = event.getPlayer();
-		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
 			if (GameUtils.getStatus() == GameStatus.RUNNING || GameUtils.getStatus() == GameStatus.GAMEFREEZE) {
 				// Removes the egg from player inventory and prevent
 				// other item remove when moved the slot to another
@@ -584,8 +584,8 @@ public class EventListener implements Listener {
 				event.setHatching(false);
 
 				// check if player is in waiting game (game freeze)
-				if (waitingGames.containsKey(PlayerList.getPlayersGame(p))) {
-					if (waitingGames.get(PlayerList.getPlayersGame(p)))
+				if (waitingGames.containsKey(Game.getPlayersGame(p))) {
+					if (waitingGames.get(Game.getPlayersGame(p)))
 						return;
 				}
 
@@ -609,8 +609,8 @@ public class EventListener implements Listener {
 					@Override
 					public void run() {
 						// Remove egg in 1 second of the game when a player dropped
-						if (waitingGames.containsKey(PlayerList.getPlayersGame(p))) {
-							if (waitingGames.get(PlayerList.getPlayersGame(p))) {
+						if (waitingGames.containsKey(Game.getPlayersGame(p))) {
+							if (waitingGames.get(Game.getPlayersGame(p))) {
 								if (grenadeExplosionVictims != null)
 									grenadeExplosionVictims.clear();
 								grenade.remove();
@@ -655,11 +655,11 @@ public class EventListener implements Listener {
 	public void onInteract(PlayerInteractEvent event) {
 		Player p = event.getPlayer();
 
-		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
 			if (GameUtils.getStatus() == GameStatus.RUNNING) {
 				Player thrower = event.getPlayer();
-				if (waitingGames.containsKey(PlayerList.getPlayersGame(thrower))) {
-					if (waitingGames.get(PlayerList.getPlayersGame(thrower)))
+				if (waitingGames.containsKey(Game.getPlayersGame(thrower))) {
+					if (waitingGames.get(Game.getPlayersGame(thrower)))
 						return;
 				}
 
@@ -685,9 +685,9 @@ public class EventListener implements Listener {
 					if (meta != null && meta.getDisplayName() != null) {
 						if (p.hasPermission("ragemode.admin.item.forcestart")
 								&& meta.getDisplayName().equals(ForceStarter.getName())) {
-							String game = PlayerList.getPlayersGame(p);
+							String game = Game.getPlayersGame(p);
 
-							PlayerList.getLobbyTimer().cancel();
+							Game.getLobbyTimer().cancel();
 							// Set level counter back to 0
 							p.setLevel(0);
 
@@ -696,8 +696,8 @@ public class EventListener implements Listener {
 						}
 
 						if (meta.getDisplayName().equals(LeaveGame.getName())) {
-							PlayerList.removePlayer(p);
-							PlayerList.removeSpectatorPlayer(p);
+							Game.removePlayer(p);
+							Game.removeSpectatorPlayer(p);
 						}
 					}
 					event.setCancelled(true);
@@ -724,7 +724,7 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onInventoryOpen(InventoryOpenEvent e) {
-		if (PlayerList.isPlayerPlaying(e.getPlayer().getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(e.getPlayer().getUniqueId().toString())) {
 			InventoryType type = e.getInventory().getType();
 
 			if (type == InventoryType.ENCHANTING
@@ -748,7 +748,7 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onInteractRedstone(PlayerInteractEvent ev) {
-		if (PlayerList.isPlayerPlaying(ev.getPlayer().getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(ev.getPlayer().getUniqueId().toString())) {
 			if (ev.getClickedBlock() != null) {
 				Material t = ev.getClickedBlock().getType();
 
@@ -822,25 +822,25 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onVehicleEnter(VehicleEnterEvent e) {
-		if (e.getEntered() instanceof Player && PlayerList.isPlayerPlaying(e.getEntered().getUniqueId().toString()))
+		if (e.getEntered() instanceof Player && Game.isPlayerPlaying(e.getEntered().getUniqueId().toString()))
 			e.setCancelled(true);
 	}
 
 	@EventHandler
 	public void onInventoryInteract(InventoryClickEvent event) {
-		if (event.getWhoClicked() instanceof Player && PlayerList.isPlayerPlaying(event.getWhoClicked().getUniqueId().toString()))
+		if (event.getWhoClicked() instanceof Player && Game.isPlayerPlaying(event.getWhoClicked().getUniqueId().toString()))
 			event.setCancelled(true);
 	}
 
 	@EventHandler
 	public void onFly(PlayerToggleFlightEvent event) {
-		if (PlayerList.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
+		if (Game.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
 			event.setCancelled(true);
 	}
 
 	@EventHandler
 	public void playerBedEnter(PlayerBedEnterEvent event) {
-		if (PlayerList.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
+		if (Game.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
 			event.setCancelled(true);
 	}
 
@@ -875,10 +875,10 @@ public class EventListener implements Listener {
 	public void onPlayerMove(PlayerMoveEvent event) {
 		Player p = event.getPlayer();
 
-		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
 			if (GameUtils.getStatus() == GameStatus.RUNNING) {
-				if (waitingGames != null && waitingGames.containsKey(PlayerList.getPlayersGame(p))) {
-					if (waitingGames.get(PlayerList.getPlayersGame(p))) {
+				if (waitingGames != null && waitingGames.containsKey(Game.getPlayersGame(p))) {
+					if (waitingGames.get(Game.getPlayersGame(p))) {
 						Location from = event.getFrom();
 						Location to = event.getTo();
 						double x = Math.floor(from.getX());
@@ -893,20 +893,20 @@ public class EventListener implements Listener {
 			}
 
 			if (p.getLocation().getY() < 0) {
-				GameUtils.getGameSpawnByName(PlayerList.getPlayersGame(p)).randomSpawn(p);
+				GameUtils.getGameSpawnByName(Game.getPlayersGame(p)).randomSpawn(p);
 
 				// Prevent damaging player when respawned
 				p.setFallDistance(0);
 
-				GameUtils.broadcastToGame(PlayerList.getPlayersGame(p), RageMode.getLang().get("game.void-fall", "%player%", p.getName()));
+				GameUtils.broadcastToGame(Game.getPlayersGame(p), RageMode.getLang().get("game.void-fall", "%player%", p.getName()));
 			}
 		}
 	}
 
 	@EventHandler
 	public void onWorldChangedEvent(PlayerTeleportEvent event) {
-		if (PlayerList.isPlayerPlaying(event.getPlayer().getUniqueId().toString())) {
-			if (!MapChecker.isGameWorld(PlayerList.getPlayersGame(event.getPlayer()), event.getTo().getWorld())) {
+		if (Game.isPlayerPlaying(event.getPlayer().getUniqueId().toString())) {
+			if (!MapChecker.isGameWorld(Game.getPlayersGame(event.getPlayer()), event.getTo().getWorld())) {
 				if (!event.getPlayer().hasMetadata("Leaving"))
 					event.getPlayer().performCommand("rm leave");
 				else

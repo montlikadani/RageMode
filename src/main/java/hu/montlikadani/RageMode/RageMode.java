@@ -30,9 +30,9 @@ import hu.montlikadani.ragemode.events.BungeeListener;
 import hu.montlikadani.ragemode.events.EventListener;
 import hu.montlikadani.ragemode.events.Listeners_1_8;
 import hu.montlikadani.ragemode.events.Listeners_1_9;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
 import hu.montlikadani.ragemode.gameUtils.BungeeUtils;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
@@ -66,6 +66,7 @@ public class RageMode extends JavaPlugin {
 	private boolean hologram = false;
 	private boolean vault = false;
 
+	private List<Game> games = new ArrayList<>();
 	private List<GameSpawnGetter> spawns = new ArrayList<>();
 
 	@Override
@@ -145,10 +146,10 @@ public class RageMode extends JavaPlugin {
 			if (conf.getArenasCfg().contains("arenas")) {
 				for (String game : GetGames.getGameNames()) {
 					if (game != null) {
+						games.add(new Game(game));
+
 						if (conf.getCV().isBungee())
 							getManager().registerEvents(new BungeeListener(game), this);
-
-						new PlayerList();
 
 						spawns.add(new GameSpawnGetter(game));
 
@@ -170,32 +171,34 @@ public class RageMode extends JavaPlugin {
 			// Metrics has changed the JsonObject and causing the break, so disable under 1.8.5
 			if (Version.isCurrentEqualOrHigher(Version.v1_8_R3)) {
 				Metrics metrics = new Metrics(this);
-				metrics.addCustomChart(
-						new Metrics.SimplePie("games_amount", () -> GetGames.getConfigGamesCount() + ""));
+				if (metrics.isEnabled()) {
+					metrics.addCustomChart(
+							new Metrics.SimplePie("games_amount", () -> GetGames.getConfigGamesCount() + ""));
 
-				metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
-					int totalPlayers = 0;
-					switch (conf.getCV().getStatistics()) {
-					case "mysql":
-						totalPlayers = MySQLStats.getAllPlayerStatistics().size();
-						break;
-					case "sql":
-					case "sqlite":
-						totalPlayers = SQLStats.getAllPlayerStatistics().size();
-						break;
-					case "yaml":
-						totalPlayers = YAMLStats.getAllPlayerStatistics().size();
-						break;
-					default:
-						break;
-					}
+					metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
+						int totalPlayers = 0;
+						switch (conf.getCV().getStatistics()) {
+						case "mysql":
+							totalPlayers = MySQLStats.getAllPlayerStatistics().size();
+							break;
+						case "sql":
+						case "sqlite":
+							totalPlayers = SQLStats.getAllPlayerStatistics().size();
+							break;
+						case "yaml":
+							totalPlayers = YAMLStats.getAllPlayerStatistics().size();
+							break;
+						default:
+							break;
+						}
 
-					return String.valueOf(totalPlayers);
-				}));
+						return String.valueOf(totalPlayers);
+					}));
 
-				metrics.addCustomChart(new Metrics.SimplePie("statistic_type", () -> conf.getCV().getStatistics()));
+					metrics.addCustomChart(new Metrics.SimplePie("statistic_type", conf.getCV()::getStatistics));
 
-				Debug.logConsole("Metrics enabled.");
+					Debug.logConsole("Metrics enabled.");
+				}
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -216,26 +219,26 @@ public class RageMode extends JavaPlugin {
 				int imax = games.length;
 
 				while (i < imax) {
-					if (games[i] != null && PlayerList.isGameRunning(games[i])) {
+					if (games[i] != null && Game.isGameRunning(games[i])) {
 						Debug.logConsole("Stopping " + games[i] + " ...");
 
-						RageScores.calculateWinner(games[i], PlayerList.getPlayersFromList());
+						RageScores.calculateWinner(games[i], Game.getPlayersFromList());
 
-						for (java.util.Map.Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
+						for (java.util.Map.Entry<String, String> players : Game.getPlayers().entrySet()) {
 							org.bukkit.entity.Player p = Bukkit.getPlayer(UUID.fromString(players.getValue()));
 
 							p.removeMetadata("killedWith", instance);
-							PlayerList.removePlayer(p);
+							Game.removePlayer(p);
 							RageScores.removePointsForPlayer(players.getValue());
 						}
 
-						for (Iterator<Entry<UUID, String>> it = PlayerList.getSpectatorPlayers().entrySet()
+						for (Iterator<Entry<UUID, String>> it = Game.getSpectatorPlayers().entrySet()
 								.iterator(); it.hasNext();) {
 							Player pl = Bukkit.getPlayer(it.next().getKey());
-							PlayerList.removeSpectatorPlayer(pl);
+							Game.removeSpectatorPlayer(pl);
 						}
 
-						PlayerList.setGameNotRunning(games[i]);
+						Game.setGameNotRunning(games[i]);
 						GameUtils.setStatus(GameStatus.STOPPED);
 
 						Debug.logConsole(games[i] + " has been stopped.");
@@ -264,7 +267,7 @@ public class RageMode extends JavaPlugin {
 		YAMLStats.initS();
 		YAMLStats.loadPlayerStatistics();
 
-		RuntimeRPPManager.getRPPListFromYAML();
+		RuntimeRPPManager.getPPListFromYAML();
 	}
 
 	private void connectMySQL() {
@@ -294,7 +297,7 @@ public class RageMode extends JavaPlugin {
 		}
 
 		MySQLStats.loadPlayerStatistics(mySQLConnect);
-		RuntimeRPPManager.getRPPListFromMySQL();
+		RuntimeRPPManager.getPPListFromMySQL();
 	}
 
 	private void connectSQL() {
@@ -320,7 +323,7 @@ public class RageMode extends JavaPlugin {
 		}
 
 		SQLStats.loadPlayerStatistics(sqlConnect);
-		RuntimeRPPManager.getRPPListFromSQL();
+		RuntimeRPPManager.getPPListFromSQL();
 	}
 
 	private void loadDatabases() {
@@ -367,6 +370,7 @@ public class RageMode extends JavaPlugin {
 			signTask = null;
 		}
 
+		games.clear();
 		spawns.clear();
 
 		conf.loadConfig();
@@ -374,8 +378,10 @@ public class RageMode extends JavaPlugin {
 
 		if (conf.getArenasCfg().contains("arenas")) {
 			for (String game : GetGames.getGameNames()) {
+				games.add(new Game(game));
+
 				if (game != null) {
-					if (PlayerList.isGameRunning(game)) {
+					if (Game.isGameRunning(game)) {
 						GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
 					}
 
@@ -486,6 +492,10 @@ public class RageMode extends JavaPlugin {
 
 	public SignScheduler getSignScheduler() {
 		return sign;
+	}
+
+	public List<Game> getGames() {
+		return games;
 	}
 
 	public List<GameSpawnGetter> getSpawns() {

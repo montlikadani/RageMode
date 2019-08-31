@@ -15,7 +15,7 @@ import org.bukkit.material.Directional;
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.utils.MaterialUtil;
@@ -158,7 +158,7 @@ public class SignData {
 
 		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
 			if (GameUtils.getStatus() == GameStatus.WAITING) {
-				if (PlayerList.getPlayers().size() == GetGames.getMaxPlayers(game)) {
+				if (Game.getPlayers().size() == GetGames.getMaxPlayers(game)) {
 					if (type.equals("wool"))
 						updateBackground(Material.BLUE_WOOL);
 					else if (type.equals("glass"))
@@ -175,7 +175,7 @@ public class SignData {
 				}
 			}
 
-			if (PlayerList.isGameRunning(game)) {
+			if (Game.isGameRunning(game)) {
 				if (type.equals("wool"))
 					updateBackground(Material.LIME_WOOL);
 				else if (type.equals("glass"))
@@ -192,7 +192,7 @@ public class SignData {
 			}
 		} else {
 			if (GameUtils.getStatus() == GameStatus.WAITING) {
-				if (PlayerList.getPlayers().size() == GetGames.getMaxPlayers(game)) {
+				if (Game.getPlayers().size() == GetGames.getMaxPlayers(game)) {
 					if (type.equals("wool"))
 						updateBackground(Material.getMaterial("WOOL"), 11);
 					else if (type.equals("glass"))
@@ -209,7 +209,7 @@ public class SignData {
 				}
 			}
 
-			if (GameUtils.getStatus() == GameStatus.RUNNING && PlayerList.isGameRunning(game)) {
+			if (GameUtils.getStatus() == GameStatus.RUNNING && Game.isGameRunning(game)) {
 				if (type.equals("wool"))
 					updateBackground(Material.getMaterial("WOOL"), 5);
 				else if (type.equals("glass"))

@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
@@ -41,7 +41,7 @@ public class GiveSavedItems extends RmCommand {
 			return false;
 		}
 
-		if (PlayerList.isPlayerPlaying(target.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(target.getUniqueId().toString())) {
 			sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.player-is-in-game", "%player%", args[1]));
 			return false;
 		}

@@ -24,7 +24,7 @@ import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
 public class RmCommand implements CommandExecutor, TabCompleter {
 
-	private Map<String, String> arg = new WeakHashMap<>();
+	public static Map<String, String> arg = new WeakHashMap<>();
 
 	public RmCommand() {
 		arg.clear();
@@ -204,22 +204,28 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 							paramTypes = new Class<?>[] { RageMode.class, CommandSender.class, String[].class };
 						}
 
-						try {
-							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
-						} catch (NoSuchMethodException e3) {
-							paramTypes = new Class<?>[] { CommandSender.class, String[].class };
+						if (printMethod == null) {
+							try {
+								printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
+							} catch (NoSuchMethodException e3) {
+								paramTypes = new Class<?>[] { CommandSender.class, String[].class };
+							}
 						}
 
-						try {
-							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
-						} catch (NoSuchMethodException e4) {
-							paramTypes = new Class<?>[] { RageMode.class, CommandSender.class };
+						if (printMethod == null) {
+							try {
+								printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
+							} catch (NoSuchMethodException e4) {
+								paramTypes = new Class<?>[] { RageMode.class, CommandSender.class };
+							}
 						}
 
-						try {
-							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
-						} catch (NoSuchMethodException e5) {
-							paramTypes = new Class<?>[] { CommandSender.class };
+						if (printMethod == null) {
+							try {
+								printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
+							} catch (NoSuchMethodException e5) {
+								paramTypes = new Class<?>[] { CommandSender.class };
+							}
 						}
 
 						if (printMethod == null)

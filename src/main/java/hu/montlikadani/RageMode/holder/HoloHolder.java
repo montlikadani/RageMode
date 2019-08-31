@@ -21,7 +21,7 @@ import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
-import hu.montlikadani.ragemode.scores.RetPlayerPoints;
+import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.SQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
@@ -82,11 +82,11 @@ public class HoloHolder {
 		switch (RageMode.getInstance().getConfiguration().getCV().getStatistics()) {
 		case "mysql":
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
-				final RetPlayerPoints rpp;
-				if (RuntimeRPPManager.getRPPForPlayer(dataPlayer.getUniqueId().toString()) == null)
+				final PlayerPoints rpp;
+				if (RuntimeRPPManager.getPPForPlayer(dataPlayer.getUniqueId().toString()) == null)
 					rpp = MySQLStats.getPlayerStatistics(dataPlayer.getUniqueId().toString());
 				else
-					rpp = RuntimeRPPManager.getRPPForPlayer(dataPlayer.getUniqueId().toString());
+					rpp = RuntimeRPPManager.getPPForPlayer(dataPlayer.getUniqueId().toString());
 
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 					if (rpp != null)
@@ -97,11 +97,11 @@ public class HoloHolder {
 			break;
 		case "yaml":
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
-				final RetPlayerPoints rpp;
-				if (RuntimeRPPManager.getRPPForPlayer(dataPlayer.getUniqueId().toString()) == null)
+				final PlayerPoints rpp;
+				if (RuntimeRPPManager.getPPForPlayer(dataPlayer.getUniqueId().toString()) == null)
 					rpp = YAMLStats.getPlayerStatistics(dataPlayer.getUniqueId().toString());
 				else
-					rpp = RuntimeRPPManager.getRPPForPlayer(dataPlayer.getUniqueId().toString());
+					rpp = RuntimeRPPManager.getPPForPlayer(dataPlayer.getUniqueId().toString());
 
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 					if (rpp != null)
@@ -113,11 +113,11 @@ public class HoloHolder {
 		case "sql":
 		case "sqlite":
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
-				final RetPlayerPoints rpp;
-				if (RuntimeRPPManager.getRPPForPlayer(dataPlayer.getUniqueId().toString()) == null)
+				final PlayerPoints rpp;
+				if (RuntimeRPPManager.getPPForPlayer(dataPlayer.getUniqueId().toString()) == null)
 					rpp = SQLStats.getPlayerStatistics(dataPlayer.getUniqueId().toString());
 				else
-					rpp = RuntimeRPPManager.getRPPForPlayer(dataPlayer.getUniqueId().toString());
+					rpp = RuntimeRPPManager.getPPForPlayer(dataPlayer.getUniqueId().toString());
 
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 					if (rpp != null)
@@ -131,7 +131,7 @@ public class HoloHolder {
 		}
 	}
 
-	private static void setHologramLines(Hologram hologram, RetPlayerPoints rpp) {
+	private static void setHologramLines(Hologram hologram, PlayerPoints rpp) {
 		for (String hList : RageMode.getLang().getList("hologram-list")) {
 			if (rpp != null) {
 				NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);

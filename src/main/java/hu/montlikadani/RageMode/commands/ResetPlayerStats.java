@@ -5,7 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.SQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
@@ -30,7 +30,7 @@ public class ResetPlayerStats extends ICommand {
 				return false;
 			}
 
-			if (PlayerList.isPlayerPlaying(target.getUniqueId().toString())) {
+			if (Game.isPlayerPlaying(target.getUniqueId().toString())) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.player-currently-in-game"));
 				return false;
 			}
@@ -55,7 +55,7 @@ public class ResetPlayerStats extends ICommand {
 				return false;
 			}
 
-			if (PlayerList.isPlayerPlaying(target.getUniqueId().toString())) {
+			if (Game.isPlayerPlaying(target.getUniqueId().toString())) {
 				sendMessage(p, RageMode.getLang().get("commands.stats.player-currently-in-game"));
 				return false;
 			}
@@ -68,7 +68,7 @@ public class ResetPlayerStats extends ICommand {
 			return false;
 		}
 
-		if (PlayerList.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
 			sendMessage(sender, RageMode.getLang().get("commands.stats.player-currently-in-game"));
 			return false;
 		}

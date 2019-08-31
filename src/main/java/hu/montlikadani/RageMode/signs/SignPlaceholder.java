@@ -5,7 +5,7 @@ import java.util.List;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
-import hu.montlikadani.ragemode.gameLogic.PlayerList;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
@@ -29,14 +29,14 @@ public class SignPlaceholder {
 				line = line.replace("%game%", game);
 
 			if (line.contains("%current-players%"))
-				line = line.replace("%current-players%", Integer.toString(PlayerList.getPlayers().size()));
+				line = line.replace("%current-players%", Integer.toString(Game.getPlayers().size()));
 
 			if (line.contains("%max-players%"))
 				line = line.replace("%max-players%", Integer.toString(GetGames.getMaxPlayers(game)));
 
 			if (line.contains("%running%")) {
 				if (GameUtils.getStatus() == GameStatus.WAITING) {
-					if (PlayerList.getPlayers().size() == GetGames.getMaxPlayers(game))
+					if (Game.getPlayers().size() == GetGames.getMaxPlayers(game))
 						line = line.replace("%running%",
 								RageMode.getInstance().getConfiguration().getCV().getSignGameFull());
 					else
@@ -45,11 +45,11 @@ public class SignPlaceholder {
 				}
 
 				line = line.replace("%running%",
-						PlayerList.isGameRunning(game)
+						Game.isGameRunning(game)
 								? RageMode.getInstance().getConfiguration().getCV().getSignGameRunning()
 								: GameUtils.getStatus() == GameStatus.NOTREADY
 										? RageMode.getInstance().getConfiguration().getCV().getSignGameLocked()
-										: RageMode.getInstance().getConfiguration().getCV().getSignGameRunning());
+										: RageMode.getInstance().getConfiguration().getCV().getSignGameWaiting());
 			}
 
 			line = RageMode.getLang().colors(line);

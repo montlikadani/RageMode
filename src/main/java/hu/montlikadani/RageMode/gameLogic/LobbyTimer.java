@@ -48,13 +48,13 @@ public class LobbyTimer extends TimerTask {
 
 	@Override
 	public void run() {
-		if (PlayerList.isGameRunning(gameName)) {
+		if (Game.isGameRunning(gameName)) {
 			cancel();
 			return;
 		}
 
 		hu.montlikadani.ragemode.config.ConfigValues fc = RageMode.getInstance().getConfiguration().getCV();
-		if (PlayerList.getPlayers().size() < fc.getMinPlayers()) {
+		if (Game.getPlayers().size() < fc.getMinPlayers()) {
 			GameUtils.setStatus(GameStatus.STOPPED);
 			cancel();
 			return;
@@ -70,7 +70,7 @@ public class LobbyTimer extends TimerTask {
 			}
 		}
 
-		for (Entry<String, String> players : PlayerList.getPlayers().entrySet()) {
+		for (Entry<String, String> players : Game.getPlayers().entrySet()) {
 			Player player = Bukkit.getPlayer(UUID.fromString(players.getValue()));
 
 			if (fc.isLobbyTitle()) {
