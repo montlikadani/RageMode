@@ -89,6 +89,10 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
+		if (plugin.getConfiguration().getCV().isCheckForUpdates() && event.getPlayer().isOp()) {
+			plugin.checkVersion("player");
+		}
+
 		HoloHolder.showAllHolosToPlayer(event.getPlayer());
 	}
 

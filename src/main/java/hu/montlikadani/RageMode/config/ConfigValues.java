@@ -47,6 +47,7 @@ public class ConfigValues {
 	private String sbTitle;
 	private String chatFormat;
 
+	private boolean checkForUpdates;
 	private boolean logConsole;
 	private boolean savePlayerData;
 	private boolean requireEmptyInv;
@@ -107,6 +108,7 @@ public class ConfigValues {
 	public void loadValues(FileConfig f) {
 		lang = f.get("language", "en");
 		statistics = f.get("statistics", "yaml");
+		checkForUpdates = f.get("check-for-updates", true);
 		logConsole = f.get("log-console", true);
 		savePlayerData = f.get("save-player-datas-to-file", false);
 		requireEmptyInv = f.get("require-empty-inventory-to-join", true);
@@ -246,6 +248,10 @@ public class ConfigValues {
 
 	public boolean isLogConsole() {
 		return logConsole;
+	}
+
+	public boolean isCheckForUpdates() {
+		return checkForUpdates;
 	}
 
 	public boolean isSavePlayerData() {

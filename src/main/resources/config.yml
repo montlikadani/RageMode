@@ -8,6 +8,9 @@ statistics: yaml
 # Logging console messages, such as error description
 log-console: true
 
+# Check for updates on plugin startup.
+check-for-updates: true
+
 # This saves the player datas, such as inventory, effects etc. to a file.
 # This can be useful for a random server shutdown.
 # If this false and "require-empty-inventory-to-join" also false then the players 

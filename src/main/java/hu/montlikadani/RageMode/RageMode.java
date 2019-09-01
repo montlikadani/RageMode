@@ -1,7 +1,10 @@
 package hu.montlikadani.ragemode;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -114,6 +117,10 @@ public class RageMode extends JavaPlugin {
 			if (conf.getCV().isBungee()) {
 				bungee = new BungeeUtils(this);
 				getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+			}
+
+			if (conf.getCV().isCheckForUpdates()) {
+				Debug.logConsole(checkVersion("console"));
 			}
 
 			registerListeners();
@@ -520,5 +527,49 @@ public class RageMode extends JavaPlugin {
 			return false;
 		}
 		return true;
+	}
+
+	public String checkVersion(String sender) {
+		String msg = "";
+		String[] nVersion;
+		String[] cVersion;
+		String lineWithVersion;
+		try {
+			URL githubUrl = new URL("https://raw.githubusercontent.com/montlikadani/RageMode/master/plugin.yml");
+			lineWithVersion = "";
+			BufferedReader br = new BufferedReader(new InputStreamReader(githubUrl.openStream()));
+			String s;
+			while ((s = br.readLine()) != null) {
+				String line = s;
+				if (line.toLowerCase().contains("version")) {
+					lineWithVersion = line;
+					break;
+				}
+			}
+
+			String versionString = lineWithVersion.split(": ")[1];
+			nVersion = versionString.split("\\.");
+			double newestVersionNumber = Double.parseDouble(nVersion[0] + "." + nVersion[1]);
+			cVersion = getDescription().getVersion().split("\\.");
+			double currentVersionNumber = Double.parseDouble(cVersion[0] + "." + cVersion[1]);
+			if (newestVersionNumber > currentVersionNumber) {
+				if (sender.equals("player")) {
+					msg = "&8&m&l--------------------------------------------------\n"
+							+ "&a A new update is available!&4 Version:&7 " + versionString
+							+ "\n&6Download:&c &nhttps://www.spigotmc.org/resources/69169/"
+							+ "\n&8&m&l--------------------------------------------------";
+				} else if (sender.equals("console")) {
+					msg = "New version (" + versionString + ") is available at https://www.spigotmc.org/resources/69169/";
+				}
+			} else if (sender.equals("console")) {
+				msg = "You're running the latest version.";
+			}
+		} catch (Throwable e) {
+			e.printStackTrace();
+			Debug.logConsole(Level.WARNING, "Failed to compare versions. " + e
+					+ " Please report it here:\nhttps://github.com/montlikadani/RageMode/issues");
+		}
+
+		return msg;
 	}
 }

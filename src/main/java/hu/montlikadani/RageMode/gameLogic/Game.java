@@ -137,7 +137,7 @@ public class Game {
 
 			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", game));
 
-			if (conf.getCV().getMinPlayers() > 0) {
+			if (conf.getCV().getMinPlayers() > 1) {
 				if (players.size() == conf.getCV().getMinPlayers()) {
 					if (lobbyTimer == null) { // do not create double class instance
 						lobbyTimer = new LobbyTimer(game, time);
@@ -176,7 +176,7 @@ public class Game {
 			final Player pl = playerToKick;
 			players.entrySet().removeIf(u -> u.getValue().equals(pl.getUniqueId().toString()));
 
-			if (conf.getCV().getMinPlayers() > 0) {
+			if (conf.getCV().getMinPlayers() > 1) {
 				if (players.size() == conf.getCV().getMinPlayers()) {
 					if (lobbyTimer == null) {
 						lobbyTimer = new LobbyTimer(game, time);
