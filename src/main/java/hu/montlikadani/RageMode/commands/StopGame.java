@@ -196,12 +196,19 @@ public class StopGame extends ICommand {
 					final PlayerPoints pP = RageScores.getPlayerPoints(playersUUID);
 
 					Thread th = null;
-					if (stats.equals("yaml")) {
+					switch (stats) {
+					case "yaml":
 						th = new Thread(YAMLStats.createPlayersStats(pP));
-					} else if (stats.equals("mysql")) {
+						break;
+					case "mysql":
 						th = new Thread(new MySQLThread(pP));
-					} else if (stats.equals("sql") || stats.equals("sqlite")) {
+						break;
+					case "sql":
+					case "sqlite":
 						th = new Thread(new SQLThread(pP));
+						break;
+					default:
+						break;
 					}
 
 					if (th != null) {
