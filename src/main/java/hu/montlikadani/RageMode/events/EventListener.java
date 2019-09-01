@@ -492,6 +492,11 @@ public class EventListener implements Listener {
 				int x = rand.nextInt(gsg.getSpawnLocations().size());
 				e.setRespawnLocation(gsg.getSpawnLocations().get(x));
 			}
+
+			int time = plugin.getConfiguration().getCV().getRespawnProtectTime();
+			if (time > 0) {
+				e.getPlayer().setNoDamageTicks(time * 20);
+			}
 		}
 	}
 

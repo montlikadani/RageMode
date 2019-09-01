@@ -171,6 +171,11 @@ game:
     # If this false if player has fallen to ground then not damage.
     damage-player-fall: false
 
+    # Respawn protection when player dead and respawned.
+    # Counts in seconds.
+    # If the value 0, ignoring the protection.
+    respawn-protection: 3
+
     # Show the player name above player head.
     # This makes the game more difficult, because if it is enabled, it hides the names of 
     # the players if the target player is not in the position of the other player's 10 radius eye.
@@ -331,4 +336,4 @@ items:
     slot: 5
 
 # Do NOT edit this!!!
-config-version: 1.2
+config-version: 1.3

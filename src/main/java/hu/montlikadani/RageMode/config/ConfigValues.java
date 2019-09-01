@@ -90,6 +90,7 @@ public class ConfigValues {
 	private int explosionKill;
 	private int suicide;
 	private int grenadeKill;
+	private int respawnProtectTime;
 
 	private List<String> signsList;
 	private List<String> actionBarActions;
@@ -162,6 +163,7 @@ public class ConfigValues {
 		lobbyTimeMsgs = f.get("game.global.lobby.values-to-send-start-message",
 				new ArrayList<Integer>(Arrays.asList(30, 20, 10, 5, 4, 3, 2, 1)));
 		damagePlayerFall = f.get("game.global.damage-player-fall", false);
+		respawnProtectTime = f.get("game.global.respawn-protection", 3);
 		gameEndBc = f.get("game.global.values-to-send-game-end-broadcast",
 				new ArrayList<Integer>(Arrays.asList(60, 30, 20, 10, 5, 4, 3, 2, 1)));
 		cancelRedstoneActivating = f.get("game.global.cancel-redstone-activating-blocks", true);
@@ -416,6 +418,10 @@ public class ConfigValues {
 
 	public boolean isDamagePlayerFall() {
 		return damagePlayerFall;
+	}
+
+	public int getRespawnProtectTime() {
+		return respawnProtectTime;
 	}
 
 	public List<Integer> getGameEndBcs() {

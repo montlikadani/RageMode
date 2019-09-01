@@ -17,7 +17,7 @@ public class Configuration {
 	private FileConfiguration config, arenas, rewards, datas;
 	private File config_file, arenas_file, rewards_file, datas_file;
 
-	private double configVersion = 1.2;
+	private double configVersion = 1.3;
 
 	private ConfigValues cv;
 
