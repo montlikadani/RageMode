@@ -23,7 +23,7 @@ public class MySQLStats {
 	private static List<PlayerPoints> points = new ArrayList<>();
 
 	public static void loadPlayerStatistics(MySQLConnect mySQL) {
-		if (mySQL.getConnection() == null || !mySQL.getConnection().isConnected()) {
+		if (!mySQL.isConnected()) {
 			return;
 		}
 
@@ -101,7 +101,7 @@ public class MySQLStats {
 	 * @param mySQL The MySQLConnect instance which holds the Connection for the database.
 	 */
 	public static void addPlayerStatistics(PlayerPoints playerPoints, MySQLConnect mySQL) {
-		if (mySQL.getConnection() == null || !mySQL.getConnection().isValid())
+		if (!mySQL.isValid())
 			return;
 
 		Connection connection = mySQL.getConnection().getConnection();
@@ -216,7 +216,7 @@ public class MySQLStats {
 	 */
 	public static List<PlayerPoints> getAllPlayerStatistics() {
 		MySQLConnect connect = RageMode.getMySQL();
-		if (connect.getConnection() == null || !connect.getConnection().isValid())
+		if (!connect.isValid())
 			return Collections.emptyList();
 
 		String uuid = null;
@@ -261,7 +261,7 @@ public class MySQLStats {
 	 * @return true if the player found in database
 	 */
 	public static boolean resetPlayerStatistic(String uuid) {
-		if (RageMode.getMySQL().getConnection() == null || !RageMode.getMySQL().getConnection().isConnected())
+		if (!RageMode.getMySQL().isConnected())
 			return false;
 
 		PlayerPoints rpp = RuntimeRPPManager.getPPForPlayer(uuid);

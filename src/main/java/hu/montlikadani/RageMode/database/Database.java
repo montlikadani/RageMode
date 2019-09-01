@@ -37,6 +37,14 @@ public class Database {
 		return conn;
 	}
 
+	public boolean isValid() {
+		return getConnection() != null && getConnection().isValid();
+	}
+
+	public boolean isConnected() {
+		return getConnection() != null && getConnection().isConnected();
+	}
+
 	public String getPrefix() {
 		return prefix;
 	}

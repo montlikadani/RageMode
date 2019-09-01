@@ -23,7 +23,7 @@ public class SQLStats {
 	private static List<PlayerPoints> points = new ArrayList<>();
 
 	public static void loadPlayerStatistics(SQLConnect sqlConnect) {
-		if (sqlConnect.getConnection() == null || !sqlConnect.getConnection().isConnected()) {
+		if (!sqlConnect.isConnected()) {
 			return;
 		}
 
@@ -101,7 +101,7 @@ public class SQLStats {
 	 * @param sqlConnect The SQLConnect instance which holds the Connection for the database.
 	 */
 	public static void addPlayerStatistics(PlayerPoints playerPoints, SQLConnect sqlConnect) {
-		if (sqlConnect.getConnection() == null || !sqlConnect.getConnection().isValid())
+		if (!sqlConnect.isValid())
 			return;
 
 		Connection connection = sqlConnect.getConnection().getConnection();
@@ -216,7 +216,7 @@ public class SQLStats {
 	 */
 	public static List<PlayerPoints> getAllPlayerStatistics() {
 		SQLConnect connect = RageMode.getSQL();
-		if (connect.getConnection() == null || !connect.getConnection().isValid())
+		if (!connect.isValid())
 			return Collections.emptyList();
 
 		String uuid = null;
@@ -262,7 +262,7 @@ public class SQLStats {
 	 * @return true if the player found in database
 	 */
 	public static boolean resetPlayerStatistic(String uuid) {
-		if (RageMode.getSQL().getConnection() == null || !RageMode.getSQL().getConnection().isConnected())
+		if (!RageMode.getSQL().isConnected())
 			return false;
 
 		PlayerPoints rpp = RuntimeRPPManager.getPPForPlayer(uuid);

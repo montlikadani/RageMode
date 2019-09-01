@@ -113,7 +113,6 @@ public class RageMode extends JavaPlugin {
 
 			if (conf.getCV().isBungee()) {
 				bungee = new BungeeUtils(this);
-
 				getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 			}
 
@@ -378,9 +377,9 @@ public class RageMode extends JavaPlugin {
 
 		if (conf.getArenasCfg().contains("arenas")) {
 			for (String game : GetGames.getGameNames()) {
-				games.add(new Game(game));
-
 				if (game != null) {
+					games.add(new Game(game));
+
 					if (Game.isGameRunning(game)) {
 						GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
 					}

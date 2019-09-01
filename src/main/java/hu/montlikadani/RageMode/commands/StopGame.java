@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.commands;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -189,17 +188,17 @@ public class StopGame extends ICommand {
 
 	private static void finishStopping(String game) {
 		if (Game.isGameRunning(game)) {
-			List<PlayerPoints> lPP = new ArrayList<>();
 			List<String> players = Game.getPlayersFromList();
 
 			String stats = RageMode.getInstance().getConfiguration().getCV().getStatistics();
 			for (String playersUUID : players) {
 				if (playersUUID != null && RageScores.getPlayerPoints(playersUUID) != null) {
 					final PlayerPoints pP = RageScores.getPlayerPoints(playersUUID);
-					lPP.add(pP);
 
 					Thread th = null;
-					if (stats.equals("mysql")) {
+					if (stats.equals("yaml")) {
+						th = new Thread(YAMLStats.createPlayersStats(pP));
+					} else if (stats.equals("mysql")) {
 						th = new Thread(new MySQLThread(pP));
 					} else if (stats.equals("sql") || stats.equals("sqlite")) {
 						th = new Thread(new SQLThread(pP));
@@ -216,11 +215,6 @@ public class StopGame extends ICommand {
 							HoloHolder.updateHolosForPlayer(Bukkit.getPlayer(UUID.fromString(playersUUID))));
 					});
 				}
-			}
-
-			if (stats.equals("yaml")) {
-				Thread thread = new Thread(YAMLStats.createPlayersStats(lPP));
-				thread.start();
 			}
 
 			for (String playersUUID : players) {

@@ -94,95 +94,83 @@ public class YAMLStats {
 			Debug.logConsole("Loaded " + totalPlayers + " player" + (totalPlayers > 1 ? "s" : "") + " database.");
 	}
 
-	public static void addPlayerStatistics(List<PlayerPoints> pP) {
+	public static void addPlayerStatistics(PlayerPoints points) {
 		if (!inited) return;
 
-		int i = 0;
-		int imax = pP.size();
+		String uuid = points.getPlayerUUID();
+		String path = "data." + uuid + ".";
 
-		while (i < imax) {
-			PlayerPoints points = pP.get(i);
-			if (points == null) {
-				return; // Do not throw exception if the player not found
-			}
+		if (statsConf.isConfigurationSection("data")
+				&& statsConf.getConfigurationSection("data").getKeys(false).contains(uuid)) {
+			statsConf.set(path + "name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
 
-			String uuid = points.getPlayerUUID();
-			String path = "data." + uuid + ".";
+			int kills = statsConf.getInt(path + "kills");
+			int axeKills = statsConf.getInt(path + "axe-kills");
+			int directArrowKills = statsConf.getInt(path + "direct-arrow-kills");
+			int explosionKills = statsConf.getInt(path + "explosion-kills");
+			int knifeKills = statsConf.getInt(path + "knife-kills");
 
-			if (statsConf.isConfigurationSection("data") &&
-					statsConf.getConfigurationSection("data").getKeys(false).contains(uuid)) {
-				statsConf.set(path + "name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
+			int deaths = statsConf.getInt(path + "deaths");
+			int axeDeaths = statsConf.getInt(path + "axe-deaths");
+			int directArrowDeaths = statsConf.getInt(path + "direct-arrow-deaths");
+			int explosionDeaths = statsConf.getInt(path + "explosion-deaths");
+			int knifeDeaths = statsConf.getInt(path + "knife-deaths");
 
-				int kills = statsConf.getInt(path + "kills");
-				int axeKills = statsConf.getInt(path + "axe-kills");
-				int directArrowKills = statsConf.getInt(path + "direct-arrow-kills");
-				int explosionKills = statsConf.getInt(path + "explosion-kills");
-				int knifeKills = statsConf.getInt(path + "knife-kills");
+			int wins = statsConf.getInt(path + "wins");
+			int games = statsConf.getInt(path + "games");
+			int score = statsConf.getInt(path + "score");
 
-				int deaths = statsConf.getInt(path + "deaths");
-				int axeDeaths = statsConf.getInt(path + "axe-deaths");
-				int directArrowDeaths = statsConf.getInt(path + "direct-arrow-deaths");
-				int explosionDeaths = statsConf.getInt(path + "explosion-deaths");
-				int knifeDeaths = statsConf.getInt(path + "knife-deaths");
+			statsConf.set(path + "kills", (kills + points.getKills()));
+			statsConf.set(path + "axe_kills", (axeKills + points.getAxeKills()));
+			statsConf.set(path + "direct_arrow_kills", (directArrowKills + points.getDirectArrowKills()));
+			statsConf.set(path + "explosion_kills", (explosionKills + points.getExplosionKills()));
+			statsConf.set(path + "knife_kills", (knifeKills + points.getKnifeKills()));
 
-				int wins = statsConf.getInt(path + "wins");
-				int games = statsConf.getInt(path + "games");
-				int score = statsConf.getInt(path + "score");
+			statsConf.set(path + "deaths", (deaths + points.getDeaths()));
+			statsConf.set(path + "axe_deaths", (axeDeaths + points.getAxeDeaths()));
+			statsConf.set(path + "direct_arrow_deaths", (directArrowDeaths + points.getDirectArrowDeaths()));
+			statsConf.set(path + "explosion_deaths", (explosionDeaths + points.getExplosionDeaths()));
+			statsConf.set(path + "knife_deaths", (knifeDeaths + points.getKnifeDeaths()));
 
-				statsConf.set(path + "kills", (kills + points.getKills()));
-				statsConf.set(path + "axe_kills", (axeKills + points.getAxeKills()));
-				statsConf.set(path + "direct_arrow_kills", (directArrowKills + points.getDirectArrowKills()));
-				statsConf.set(path + "explosion_kills", (explosionKills + points.getExplosionKills()));
-				statsConf.set(path + "knife_kills", (knifeKills + points.getKnifeKills()));
+			if (points.isWinner())
+				statsConf.set(path + "wins", (wins + 1));
+			else
+				statsConf.set(path + "wins", wins);
 
-				statsConf.set(path + "deaths", (deaths + points.getDeaths()));
-				statsConf.set(path + "axe_deaths", (axeDeaths + points.getAxeDeaths()));
-				statsConf.set(path + "direct_arrow_deaths", (directArrowDeaths + points.getDirectArrowDeaths()));
-				statsConf.set(path + "explosion_deaths", (explosionDeaths + points.getExplosionDeaths()));
-				statsConf.set(path + "knife_deaths", (knifeDeaths + points.getKnifeDeaths()));
+			statsConf.set(path + "score", (points.getPoints() + score));
+			statsConf.set(path + "games", (games + 1));
+			if ((deaths + points.getDeaths()) != 0)
+				statsConf.set(path + "KD",
+						((double) ((kills + points.getKills())) / ((double) (deaths + points.getDeaths()))));
+			else
+				statsConf.set(path + "KD", 1.0d);
 
-				if (points.isWinner())
-					statsConf.set(path + "wins", (wins + 1));
-				else
-					statsConf.set(path + "wins", wins);
+		} else {
+			statsConf.set(path + "name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
 
-				statsConf.set(path + "score", score + points.getPoints());
-				statsConf.set(path + "games", (games + 1));
-				if ((deaths + points.getDeaths()) != 0)
-					statsConf.set(path + "KD", ((double) ((kills + points.getKills())) / ((double)
-							(deaths + points.getDeaths()))));
-				else
-					statsConf.set(path + "KD", 1.0d);
+			statsConf.set(path + "kills", points.getKills());
+			statsConf.set(path + "axe_kills", points.getAxeKills());
+			statsConf.set(path + "direct_arrow_kills", points.getDirectArrowKills());
+			statsConf.set(path + "explosion_kills", points.getExplosionKills());
+			statsConf.set(path + "knife_kills", points.getKnifeKills());
 
-			} else {
-				statsConf.set(path + "name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
+			statsConf.set(path + "deaths", points.getDeaths());
+			statsConf.set(path + "axe_deaths", points.getAxeDeaths());
+			statsConf.set(path + "direct_arrow_deaths", points.getDirectArrowDeaths());
+			statsConf.set(path + "explosion_deaths", points.getExplosionDeaths());
+			statsConf.set(path + "knife_deaths", points.getKnifeDeaths());
 
-				statsConf.set(path + "kills", points.getKills());
-				statsConf.set(path + "axe_kills", points.getAxeKills());
-				statsConf.set(path + "direct_arrow_kills", points.getDirectArrowKills());
-				statsConf.set(path + "explosion_kills", points.getExplosionKills());
-				statsConf.set(path + "knife_kills", points.getKnifeKills());
+			if (points.isWinner())
+				statsConf.set(path + "wins", 1);
+			else
+				statsConf.set(path + "wins", 0);
 
-				statsConf.set(path + "deaths", points.getDeaths());
-				statsConf.set(path + "axe_deaths", points.getAxeDeaths());
-				statsConf.set(path + "direct_arrow_deaths", points.getDirectArrowDeaths());
-				statsConf.set(path + "explosion_deaths", points.getExplosionDeaths());
-				statsConf.set(path + "knife_deaths", points.getKnifeDeaths());
-
-				if (points.isWinner())
-					statsConf.set(path + "wins", 1);
-				else
-					statsConf.set(path + "wins", 0);
-
-				statsConf.set(path + "score", points.getPoints());
-				statsConf.set(path + "games", 1);
-				if (points.getDeaths() != 0)
-					statsConf.set(path + "KD",
-							((double) points.getKills()) / ((double) points.getDeaths()));
-				else
-					statsConf.set(path + "KD", 1.0d);
-			}
-			i++;
+			statsConf.set(path + "score", points.getPoints());
+			statsConf.set(path + "games", 1);
+			if (points.getDeaths() != 0)
+				statsConf.set(path + "KD", ((double) points.getKills()) / ((double) points.getDeaths()));
+			else
+				statsConf.set(path + "KD", 1.0d);
 		}
 
 		Configuration.saveFile(statsConf, yamlStatsFile);
@@ -279,11 +267,11 @@ public class YAMLStats {
 	}
 
 	private static class AddToPlayersStats implements Runnable {
-		private List<PlayerPoints> lsUUIDs = null;
+		private PlayerPoints uuids = null;
 
-		public AddToPlayersStats(List<PlayerPoints> ls) {
+		public AddToPlayersStats(PlayerPoints uuids) {
 			super();
-			this.lsUUIDs = ls;
+			this.uuids = uuids;
 		}
 
 		@Override
@@ -297,12 +285,12 @@ public class YAMLStats {
 				}
 			}
 			working = true;
-			addPlayerStatistics(lsUUIDs);
+			addPlayerStatistics(uuids);
 			working = false;
 		}
 	}
 
-	public static AddToPlayersStats createPlayersStats(List<PlayerPoints> ls) {
-		return new AddToPlayersStats(ls);
+	public static AddToPlayersStats createPlayersStats(PlayerPoints pp) {
+		return new AddToPlayersStats(pp);
 	}
 }
