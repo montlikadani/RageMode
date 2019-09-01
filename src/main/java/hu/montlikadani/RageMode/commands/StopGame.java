@@ -23,7 +23,7 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.gameUtils.Titles;
 import hu.montlikadani.ragemode.holder.HoloHolder;
-import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
+import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
@@ -216,7 +216,7 @@ public class StopGame extends ICommand {
 					}
 
 					Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
-						RuntimeRPPManager.updatePlayerEntry(pP);
+						RuntimePPManager.updatePlayerEntry(pP);
 
 						Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () ->
 							HoloHolder.updateHolosForPlayer(Bukkit.getPlayer(UUID.fromString(playersUUID))));

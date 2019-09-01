@@ -9,14 +9,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import hu.montlikadani.ragemode.API.event.BaseEvent;
-import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
+import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
-import hu.montlikadani.ragemode.statistics.YAMLStats;
 
 public class Utils {
 
@@ -99,89 +97,97 @@ public class Utils {
 	 * @return String
 	 */
 	public static String setPlaceholders(String s, Player player) {
-		FileConfiguration c = YAMLStats.getConf();
+		return setPlaceholders(s, player, false);
+	}
 
-		if (!c.contains("data." + player.getUniqueId().toString())) {
-			return RageMode.getLang().colors(s);
+	/**
+	 * Sets the available placeholders to that string, that manages from RageMode
+	 * @param s String to replace the variables
+	 * @param player Player
+	 * @param fromDatabase true - get stats from database, false - from class instance
+	 * @return String
+	 */
+	public static String setPlaceholders(String s, Player player, boolean fromDatabase) {
+		PlayerPoints pp = null;
+		if (fromDatabase) {
+			pp = RuntimePPManager.getPPFromDatabase(player.getUniqueId().toString());
+		} else {
+			pp = RuntimePPManager.getPPForPlayer(player.getUniqueId().toString());
 		}
 
-		String path = "data." + player.getUniqueId().toString() + ".";
-
 		if (s.contains("%kills%")) {
-			int kills = c.getInt(path + "kills");
+			int kills = pp == null ? 0 : pp.getKills();
 			s = s.replace("%kills%", Integer.toString(kills));
 		}
 
 		if (s.contains("%axe-kills%")) {
-			int axeKills = c.getInt(path + "axe_kills");
+			int axeKills = pp == null ? 0 : pp.getAxeKills();
 			s = s.replace("%axe-kills%", Integer.toString(axeKills));
 		}
 
 		if (s.contains("%direct-arrow-kills%")) {
-			int directArrowKills = c.getInt(path + "direct_arrow_kills");
+			int directArrowKills = pp == null ? 0 : pp.getDirectArrowKills();
 			s = s.replace("%direct-arrow-kills%", Integer.toString(directArrowKills));
 		}
 
 		if (s.contains("%explosion-kills%")) {
-			int explosionKills = c.getInt(path + "explosion_kills");
+			int explosionKills = pp == null ? 0 : pp.getExplosionKills();
 			s = s.replace("%explosion-kills%", Integer.toString(explosionKills));
 		}
 
 		if (s.contains("%knife-kills%")) {
-			int knifeKills = c.getInt(path + "knife_kills");
+			int knifeKills = pp == null ? 0 : pp.getKnifeKills();
 			s = s.replace("%knife-kills%", Integer.toString(knifeKills));
 		}
 
 		if (s.contains("%deaths%")) {
-			int deaths = c.getInt(path + "deaths");
+			int deaths = pp == null ? 0 : pp.getDeaths();
 			s = s.replace("%deaths%", Integer.toString(deaths));
 		}
 
 		if (s.contains("%axe-deaths%")) {
-			int axeDeaths = c.getInt(path + "axe_deaths");
+			int axeDeaths = pp == null ? 0 : pp.getAxeDeaths();
 			s = s.replace("%axe-deaths%", Integer.toString(axeDeaths));
 		}
 
 		if (s.contains("%direct-arrow-deaths%")) {
-			int directArrowDeaths = c.getInt(path + "direct_arrow_deaths");
+			int directArrowDeaths = pp == null ? 0 : pp.getDirectArrowDeaths();
 			s = s.replace("%direct-arrow-deaths%", Integer.toString(directArrowDeaths));
 		}
 
 		if (s.contains("%explosion-deaths%")) {
-			int explosionDeaths = c.getInt(path + "explosion_deaths");
+			int explosionDeaths = pp == null ? 0 : pp.getExplosionDeaths();
 			s = s.replace("%explosion-deaths%", Integer.toString(explosionDeaths));
 		}
 
 		if (s.contains("%knife-deaths%")) {
-			int knifeDeaths = c.getInt(path + "knife_deaths");
+			int knifeDeaths = pp == null ? 0 : pp.getKnifeDeaths();
 			s = s.replace("%knife-deaths%", Integer.toString(knifeDeaths));
 		}
 
 		if (s.contains("%kd%")) {
-			int kd = c.getInt(path + "KD");
+			double kd = pp == null ? 0d : pp.getKD();
 			NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
 			s = s.replace("%kd%", format.format(kd));
 		}
 
-		PlayerPoints rpp = RuntimeRPPManager.getPPForPlayer(player.getUniqueId().toString());
-
 		if (s.contains("%current-streak%"))
-			s = s.replace("%current-streak%", rpp == null ? "0" : Integer.toString(rpp.getCurrentStreak()));
+			s = s.replace("%current-streak%", pp == null ? "0" : Integer.toString(pp.getCurrentStreak()));
 
 		if (s.contains("%longest-streak%"))
-			s = s.replace("%longest-streak%", rpp == null ? "0" : Integer.toString(rpp.getLongestStreak()));
+			s = s.replace("%longest-streak%", pp == null ? "0" : Integer.toString(pp.getLongestStreak()));
 
 		if (s.contains("%points%"))
-			s = s.replace("%points%", rpp == null ? "0" : Integer.toString(rpp.getPoints()));
+			s = s.replace("%points%", pp == null ? "0" : Integer.toString(pp.getPoints()));
 
 		if (s.contains("%games%"))
-			s = s.replace("%games%", rpp == null ? "0" : Integer.toString(rpp.getGames()));
+			s = s.replace("%games%", pp == null ? "0" : Integer.toString(pp.getGames()));
 
 		if (s.contains("%wins%"))
-			s = s.replace("%wins%", rpp == null ? "0" : Integer.toString(rpp.getWins()));
+			s = s.replace("%wins%", pp == null ? "0" : Integer.toString(pp.getWins()));
 
 		if (s.contains("%rank%"))
-			s = s.replace("%rank%", rpp == null ? "0" : Integer.toString(rpp.getRank()));
+			s = s.replace("%rank%", pp == null ? "0" : Integer.toString(pp.getRank()));
 
 		return RageMode.getLang().colors(s);
 	}

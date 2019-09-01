@@ -1,6 +1,6 @@
 package hu.montlikadani.ragemode.scores;
 
-public class PlayerPoints implements Comparable<PlayerPoints> {
+public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 
 	private String playerUUID;
 
@@ -189,5 +189,16 @@ public class PlayerPoints implements Comparable<PlayerPoints> {
 	@Override
 	public int compareTo(PlayerPoints anotherPlayerPoints) {
 		return anotherPlayerPoints.getPoints().compareTo(points);
+	}
+
+	@Override
+	public Object clone() {
+		try {
+			return super.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 }

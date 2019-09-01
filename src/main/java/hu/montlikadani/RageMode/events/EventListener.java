@@ -462,6 +462,15 @@ public class EventListener implements Listener {
 				GameUtils.runCommands(deceased, game, "death");
 			}
 
+			try {
+				Class.forName("org.spigotmc.SpigotConfig");
+
+				// respawn player instantly
+				Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, deceased.spigot()::respawn, 1L);
+			} catch (ClassNotFoundException c) {
+				// Ignore
+			}
+
 			GameUtils.addGameItems(deceased, true);
 		}
 	}

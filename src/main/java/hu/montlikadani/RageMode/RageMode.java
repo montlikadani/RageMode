@@ -38,7 +38,7 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.metrics.Metrics;
-import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
+import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignConfiguration;
 import hu.montlikadani.ragemode.signs.SignCreator;
@@ -266,7 +266,7 @@ public class RageMode extends JavaPlugin {
 		YAMLStats.initS();
 		YAMLStats.loadPlayerStatistics();
 
-		RuntimeRPPManager.getPPListFromYAML();
+		RuntimePPManager.getPPListFromYAML();
 	}
 
 	private void connectMySQL() {
@@ -296,7 +296,7 @@ public class RageMode extends JavaPlugin {
 		}
 
 		MySQLStats.loadPlayerStatistics(mySQLConnect);
-		RuntimeRPPManager.getPPListFromMySQL();
+		RuntimePPManager.getPPListFromMySQL();
 	}
 
 	private void connectSQL() {
@@ -322,7 +322,7 @@ public class RageMode extends JavaPlugin {
 		}
 
 		SQLStats.loadPlayerStatistics(sqlConnect);
-		RuntimeRPPManager.getPPListFromSQL();
+		RuntimePPManager.getPPListFromSQL();
 	}
 
 	private void loadDatabases() {

@@ -1,16 +1,17 @@
-package hu.montlikadani.ragemode.runtimeRPP;
+package hu.montlikadani.ragemode.runtimePP;
 
 import java.util.List;
 import java.util.logging.Level;
 
 import hu.montlikadani.ragemode.Debug;
+import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.MergeSort;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.SQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 
-public class RuntimeRPPManager {
+public class RuntimePPManager {
 
 	private static List<PlayerPoints> RuntimePPList;
 
@@ -30,6 +31,31 @@ public class RuntimeRPPManager {
 		RuntimePPList = YAMLStats.getAllPlayerStatistics();
 		MergeSort ms = new MergeSort();
 		ms.sort(RuntimePPList);
+	}
+
+	/**
+	 * Gets the specified player statistics from database.
+	 * @param uuid Player uuid
+	 * @return {@link PlayerPoints}
+	 */
+	public static PlayerPoints getPPFromDatabase(String uuid) {
+		PlayerPoints pp = null;
+		switch (RageMode.getInstance().getConfiguration().getCV().getStatistics()) {
+		case "yaml":
+			pp = YAMLStats.getPlayerStatsFromData(uuid);
+			break;
+		case "sql":
+		case "sqlite":
+			pp = SQLStats.getPlayerStatsFromData(uuid);
+			break;
+		case "mysql":
+			pp = MySQLStats.getPlayerStatsFromData(uuid);
+			break;
+		default:
+			break;
+		}
+
+		return pp;
 	}
 
 	public static PlayerPoints getPPForPlayer(String sUUID) {

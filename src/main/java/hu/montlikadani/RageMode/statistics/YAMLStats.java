@@ -14,7 +14,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
+import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
 
@@ -75,14 +75,13 @@ public class YAMLStats {
 
 		for (String one : section.getKeys(false)) {
 			String path = "data." + one + ".";
-			PlayerPoints plPo = RuntimeRPPManager.getPPForPlayer(one);
+			PlayerPoints plPo = RuntimePPManager.getPPForPlayer(one);
 			if (plPo == null) {
 				plPo = new PlayerPoints(one);
 				RageScores.getPlayerPointsMap().put(UUID.fromString(one).toString(), plPo);
 			}
 
 			plPo.setWins(statsConf.getInt(path + "wins"));
-			plPo.setPoints(statsConf.getInt(path + "score"));
 			plPo.setGames(statsConf.getInt(path + "games"));
 
 			points.add(plPo);
@@ -217,6 +216,67 @@ public class YAMLStats {
 	}
 
 	/**
+	 * Gets all player stats from database.
+	 * <p>If the player never played and not found in the database, will be ignored.
+	 * 
+	 * @param uuid Player uuid
+	 * @return {@link PlayerPoints}
+	 */
+	public static PlayerPoints getPlayerStatsFromData(String uuid) {
+		PlayerPoints pp = null;
+
+		if (!statsConf.contains("data." + uuid)) {
+			return null;
+		}
+
+		String path = "data." + uuid + ".";
+
+		int kills = statsConf.getInt(path + "kills");
+		int axeKills = statsConf.getInt(path + "axe-kills");
+		int directArrowKills = statsConf.getInt(path + "direct-arrow-kills");
+		int explosionKills = statsConf.getInt(path + "explosion-kills");
+		int knifeKills = statsConf.getInt(path + "knife-kills");
+
+		int deaths = statsConf.getInt(path + "deaths");
+		int axeDeaths = statsConf.getInt(path + "axe-deaths");
+		int directArrowDeaths = statsConf.getInt(path + "direct-arrow-deaths");
+		int explosionDeaths = statsConf.getInt(path + "explosion-deaths");
+		int knifeDeaths = statsConf.getInt(path + "knife-deaths");
+
+		int wins = statsConf.getInt(path + "wins");
+		int games = statsConf.getInt(path + "games");
+		int score = statsConf.getInt(path + "score");
+		int KD = statsConf.getInt(path + "KD");
+
+		pp = RuntimePPManager.getPPForPlayer(uuid);
+		if (pp == null) {
+			return null;
+		}
+
+		// Cloning to ignore overwrite
+		pp = (PlayerPoints) pp.clone();
+
+		pp.setKills(kills);
+		pp.setAxeKills(axeKills);
+		pp.setDirectArrowKills(directArrowKills);
+		pp.setExplosionKills(explosionKills);
+		pp.setKnifeKills(knifeKills);
+
+		pp.setDeaths(deaths);
+		pp.setAxeDeaths(axeDeaths);
+		pp.setDirectArrowDeaths(directArrowDeaths);
+		pp.setExplosionDeaths(explosionDeaths);
+		pp.setKnifeDeaths(knifeDeaths);
+
+		pp.setWins(wins);
+		pp.setPoints(score);
+		pp.setGames(games);
+		pp.setKD(KD);
+
+		return pp;
+	}
+
+	/**
 	 * Restores all data of the specified player to 0
 	 * @param uuid UUID of player
 	 * @return true if the class inited and player found in database
@@ -248,7 +308,7 @@ public class YAMLStats {
 
 		Configuration.saveFile(statsConf, yamlStatsFile);
 
-		PlayerPoints rpp = RuntimeRPPManager.getPPForPlayer(uuid);
+		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
 		if (rpp != null) {
 			rpp.setCurrentStreak(0);
 			rpp.setLongestStreak(0);

@@ -14,7 +14,7 @@ import org.bukkit.Bukkit;
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.database.MySQLConnect;
-import hu.montlikadani.ragemode.runtimeRPP.RuntimeRPPManager;
+import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
 
@@ -49,7 +49,7 @@ public class MySQLStats {
 				currentGames = rs.getInt("games");
 
 				String playerUUID = rs.getString("uuid");
-				PlayerPoints rPP = RuntimeRPPManager.getPPForPlayer(playerUUID);
+				PlayerPoints rPP = RuntimePPManager.getPPForPlayer(playerUUID);
 				if (rPP == null) {
 					rPP = new PlayerPoints(playerUUID);
 					RageScores.getPlayerPointsMap().put(UUID.fromString(playerUUID).toString(), rPP);
@@ -256,6 +256,111 @@ public class MySQLStats {
 	}
 
 	/**
+	 * Gets all player stats from database.
+	 * <p>If the player never played and not found in the database, will be ignored.
+	 * 
+	 * @param uuid Player uuid
+	 * @return {@link PlayerPoints}
+	 */
+	public static PlayerPoints getPlayerStatsFromData(String uuid) {
+		MySQLConnect connect = RageMode.getMySQL();
+		if (!connect.isValid())
+			return null;
+
+		PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid);
+		if (pp == null) {
+			return null;
+		}
+
+		// Cloning to ignore overwrite
+		pp = (PlayerPoints) pp.clone();
+
+		Connection connection = connect.getConnection().getConnection();
+
+		Statement statement = null;
+		String query = "SELECT * FROM " + connect.getPrefix() + "stats_players;";
+
+		int currentKills = 0;
+		int currentAxeKills = 0;
+		int currentDirectArrowKills = 0;
+		int currentExplosionKills = 0;
+		int currentKnifeKills = 0;
+
+		int currentDeaths = 0;
+		int currentAxeDeaths = 0;
+		int currentDirectArrowDeaths = 0;
+		int currentExplosionDeaths = 0;
+		int currentKnifeDeaths = 0;
+
+		int currentWins = 0;
+		int currentScore = 0;
+		int currentGames = 0;
+		double currentKD = 0;
+
+		try {
+			statement = connection.createStatement();
+			ResultSet rs = connect.getConnection().executeQuery(statement, query);
+			while (rs.next()) {
+				if (rs.getString("uuid").equals(uuid)) {
+					currentKills = rs.getInt("kills");
+					currentAxeKills = rs.getInt("axe_kills");
+					currentDirectArrowKills = rs.getInt("direct_arrow_kills");
+					currentExplosionKills = rs.getInt("explosion_kills");
+					currentKnifeKills = rs.getInt("knife_kills");
+
+					currentDeaths = rs.getInt("deaths");
+					currentAxeDeaths = rs.getInt("axe_deaths");
+					currentDirectArrowDeaths = rs.getInt("direct_arrow_deaths");
+					currentExplosionDeaths = rs.getInt("explosion_deaths");
+					currentKnifeDeaths = rs.getInt("knife_deaths");
+
+					currentWins = rs.getInt("wins");
+					currentScore = rs.getInt("score");
+					currentGames = rs.getInt("games");
+					currentKD = rs.getDouble("kd");
+
+					pp.setKills(currentKills);
+					pp.setAxeKills(currentAxeKills);
+					pp.setDirectArrowKills(currentDirectArrowKills);
+					pp.setExplosionKills(currentExplosionKills);
+					pp.setKnifeKills(currentKnifeKills);
+
+					pp.setDeaths(currentDeaths);
+					pp.setAxeDeaths(currentAxeDeaths);
+					pp.setDirectArrowDeaths(currentDirectArrowDeaths);
+					pp.setExplosionDeaths(currentExplosionDeaths);
+					pp.setKnifeDeaths(currentKnifeDeaths);
+
+					pp.setWins(currentWins);
+					pp.setPoints(currentScore);
+					pp.setGames(currentGames);
+					pp.setKD(currentKD);
+				}
+			}
+
+			rs.close();
+		} catch (SQLException e) {
+			try {
+				connection.close();
+			} catch (SQLException e2) {
+				e2.printStackTrace();
+			}
+
+			return null;
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		return pp;
+	}
+
+	/**
 	 * Restores all data of the specified player to 0
 	 * @param uuid UUID of player
 	 * @return true if the player found in database
@@ -264,7 +369,7 @@ public class MySQLStats {
 		if (!RageMode.getMySQL().isConnected())
 			return false;
 
-		PlayerPoints rpp = RuntimeRPPManager.getPPForPlayer(uuid);
+		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
 		if (rpp == null)
 			return false;
 
