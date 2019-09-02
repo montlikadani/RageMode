@@ -17,6 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
@@ -29,46 +30,12 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 	public RmCommand() {
 		arg.clear();
 
-		//TODO How to short this?
-		arg.put("addgame", AddGame.class.getName());
-		arg.put("addspawn", AddSpawn.class.getName());
-		arg.put("forcestart", ForceStart.class.getName());
-		arg.put("holostats", HoloStats.class.getName());
-		arg.put("holo", HoloStats.class.getName());
-
-		arg.put("kick", KickPlayer.class.getName());
-		arg.put("listgames", ListGames.class.getName());
-		arg.put("list", ListGames.class.getName());
-
-		arg.put("join", PlayerJoin.class.getName());
-		arg.put("leave", PlayerLeave.class.getName());
-		arg.put("points", Points.class.getName());
-		arg.put("reload", Reload.class.getName());
-		arg.put("rl", Reload.class.getName());
-
-		arg.put("removegame", RemoveGame.class.getName());
-		arg.put("resetstats", ResetPlayerStats.class.getName());
-		arg.put("actionbar", SetActionBar.class.getName());
-		arg.put("bossbar", SetBossBar.class.getName());
-		arg.put("gametime", SetGameTime.class.getName());
-		arg.put("globalmessages", SetGlobalMessages.class.getName());
-		arg.put("globalmsgs", SetGlobalMessages.class.getName());
-
-		arg.put("setlobby", SetLobby.class.getName());
-		arg.put("lobbydelay", SetLobbyDelay.class.getName());
-		arg.put("stats", ShowStats.class.getName());
-		arg.put("signupdate", SignUpdate.class.getName());
-		arg.put("spectate", Spectate.class.getName());
-		arg.put("spec", Spectate.class.getName());
-
-		arg.put("stopgame", StopGame.class.getName());
-		arg.put("stop", StopGame.class.getName());
-
-		arg.put("togglegame", ToggleGame.class.getName());
-		arg.put("givesaveditems", GiveSavedItems.class.getName());
-		arg.put("removespawn", RemoveSpawn.class.getName());
-		arg.put("latestart", LateStart.class.getName());
-		arg.put("listplayers", ListPlayers.class.getName());
+		String path = "hu.montlikadani.ragemode.commands.list";
+		List<Class<?>> classes = Utils.getClasses(path);
+		for (int i = 0; i < classes.size(); i++) {
+			String className = classes.get(i).getName().toLowerCase();
+			arg.put(className.replace(path + ".", ""), className);
+		}
 	}
 
 	@Override
@@ -263,6 +230,8 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 					} catch (Throwable t) {
 						t.printStackTrace();
 					}
+				} else {
+					sendMessage(sender, RageMode.getLang().get("wrong-command"));
 				}
 			}
 		}
@@ -360,5 +329,9 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 
 	private List<String> getValueListCmds() {
 		return Arrays.asList("actionbar", "bossbar", "globalmessages");
+	}
+
+	public enum Actions {
+		Set, Add, Take;
 	}
 }

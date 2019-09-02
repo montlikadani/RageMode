@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.commands;
+package hu.montlikadani.ragemode.commands.list;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -12,7 +12,7 @@ import hu.montlikadani.ragemode.utils.ICommand;
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class ForceStart extends ICommand {
+public class forcestart extends ICommand {
 
 	@Override
 	public boolean run(CommandSender sender, String[] args) {

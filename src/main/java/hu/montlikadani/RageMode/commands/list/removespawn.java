@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.commands;
+package hu.montlikadani.ragemode.commands.list;
 
 import java.util.logging.Level;
 
@@ -20,7 +20,7 @@ import hu.montlikadani.ragemode.utils.ICommand;
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class RemoveSpawn extends ICommand {
+public class removespawn extends ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {

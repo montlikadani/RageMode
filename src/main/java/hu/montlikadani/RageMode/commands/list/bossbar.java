@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.commands;
+package hu.montlikadani.ragemode.commands.list;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -12,7 +12,7 @@ import hu.montlikadani.ragemode.utils.ICommand;
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class SetGlobalMessages extends ICommand {
+public class bossbar extends ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
@@ -22,7 +22,7 @@ public class SetGlobalMessages extends ICommand {
 		}
 
 		Player p = (Player) sender;
-		if (!hasPerm(p, "ragemode.admin.setglobalmessages")) {
+		if (!hasPerm(p, "ragemode.admin.setbossbar")) {
 			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return false;
 		}
@@ -38,11 +38,16 @@ public class SetGlobalMessages extends ICommand {
 				return false;
 			}
 
-			plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".death-messages", Boolean.parseBoolean(args[2]));
+			if (!(args[2].equalsIgnoreCase("true") || args[2].equalsIgnoreCase("false"))) {
+				sendMessage(p, RageMode.getLang().get("not-a-boolean", "%value%", args[2]));
+				return false;
+			}
+
+			plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".bossbar", Boolean.parseBoolean(args[2]));
 			Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 			sendMessage(p, RageMode.getLang().get("setup.success"));
 		} else
-			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName> <true|false>"));
+			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm bossbar <gameName> <true|false>"));
 		return false;
 	}
 }

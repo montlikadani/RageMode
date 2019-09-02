@@ -24,7 +24,6 @@ import com.google.common.base.StandardSystemProperty;
 
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.commands.RmCommand;
-import hu.montlikadani.ragemode.commands.StopGame;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.Language;
 import hu.montlikadani.ragemode.database.MySQLConnect;
@@ -400,7 +399,7 @@ public class RageMode extends JavaPlugin {
 				}
 			}
 
-			StopGame.stopAllGames();
+			GameUtils.stopAllGames();
 		}
 
 		if (conf.getCV().isSignsEnable()) {

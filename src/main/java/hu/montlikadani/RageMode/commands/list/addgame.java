@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.commands;
+package hu.montlikadani.ragemode.commands.list;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -17,7 +17,7 @@ import hu.montlikadani.ragemode.utils.ICommand;
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class AddGame extends ICommand {
+public class addgame extends ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {

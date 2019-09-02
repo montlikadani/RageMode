@@ -1,9 +1,14 @@
 package hu.montlikadani.ragemode;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -190,6 +195,32 @@ public class Utils {
 			s = s.replace("%rank%", pp == null ? "0" : Integer.toString(pp.getRank()));
 
 		return RageMode.getLang().colors(s);
+	}
+
+	/**
+	 * Gets all classes in the specified package.
+	 * @param packageName where to find the classes
+	 * @return All classes in list
+	 */
+	public static List<Class<?>> getClasses(String packageName) {
+		List<Class<?>> classes = new ArrayList<Class<?>>();
+		try {
+			JarFile file = new JarFile(
+					new File(RageMode.getInstance().getFolder().getParentFile().getPath(), "RageMode.jar"));
+			for (Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
+				JarEntry jarEntry = entry.nextElement();
+				String name = jarEntry.getName().replace("/", ".");
+				if (name.startsWith(packageName) && name.endsWith(".class")) {
+					classes.add(Class.forName(name.substring(0, name.length() - 6)));
+				}
+			}
+
+			file.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return classes;
 	}
 
 	/**

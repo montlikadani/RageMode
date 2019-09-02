@@ -479,7 +479,6 @@ public class EventListener implements Listener {
 		}
 	}
 
-	//TODO fix 1.14 respawn bug: does not respawn suddenly the player
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onRespawn(PlayerRespawnEvent e) {
 		if (Game.isPlayerPlaying(e.getPlayer().getUniqueId().toString())) {

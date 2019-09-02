@@ -1,11 +1,10 @@
-package hu.montlikadani.ragemode.commands;
+package hu.montlikadani.ragemode.commands.list;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.ICommand;
@@ -13,7 +12,7 @@ import hu.montlikadani.ragemode.utils.ICommand;
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class SetLobbyDelay extends ICommand {
+public class globalmessages extends ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
@@ -23,7 +22,7 @@ public class SetLobbyDelay extends ICommand {
 		}
 
 		Player p = (Player) sender;
-		if (!hasPerm(p, "ragemode.admin.setlobbydelay")) {
+		if (!hasPerm(p, "ragemode.admin.setglobalmessages")) {
 			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return false;
 		}
@@ -39,19 +38,11 @@ public class SetLobbyDelay extends ICommand {
 				return false;
 			}
 
-			if (!plugin.getConfiguration().getArenasCfg().contains("arenas." + args[1] + ".lobby")) {
-				sendMessage(p, RageMode.getLang().get("setup.lobby.not-set", "%game%", args[1]));
-				return false;
-			}
-
-			if (Utils.isInt(args[2])) {
-				plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".lobbydelay", Integer.parseInt(args[2]));
-				Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
-				sendMessage(p, RageMode.getLang().get("setup.success"));
-			} else
-				sendMessage(p, RageMode.getLang().get("not-a-number", "%number%", args[2]));
+			plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".death-messages", Boolean.parseBoolean(args[2]));
+			Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
+			sendMessage(p, RageMode.getLang().get("setup.success"));
 		} else
-			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm lobbydelay <gameName> <seconds>"));
+			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName> <true|false>"));
 		return false;
 	}
 }

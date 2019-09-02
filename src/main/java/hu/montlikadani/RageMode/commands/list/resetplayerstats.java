@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.commands;
+package hu.montlikadani.ragemode.commands.list;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -14,7 +14,7 @@ import hu.montlikadani.ragemode.utils.ICommand;
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class ResetPlayerStats extends ICommand {
+public class resetplayerstats extends ICommand {
 
 	@Override
 	public boolean run(CommandSender sender, String[] args) {

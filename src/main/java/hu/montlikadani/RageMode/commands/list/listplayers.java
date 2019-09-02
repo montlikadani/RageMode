@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.commands;
+package hu.montlikadani.ragemode.commands.list;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -17,7 +17,7 @@ import hu.montlikadani.ragemode.utils.ICommand;
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class ListPlayers extends ICommand {
+public class listplayers extends ICommand {
 
 	@Override
 	public boolean run(CommandSender sender, String[] args) {

@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.commands.StopGame;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
@@ -85,7 +84,7 @@ public class GameTimer extends TimerTask {
 			}
 
 			if (Game.getPlayers().size() < 2) {
-				StopGame.stopGame(gameName);
+				GameUtils.stopGame(gameName);
 				cancel();
 				return;
 			}
@@ -219,12 +218,12 @@ public class GameTimer extends TimerTask {
 
 				cancel();
 				RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-						() -> StopGame.stopGame(gameName));
+						() -> GameUtils.stopGame(gameName));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			cancel();
-			StopGame.stopGame(gameName);
+			GameUtils.stopGame(gameName);
 			return;
 		}
 	}

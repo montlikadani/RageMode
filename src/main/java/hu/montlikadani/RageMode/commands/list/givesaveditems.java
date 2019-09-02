@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.commands;
+package hu.montlikadani.ragemode.commands.list;
 
 import java.util.List;
 
@@ -11,13 +11,14 @@ import org.bukkit.inventory.ItemStack;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.Game;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class GiveSavedItems extends RmCommand {
+public class givesaveditems extends RmCommand {
 
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!plugin.getConfiguration().getCV().isSavePlayerData()) {

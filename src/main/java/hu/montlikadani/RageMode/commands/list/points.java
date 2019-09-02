@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.commands;
+package hu.montlikadani.ragemode.commands.list;
 
 import java.io.IOException;
 
@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.RmCommand.Actions;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
@@ -17,11 +18,7 @@ import hu.montlikadani.ragemode.utils.ICommand;
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class Points extends ICommand {
-
-	private enum Actions {
-		Set, Add, Take;
-	}
+public class points extends ICommand {
 
 	@Override
 	public boolean run(CommandSender sender, String[] args) {
