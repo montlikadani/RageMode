@@ -59,6 +59,10 @@ public class HoloHolder {
 		}
 
 		List<Location> loc = (List<Location>) holosConf.get("data.holos");
+		if (loc == null || loc.isEmpty()) {
+			return;
+		}
+
 		for (Location l : loc) {
 			HoloHolder.holos.add(l);
 		}
@@ -131,18 +135,18 @@ public class HoloHolder {
 		}
 	}
 
-	private static void setHologramLines(Hologram hologram, PlayerPoints rpp) {
+	private static void setHologramLines(Hologram hologram, PlayerPoints pp) {
 		for (String hList : RageMode.getLang().getList("hologram-list")) {
-			if (rpp != null) {
+			if (pp != null) {
 				NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
 
-				hList = hList.replace("%rank%", Integer.toString(rpp.getRank()));
-				hList = hList.replace("%points%", rpp.getPoints() + "");
-				hList = hList.replace("%wins%", rpp.getWins() + "");
-				hList = hList.replace("%games%", rpp.getGames() + "");
-				hList = hList.replace("%kd%", format.format(rpp.getKD()));
-				hList = hList.replace("%kills%", rpp.getKills() + "");
-				hList = hList.replace("%deaths%", rpp.getDeaths() + "");
+				hList = hList.replace("%rank%", Integer.toString(pp.getRank()));
+				hList = hList.replace("%points%", pp.getPoints() + "");
+				hList = hList.replace("%wins%", pp.getWins() + "");
+				hList = hList.replace("%games%", pp.getGames() + "");
+				hList = hList.replace("%kd%", format.format(pp.getKD()));
+				hList = hList.replace("%kills%", pp.getKills() + "");
+				hList = hList.replace("%deaths%", pp.getDeaths() + "");
 			} else {
 				hList = hList.replace("%rank%", "");
 				hList = hList.replace("%points%", "0");
