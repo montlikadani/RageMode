@@ -203,10 +203,11 @@ public class Utils {
 	 * @return All classes in list
 	 */
 	public static List<Class<?>> getClasses(String packageName) {
-		List<Class<?>> classes = new ArrayList<Class<?>>();
+		List<Class<?>> classes = new ArrayList<>();
 		try {
 			JarFile file = new JarFile(
-					new File(RageMode.getInstance().getFolder().getParentFile().getPath(), "RageMode.jar"));
+					new File(RageMode.getInstance().getFolder().getParentFile().getPath(),
+						RageMode.getInstance().getDescription().getName() + ".jar"));
 			for (Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
 				JarEntry jarEntry = entry.nextElement();
 				String name = jarEntry.getName().replace("/", ".");

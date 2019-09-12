@@ -660,29 +660,12 @@ public class GameUtils {
 						if (EventListener.waitingGames.containsKey(game))
 							EventListener.waitingGames.remove(game);
 
-						if (RageMode.getInstance().getConfiguration().getCV().isRewardEnabled()) {
-							Reward reward = new Reward(game);
-
-							for (String playerUUID : players) {
-								Utils.clearPlayerInventory(Bukkit.getPlayer(UUID.fromString(playerUUID)));
-
-								if (winner != null) {
-									if (Bukkit.getPlayer(UUID.fromString(playerUUID)) == winner) {
-										Utils.clearPlayerInventory(winner);
-
-										reward.rewardForWinner(winner);
-									} else
-										reward.rewardForPlayers(winner, Bukkit.getPlayer(UUID.fromString(playerUUID)));
-								}
-							}
-						}
-
-						finishStopping(game);
+						finishStopping(game, winner);
 					}
 				}, RageMode.getInstance().getConfiguration().getCV().getGameFreezeTime() * 20);
 	}
 
-	private static void finishStopping(String game) {
+	private static void finishStopping(String game, Player winner) {
 		if (Game.isGameRunning(game)) {
 			List<String> players = Game.getPlayersFromList();
 
@@ -732,6 +715,24 @@ public class GameUtils {
 					.hasNext();) {
 				Player pl = Bukkit.getPlayer(it.next().getKey());
 				Game.removeSpectatorPlayer(pl);
+			}
+
+			if (RageMode.getInstance().getConfiguration().getCV().isRewardEnabled()) {
+				Reward reward = new Reward(game);
+
+				for (String playerUUID : players) {
+					Utils.clearPlayerInventory(Bukkit.getPlayer(UUID.fromString(playerUUID)));
+
+					if (winner != null) {
+						if (Bukkit.getPlayer(UUID.fromString(playerUUID)) == winner) {
+							Utils.clearPlayerInventory(winner);
+
+							reward.rewardForWinner(winner);
+						}
+					}
+
+					reward.rewardForPlayers(winner, Bukkit.getPlayer(UUID.fromString(playerUUID)));
+				}
 			}
 
 			GameUtils.broadcastToGame(game, RageMode.getLang().get("game.stopped", "%game%", game));

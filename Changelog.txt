@@ -1,0 +1,5 @@
+# v1.4.0.000 
+- Fixed NPE when tried to get the holos list from file
+- Rewards now should work on game stop
+- Some fixes for config loading
+- Some critical SQL issue has been fixed, to the table does not generated correctly, so while the player stats saving, throwing exception.

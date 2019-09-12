@@ -16,6 +16,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
+import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
@@ -229,9 +230,8 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 						printMethod.invoke(run, arguments);
 					} catch (Throwable t) {
 						t.printStackTrace();
+						Debug.throwMsg();
 					}
-				} else {
-					sendMessage(sender, RageMode.getLang().get("wrong-command"));
 				}
 			}
 		}

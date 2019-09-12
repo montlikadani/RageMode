@@ -24,22 +24,39 @@ public class Configuration {
 	public Configuration(RageMode plugin) {
 		this.plugin = plugin;
 
-		config_file = new File(plugin.getFolder(), "config.yml");
-		arenas_file = new File(plugin.getFolder(), "arenas.yml");
-		rewards_file = new File(plugin.getFolder(), "rewards.yml");
-		datas_file = new File(plugin.getFolder(), "datas.yml");
+		loadFiles();
+	}
 
-		cv = new ConfigValues();
+	private void loadFiles() {
+		if (config_file == null) {
+			config_file = new File(plugin.getFolder(), "config.yml");
+		}
+
+		if (arenas_file == null) {
+			arenas_file = new File(plugin.getFolder(), "arenas.yml");
+		}
+
+		if (rewards_file == null) {
+			rewards_file = new File(plugin.getFolder(), "rewards.yml");
+		}
+
+		if (datas_file == null) {
+			datas_file = new File(plugin.getFolder(), "datas.yml");
+		}
+
+		if (cv == null) {
+			cv = new ConfigValues();
+		}
 	}
 
 	public void loadConfig() {
 		String msg = "";
 
+		loadFiles();
+
 		try {
 			if (config_file.exists()) {
-				if (config == null) {
-					config = YamlConfiguration.loadConfiguration(config_file);
-				}
+				config = YamlConfiguration.loadConfiguration(config_file);
 			} else {
 				plugin.saveResource("config.yml", false);
 				config = YamlConfiguration.loadConfiguration(config_file);
@@ -54,9 +71,7 @@ public class Configuration {
 			}
 
 			if (arenas_file.exists()) {
-				if (arenas == null) {
-					arenas = YamlConfiguration.loadConfiguration(arenas_file);
-				}
+				arenas = YamlConfiguration.loadConfiguration(arenas_file);
 				arenas.load(arenas_file);
 				saveFile(arenas, arenas_file);
 			} else {
@@ -67,9 +82,7 @@ public class Configuration {
 
 			if (cv.isRewardEnabled()) {
 				if (rewards_file.exists()) {
-					if (rewards == null) {
-						rewards = YamlConfiguration.loadConfiguration(rewards_file);
-					}
+					rewards = YamlConfiguration.loadConfiguration(rewards_file);
 					rewards.load(rewards_file);
 				} else {
 					plugin.saveResource("rewards.yml", false);
@@ -80,9 +93,7 @@ public class Configuration {
 
 			if (cv.isSavePlayerData()) {
 				if (datas_file.exists()) {
-					if (datas == null) {
-						datas = YamlConfiguration.loadConfiguration(datas_file);
-					}
+					datas = YamlConfiguration.loadConfiguration(datas_file);
 					datas.load(datas_file);
 					saveFile(datas, datas_file);
 				} else {
@@ -146,7 +157,6 @@ public class Configuration {
 			conf.save(file);
 		} catch (IOException e) {
 			e.printStackTrace();
-			Debug.throwMsg();
 		}
 	}
 }

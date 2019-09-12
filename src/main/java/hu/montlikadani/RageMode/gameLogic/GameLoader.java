@@ -24,7 +24,6 @@ import hu.montlikadani.ragemode.signs.SignCreator;
 public class GameLoader {
 
 	private String gameName;
-	private GameTimer gameTimer;
 
 	public GameLoader(String gameName) {
 		this.gameName = gameName;
@@ -45,8 +44,9 @@ public class GameLoader {
 				? conf.getCV().getGameTime() < 0 ? 5 * 60 : conf.getCV().getGameTime() * 60
 				: GetGames.getGameTime(gameName) * 60;
 
-		gameTimer = new GameTimer(gameName, time);
+		GameTimer gameTimer = new GameTimer(gameName, time);
 		gameTimer.loadModules();
+
 		Timer t = new Timer();
 		t.scheduleAtFixedRate(gameTimer, 0, 60 * 20L);
 

@@ -709,7 +709,8 @@ public class EventListener implements Listener {
 							p.setLevel(0);
 
 							p.sendMessage(RageMode.getLang().get("commands.forcestart.game-start", "%game%", game));
-							new GameLoader(game);
+							RageMode.getInstance().getServer().getScheduler()
+									.scheduleSyncDelayedTask(RageMode.getInstance(), () -> new GameLoader(game));
 						}
 
 						if (meta.getDisplayName().equals(LeaveGame.getName())) {

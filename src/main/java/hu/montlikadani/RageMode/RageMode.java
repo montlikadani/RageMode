@@ -324,7 +324,7 @@ public class RageMode extends JavaPlugin {
 		}
 
 		if (sqlConnect == null) {
-			sqlConnect = new SQLConnect(getFolder(), conf.getCV().getSqlTablePrefix());
+			sqlConnect = new SQLConnect(sqlFile, conf.getCV().getSqlTablePrefix());
 		}
 
 		SQLStats.loadPlayerStatistics(sqlConnect);
