@@ -130,9 +130,9 @@ public class ConfigValues {
 		signsEnable = f.get("signs.enable", false);
 		signsUpdateTime = f.get("signs.update-time", 20);
 		signGameRunning = f.get("signs.game.running", "&6&oRunning...");
-		signGameWaiting = f.get("signs.game.running", "&cWaiting...");
-		signGameFull = f.get("signs.game.running", "&4FULL");
-		signGameLocked = f.get("signs.game.running", "&9Locked");
+		signGameWaiting = f.get("signs.game.waiting", "&cWaiting...");
+		signGameFull = f.get("signs.game.full", "&4FULL");
+		signGameLocked = f.get("signs.game.locked", "&9Locked");
 		signsList = f.get("signs.list", Arrays.asList("&3[&5RageMode&3]", "&a%game%",
 				"&ePlayers&3 [%current-players%/%max-players%&3]", "%running%"));
 		signBackground = f.get("signs.background.enable", false);

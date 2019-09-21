@@ -283,7 +283,7 @@ public class Utils {
 	 * @return List
 	 */
 	public static List<String> colorList(List<String> list) {
-		List<String> cList = new java.util.ArrayList<>();
+		List<String> cList = new ArrayList<>();
 		for (String s : list) {
 			cList.add(RageMode.getLang().colors(s));
 		}

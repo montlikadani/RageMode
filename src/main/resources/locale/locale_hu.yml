@@ -38,7 +38,7 @@ commands:
     player-kicked: "&2A játékos&e %player%&2 sikeresen kirúgva a(z)&e %game%&2 játékból!"
     player-currently-not-playing: "&cEz a játékos jelenleg nem játszik."
   signupdate:
-    usage: "&cHasználat:&7 '/rm signupdate <játéknév>'&c."
+    usage: "&cHasználat:&7 '/rm signupdate <játéknév/all>'&c."
   togglegame:
     game-is-running: "&cEz a játék jelenleg fut, kérlek állítsd le előbb."
     successfully-toggled: "&2Ez a játék&7 %game%&2 sikeresen átváltva %status%&2-ra/re."

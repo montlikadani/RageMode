@@ -533,7 +533,7 @@ public class RageMode extends JavaPlugin {
 		String[] cVersion;
 		String lineWithVersion;
 		try {
-			URL githubUrl = new URL("https://raw.githubusercontent.com/montlikadani/RageMode/master/plugin.yml");
+			URL githubUrl = new URL("https://raw.githubusercontent.com/montlikadani/RageMode/master/src/main/resources/plugin.yml");
 			lineWithVersion = "";
 			BufferedReader br = new BufferedReader(new InputStreamReader(githubUrl.openStream()));
 			String s;
@@ -564,8 +564,8 @@ public class RageMode extends JavaPlugin {
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
-			Debug.logConsole(Level.WARNING, "Failed to compare versions. " + e
-					+ " Please report it here:\nhttps://github.com/montlikadani/RageMode/issues");
+			Debug.logConsole(Level.WARNING,
+					"Failed to compare versions. Please report it here:\nhttps://github.com/montlikadani/RageMode/issues");
 		}
 
 		return msg;
