@@ -157,7 +157,7 @@ public class SignData {
 		String type = RageMode.getInstance().getConfiguration().getCV().getSignBackground();
 
 		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
-			if (GameUtils.getStatus() == GameStatus.WAITING) {
+			if (GameUtils.getStatus(game) == GameStatus.WAITING) {
 				if (Game.getPlayers().size() == GetGames.getMaxPlayers(game)) {
 					if (type.equals("wool"))
 						updateBackground(Material.BLUE_WOOL);
@@ -182,7 +182,7 @@ public class SignData {
 					updateBackground(Material.LIME_STAINED_GLASS);
 				else if (type.equals("terracotta") || type.equals("clay"))
 					updateBackground(Material.LIME_TERRACOTTA);
-			} else if (GameUtils.getStatus() == GameStatus.STOPPED) {
+			} else if (GameUtils.getStatus(game) == GameStatus.STOPPED) {
 				if (type.equals("wool"))
 					updateBackground(Material.RED_WOOL);
 				else if (type.equals("glass"))
@@ -191,7 +191,7 @@ public class SignData {
 					updateBackground(Material.RED_TERRACOTTA);
 			}
 		} else {
-			if (GameUtils.getStatus() == GameStatus.WAITING) {
+			if (GameUtils.getStatus(game) == GameStatus.WAITING) {
 				if (Game.getPlayers().size() == GetGames.getMaxPlayers(game)) {
 					if (type.equals("wool"))
 						updateBackground(Material.getMaterial("WOOL"), 11);
@@ -209,14 +209,14 @@ public class SignData {
 				}
 			}
 
-			if (GameUtils.getStatus() == GameStatus.RUNNING && Game.isGameRunning(game)) {
+			if (GameUtils.getStatus(game) == GameStatus.RUNNING && Game.isGameRunning(game)) {
 				if (type.equals("wool"))
 					updateBackground(Material.getMaterial("WOOL"), 5);
 				else if (type.equals("glass"))
 					updateBackground(Material.getMaterial("STAINED_GLASS"), 5);
 				else if (type.equals("terracotta") || type.equals("clay"))
 					updateBackground(Material.getMaterial("STAINED_CLAY"), 5);
-			} else if (GameUtils.getStatus() == GameStatus.STOPPED) {
+			} else if (GameUtils.getStatus(game) == GameStatus.STOPPED) {
 				if (type.equals("wool"))
 					updateBackground(Material.getMaterial("WOOL"), 14);
 				else if (type.equals("glass"))

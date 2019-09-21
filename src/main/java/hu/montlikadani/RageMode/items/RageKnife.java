@@ -25,7 +25,7 @@ public class RageKnife {
 	}
 
 	public static String getName() {
-		String iname = RageMode.getInstance().getConfiguration().getCfg().getString("items.rageKnife.name");
-		return iname != null && !iname.equals("") ? RageMode.getLang().colors(iname) : org.bukkit.ChatColor.GOLD + "RageKnife";
+		String iname = RageMode.getInstance().getConfiguration().getCfg().getString("items.rageKnife.name", "");
+		return !iname.equals("") ? RageMode.getLang().colors(iname) : org.bukkit.ChatColor.GOLD + "RageKnife";
 	}
 }

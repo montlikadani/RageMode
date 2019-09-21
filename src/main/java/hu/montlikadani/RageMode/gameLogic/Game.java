@@ -63,7 +63,7 @@ public class Game {
 	static boolean fly = false;
 	static boolean allowFly = false;
 
-	private static boolean running;
+	private static Map<String, Boolean> running = new HashMap<>();
 
 	private static LobbyTimer lobbyTimer;
 
@@ -314,7 +314,7 @@ public class Game {
 		Validate.notNull(game, "Game name can't be null!");
 		Validate.notEmpty(game, "Game name can't be empty!");
 
-		if (GetGames.isGameExistent(game) && running) {
+		if (GetGames.isGameExistent(game) && running.get(game) != null && running.get(game)) {
 			return true;
 		}
 
@@ -333,11 +333,11 @@ public class Game {
 		if (!GetGames.isGameExistent(game))
 			return false;
 
-		if (running) {
+		if (running.get(game) != null && running.get(game)) {
 			return false;
 		}
 
-		running = true;
+		running.put(game, true);
 		return true;
 	}
 
@@ -353,8 +353,8 @@ public class Game {
 		if (!GetGames.isGameExistent(game))
 			return false;
 
-		if (running) {
-			running = false;
+		if (running.get(game) != null && running.get(game)) {
+			running.remove(game);
 			return true;
 		}
 
@@ -406,6 +406,23 @@ public class Game {
 	}
 
 	/**
+	 * Gets the spectator player in the specified game.
+	 * @param game Game
+	 * @return Player if the player is in spectator
+	 */
+	public static Player getSpectatorPlayerInGame(String game) {
+		if (specPlayer != null) {
+			for (Entry<UUID, String> spec : specPlayer.entrySet()) {
+				if (spec.getValue().equalsIgnoreCase(game)) {
+					return Bukkit.getPlayer(spec.getKey());
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Gets the specified player game from list.
 	 * @param player Player
 	 * @return game if player playing
@@ -437,6 +454,37 @@ public class Game {
 	}
 
 	/**
+	 * Gets the spectator player game by uuid from list.
+	 * @param uuid Spectator player UUID
+	 * @return game if the spectator player is in game
+	 */
+	public static String getSpectatorPlayerGame(UUID uuid) {
+		Validate.notNull(uuid, "UUID can't be null!");
+
+		if (specPlayer != null) {
+			for (Entry<UUID, String> spec : specPlayer.entrySet()) {
+				if (spec.getKey().equals(uuid)) {
+					return specPlayer.get(uuid);
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Gets the spectator player game by uuid from list.
+	 * @param uuid Spectator player UUID
+	 * @return game if the spectator player is in game
+	 */
+	public static String getSpectatorPlayerGame(String uuid) {
+		Validate.notNull(uuid, "UUID can't be null!");
+		Validate.notEmpty(uuid, "UUID can't be empty!");
+
+		return getSpectatorPlayerGame(UUID.fromString(uuid));
+	}
+
+	/**
 	 * Get the players uuid who added to the list.
 	 * @return Players UUID
 	 */
@@ -454,6 +502,22 @@ public class Game {
 		if (players != null) {
 			for (Entry<String, String> entries : players.entrySet()) {
 				list.add(entries.getValue());
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * Gets the spectator players converted to list.
+	 * @return Spectator players in list
+	 */
+	public static List<UUID> getSpectatorPlayersFromList() {
+		List<UUID> list = new ArrayList<>();
+
+		if (players != null) {
+			for (Entry<UUID, String> entries : specPlayer.entrySet()) {
+				list.add(entries.getKey());
 			}
 		}
 

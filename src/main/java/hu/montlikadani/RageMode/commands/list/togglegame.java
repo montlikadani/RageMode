@@ -26,29 +26,31 @@ public class togglegame extends ICommand {
 			return false;
 		}
 
-		if (!GameUtils.isGameWithNameExists(args[1])) {
-			sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", args[1]));
+		String game = args[1];
+
+		if (!GameUtils.isGameWithNameExists(game)) {
+			sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", game));
 			return false;
 		}
 
 		boolean toggle = true;
-		if (!Game.isGameRunning(args[1])) {
-			if (GameUtils.getStatus() == GameStatus.NOTREADY) {
-				GameUtils.setStatus(GameStatus.READY);
+		if (!Game.isGameRunning(game)) {
+			if (GameUtils.getStatus(game) == GameStatus.NOTREADY) {
+				GameUtils.setStatus(game, GameStatus.READY);
 				toggle = false;
 			} else {
-				GameUtils.setStatus(GameStatus.NOTREADY);
-				Game.setGameNotRunning(args[1]);
+				GameUtils.setStatus(game, GameStatus.NOTREADY);
+				Game.setGameNotRunning(game);
 			}
 
-			plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".lock", toggle);
+			plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".lock", toggle);
 			Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 
 			// Something wrong with this... But what??
 			// Seems the Java is broken for me, because if a string has 3 or less length then it will show as null
 			// or probably FileConfiguration is broken?
 			sendMessage(sender,
-					RageMode.getLang().get("commands.togglegame.successfully-toggled", "%game%", args[1], "%status%",
+					RageMode.getLang().get("commands.togglegame.successfully-toggled", "%game%", game, "%status%",
 							!toggle ? RageMode.getLang().get("commands.togglegame.status.on")
 									: RageMode.getLang().get("commands.togglegame.status.off")));
 		} else

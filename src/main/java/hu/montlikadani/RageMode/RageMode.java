@@ -162,11 +162,10 @@ public class RageMode extends JavaPlugin {
 							SignCreator.updateAllSigns(game);
 
 						// Loads the game locker
-						if (conf.getArenasCfg().contains("arenas." + game + ".lock")
-								&& conf.getArenasCfg().getBoolean("arenas." + game + ".lock")) {
-							GameUtils.setStatus(GameStatus.NOTREADY);
+						if (conf.getArenasCfg().getBoolean("arenas." + game + ".lock", false)) {
+							GameUtils.setStatus(game, GameStatus.NOTREADY);
 						} else
-							GameUtils.setStatus(GameStatus.READY);
+							GameUtils.setStatus(game, GameStatus.READY);
 
 						Debug.logConsole("Loaded " + game + " game!");
 					}
@@ -244,7 +243,7 @@ public class RageMode extends JavaPlugin {
 						}
 
 						Game.setGameNotRunning(games[i]);
-						GameUtils.setStatus(GameStatus.STOPPED);
+						GameUtils.setStatus(games[i], null);
 
 						Debug.logConsole(games[i] + " has been stopped.");
 					}

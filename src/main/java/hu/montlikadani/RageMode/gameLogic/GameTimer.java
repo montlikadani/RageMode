@@ -78,7 +78,7 @@ public class GameTimer extends TimerTask {
 	public void run() {
 		try { // Stop the game if something wrong or missing
 			if (!Game.isGameRunning(gameName)) {
-				GameUtils.setStatus(GameStatus.STOPPED);
+				GameUtils.setStatus(gameName, null);
 				cancel();
 				return;
 			}

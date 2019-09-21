@@ -55,7 +55,7 @@ public class listplayers extends ICommand {
 				return false;
 			}
 
-			if (!(GameUtils.getStatus() == GameStatus.RUNNING || GameUtils.getStatus() == GameStatus.WAITING)) {
+			if (!(GameUtils.getStatus(game) == GameStatus.RUNNING || GameUtils.getStatus(game) == GameStatus.WAITING)) {
 				sendMessage(sender, RageMode.getLang().get("commands.listplayers.game-not-running"));
 				return false;
 			}

@@ -70,7 +70,7 @@ public class RmCommand implements CommandExecutor, TabCompleter {
 					msg += "&7-&6 /rm listgames&a - Listing available games.\n \n"; // Style
 
 				if (hasPerm(sender, "ragemode.admin.help"))
-					msg += "&7-&6 /rm admin&a - Lists all admin commands.";
+					msg += "&7-&6 /rm admin&a - Lists all admin commands.\n";
 
 				if (hasPerm(sender, "ragemode.listplayers"))
 					msg += "&7-&6 /rm listplayers [game]&a - Lists all currently playing players.";

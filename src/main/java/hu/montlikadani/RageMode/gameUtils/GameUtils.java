@@ -1,7 +1,9 @@
 package hu.montlikadani.ragemode.gameUtils;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -51,7 +53,7 @@ import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
 public class GameUtils {
 
-	private static GameStatus status = GameStatus.STOPPED;
+	private static Map<String, GameStatus> status = new HashMap<>();
 
 	/**
 	 * Broadcast for in-game players to the specified game
@@ -259,7 +261,7 @@ public class GameUtils {
 		PlayerInventory inv = p.getInventory();
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
-		if (status == GameStatus.RUNNING) {
+		if (getStatus(game) == GameStatus.RUNNING) {
 			if (conf.getCV().isSpectatorEnabled()) {
 				if (!Game.isPlayerPlaying(p.getUniqueId().toString())) {
 					if (Game.addSpectatorPlayer(p, game)) {
@@ -277,7 +279,7 @@ public class GameUtils {
 			} else
 				p.sendMessage(RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
 		} else {
-			if (status == GameStatus.NOTREADY) {
+			if (getStatus(game) == GameStatus.NOTREADY) {
 				p.sendMessage(RageMode.getLang().get("commands.join.game-locked"));
 				return;
 			}
@@ -352,7 +354,7 @@ public class GameUtils {
 		// Just removes the spec player
 		Game.removeSpectatorPlayer(p);
 
-		if (status == GameStatus.RUNNING && Game.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(p.getUniqueId().toString()) && getStatus(Game.getPlayersGame(p)) == GameStatus.RUNNING) {
 			if (Game.removePlayer(p)) {
 				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
 
@@ -632,7 +634,7 @@ public class GameUtils {
 		if (!winnervalid) {
 			for (String playerUUID : players) {
 				Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
-				GameUtils.broadcastToGame(game, RageMode.getLang().get("game.no-won"));
+				broadcastToGame(game, RageMode.getLang().get("game.no-won"));
 				// Why?
 				Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 						() -> player.setGameMode(GameMode.SPECTATOR));
@@ -648,14 +650,14 @@ public class GameUtils {
 			EventListener.waitingGames.put(game, true);
 		}
 
-		GameUtils.setStatus(GameStatus.GAMEFREEZE);
+		setStatus(game, GameStatus.GAMEFREEZE);
 
 		final Player winner = winnerUUID != null ? Bukkit.getPlayer(UUID.fromString(winnerUUID)) : null;
 		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 				new Runnable() {
 					@Override
 					public void run() {
-						GameUtils.setStatus(GameStatus.STOPPED);
+						setStatus(game, null);
 
 						if (EventListener.waitingGames.containsKey(game))
 							EventListener.waitingGames.remove(game);
@@ -703,20 +705,6 @@ public class GameUtils {
 				}
 			}
 
-			for (String playersUUID : players) {
-				if (playersUUID != null) {
-					GameUtils.sendActionBarMessages(Bukkit.getPlayer(UUID.fromString(playersUUID)), game, "stop");
-					RageScores.removePointsForPlayer(playersUUID);
-					Game.removePlayer(Bukkit.getPlayer(UUID.fromString(playersUUID)));
-				}
-			}
-
-			for (Iterator<Entry<UUID, String>> it = Game.getSpectatorPlayers().entrySet().iterator(); it
-					.hasNext();) {
-				Player pl = Bukkit.getPlayer(it.next().getKey());
-				Game.removeSpectatorPlayer(pl);
-			}
-
 			if (RageMode.getInstance().getConfiguration().getCV().isRewardEnabled()) {
 				Reward reward = new Reward(game);
 
@@ -735,10 +723,25 @@ public class GameUtils {
 				}
 			}
 
-			GameUtils.broadcastToGame(game, RageMode.getLang().get("game.stopped", "%game%", game));
+			broadcastToGame(game, RageMode.getLang().get("game.stopped", "%game%", game));
 			Game.setGameNotRunning(game);
-			GameUtils.runCommandsForAll(game, "stop");
+			runCommandsForAll(game, "stop");
 			SignCreator.updateAllSigns(game);
+
+			for (String playersUUID : players) {
+				if (playersUUID != null) {
+					sendActionBarMessages(Bukkit.getPlayer(UUID.fromString(playersUUID)), game, "stop");
+					RageScores.removePointsForPlayer(playersUUID);
+					Game.removePlayer(Bukkit.getPlayer(UUID.fromString(playersUUID)));
+				}
+			}
+
+			for (Iterator<Entry<UUID, String>> it = Game.getSpectatorPlayers().entrySet().iterator(); it
+					.hasNext();) {
+				Player pl = Bukkit.getPlayer(it.next().getKey());
+				Game.removeSpectatorPlayer(pl);
+			}
+
 			if (RageMode.getInstance().getConfiguration().getCV().isRestartServerEnabled()) {
 				try {
 					Class.forName("org.spigotmc.SpigotConfig");
@@ -781,7 +784,7 @@ public class GameUtils {
 				}
 
 				Game.setGameNotRunning(games[i]);
-				GameUtils.setStatus(GameStatus.STOPPED);
+				setStatus(games[i], null);
 
 				Debug.logConsole(games[i] + " has been stopped.");
 			}
@@ -802,18 +805,54 @@ public class GameUtils {
 	}
 
 	/**
-	 * Get the GameStatus
+	 * Gets the specified game current set GameStatus by player.
+	 * @param p Player
 	 * @return {@link GameStatus}
 	 */
-	public static GameStatus getStatus() {
-		return status;
+	public static GameStatus getStatus(Player p) {
+		return getStatus(Game.getPlayersGame(p));
 	}
 
 	/**
-	 * Sets the game status to new status
-	 * @param status the status to be set
+	 * Gets the specified game current set GameStatus.
+	 * @param game Game name
+	 * @return {@link GameStatus}
 	 */
-	public static void setStatus(GameStatus status) {
-		GameUtils.status = status;
+	public static GameStatus getStatus(String game) {
+		Validate.notNull(game, "Game name can't be null!");
+		Validate.notEmpty(game, "Game name can't be null!");
+
+		return status.get(game);
+	}
+
+	/**
+	 * Sets the game status to new status. If the status param is null
+	 * will set to stopped status.
+	 * @param game the game name to set
+	 * @param status the new status to be set for the game
+	 */
+	public static void setStatus(String game, GameStatus status) {
+		setStatus(game, status, true);
+	}
+
+	/**
+	 * Sets the game status to new status.
+	 * @param game the game name to set
+	 * @param status the new status to be set for the game
+	 * @param forceRemove to force remove the existing game status from list
+	 */
+	public static void setStatus(String game, GameStatus status, boolean forceRemove) {
+		Validate.notNull(game, "Game name can't be null!");
+		Validate.notEmpty(game, "Game name can't be null!");
+
+		if (forceRemove && GameUtils.status.containsKey(game)) {
+			GameUtils.status.remove(game);
+		}
+
+		if (status == null) {
+			status = GameStatus.STOPPED;
+		}
+
+		GameUtils.status.put(game, status);
 	}
 }

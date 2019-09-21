@@ -10,7 +10,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.scores.RageScores;
@@ -51,7 +50,7 @@ public class stopgame extends ICommand {
 				GameUtils.broadcastToGame(game, RageMode.getLang().get("game.stopped", "%game%", game));
 
 				Game.setGameNotRunning(game);
-				GameUtils.setStatus(GameStatus.STOPPED);
+				GameUtils.setStatus(game, null);
 				SignCreator.updateAllSigns(game);
 			} else
 				sendMessage(sender, RageMode.getLang().get("game.not-running"));

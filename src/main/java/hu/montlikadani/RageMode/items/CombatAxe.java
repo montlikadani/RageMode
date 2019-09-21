@@ -25,7 +25,7 @@ public class CombatAxe {
 	}
 
 	public static String getName() {
-		String iname = RageMode.getInstance().getConfiguration().getCfg().getString("items.combatAxe.name");
-		return iname != null && !iname.equals("") ? RageMode.getLang().colors(iname) : org.bukkit.ChatColor.GOLD + "CombatAxe";
+		String iname = RageMode.getInstance().getConfiguration().getCfg().getString("items.combatAxe.name", "");
+		return !iname.equals("") ? RageMode.getLang().colors(iname) : org.bukkit.ChatColor.GOLD + "CombatAxe";
 	}
 }

@@ -232,7 +232,7 @@ public class Language {
 			return msg;
 		}
 
-		if (yc.getString(key).equals(""))
+		if (yc.getString(key, "").equals(""))
 			return msg;
 
 		msg = colors(yc.getString(key));

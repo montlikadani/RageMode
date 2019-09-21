@@ -25,7 +25,7 @@ public class LeaveGame {
 	}
 
 	public static String getName() {
-		String iname = RageMode.getInstance().getConfiguration().getCfg().getString("items.leavegameitem.name");
-		return iname != null && !iname.equals("") ? RageMode.getLang().colors(iname) : org.bukkit.ChatColor.RED + "Exit";
+		String iname = RageMode.getInstance().getConfiguration().getCfg().getString("items.leavegameitem.name", "");
+		return !iname.equals("") ? RageMode.getLang().colors(iname) : org.bukkit.ChatColor.RED + "Exit";
 	}
 }

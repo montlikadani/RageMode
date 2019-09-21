@@ -77,7 +77,7 @@ public class Reward {
 
 		List<String> cmds = conf.getStringList("rewards.end-game.players.commands");
 		List<String> msgs = conf.getStringList("rewards.end-game.players.messages");
-		double cash = conf.getDouble("rewards.end-game.players.cash");
+		double cash = conf.getDouble("rewards.end-game.players.cash", 0D);
 		ConfigurationSection item = conf.getConfigurationSection("rewards.end-game.players.items");
 
 		if (cmds != null && !cmds.isEmpty()) {
@@ -105,7 +105,8 @@ public class Reward {
 	}
 
 	private String replacePlaceholders(String path, Player p, boolean winner) {
-		double cash = winner ? conf.getDouble("rewards.end-game.winner.cash") : conf.getDouble("rewards.end-game.players.cash");
+		double cash = winner ? conf.getDouble("rewards.end-game.winner.cash", 0D)
+				: conf.getDouble("rewards.end-game.players.cash", 0D);
 
 		path = path.replace("%game%", game);
 		path = path.replace("%player%", p.getName());
@@ -135,18 +136,15 @@ public class Reward {
 					}
 
 					ItemStack itemStack = new ItemStack(mat);
-					if (conf.contains("rewards.end-game." + path + ".items." + num + ".amount"))
-						itemStack.setAmount(conf.getInt("rewards.end-game." + path + ".items." + num + ".amount"));
-					else
-						itemStack.setAmount(1);
+					itemStack.setAmount(conf.getInt("rewards.end-game." + path + ".items." + num + ".amount", 1));
 
 					if (conf.contains("rewards.end-game." + path + ".items." + num + ".durability"))
 						NMS.setDurability(itemStack, (short) conf.getDouble("rewards.end-game." + path + ".items." + num + ".durability"));
 
 					if (conf.getBoolean("rewards.end-game." + path + ".items." + num + ".meta")) {
 						ItemMeta itemMeta = itemStack.getItemMeta();
-						String name = conf.getString("rewards.end-game." + path + ".items." + num + ".name");
-						if (name != null && !name.equals(""))
+						String name = conf.getString("rewards.end-game." + path + ".items." + num + ".name", "");
+						if (!name.equals(""))
 							itemMeta.setDisplayName(name.replaceAll("&", "\u00a7"));
 
 						List<String> loreList = conf.getStringList("rewards.end-game." + path + ".items." + num + ".lore");
@@ -154,16 +152,16 @@ public class Reward {
 							itemMeta.setLore(Utils.colorList(loreList));
 
 						if (type.startsWith("LEATHER_")) {
-							String color = conf.getString("rewards.end-game." + path + ".items." + num + ".color");
-							if (color != null && !color.equals("")) {
+							String color = conf.getString("rewards.end-game." + path + ".items." + num + ".color", "");
+							if (!color.equals("")) {
 								if (itemMeta instanceof LeatherArmorMeta)
 									((LeatherArmorMeta) itemMeta).setColor(Utils.getColorFromString(color));
 							}
 						}
 
-						String bannerColor = conf.getString("rewards.end-game." + path + ".items." + num + ".banner.color");
-						String bannerType = conf.getString("rewards.end-game." + path + ".items." + num + ".banner.type");
-						if (bannerColor != null && !bannerColor.equals("") && bannerType != null && !bannerType.equals("")) {
+						String bannerColor = conf.getString("rewards.end-game." + path + ".items." + num + ".banner.color", "");
+						String bannerType = conf.getString("rewards.end-game." + path + ".items." + num + ".banner.type", "");
+						if (!bannerColor.equals("") && !bannerType.equals("")) {
 							if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
 								if (mat.equals(Material.valueOf("BANNER"))) {
 									if (itemMeta instanceof BannerMeta) {

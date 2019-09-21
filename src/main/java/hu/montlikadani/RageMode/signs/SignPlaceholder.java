@@ -35,7 +35,7 @@ public class SignPlaceholder {
 				line = line.replace("%max-players%", Integer.toString(GetGames.getMaxPlayers(game)));
 
 			if (line.contains("%running%")) {
-				if (GameUtils.getStatus() == GameStatus.WAITING) {
+				if (GameUtils.getStatus(game) == GameStatus.WAITING) {
 					if (Game.getPlayers().size() == GetGames.getMaxPlayers(game))
 						line = line.replace("%running%",
 								RageMode.getInstance().getConfiguration().getCV().getSignGameFull());
@@ -47,7 +47,7 @@ public class SignPlaceholder {
 				line = line.replace("%running%",
 						Game.isGameRunning(game)
 								? RageMode.getInstance().getConfiguration().getCV().getSignGameRunning()
-								: GameUtils.getStatus() == GameStatus.NOTREADY
+								: GameUtils.getStatus(game) == GameStatus.NOTREADY
 										? RageMode.getInstance().getConfiguration().getCV().getSignGameLocked()
 										: RageMode.getInstance().getConfiguration().getCV().getSignGameWaiting());
 			}

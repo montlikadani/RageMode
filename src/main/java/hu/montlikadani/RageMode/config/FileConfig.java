@@ -29,10 +29,6 @@ public class FileConfig {
 		return c.getStringList(path);
 	}
 
-	public String get(String path, String boo) {
-		return get(path, boo, false);
-	}
-
 	public List<String> get(String path, List<String> list) {
 		return get(path, list, false);
 	}
@@ -41,20 +37,8 @@ public class FileConfig {
 		return get(path, list, false);
 	}
 
-	public int get(String path, int def) {
-		return get(path, def, false);
-	}
-
-	public boolean get(String path, boolean def) {
-		return get(path, def, false);
-	}
-
-	public String get(String path, String boo, boolean set) {
-		if (set) {
-			c.addDefault(path, boo);
-			c.set(path, c.get(path));
-		}
-		return c.getString(path);
+	public String get(String path, String def) {
+		return c.getString(path, def);
 	}
 
 	public List<String> get(String path, List<String> list, boolean set) {
@@ -73,19 +57,11 @@ public class FileConfig {
 		return c.getIntegerList(path);
 	}
 
-	public int get(String path, int def, boolean set) {
-		if (set) {
-			c.addDefault(path, def);
-			c.set(path, c.get(path));
-		}
-		return c.getInt(path);
+	public int get(String path, int def) {
+		return c.getInt(path, def);
 	}
 
-	public boolean get(String path, boolean def, boolean set) {
-		if (set) {
-			c.addDefault(path, def);
-			c.set(path, c.get(path));
-		}
-		return c.getBoolean(path);
+	public boolean get(String path, boolean def) {
+		return c.getBoolean(path, def);
 	}
 }

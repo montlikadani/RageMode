@@ -39,7 +39,7 @@ public class latestart extends ICommand {
 			return false;
 		}
 
-		if (GameUtils.getStatus() != GameStatus.WAITING) {
+		if (GameUtils.getStatus(Game.getPlayersGame(p)) != GameStatus.WAITING) {
 			sendMessage(sender, RageMode.getLang().get("commands.latestart.player-not-in-lobby"));
 			return false;
 		}

@@ -28,15 +28,17 @@ public class GameLoader {
 	public GameLoader(String gameName) {
 		this.gameName = gameName;
 
-		checkTeleport();
-
 		Game.removeLobbyTimer();
+
+		if (!checkTeleport()) {
+			return; // stop starting the game if the game not set up correctly
+		}
 
 		GameStartEvent gameStartEvent = new GameStartEvent(gameName, Game.getPlayersFromList());
 		Utils.callEvent(gameStartEvent);
 
 		Game.setGameRunning(gameName);
-		GameUtils.setStatus(GameStatus.RUNNING);
+		GameUtils.setStatus(gameName, GameStatus.RUNNING);
 
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
@@ -79,17 +81,21 @@ public class GameLoader {
 		}
 	}
 
-	private void checkTeleport() {
+	private boolean checkTeleport() {
 		GameSpawnGetter gameSpawnGetter = GameUtils.getGameSpawnByName(gameName);
 		if (gameSpawnGetter.isGameReady()) {
 			GameUtils.teleportPlayersToGameSpawns(gameSpawnGetter);
-		} else {
-			GameUtils.broadcastToGame(gameName, RageMode.getLang().get("game.not-set-up"));
-			for (Entry<String, String> uuids : Game.getPlayers().entrySet()) {
-				Player p = Bukkit.getPlayer(UUID.fromString(uuids.getValue()));
-				Game.removePlayer(p);
-			}
+			return true;
 		}
+
+		GameUtils.broadcastToGame(gameName, RageMode.getLang().get("game.not-set-up"));
+
+		for (Entry<String, String> uuids : Game.getPlayers().entrySet()) {
+			Player p = Bukkit.getPlayer(UUID.fromString(uuids.getValue()));
+			Game.removePlayer(p);
+		}
+
+		return false;
 	}
 
 	public String getGame() {

@@ -25,7 +25,7 @@ public class Grenade {
 	}
 
 	public static String getName() {
-		String iname = RageMode.getInstance().getConfiguration().getCfg().getString("items.grenade.name");
-		return iname != null && !iname.equals("") ? RageMode.getLang().colors(iname) : org.bukkit.ChatColor.DARK_GRAY + "Grenade";
+		String iname = RageMode.getInstance().getConfiguration().getCfg().getString("items.grenade.name", "");
+		return !iname.equals("") ? RageMode.getLang().colors(iname) : org.bukkit.ChatColor.DARK_GRAY + "Grenade";
 	}
 }

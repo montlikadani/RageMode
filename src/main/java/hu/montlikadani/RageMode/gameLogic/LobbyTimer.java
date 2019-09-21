@@ -40,7 +40,7 @@ public class LobbyTimer extends TimerTask {
 	}
 
 	public void loadTimer() {
-		GameUtils.setStatus(GameStatus.WAITING);
+		GameUtils.setStatus(gameName, GameStatus.WAITING);
 
 		Timer timer = new Timer();
 		timer.scheduleAtFixedRate(this, 0, 60 * 20L);
@@ -55,7 +55,7 @@ public class LobbyTimer extends TimerTask {
 
 		hu.montlikadani.ragemode.config.ConfigValues fc = RageMode.getInstance().getConfiguration().getCV();
 		if (Game.getPlayers().size() < fc.getMinPlayers()) {
-			GameUtils.setStatus(GameStatus.STOPPED);
+			GameUtils.setStatus(gameName, null);
 			cancel();
 			return;
 		}

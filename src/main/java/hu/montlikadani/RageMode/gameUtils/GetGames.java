@@ -38,7 +38,7 @@ public class GetGames {
 	 * @return int number
 	 */
 	public static int getMaxPlayers(String game) {
-		return !fi.isSet("arenas." + game + ".maxplayers") ? -1 : fi.getInt("arenas." + game + ".maxplayers");
+		return fi.getInt("arenas." + game + ".maxplayers", -1);
 	}
 
 	/**
@@ -47,7 +47,7 @@ public class GetGames {
 	 * @return World name
 	 */
 	public static String getWorld(String game) {
-		return !fi.isSet("arenas." + game + ".world") ? null : fi.getString("arenas." + game + ".world");
+		return fi.getString("arenas." + game + ".world", null);
 	}
 
 	/**
