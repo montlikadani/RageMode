@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -52,7 +53,7 @@ public class SignPlaceholder {
 										: RageMode.getInstance().getConfiguration().getCV().getSignGameWaiting());
 			}
 
-			line = RageMode.getLang().colors(line);
+			line = Utils.colors(line);
 
 			variables.add(line);
 		}

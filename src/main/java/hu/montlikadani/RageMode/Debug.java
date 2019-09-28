@@ -35,6 +35,6 @@ public class Debug {
 	 * @param msg String
 	 */
 	public static void sendMessage(String msg) {
-		Bukkit.getConsoleSender().sendMessage(RageMode.getLang().colors(msg));
+		Bukkit.getConsoleSender().sendMessage(Utils.colors(msg));
 	}
 }

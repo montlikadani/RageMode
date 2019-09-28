@@ -113,7 +113,7 @@ public class Reward {
 		path = path.replace("%online-ingame-players%", Integer.toString(Game.getPlayers().size()));
 		path = path.replace("%reward%", cash > 0D ? Double.toString(cash) : "");
 		path = Utils.setPlaceholders(path, p);
-		return RageMode.getLang().colors(path);
+		return Utils.colors(path);
 	}
 
 	@SuppressWarnings("deprecation")

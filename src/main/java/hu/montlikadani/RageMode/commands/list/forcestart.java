@@ -20,30 +20,36 @@ public class forcestart extends ICommand {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return false;
 		}
+
 		Player p = (Player) sender;
 		if (!hasPerm(p, "ragemode.admin.forcestart")) {
 			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return false;
 		}
+
 		if (args.length < 2) {
 			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm forcestart <gameName>"));
 			return false;
 		}
+
 		String game = args[1];
 		if (!GameUtils.isGameWithNameExists(game)) {
 			sendMessage(p, RageMode.getLang().get("commands.forcestart.game-not-exist"));
 			return false;
 		}
+
 		if (!Game.isPlayerPlaying(p.getUniqueId().toString())) {
 			sendMessage(p, RageMode.getLang().get("commands.forcestart.player-not-in-game"));
 			return false;
 		}
-		if (Game.getPlayers().size() < 2) {
-			sendMessage(p, RageMode.getLang().get("commands.forcestart.not-enough-players"));
-			return false;
-		}
+
 		if (Game.isGameRunning(game)) {
 			sendMessage(p, RageMode.getLang().get("game.running"));
+			return false;
+		}
+
+		if (Game.getPlayers().size() < 2) {
+			sendMessage(p, RageMode.getLang().get("commands.forcestart.not-enough-players"));
 			return false;
 		}
 
@@ -52,7 +58,8 @@ public class forcestart extends ICommand {
 		p.setLevel(0);
 
 		sendMessage(p, RageMode.getLang().get("commands.forcestart.game-start", "%game%", game));
-		new GameLoader(game);
+		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
+				() -> new GameLoader(game));
 		return false;
 	}
 }

@@ -176,7 +176,7 @@ public class GameTimer extends TimerTask {
 			if (gameBoard != null) {
 				String boardTitle = conf.getCV().getSbTitle();
 				if (boardTitle != null && !boardTitle.equals(""))
-					gameBoard.setTitle(RageMode.getLang().colors(boardTitle));
+					gameBoard.setTitle(Utils.colors(boardTitle));
 
 				List<String> rows = conf.getCV().getSbContent();
 				if (rows != null && !rows.isEmpty()) {

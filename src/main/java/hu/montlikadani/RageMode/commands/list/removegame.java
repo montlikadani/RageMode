@@ -15,6 +15,8 @@ import hu.montlikadani.ragemode.utils.ICommand;
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
+import java.util.Iterator;
+
 public class removegame extends ICommand {
 
 	@Override
@@ -45,15 +47,17 @@ public class removegame extends ICommand {
 			GameDeleteEvent event = new GameDeleteEvent(game);
 			Bukkit.getPluginManager().callEvent(event);
 
-			for (GameSpawnGetter spawn : plugin.getSpawns()) {
+			for (Iterator<GameSpawnGetter> it = plugin.getSpawns().iterator(); it.hasNext();) {
+				GameSpawnGetter spawn = it.next();
 				if (spawn.getGameName().equalsIgnoreCase(game)) {
-					plugin.getSpawns().remove(spawn);
+					it.remove();
 				}
 			}
 
-			for (Game name : plugin.getGames()) {
+			for (Iterator<Game> gt = plugin.getGames().iterator(); gt.hasNext();) {
+				Game name = gt.next();
 				if (name.getName().equalsIgnoreCase(game)) {
-					plugin.getGames().remove(name);
+					gt.remove();
 				}
 			}
 

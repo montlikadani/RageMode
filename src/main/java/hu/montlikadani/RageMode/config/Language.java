@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -126,6 +125,7 @@ public class Language {
 		l.getL("commands.latestart.lobby-timer-increased", "&aThe lobby time is increased by&e %newtime%&a seconds.");
 		l.getL("commands.listplayers.game-not-running", "&cThis game is currently not running.");
 		l.getL("commands.listplayers.player-currently-not-playing", "&cYou are not currently playing.");
+		l.getL("commands.maxplayers.changed", "&2The maxplayers for&e %game%&2 has been changed to&e %value%&2.");
 
 		String[] holoList = new String[] { "&6Rank:&a %rank%", "&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
 				"&5KD:&a %kd%", "&4Kills:&a %kills%", "&7Deaths:&a %deaths%" };
@@ -235,7 +235,7 @@ public class Language {
 		if (yc.getString(key, "").equals(""))
 			return msg;
 
-		msg = colors(yc.getString(key));
+		msg = Utils.colors(yc.getString(key));
 
 		if (variables.length > 0) {
 			for (int i = 0; i < variables.length; i++) {
@@ -272,7 +272,7 @@ public class Language {
 				}
 
 				msg = filterNewLine(msg);
-				ls.set(i, colors(msg));
+				ls.set(i, Utils.colors(msg));
 			}
 		}
 
@@ -286,10 +286,6 @@ public class Language {
 			msg = msg.replace(match.group(0), "\n");
 		}
 		return msg;
-	}
-
-	public String colors(String s) {
-		return ChatColor.translateAlternateColorCodes('&', s);
 	}
 
 	public File getLangFile() {

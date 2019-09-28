@@ -116,7 +116,7 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(p)) {
 			String game = Game.getPlayersGame(p);
 
 			if (GameUtils.getStatus(game) == GameStatus.WAITING) {
@@ -145,7 +145,7 @@ public class EventListener implements Listener {
 					format = format.replace("%message%", event.getMessage());
 					format = Utils.setPlaceholders(format, p);
 
-					event.setFormat(RageMode.getLang().colors(format));
+					event.setFormat(Utils.colors(format));
 				}
 			}
 
@@ -163,13 +163,14 @@ public class EventListener implements Listener {
 		// RageArrow explosion event
 		if (event.getEntity() != null && event.getEntity().getShooter() != null
 				&& event.getEntity().getShooter() instanceof Player
+				&& Game.isPlayerPlaying((Player) event.getEntity().getShooter())
 				&& GameUtils.getStatus(Game.getPlayersGame((Player) event.getEntity().getShooter())) == GameStatus.RUNNING) {
 			if (event.getEntity() instanceof Arrow) {
 				Arrow arrow = (Arrow) event.getEntity();
 
 				if (arrow.getShooter() != null && arrow.getShooter() instanceof Player) {
 					Player shooter = (Player) arrow.getShooter();
-					if (Game.isPlayerPlaying(shooter.getUniqueId().toString())) {
+					if (Game.isPlayerPlaying(shooter)) {
 						if (waitingGames.containsKey(Game.getPlayersGame(shooter))) {
 							if (waitingGames.get(Game.getPlayersGame(shooter)))
 								return;
@@ -220,14 +221,13 @@ public class EventListener implements Listener {
 		if (event.getEntity() instanceof Player) {
 			Player victim = (Player) event.getEntity();
 
-			if (Game.isPlayerPlaying(victim.getUniqueId().toString())
+			if (Game.isPlayerPlaying(victim)
 					&& GameUtils.getStatus(Game.getPlayersGame(victim)) == GameStatus.RUNNING) {
 				// RageKnife hit event
 				if (event.getDamager() instanceof Player) {
 					Player killer = (Player) event.getDamager();
 
-					if (Game.isPlayerPlaying(killer.getUniqueId().toString())
-							&& Game.isPlayerPlaying(victim.getUniqueId().toString())) {
+					if (Game.isPlayerPlaying(killer)) {
 						if (waitingGames.containsKey(Game.getPlayersGame(killer))) {
 							if (waitingGames.get(Game.getPlayersGame(killer))) {
 								event.setCancelled(true);
@@ -265,8 +265,7 @@ public class EventListener implements Listener {
 			}
 
 			// Prevent player damage in lobby
-			if (Game.isPlayerPlaying(victim.getUniqueId().toString())
-					&& GameUtils.getStatus(Game.getPlayersGame(victim)) == GameStatus.WAITING)
+			if (Game.isPlayerPlaying(victim) && GameUtils.getStatus(Game.getPlayersGame(victim)) == GameStatus.WAITING)
 				event.setCancelled(true);
 		}
 	}
@@ -322,11 +321,11 @@ public class EventListener implements Listener {
 
 		Player deceased = event.getEntity();
 
-		if (deceased != null && Game.isPlayerPlaying(deceased.getUniqueId().toString()) &&
+		if (deceased != null && Game.isPlayerPlaying(deceased) &&
 				GameUtils.getStatus(deceased) == GameStatus.RUNNING) {
 			String game = Game.getPlayersGame(deceased);
 
-			if ((deceased.getKiller() != null && Game.isPlayerPlaying(deceased.getKiller().getUniqueId().toString()))
+			if ((deceased.getKiller() != null && Game.isPlayerPlaying(deceased.getKiller()))
 					|| deceased.getKiller() == null) {
 				boolean doDeathBroadcast = plugin.getConfiguration().getCV().isDeathMsgs();
 
@@ -442,7 +441,6 @@ public class EventListener implements Listener {
 						killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller() != null ?
 								deceased.getKiller() : null, "knife");
 						break;
-
 					default:
 						if (doDeathBroadcast)
 							GameUtils.broadcastToGame(game,
@@ -488,7 +486,7 @@ public class EventListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onRespawn(PlayerRespawnEvent e) {
-		if (Game.isPlayerPlaying(e.getPlayer().getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(e.getPlayer())) {
 			// If player still is in game with respawn screen then remove player
 			// 1.14 issue
 			if (!Game.isGameRunning(Game.getPlayersGame(e.getPlayer()))) {
@@ -518,19 +516,19 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent ev) {
-		if (Game.isPlayerPlaying(ev.getPlayer().getUniqueId().toString()))
+		if (Game.isPlayerPlaying(ev.getPlayer()))
 			ev.setCancelled(true);
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockBreak(BlockBreakEvent event) {
-		if (Game.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
+		if (Game.isPlayerPlaying(event.getPlayer()))
 			event.setCancelled(true);
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onItemDrop(PlayerDropItemEvent event) {
-		if (Game.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
+		if (Game.isPlayerPlaying(event.getPlayer()))
 			event.setCancelled(true);
 	}
 
@@ -571,7 +569,7 @@ public class EventListener implements Listener {
 			}
 		}
 
-		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(p)) {
 			if (waitingGames.containsKey(Game.getPlayersGame(p))) {
 				if (waitingGames.get(Game.getPlayersGame(p))) {
 					p.sendMessage(RageMode.getLang().get("game.command-disabled-in-end-game"));
@@ -595,7 +593,7 @@ public class EventListener implements Listener {
 		if (event.getPlayer() == null || !event.getPlayer().isOnline()) return;
 
 		final Player p = event.getPlayer();
-		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(p)) {
 			if (GameUtils.getStatus(p) == GameStatus.RUNNING || GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
 				// Removes the egg from player inventory and prevent
 				// other item remove when moved the slot to another
@@ -679,7 +677,7 @@ public class EventListener implements Listener {
 	public void onInteract(PlayerInteractEvent event) {
 		Player p = event.getPlayer();
 
-		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(p)) {
 			if (GameUtils.getStatus(p) == GameStatus.RUNNING) {
 				Player thrower = event.getPlayer();
 				if (waitingGames.containsKey(Game.getPlayersGame(thrower))) {
@@ -775,7 +773,7 @@ public class EventListener implements Listener {
 	public void onInteractRedstone(PlayerInteractEvent ev) {
 		Player p = ev.getPlayer();
 
-		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(p)) {
 			if (ev.getClickedBlock() != null) {
 				Material t = ev.getClickedBlock().getType();
 
@@ -861,13 +859,13 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onFly(PlayerToggleFlightEvent event) {
-		if (Game.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
+		if (Game.isPlayerPlaying(event.getPlayer()))
 			event.setCancelled(true);
 	}
 
 	@EventHandler
 	public void playerBedEnter(PlayerBedEnterEvent event) {
-		if (Game.isPlayerPlaying(event.getPlayer().getUniqueId().toString()))
+		if (Game.isPlayerPlaying(event.getPlayer()))
 			event.setCancelled(true);
 	}
 
@@ -902,7 +900,7 @@ public class EventListener implements Listener {
 	public void onPlayerMove(PlayerMoveEvent event) {
 		Player p = event.getPlayer();
 
-		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (Game.isPlayerPlaying(p)) {
 			if (GameUtils.getStatus(p) == GameStatus.RUNNING) {
 				if (waitingGames != null && waitingGames.containsKey(Game.getPlayersGame(p))) {
 					if (waitingGames.get(Game.getPlayersGame(p))) {
@@ -932,13 +930,12 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onWorldChangedEvent(PlayerTeleportEvent event) {
-		if (Game.isPlayerPlaying(event.getPlayer().getUniqueId().toString())) {
-			if (!MapChecker.isGameWorld(Game.getPlayersGame(event.getPlayer()), event.getTo().getWorld())) {
-				if (!event.getPlayer().hasMetadata("Leaving"))
-					event.getPlayer().performCommand("rm leave");
-				else
-					event.getPlayer().removeMetadata("Leaving", RageMode.getInstance());
-			}
+		if (Game.isPlayerPlaying(event.getPlayer())
+				&& !MapChecker.isGameWorld(Game.getPlayersGame(event.getPlayer()), event.getTo().getWorld())) {
+			if (!event.getPlayer().hasMetadata("Leaving"))
+				event.getPlayer().performCommand("rm leave");
+			else
+				event.getPlayer().removeMetadata("Leaving", RageMode.getInstance());
 		}
 	}
 }

@@ -29,6 +29,6 @@ public class RageBow {
 
 	public static String getName() {
 		String iname = RageMode.getInstance().getConfiguration().getCfg().getString("items.rageBow.name", "");
-		return !iname.equals("") ? RageMode.getLang().colors(iname) : org.bukkit.ChatColor.GOLD + "RageBow";
+		return !iname.equals("") ? Utils.colors(iname) : org.bukkit.ChatColor.GOLD + "RageBow";
 	}
 }

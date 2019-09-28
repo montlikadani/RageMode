@@ -24,6 +24,7 @@ import com.google.common.base.StandardSystemProperty;
 
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.commands.RmCommand;
+import hu.montlikadani.ragemode.commands.RmTabCompleter;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.Language;
 import hu.montlikadani.ragemode.database.MySQLConnect;
@@ -177,7 +178,7 @@ public class RageMode extends JavaPlugin {
 				Metrics metrics = new Metrics(this);
 				if (metrics.isEnabled()) {
 					metrics.addCustomChart(
-							new Metrics.SimplePie("games_amount", () -> GetGames.getConfigGamesCount() + ""));
+							new Metrics.SimplePie("games_amount", () -> String.valueOf(GetGames.getConfigGamesCount())));
 
 					metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
 						int totalPlayers = 0;
@@ -417,9 +418,8 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void registerCommands() {
-		RmCommand rm = new RmCommand();
-		getCommand("ragemode").setExecutor(rm);
-		getCommand("ragemode").setTabCompleter(rm);
+		getCommand("ragemode").setExecutor(new RmCommand());
+		getCommand("ragemode").setTabCompleter(new RmTabCompleter());
 	}
 
 	private void registerListeners() {

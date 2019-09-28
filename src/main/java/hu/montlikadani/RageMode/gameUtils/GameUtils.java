@@ -364,7 +364,7 @@ public class GameUtils {
 						cmds = cmds.replace("%player%", p.getName());
 						// For ipban
 						cmds = cmds.replace("%player-ip%", p.getAddress().getAddress().getHostAddress());
-						Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), RageMode.getLang().colors(cmds));
+						Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), Utils.colors(cmds));
 					}
 				}
 			}
@@ -442,36 +442,21 @@ public class GameUtils {
 						continue;
 
 					cmd = cmd.replace("chance:" + value + "-", "");
+				}
 
-					String type = cmd.split(":")[0];
-					if (type.equals(cmdType)) {
-						String consoleOrPlayer = cmd.split(":")[1];
+				String type = cmd.split(":")[0];
+				if (type.equals(cmdType)) {
+					String consoleOrPlayer = cmd.split(":")[1];
 
-						cmd = cmd.split(":")[2].replace("%world%", p.getWorld().getName())
-								.replace("%game%", game)
-								.replace("%player%", p.getName());
-						cmd = RageMode.getLang().colors(cmd);
+					cmd = cmd.split(":")[2].replace("%world%", p.getWorld().getName())
+							.replace("%game%", game)
+							.replace("%player%", p.getName());
+					cmd = Utils.colors(cmd);
 
-						if (consoleOrPlayer.equals("console"))
-							Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
-						else if (consoleOrPlayer.equals("player"))
-							p.performCommand(cmd);
-					}
-				} else {
-					String type = cmd.split(":")[0];
-					if (type.equals(cmdType)) {
-						String consoleOrPlayer = cmd.split(":")[1];
-
-						cmd = cmd.split(":")[2].replace("%world%", p.getWorld().getName())
-								.replace("%game%", game)
-								.replace("%player%", p.getName());
-						cmd = RageMode.getLang().colors(cmd);
-
-						if (consoleOrPlayer.equals("console"))
-							Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
-						else if (consoleOrPlayer.equals("player"))
-							p.performCommand(cmd);
-					}
+					if (consoleOrPlayer.equals("console"))
+						Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+					else if (consoleOrPlayer.equals("player"))
+						p.performCommand(cmd);
 				}
 			}
 		}
@@ -507,7 +492,7 @@ public class GameUtils {
 				if (action.equals(type)) {
 					String message = msg.split(":")[1];
 					message = message.replace("%game%", game).replace("%player%", p.getName());
-					ActionBar.sendActionBar(p, RageMode.getLang().colors(message));
+					ActionBar.sendActionBar(p, Utils.colors(message));
 				}
 			}
 		}
@@ -774,6 +759,9 @@ public class GameUtils {
 
 				Debug.logConsole("Stopping " + games[i] + " ...");
 
+				Game.setGameNotRunning(games[i]);
+				setStatus(games[i], null);
+
 				Game.getPlayersFromList()
 						.forEach(uuids -> Game.removePlayer(Bukkit.getPlayer(UUID.fromString(uuids))));
 
@@ -782,9 +770,6 @@ public class GameUtils {
 					Player pl = Bukkit.getPlayer(it.next().getKey());
 					Game.removeSpectatorPlayer(pl);
 				}
-
-				Game.setGameNotRunning(games[i]);
-				setStatus(games[i], null);
 
 				Debug.logConsole(games[i] + " has been stopped.");
 			}

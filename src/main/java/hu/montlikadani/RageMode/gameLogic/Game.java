@@ -58,6 +58,8 @@ public class Game {
 	private static Map<String, String> players = new HashMap<>();
 	private static Map<UUID, String> specPlayer = new HashMap<>();
 
+	static ItemStack[] inventory;
+	static ItemStack[] armor;
 	static Location loc;
 	static GameMode gMode = GameMode.SURVIVAL;
 	static boolean fly = false;
@@ -83,17 +85,38 @@ public class Game {
 		return Collections.unmodifiableMap(specPlayer);
 	}
 
+	/**
+	 * Check if player is spectator or not.
+	 * @param p Player
+	 * @return true if player is in spectator
+	 */
+	public static boolean isSpectator(Player p) {
+		Validate.notNull(p, "Player can't be null!");
+
+		return isSpectator(p.getUniqueId());
+	}
+
+	/**
+	 * Check if player is spectator or not by uuid.
+	 * @param uuid Player UUID
+	 * @return true if is in spectator
+	 */
 	public static boolean isSpectator(UUID uuid) {
 		Validate.notNull(uuid, "UUID can't be null!");
 
-		return specPlayer != null && specPlayer.containsKey(uuid);
+		return specPlayer.containsKey(uuid);
 	}
 
+	/**
+	 * Check if player in list by uuid
+	 * @param uuid Player uuid
+	 * @return true if player is in the list
+	 */
 	public static boolean containsPlayerInList(String uuid) {
 		Validate.notNull(uuid, "UUID can't be null!");
 		Validate.notEmpty(uuid, "UUID can't be empty!");
 
-		return players != null && players.containsValue(uuid);
+		return players.containsValue(uuid);
 	}
 
 	public static boolean addPlayer(Player player, String game) {
@@ -127,7 +150,7 @@ public class Game {
 			oldGameMode = player.getGameMode();
 			player.setGameMode(GameMode.SURVIVAL);
 
-			hu.montlikadani.ragemode.gameUtils.GameUtils.clearPlayerTools(player);
+			GameUtils.clearPlayerTools(player);
 		}
 
 		int time = GetGameLobby.getLobbyTime(game);
@@ -212,10 +235,14 @@ public class Game {
 
 	public static boolean addSpectatorPlayer(Player player, String game) {
 		if (!RageMode.getInstance().getConfiguration().getCV().isBungee()) {
+			inventory = player.getInventory().getContents();
+			armor = player.getInventory().getArmorContents();
 			loc = player.getLocation();
 			gMode = player.getGameMode();
 			fly = player.isFlying();
 			allowFly = player.getAllowFlight();
+
+			player.getInventory().clear();
 		}
 
 		SpectatorJoinToGameEvent spec = new SpectatorJoinToGameEvent(game, player);
@@ -231,6 +258,10 @@ public class Game {
 
 		if (isSpectator(player.getUniqueId())) {
 			if (!RageMode.getInstance().getConfiguration().getCV().isBungee()) {
+				player.getInventory().clear();
+
+				player.getInventory().setContents(inventory);
+				player.getInventory().setArmorContents(armor);
 				player.teleport(loc);
 				player.setGameMode(gMode);
 				player.setFlying(fly);
@@ -363,11 +394,23 @@ public class Game {
 
 	/**
 	 * Check if the specified player is currently in game.
+	 * @param p Player
+	 * @return true if player is in list and playing
+	 */
+	public static boolean isPlayerPlaying(Player p) {
+		Validate.notNull(p, "Player can not be null!");
+
+		return isPlayerPlaying(p.getUniqueId().toString());
+	}
+
+	/**
+	 * Check if the specified player is currently in game.
 	 * @param playerUUID Player UUID
 	 * @return true if player is in list and playing
 	 */
 	public static boolean isPlayerPlaying(String playerUUID) {
 		Validate.notNull(playerUUID, "Player UUID can not be null!");
+		Validate.notEmpty(playerUUID, "Player UUID can't be empty!");
 
 		if (containsPlayerInList(playerUUID))
 			return true;

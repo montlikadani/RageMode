@@ -7,11 +7,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.commands.RmCommand.Actions;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
+import hu.montlikadani.ragemode.statistics.SQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 import hu.montlikadani.ragemode.utils.ICommand;
 
@@ -19,6 +19,10 @@ import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
 public class points extends ICommand {
+
+	private enum Actions {
+		Set, Add, Take;
+	}
 
 	@Override
 	public boolean run(CommandSender sender, String[] args) {
@@ -92,15 +96,27 @@ public class points extends ICommand {
 			break;
 		}
 
-		if (YAMLStats.getFile() != null && YAMLStats.getFile().exists()) {
-			YAMLStats.getConf().set("data." + target.getUniqueId() + ".score", rpp.getPoints());
-			try {
-				YAMLStats.getConf().save(YAMLStats.getFile());
-			} catch (IOException e) {
-				e.printStackTrace();
+		switch (RageMode.getInstance().getConfiguration().getCV().getDatabase()) {
+		case "yaml":
+			if (YAMLStats.getFile() != null && YAMLStats.getFile().exists()) {
+				YAMLStats.getConf().set("data." + target.getUniqueId() + ".score", rpp.getPoints());
+				try {
+					YAMLStats.getConf().save(YAMLStats.getFile());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
-		} else
+			break;
+		case "sql":
+		case "sqlite":
+			SQLStats.addPlayerStatistics(rpp, RageMode.getSQL());
+			break;
+		case "mysql":
 			MySQLStats.addPlayerStatistics(rpp, RageMode.getMySQL());
+			break;
+		default:
+			break;
+		}
 
 		sendMessage(sender, RageMode.getLang().get("commands.points.changed", "%amount%", amount, "%new%", rpp.getPoints()));
 		return false;

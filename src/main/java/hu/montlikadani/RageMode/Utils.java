@@ -194,7 +194,7 @@ public class Utils {
 		if (s.contains("%rank%"))
 			s = s.replace("%rank%", pp == null ? "0" : Integer.toString(pp.getRank()));
 
-		return RageMode.getLang().colors(s);
+		return colors(s);
 	}
 
 	/**
@@ -285,9 +285,18 @@ public class Utils {
 	public static List<String> colorList(List<String> list) {
 		List<String> cList = new ArrayList<>();
 		for (String s : list) {
-			cList.add(RageMode.getLang().colors(s));
+			cList.add(colors(s));
 		}
 		return cList;
+	}
+
+	/**
+	 * Adds to use color codes in the string.
+	 * @param s String
+	 * @return colored textt
+	 */
+	public static String colors(String s) {
+		return ChatColor.translateAlternateColorCodes('&', s);
 	}
 
 	/**

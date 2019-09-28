@@ -26,6 +26,6 @@ public class ForceStarter {
 
 	public static String getName() {
 		String iname = RageMode.getInstance().getConfiguration().getCfg().getString("items.force-start.name", "");
-		return !iname.equals("") ? RageMode.getLang().colors(iname) : org.bukkit.ChatColor.DARK_GREEN + "Force the game start";
+		return !iname.equals("") ? Utils.colors(iname) : org.bukkit.ChatColor.DARK_GREEN + "Force the game start";
 	}
 }

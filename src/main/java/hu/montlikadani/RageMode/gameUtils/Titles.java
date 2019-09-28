@@ -2,7 +2,6 @@ package hu.montlikadani.ragemode.gameUtils;
 
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 
 import java.lang.reflect.Constructor;
@@ -30,7 +29,7 @@ public class Titles {
 
 			if (title == null) title = "";
 
-			title = RageMode.getLang().colors(title);
+			title = Utils.colors(title);
 			e = Utils.getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0].getField("TIMES").get((Object) null);
 			chatTitle = Utils.getAsIChatBaseComponent(title);
 			subtitleConstructor = Utils.getNMSClass("PacketPlayOutTitle")
@@ -50,7 +49,7 @@ public class Titles {
 
 			if (subtitle == null) subtitle = "";
 
-			subtitle = RageMode.getLang().colors(subtitle);
+			subtitle = Utils.colors(subtitle);
 			e = Utils.getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0].getField("TIMES").get((Object) null);
 			chatSubtitle = Utils.getAsIChatBaseComponent(title);
 			subtitleConstructor = Utils.getNMSClass("PacketPlayOutTitle")

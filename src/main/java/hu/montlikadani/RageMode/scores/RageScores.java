@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
+import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -22,7 +23,8 @@ public class RageScores {
 		String killerUUID = killer.getUniqueId().toString();
 		PlayerPoints killerPoints = null;
 
-		if (!killer.getUniqueId().toString().equals(victim.getUniqueId().toString())) {
+		// Check if player not killed itself
+		if (!killerUUID.equals(victim.getUniqueId().toString())) {
 			String victimUUID = victim.getUniqueId().toString();
 			PlayerPoints victimPoints = null;
 
@@ -174,14 +176,12 @@ public class RageScores {
 
 	/**
 	 * Gets the specified player points
-	 * 
 	 * @param playerUUID UUID of player
 	 * @return playerPoints Player points
 	 */
 	public static PlayerPoints getPlayerPoints(String playerUUID) {
-		if (playerUUID == null) {
-			throw new IllegalArgumentException("player uuid is null");
-		}
+		Validate.notNull(playerUUID, "Player UUId can't be null!");
+		Validate.notEmpty(playerUUID, "Player UUID can't be empty!");
 
 		return playerpoints.get(playerUUID);
 	}
@@ -202,7 +202,7 @@ public class RageScores {
 			int oldPoints = pointsHolder.getPoints();
 			int oldKills = pointsHolder.getKills();
 			int oldDeaths = pointsHolder.getDeaths();
-			int totalPoints = oldPoints + points;
+			int totalPoints = (oldPoints + points);
 			int totalKills = oldKills;
 			int totalDeaths = oldDeaths;
 			int currentStreak = 0;
@@ -221,6 +221,7 @@ public class RageScores {
 			pointsHolder.setDeaths(totalDeaths);
 			pointsHolder.setCurrentStreak(currentStreak);
 			pointsHolder.setLongestStreak(longestStreak);
+
 			return totalPoints;
 		}
 

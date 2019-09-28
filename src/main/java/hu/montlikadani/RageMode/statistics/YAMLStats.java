@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -181,9 +182,8 @@ public class YAMLStats {
 	 * @return returns a PlayerPoints object containing the GLOBAL statistics of a player
 	 */
 	public static PlayerPoints getPlayerStatistics(String sUUID) {
-		if (sUUID == null) {
-			throw new IllegalArgumentException("player uuid is null");
-		}
+		Validate.notNull(sUUID, "Player UUID can't be null!");
+		Validate.notEmpty(sUUID, "Player UUID can't be empty!");
 
 		if (!inited || points.isEmpty())
 			return null;

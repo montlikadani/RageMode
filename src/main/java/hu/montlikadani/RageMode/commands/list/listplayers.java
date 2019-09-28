@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -44,7 +45,7 @@ public class listplayers extends ICommand {
 				sb.append("&7-&6 " + p.getName() + "&a - " + e.next());
 			}
 
-			sendMessage(p, RageMode.getLang().colors("&7Players:\n" + sb));
+			sendMessage(p, Utils.colors("&7Players:\n" + sb));
 			return false;
 		}
 
@@ -69,7 +70,7 @@ public class listplayers extends ICommand {
 				}
 			}
 
-			sendMessage(sender, RageMode.getLang().colors("&7Players:\n" + sb));
+			sendMessage(sender, Utils.colors("&7Players:\n" + sb));
 		}
 		return false;
 	}

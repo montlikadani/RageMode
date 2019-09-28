@@ -67,7 +67,7 @@ public class GameLoader {
 					if (bossMessage != null && !bossMessage.equals("")) {
 						bossMessage = bossMessage.replace("%game%", gameName);
 						bossMessage = bossMessage.replace("%player%", p.getName());
-						bossMessage = RageMode.getLang().colors(bossMessage);
+						bossMessage = Utils.colors(bossMessage);
 
 						new BossMessenger(gameName).sendBossBar(bossMessage, p,
 								BarStyle.valueOf(conf.getCV().getBossbarStyle()),

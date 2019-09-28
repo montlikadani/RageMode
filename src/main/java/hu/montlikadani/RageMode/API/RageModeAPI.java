@@ -12,10 +12,6 @@ public class RageModeAPI {
 	 * @return Plugin
 	 */
 	public static Plugin getPlugin() {
-		if (JavaPlugin.getPlugin(RageMode.class) == null) {
-			throw new NullPointerException("plugin is null");
-		}
-
 		return JavaPlugin.getPlugin(RageMode.class);
 	}
 
