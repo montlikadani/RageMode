@@ -309,8 +309,7 @@ public class GameUtils {
 						return;
 					}
 				}
-			} else if (conf.getCV().isSavePlayerData())
-				savePlayerData(p);
+			}
 
 			if (Game.addPlayer(p, game)) {
 				p.teleport(GetGameLobby.getLobbyLocation(game));
@@ -656,13 +655,15 @@ public class GameUtils {
 		if (Game.isGameRunning(game)) {
 			List<String> players = Game.getPlayersFromList();
 
-			String stats = RageMode.getInstance().getConfiguration().getCV().getStatistics();
 			for (String playersUUID : players) {
-				if (playersUUID != null && RageScores.getPlayerPoints(playersUUID) != null) {
+				if (playersUUID != null) {
 					final PlayerPoints pP = RageScores.getPlayerPoints(playersUUID);
+					if (pP == null) {
+						continue;
+					}
 
 					Thread th = null;
-					switch (stats) {
+					switch (RageMode.getInstance().getConfiguration().getCV().getStatistics()) {
 					case "yaml":
 						th = new Thread(YAMLStats.createPlayersStats(pP));
 						break;

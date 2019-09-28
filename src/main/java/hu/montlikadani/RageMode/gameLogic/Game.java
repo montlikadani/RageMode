@@ -148,9 +148,11 @@ public class Game {
 			// We still need some data saving
 			oldLocation = player.getLocation();
 			oldGameMode = player.getGameMode();
-			player.setGameMode(GameMode.SURVIVAL);
 
+			player.setGameMode(GameMode.SURVIVAL);
 			GameUtils.clearPlayerTools(player);
+		} else {
+			GameUtils.savePlayerData(player);
 		}
 
 		int time = GetGameLobby.getLobbyTime(game);
@@ -435,10 +437,9 @@ public class Game {
 
 		for (Entry<String, String> playerUUIDs : players.entrySet()) {
 			if (playerUUIDs.getKey().equalsIgnoreCase(game)) {
-				Player p = Bukkit.getPlayer(UUID.fromString(playerUUIDs.getValue()));
-
-				if (p.hasPermission("ragemode.vip"))
+				if (Bukkit.getPlayer(UUID.fromString(playerUUIDs.getValue())).hasPermission("ragemode.vip")) {
 					vipsInGame++;
+				}
 			}
 		}
 
