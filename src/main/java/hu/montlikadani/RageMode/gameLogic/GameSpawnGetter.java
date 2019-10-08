@@ -14,20 +14,20 @@ import hu.montlikadani.ragemode.gameUtils.MapChecker;
 
 public class GameSpawnGetter {
 
-	private String gameName;
+	private Game game;
 	private boolean isGameReady = false;
 	private List<Location> spawnLocations = new ArrayList<>();
 
-	public GameSpawnGetter(String gameName) {
-		this.gameName = gameName;
+	public GameSpawnGetter(Game game) {
+		this.game = game;
 
 		loadSpawns();
 	}
 
 	private void loadSpawns() {
 		FileConfiguration aCfg = RageMode.getInstance().getConfiguration().getArenasCfg();
-		if (new MapChecker(gameName).isValid()) {
-			String path = "arenas." + gameName + ".spawns";
+		if (new MapChecker(game.getName()).isValid()) {
+			String path = "arenas." + game.getName() + ".spawns";
 			for (String spawnName : aCfg.getConfigurationSection(path).getKeys(false)) {
 				String world = aCfg.getString(path + "." + spawnName + ".world");
 				double spawnX = aCfg.getDouble(path + "." + spawnName + ".x");
@@ -61,8 +61,8 @@ public class GameSpawnGetter {
 		}
 	}
 
-	public String getGameName() {
-		return gameName;
+	public Game getGame() {
+		return game;
 	}
 
 	public boolean isGameReady() {
@@ -71,20 +71,5 @@ public class GameSpawnGetter {
 
 	public List<Location> getSpawnLocations() {
 		return spawnLocations;
-	}
-
-	/**
-	 * Gets the spawn by location.
-	 * @param location Location
-	 * @return location if the specified loc is correct.
-	 */
-	public Location getSpawnByLocation(Location location) {
-		for (Location locs : spawnLocations) {
-			if (location.equals(locs)) {
-				return locs;
-			}
-		}
-
-		return null;
 	}
 }

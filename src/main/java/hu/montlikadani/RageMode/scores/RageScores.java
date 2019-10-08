@@ -13,6 +13,8 @@ import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.PlayerWinEvent;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class RageScores {
 
@@ -247,12 +249,14 @@ public class RageScores {
 		return points;
 	}
 
-	public static String calculateWinner(String game, List<String> uuids) {
+	public static String calculateWinner(String game, List<PlayerManager> players) {
 		String highest = UUID.randomUUID().toString();
 		String resultPlayer = null;
 		String goy = highest;
 		int highestPoints = 0;
-		for (String uuid : uuids) {
+		for (PlayerManager pm : players) {
+			String uuid = pm.getPlayer().getUniqueId().toString();
+
 			if (playerpoints.containsKey(uuid)) {
 				if (getPlayerPoints(uuid).getPoints() > highestPoints) {
 					highest = uuid;
@@ -282,7 +286,7 @@ public class RageScores {
 			Bukkit.getPlayer(UUID.fromString(resultPlayer)).sendMessage(RageMode.getLang().get("game.message.player-won",
 					"%player%", winner.getName(), "%game%", game));
 
-		PlayerWinEvent event = new PlayerWinEvent(game, winner);
+		PlayerWinEvent event = new PlayerWinEvent(GameUtils.getGameByName(game), winner);
 		Utils.callEvent(event);
 		return highest;
 	}

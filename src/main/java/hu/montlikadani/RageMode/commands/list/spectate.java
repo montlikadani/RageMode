@@ -5,17 +5,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.LeaveGame;
-import hu.montlikadani.ragemode.utils.ICommand;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class spectate extends ICommand {
+public class spectate {
 
-	@Override
 	public boolean run(CommandSender sender, String[] args) {
 		if (!(sender instanceof Player)) {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
@@ -39,17 +36,17 @@ public class spectate extends ICommand {
 			return false;
 		}
 
-		if (!Game.isGameRunning(map)) {
+		if (!GameUtils.getGameByName(map).isGameRunning(map)) {
 			sendMessage(p, RageMode.getLang().get("game.not-running"));
 			return false;
 		}
 
-		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (GameUtils.isPlayerPlaying(p)) {
 			sendMessage(p, RageMode.getLang().get("game.player-not-switch-spectate"));
 			return false;
 		}
 
-		if (Game.addSpectatorPlayer(p, map)) {
+		if (GameUtils.getGameByName(map).addSpectatorPlayer(p, map)) {
 			GameUtils.getGameSpawnByName(map).randomSpawn(p);
 
 			p.setAllowFlight(true);

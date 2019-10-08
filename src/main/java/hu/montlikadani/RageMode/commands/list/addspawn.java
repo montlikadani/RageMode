@@ -9,14 +9,12 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.utils.ICommand;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class addspawn extends ICommand {
+public class addspawn {
 
-	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!(sender instanceof Player)) {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
@@ -60,8 +58,10 @@ public class addspawn extends ICommand {
 		Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
 		for (GameSpawnGetter spawn : plugin.getSpawns()) {
-			if (spawn.getGameName().equalsIgnoreCase(args[1]))
+			if (spawn.getGame().getName().equalsIgnoreCase(args[1])) {
 				spawn.getSpawnLocations().add(loc);
+				break;
+			}
 		}
 
 		sendMessage(p, RageMode.getLang().get("setup.spawn-set-success", "%number%", i, "%game%", args[1]));

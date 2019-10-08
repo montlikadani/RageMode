@@ -3,18 +3,20 @@ package hu.montlikadani.ragemode.API.event;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
+import hu.montlikadani.ragemode.gameLogic.Game;
+
 public class GameLeaveAttemptEvent extends BaseEvent implements Cancellable {
 
-	private String game;
+	private Game game;
 	private Player player;
 	private boolean cancelled = false;
 
-	public GameLeaveAttemptEvent(Player player, String game) {
+	public GameLeaveAttemptEvent(Game game, Player player) {
 		this.game = game;
 		this.player = player;
 	}
 
-	public String getGame() {
+	public Game getGame() {
 		return game;
 	}
 

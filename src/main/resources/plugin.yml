@@ -29,6 +29,7 @@ permissions:
     children:
       ragemode.admin.help: true
       ragemode.admin.addgame: true
+      ragemode.admin.maxplayers: true
       ragemode.admin.setlobby: true
       ragemode.admin.addspawn: true
       ragemode.admin.removespawn: true

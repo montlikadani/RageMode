@@ -3,8 +3,8 @@ package hu.montlikadani.ragemode.gameUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -15,6 +15,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 
 import hu.montlikadani.ragemode.holder.ScoreBoardHolder;
+import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class ScoreBoard {
 
@@ -52,23 +53,19 @@ public class ScoreBoard {
 	 * constructor with the List parameter.
 	 */
 	@SuppressWarnings("deprecation")
-	public ScoreBoard(List<String> playerString, boolean isList) {
-		for (String player : playerString) {
-			this.player.add(Bukkit.getPlayer(UUID.fromString(player)));
+	public ScoreBoard(List<PlayerManager> players, boolean isList) {
+		for (PlayerManager pm : players) {
+			this.player.add(pm.getPlayer());
 		}
 
-		// Iterator is not work in this, so throws an error
-		// Probably some issues with Java
-		if (!player.isEmpty()) {
-			for (Player loopPlayer : this.player) {
-				Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
-				scoreboard.clearSlot(DisplaySlot.SIDEBAR);
-				removeScoreBoard(loopPlayer, false);
+		for (Player loopPlayer : this.player) {
+			Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
+			scoreboard.clearSlot(DisplaySlot.SIDEBAR);
+			removeScoreBoard(loopPlayer, false);
 
-				Objective objective = scoreboard.registerNewObjective("ragescores", "dummy");
-				objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-				scoreboards.put(loopPlayer, new ScoreBoardHolder(loopPlayer, scoreboard, objective));
-			}
+			Objective objective = scoreboard.registerNewObjective("ragescores", "dummy");
+			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+			scoreboards.put(loopPlayer, new ScoreBoardHolder(loopPlayer, scoreboard, objective));
 		}
 	}
 
@@ -115,9 +112,7 @@ public class ScoreBoard {
 	 * Sets the ScoreBoard for all the Players given in the constructor.
 	 */
 	public void setScoreBoard() {
-		for (Player player : this.player) {
-			setScoreBoard(player);
-		}
+		this.player.forEach(this::setScoreBoard);
 	}
 
 	/**
@@ -156,9 +151,10 @@ public class ScoreBoard {
 	 * @param pl Player
 	 */
 	public void removePlayer(Player pl) {
-		for (int i = 0; i < player.size(); i++) {
-			if (pl.equals(player.get(i))) {
-				player.remove(i);
+		for (Iterator<Player> it = player.iterator(); it.hasNext();) {
+			if (it.next().equals(pl)) {
+				it.remove();
+				break;
 			}
 		}
 	}

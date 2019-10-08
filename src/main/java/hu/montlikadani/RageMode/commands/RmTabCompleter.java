@@ -35,18 +35,19 @@ public class RmTabCompleter implements TabCompleter {
 			} else if (args.length < 3) {
 				if (args[0].equalsIgnoreCase("holostats")) {
 					Arrays.asList("add", "remove", "tp").forEach(cmds::add);
-					partOfCommand = args[1];
 				} else if (args[0].equalsIgnoreCase("points")) {
 					Arrays.asList("set", "add", "take").forEach(cmds::add);
-					partOfCommand = args[1];
+				} else if (args[0].equalsIgnoreCase("signupdate")) {
+					GetGames.getGames().forEach(cmds::add);
+					cmds.add("all");
 				} else {
 					for (String game : getGameListCmds()) {
 						if (args[0].equalsIgnoreCase(game) && !GetGames.getGames().isEmpty()) {
 							GetGames.getGames().forEach(cmds::add);
-							partOfCommand = args[1];
 						}
 					}
 				}
+				partOfCommand = args[1];
 			} else if (args.length < 4) {
 				for (String val : getValueListCmds()) {
 					if (args[0].equalsIgnoreCase(val)) {
@@ -107,8 +108,8 @@ public class RmTabCompleter implements TabCompleter {
 
 	private List<String> getGameListCmds() {
 		return Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay", "removegame",
-				"forcestart", "setlobby", "addspawn", "join", "leave", "signupdate", "stop", "stopgame", "togglegame",
-				"spectate", "removespawn", "listplayers");
+				"forcestart", "setlobby", "addspawn", "join", "leave", "stop", "stopgame", "togglegame", "spectate",
+				"removespawn", "listplayers");
 	}
 
 	private List<String> getValueListCmds() {

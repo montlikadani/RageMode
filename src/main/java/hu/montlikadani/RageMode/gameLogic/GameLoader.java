@@ -1,11 +1,9 @@
 package hu.montlikadani.ragemode.gameLogic;
 
-import java.util.Map.Entry;
+import java.util.Iterator;
 import java.util.Timer;
-import java.util.UUID;
 import java.util.logging.Level;
 
-import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.entity.Player;
@@ -14,62 +12,65 @@ import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.API.event.GameStartEvent;
+import hu.montlikadani.ragemode.API.event.RMGameStartEvent;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.BossMessenger;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.signs.SignCreator;
 
 public class GameLoader {
 
-	private String gameName;
+	private Game game;
 
-	public GameLoader(String gameName) {
-		this.gameName = gameName;
+	public GameLoader(Game game) {
+		this.game = game;
 
-		Game.removeLobbyTimer();
+		game.removeLobbyTimer();
 
 		if (!checkTeleport()) {
 			return; // stop starting the game if the game not set up correctly
 		}
 
-		GameStartEvent gameStartEvent = new GameStartEvent(gameName, Game.getPlayersFromList());
-		Utils.callEvent(gameStartEvent);
+		RMGameStartEvent RMGameStartEvent = new RMGameStartEvent(game, game.getPlayersFromList());
+		Utils.callEvent(RMGameStartEvent);
 
-		Game.setGameRunning(gameName);
-		GameUtils.setStatus(gameName, GameStatus.RUNNING);
+		String name = game.getName();
+
+		game.setGameRunning(name);
+		GameUtils.setStatus(name, GameStatus.RUNNING);
 
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
-		int time = !conf.getArenasCfg().isSet("arenas." + gameName + ".gametime")
+		int time = !conf.getArenasCfg().isSet("arenas." + name + ".gametime")
 				? conf.getCV().getGameTime() < 0 ? 5 * 60 : conf.getCV().getGameTime() * 60
-				: GetGames.getGameTime(gameName) * 60;
+				: GetGames.getGameTime(name) * 60;
 
-		GameTimer gameTimer = new GameTimer(gameName, time);
+		GameTimer gameTimer = new GameTimer(game, time);
 		gameTimer.loadModules();
 
 		Timer t = new Timer();
 		t.scheduleAtFixedRate(gameTimer, 0, 60 * 20L);
 
-		GameUtils.runCommandsForAll(gameName, "start");
-		SignCreator.updateAllSigns(gameName);
+		GameUtils.runCommandsForAll(name, "start");
+		SignCreator.updateAllSigns(name);
 
-		for (Entry<String, String> players : Game.getPlayers().entrySet()) {
-			Player p = Bukkit.getPlayer(UUID.fromString(players.getValue()));
+		for (PlayerManager pm : game.getPlayersFromList()) {
+			Player p = pm.getPlayer();
 
 			GameUtils.addGameItems(p, true);
 
-			if (conf.getArenasCfg().getBoolean("arenas." + gameName + ".bossbar") || conf.getCV().isBossbarEnabled()) {
+			if (conf.getArenasCfg().getBoolean("arenas." + name + ".bossbar") || conf.getCV().isBossbarEnabled()) {
 				if (Version.isCurrentEqualOrHigher(Version.v1_9_R1)) {
 					String bossMessage = conf.getCV().getBossbarMsg();
 
-					if (bossMessage != null && !bossMessage.equals("")) {
-						bossMessage = bossMessage.replace("%game%", gameName);
+					if (!bossMessage.equals("")) {
+						bossMessage = bossMessage.replace("%game%", name);
 						bossMessage = bossMessage.replace("%player%", p.getName());
 						bossMessage = Utils.colors(bossMessage);
 
-						new BossMessenger(gameName).sendBossBar(bossMessage, p,
+						new BossMessenger(name).sendBossBar(bossMessage, p,
 								BarStyle.valueOf(conf.getCV().getBossbarStyle()),
 								BarColor.valueOf(conf.getCV().getBossbarColor()));
 					}
@@ -77,28 +78,27 @@ public class GameLoader {
 					Debug.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
 			}
 
-			GameUtils.sendActionBarMessages(p, gameName, "start");
+			GameUtils.sendActionBarMessages(p, name, "start");
 		}
 	}
 
 	private boolean checkTeleport() {
-		GameSpawnGetter gameSpawnGetter = GameUtils.getGameSpawnByName(gameName);
+		GameSpawnGetter gameSpawnGetter = GameUtils.getGameSpawnByGame(game);
 		if (gameSpawnGetter.isGameReady()) {
 			GameUtils.teleportPlayersToGameSpawns(gameSpawnGetter);
 			return true;
 		}
 
-		GameUtils.broadcastToGame(gameName, RageMode.getLang().get("game.not-set-up"));
+		GameUtils.broadcastToGame(game.getName(), RageMode.getLang().get("game.not-set-up"));
 
-		for (Entry<String, String> uuids : Game.getPlayers().entrySet()) {
-			Player p = Bukkit.getPlayer(UUID.fromString(uuids.getValue()));
-			Game.removePlayer(p);
+		for (Iterator<PlayerManager> it = game.getPlayersFromList().iterator(); it.hasNext();) {
+			game.removePlayer(it.next().getPlayer());
 		}
 
 		return false;
 	}
 
-	public String getGame() {
-		return gameName;
+	public Game getGame() {
+		return game;
 	}
 }

@@ -5,18 +5,16 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.SQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
-import hu.montlikadani.ragemode.utils.ICommand;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class resetplayerstats extends ICommand {
+public class resetplayerstats {
 
-	@Override
 	public boolean run(CommandSender sender, String[] args) {
 		if (!(sender instanceof Player)) {
 			if (args.length < 2) {
@@ -30,7 +28,7 @@ public class resetplayerstats extends ICommand {
 				return false;
 			}
 
-			if (Game.isPlayerPlaying(target.getUniqueId().toString())) {
+			if (GameUtils.isPlayerPlaying(target)) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.player-currently-in-game"));
 				return false;
 			}
@@ -55,7 +53,7 @@ public class resetplayerstats extends ICommand {
 				return false;
 			}
 
-			if (Game.isPlayerPlaying(target.getUniqueId().toString())) {
+			if (GameUtils.isPlayerPlaying(target)) {
 				sendMessage(p, RageMode.getLang().get("commands.stats.player-currently-in-game"));
 				return false;
 			}
@@ -68,7 +66,7 @@ public class resetplayerstats extends ICommand {
 			return false;
 		}
 
-		if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (GameUtils.isPlayerPlaying(p)) {
 			sendMessage(sender, RageMode.getLang().get("commands.stats.player-currently-in-game"));
 			return false;
 		}
@@ -82,9 +80,6 @@ public class resetplayerstats extends ICommand {
 	private boolean reset(String uuid) {
 		String type = RageMode.getInstance().getConfiguration().getCV().getStatistics();
 		switch (type) {
-		case "yaml":
-			YAMLStats.resetPlayerStatistic(uuid);
-			return true;
 		case "mysql":
 			MySQLStats.resetPlayerStatistic(uuid);
 			return true;
@@ -93,9 +88,8 @@ public class resetplayerstats extends ICommand {
 			SQLStats.resetPlayerStatistic(uuid);
 			return true;
 		default:
-			break;
+			YAMLStats.resetPlayerStatistic(uuid);
+			return true;
 		}
-
-		return false;
 	}
 }

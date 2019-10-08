@@ -58,6 +58,7 @@ public class HoloHolder {
 			holo.delete();
 		}
 
+		@SuppressWarnings("unchecked")
 		List<Location> loc = (List<Location>) holosConf.get("data.holos");
 		if (loc == null || loc.isEmpty()) {
 			return;

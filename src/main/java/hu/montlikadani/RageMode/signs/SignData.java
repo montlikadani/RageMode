@@ -15,7 +15,6 @@ import org.bukkit.material.Directional;
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
-import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.utils.MaterialUtil;
@@ -91,7 +90,7 @@ public class SignData {
 						}
 					}
 				} else {
-					String[] errorLines = { "\u00a74ERROR:", "\u00a76Game", "\u00a7e" + game, "\u00a76not found!" };
+					String[] errorLines = { "\u00a74ERROR:", "\u00a76Game", "\u00a76with that name", "\u00a7cnot found!" };
 					for (int i = 0; i < 4; i++) {
 						sign.setLine(i, editLine(errorLines[i], i));
 					}
@@ -135,6 +134,12 @@ public class SignData {
 		int length = text.length();
 
 		if (num == 2) {
+			if (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && length > 25) {
+				text = text.substring(0, 25);
+				text = text + "...";
+				return text;
+			}
+
 			if (length > 15) {
 				text = text.substring(0, 11);
 				text = text + "...";
@@ -158,7 +163,7 @@ public class SignData {
 
 		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
 			if (GameUtils.getStatus(game) == GameStatus.WAITING) {
-				if (Game.getPlayers().size() == GetGames.getMaxPlayers(game)) {
+				if (GameUtils.getGameByName(game).getPlayers().size() == GetGames.getMaxPlayers(game)) {
 					if (type.equals("wool"))
 						updateBackground(Material.BLUE_WOOL);
 					else if (type.equals("glass"))
@@ -175,7 +180,7 @@ public class SignData {
 				}
 			}
 
-			if (Game.isGameRunning(game)) {
+			if (GameUtils.getGameByName(game).isGameRunning(game)) {
 				if (type.equals("wool"))
 					updateBackground(Material.LIME_WOOL);
 				else if (type.equals("glass"))
@@ -192,7 +197,7 @@ public class SignData {
 			}
 		} else {
 			if (GameUtils.getStatus(game) == GameStatus.WAITING) {
-				if (Game.getPlayers().size() == GetGames.getMaxPlayers(game)) {
+				if (GameUtils.getGameByName(game).getPlayers().size() == GetGames.getMaxPlayers(game)) {
 					if (type.equals("wool"))
 						updateBackground(Material.getMaterial("WOOL"), 11);
 					else if (type.equals("glass"))
@@ -209,7 +214,7 @@ public class SignData {
 				}
 			}
 
-			if (GameUtils.getStatus(game) == GameStatus.RUNNING && Game.isGameRunning(game)) {
+			if (GameUtils.getStatus(game) == GameStatus.RUNNING && GameUtils.getGameByName(game).isGameRunning(game)) {
 				if (type.equals("wool"))
 					updateBackground(Material.getMaterial("WOOL"), 5);
 				else if (type.equals("glass"))

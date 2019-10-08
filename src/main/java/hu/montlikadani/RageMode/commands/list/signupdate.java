@@ -5,14 +5,12 @@ import org.bukkit.command.CommandSender;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.signs.SignCreator;
-import hu.montlikadani.ragemode.utils.ICommand;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class signupdate extends ICommand {
+public class signupdate {
 
-	@Override
 	public boolean run(CommandSender sender, String[] args) {
 		if (sender instanceof org.bukkit.entity.Player && !hasPerm(sender, "ragemode.admin.signupdate")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));

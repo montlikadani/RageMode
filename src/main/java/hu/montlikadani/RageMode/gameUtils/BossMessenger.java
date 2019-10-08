@@ -7,7 +7,6 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.Game;
 
 public class BossMessenger {
 
@@ -31,7 +30,7 @@ public class BossMessenger {
 			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
 				@Override
 				public void run() {
-					if (!Game.isPlayerPlaying(p.getUniqueId().toString()))
+					if (!GameUtils.isPlayerPlaying(p))
 						boss.removePlayer(p);
 
 					if (boss.getProgress() >= 0.2D)

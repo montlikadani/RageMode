@@ -6,16 +6,13 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
-import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.utils.ICommand;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class latestart extends ICommand {
+public class latestart {
 
-	@Override
 	public boolean run(CommandSender sender, String[] args) {
 		if (!(sender instanceof Player)) {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
@@ -34,12 +31,12 @@ public class latestart extends ICommand {
 			return false;
 		}
 
-		if (!Game.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (!GameUtils.isPlayerPlaying(p)) {
 			sendMessage(sender, RageMode.getLang().get("commands.latestart.player-not-in-lobby"));
 			return false;
 		}
 
-		if (GameUtils.getStatus(Game.getPlayersGame(p)) != GameStatus.WAITING) {
+		if (GameUtils.getStatus(GameUtils.getGameByPlayer(p).getPlayersGame(p)) != GameStatus.WAITING) {
 			sendMessage(sender, RageMode.getLang().get("commands.latestart.player-not-in-lobby"));
 			return false;
 		}
@@ -55,7 +52,7 @@ public class latestart extends ICommand {
 			return false;
 		}
 
-		Game.getLobbyTimer().addLobbyTime(newTime);
+		GameUtils.getGameByName(GameUtils.getGameByPlayer(p).getPlayersGame(p)).getLobbyTimer().addLobbyTime(newTime);
 		sendMessage(sender, RageMode.getLang().get("commands.latestart.lobby-timer-increased", "%newtime%", newTime));
 		return false;
 	}

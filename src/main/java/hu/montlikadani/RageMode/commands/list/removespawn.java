@@ -1,10 +1,10 @@
 package hu.montlikadani.ragemode.commands.list;
 
+import java.util.Iterator;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -15,15 +15,13 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.utils.ICommand;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class removespawn extends ICommand {
+public class removespawn {
 
-	@Override
-	public boolean run(RageMode plugin, CommandSender sender, Command cmd, String[] args) {
+	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (sender instanceof Player && !hasPerm(sender, "ragemode.admin.removespawn")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
@@ -50,10 +48,12 @@ public class removespawn extends ICommand {
 			aFile.set("arenas." + args[1] + ".spawns", null);
 			Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 			for (GameSpawnGetter spawn : plugin.getSpawns()) {
-				if (spawn.getGameName().equalsIgnoreCase(args[1])) {
+				if (spawn.getGame().getName().equalsIgnoreCase(args[1])) {
 					spawn.getSpawnLocations().clear();
+					break;
 				}
 			}
+
 			sendMessage(sender, RageMode.getLang().get("commands.removespawn.remove-success", "%number%", "all", "%game%", args[1]));
 			return false;
 		}
@@ -93,10 +93,10 @@ public class removespawn extends ICommand {
 		}
 
 		for (GameSpawnGetter spawn : plugin.getSpawns()) {
-			if (spawn.getGameName().equalsIgnoreCase(args[1])) {
-				for (int y = 0; y < spawn.getSpawnLocations().size(); y++) {
-					if (spawn.getSpawnLocations().get(y).equals(loc)) {
-						spawn.getSpawnLocations().remove(y);
+			if (spawn.getGame().getName().equalsIgnoreCase(args[1])) {
+				for (Iterator<Location> it = spawn.getSpawnLocations().iterator(); it.hasNext();) {
+					if (it.next().equals(loc)) {
+						it.remove();
 					}
 				}
 			}

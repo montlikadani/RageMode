@@ -2,11 +2,8 @@ package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.TimerTask;
-import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -17,6 +14,7 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
 import hu.montlikadani.ragemode.gameUtils.ScoreTeam;
 import hu.montlikadani.ragemode.gameUtils.TabTitles;
+import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class GameTimer extends TimerTask {
 
@@ -26,16 +24,16 @@ public class GameTimer extends TimerTask {
 	private ScoreBoard gameBoard = null;
 	private ScoreTeam scoreTeam = null;
 
-	private String gameName;
+	private Game game;
 	private int time;
 
-	public GameTimer(String gameName, int time) {
-		this.gameName = gameName;
+	public GameTimer(Game game, int time) {
+		this.game = game;
 		this.time = time;
 	}
 
-	public String getGame() {
-		return gameName;
+	public Game getGame() {
+		return game;
 	}
 
 	public int getGameTime() {
@@ -55,36 +53,36 @@ public class GameTimer extends TimerTask {
 	}
 
 	public void loadModules() {
-		List<String> listPlayers = Game.getPlayersFromList();
+		List<PlayerManager> listPlayers = game.getPlayersFromList();
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
 		if (conf.getCV().isScoreboardEnabled()) {
 			gameBoard = new ScoreBoard(listPlayers, false);
-			gameBoard.addToScoreBoards(gameName, true);
+			gameBoard.addToScoreBoards(game.getName(), true);
 		}
 
 		if (conf.getCV().isTabEnabled()) {
 			gameTab = new TabTitles(listPlayers);
-			gameTab.addToTabList(gameName, true);
+			gameTab.addToTabList(game.getName(), true);
 		}
 
 		if (conf.getCV().isTabFormatEnabled()) {
 			scoreTeam = new ScoreTeam(listPlayers);
-			scoreTeam.addToTeam(gameName, true);
+			scoreTeam.addToTeam(game.getName(), true);
 		}
 	}
 
 	@Override
 	public void run() {
 		try { // Stop the game if something wrong or missing
-			if (!Game.isGameRunning(gameName)) {
-				GameUtils.setStatus(gameName, null);
+			if (!game.isGameRunning(game.getName())) {
+				GameUtils.setStatus(game.getName(), null);
 				cancel();
 				return;
 			}
 
-			if (Game.getPlayers().size() < 2) {
-				GameUtils.stopGame(gameName);
+			if (game.getPlayers().size() < 2) {
+				GameUtils.stopGame(game.getName());
 				cancel();
 				return;
 			}
@@ -97,16 +95,17 @@ public class GameTimer extends TimerTask {
 			if (values != null && !values.isEmpty()) {
 				for (int val : values) {
 					if (time == val) {
-						GameUtils.broadcastToGame(gameName,
+						GameUtils.broadcastToGame(game.getName(),
 								RageMode.getLang().get("game.broadcast.game-end", "%time%", tFormat));
+						break;
 					}
 				}
 			}
 
 			time--;
 
-			for (Entry<String, String> entry : Game.getPlayers().entrySet()) {
-				Player player = Bukkit.getPlayer(UUID.fromString(entry.getValue()));
+			for (PlayerManager pm : game.getPlayersFromList()) {
+				Player player = pm.getPlayer();
 
 				if (conf.getCfg().getBoolean("game.global.show-name-above-player-when-look")) {
 					// making the game more difficult
@@ -127,7 +126,7 @@ public class GameTimer extends TimerTask {
 				}
 			}
 
-			Player player = Game.getPlayerInGame(gameName);
+			Player player = game.getPlayerInGame(game.getName());
 			if (player == null || !player.isOnline())
 				return;
 
@@ -218,12 +217,12 @@ public class GameTimer extends TimerTask {
 
 				cancel();
 				RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-						() -> GameUtils.stopGame(gameName));
+						() -> GameUtils.stopGame(game.getName()));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			cancel();
-			GameUtils.stopGame(gameName);
+			GameUtils.stopGame(game.getName());
 			return;
 		}
 	}

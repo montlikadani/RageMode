@@ -3,16 +3,17 @@ package hu.montlikadani.ragemode.gameUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+
+import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class ScoreTeam {
 
 	public static HashMap<String, ScoreTeam> allTeams = new HashMap<>();
-	private List<Player> player = new ArrayList<>();
+	private List<Player> players = new ArrayList<>();
 
 	/**
 	 * Creates a new instance of Team, which manages the Team for
@@ -20,10 +21,8 @@ public class ScoreTeam {
 	 * 
 	 * @param playerString List players that can be add to the list
 	 */
-	public ScoreTeam(List<String> playerString) {
-		for (String player : playerString) {
-			this.player.add(Bukkit.getPlayer(UUID.fromString(player)));
-		}
+	public ScoreTeam(List<PlayerManager> players) {
+		players.forEach(pm -> this.players.add(pm.getPlayer()));
 	}
 
 	/**
@@ -51,7 +50,7 @@ public class ScoreTeam {
 	 * @return List player
 	 */
 	public List<Player> getPlayers() {
-		return Collections.unmodifiableList(player);
+		return Collections.unmodifiableList(players);
 	}
 
 	/**
@@ -60,7 +59,7 @@ public class ScoreTeam {
 	 * @param suffix String
 	 */
 	public void setTeam(String prefix, String suffix) {
-		for (Player player : this.player) {
+		for (Player player : this.players) {
 			setTeam(player, prefix, suffix);
 		}
 	}
@@ -82,9 +81,10 @@ public class ScoreTeam {
 	public void removeTeam(Player player) {
 		player.setPlayerListName(player.getName());
 
-		for (int i = 0; i < this.player.size(); i++) {
-			if (player.equals(this.player.get(i))) {
-				this.player.remove(i);
+		for (Iterator<Player> it = this.players.iterator(); it.hasNext();) {
+			if (it.next().equals(player)) {
+				it.remove();
+				break;
 			}
 		}
 	}
@@ -93,7 +93,7 @@ public class ScoreTeam {
 	 * Removing the team from all online player that are currently playing in the game.
 	 */
 	public void removeTeam() {
-		for (Player player : this.player) {
+		for (Player player : this.players) {
 			removeTeam(player);
 		}
 	}

@@ -23,8 +23,6 @@ public class Configuration {
 
 	public Configuration(RageMode plugin) {
 		this.plugin = plugin;
-
-		loadFiles();
 	}
 
 	private void loadFiles() {
@@ -60,7 +58,7 @@ public class Configuration {
 			} else {
 				plugin.saveResource("config.yml", false);
 				config = YamlConfiguration.loadConfiguration(config_file);
-				msg += "The 'config.yml' file successfully created!";
+				msg += "'config.yml' file created!";
 			}
 
 			cv.loadValues(new FileConfig(config));
@@ -72,34 +70,35 @@ public class Configuration {
 
 			if (arenas_file.exists()) {
 				arenas = YamlConfiguration.loadConfiguration(arenas_file);
-				arenas.load(arenas_file);
+				loadFile(arenas, arenas_file);
 				saveFile(arenas, arenas_file);
 			} else {
 				arenas_file.createNewFile();
 				arenas = YamlConfiguration.loadConfiguration(arenas_file);
-				msg += "The 'arenas.yml' file successfully created!";
+				msg += "'arenas.yml' file created!";
 			}
 
 			if (cv.isRewardEnabled()) {
 				if (rewards_file.exists()) {
 					rewards = YamlConfiguration.loadConfiguration(rewards_file);
+					loadFile(rewards, rewards_file);
 					rewards.load(rewards_file);
 				} else {
 					plugin.saveResource("rewards.yml", false);
 					rewards = YamlConfiguration.loadConfiguration(rewards_file);
-					msg += "The 'rewards.yml' file successfully created!";
+					msg += "'rewards.yml' file created!";
 				}
 			}
 
 			if (cv.isSavePlayerData()) {
 				if (datas_file.exists()) {
 					datas = YamlConfiguration.loadConfiguration(datas_file);
-					datas.load(datas_file);
+					loadFile(datas, datas_file);
 					saveFile(datas, datas_file);
 				} else {
 					datas_file.createNewFile();
 					datas = YamlConfiguration.loadConfiguration(datas_file);
-					msg += "The 'datas.yml' file successfully created!";
+					msg += "'datas.yml' file created!";
 				}
 			}
 
@@ -152,10 +151,18 @@ public class Configuration {
 		return configVersion;
 	}
 
-	public static void saveFile(FileConfiguration conf, File file) {
+	public static void saveFile(FileConfiguration c, File f) {
 		try {
-			conf.save(file);
+			c.save(f);
 		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void loadFile(FileConfiguration c, File f) {
+		try {
+			c.load(f);
+		} catch (IOException | InvalidConfigurationException e) {
 			e.printStackTrace();
 		}
 	}

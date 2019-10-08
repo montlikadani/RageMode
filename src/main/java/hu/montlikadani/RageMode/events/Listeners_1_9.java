@@ -6,14 +6,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class Listeners_1_9 implements Listener {
 
 	// Prevent swap items from main hand to off hand
 	@EventHandler
 	public void onSwapHandItem(PlayerSwapHandItemsEvent e) {
-		if (Game.isPlayerPlaying(e.getPlayer().getUniqueId().toString()))
+		if (GameUtils.isPlayerPlaying(e.getPlayer()))
 			e.setCancelled(true);
 	}
 
@@ -22,7 +22,7 @@ public class Listeners_1_9 implements Listener {
 		if (e.isCancelled() || !(e.getEntity() instanceof Player))
 			return;
 
-		if (Game.isPlayerPlaying(((Player) e.getEntity()).getUniqueId().toString()))
+		if (GameUtils.isPlayerPlaying((Player) e.getEntity()))
 			e.setCancelled(true);
 	}
 }

@@ -23,14 +23,13 @@ import hu.montlikadani.ragemode.Utils;
 public class Language {
 
 	private RageMode plugin;
-	private List<String> lang;
+	private List<String> lang = new ArrayList<>();
 
 	public Language(RageMode plugin) {
 		this.plugin = plugin;
 	}
 
 	public void loadLanguage(String lang) {
-		this.lang = new ArrayList<>();
 		this.lang.clear();
 		this.lang.add(lang);
 
@@ -61,7 +60,6 @@ public class Language {
 				e.printStackTrace();
 				Debug.throwMsg();
 			}
-			return;
 		}
 	}
 
@@ -127,9 +125,9 @@ public class Language {
 		l.getL("commands.listplayers.player-currently-not-playing", "&cYou are not currently playing.");
 		l.getL("commands.maxplayers.changed", "&2The maxplayers for&e %game%&2 has been changed to&e %value%&2.");
 
-		String[] holoList = new String[] { "&6Rank:&a %rank%", "&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
-				"&5KD:&a %kd%", "&4Kills:&a %kills%", "&7Deaths:&a %deaths%" };
-		l.getL("hologram-list", Arrays.asList(holoList));
+		List<String> holoList = Arrays.asList("&6Rank:&a %rank%", "&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
+				"&5KD:&a %kd%", "&4Kills:&a %kills%", "&7Deaths:&a %deaths%");
+		l.getL("hologram-list", holoList);
 
 		l.getL("setup.not-set-yet", "&cThis game was not set yet! Set it with&e %usage%");
 		l.getL("setup.lobby.set-success", "&2The lobby for the game&3 %game%&2 was set successfully!");
@@ -149,11 +147,11 @@ public class Language {
 		l.getL("setup.success-removed", "&cThe game&e %game%&c was removed successfully.");
 		l.getL("setup.set-game-time-success", "&aGame time successfully set for&e %game%&a game with&e %time% minutes&a.");
 
-		String[] statList = new String[] { "&e--------&2 %player%&e --------", "", "&6Knife kills/deaths:&a %knife-kills%&7/&6%knife-deaths%",
+		List<String> statList = Arrays.asList("&e--------&2 %player%&e --------", "", "&6Knife kills/deaths:&a %knife-kills%&7/&6%knife-deaths%",
 				"&6Explosion kills/deaths:&a %explosion-kills%&7/&6%explosion-deaths%", "&6Axe kills/deaths:&a %axe-kills%&7/&6%axe-deaths%",
 				"&6Direct arrow kills/deaths:&a %direct-arrow-kills%&7/%direct-arrow-deaths%", "", "&cKills:&2 %kills%",
-				"&cDeaths:&2 %deaths%", "&cKd:&2 %kd%", "&cGames:&2 %games%", "&cWins:&2 %games%", "&cPoints:&2 %points%", "&cRank:&2 %rank%" };
-		l.getL("statistic-list", Arrays.asList(statList));
+				"&cDeaths:&2 %deaths%", "&cKd:&2 %kd%", "&cGames:&2 %games%", "&cWins:&2 %games%", "&cPoints:&2 %points%", "&cRank:&2 %rank%");
+		l.getL("statistic-list", statList);
 
 		l.getL("game.lobby.start-message", "&9This round will start in&e %time%&9 seconds.");
 		l.getL("game.lobby.chat-is-disabled", "&cThe chat currently is disabled in lobby!");
@@ -292,8 +290,10 @@ public class Language {
 		File localeFolder = new File(plugin.getFolder(), "locale");
 		File file = null;
 		for (String l : this.lang) {
-			if (l.equals(plugin.getConfiguration().getCV().getLang()))
+			if (l.equals(plugin.getConfiguration().getCV().getLang())) {
 				file = new File(localeFolder, "locale_" + l + ".yml");
+				break;
+			}
 		}
 
 		if (file == null) {

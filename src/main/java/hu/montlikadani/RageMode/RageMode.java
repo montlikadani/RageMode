@@ -40,6 +40,7 @@ import hu.montlikadani.ragemode.gameUtils.BungeeUtils;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.holder.HoloHolder;
+import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.metrics.Metrics;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.RageScores;
@@ -157,7 +158,7 @@ public class RageMode extends JavaPlugin {
 						if (conf.getCV().isBungee())
 							getManager().registerEvents(new BungeeListener(game), this);
 
-						spawns.add(new GameSpawnGetter(game));
+						spawns.add(new GameSpawnGetter(GameUtils.getGameByName(game)));
 
 						if (conf.getCV().isSignsEnable())
 							SignCreator.updateAllSigns(game);
@@ -224,29 +225,33 @@ public class RageMode extends JavaPlugin {
 				int imax = games.length;
 
 				while (i < imax) {
-					if (games[i] != null && Game.isGameRunning(games[i])) {
-						Debug.logConsole("Stopping " + games[i] + " ...");
+					String name = games[i];
+					if (name != null) {
+						Game g = GameUtils.getGameByName(name);
+						if (g.isGameRunning(name)) {
+							Debug.logConsole("Stopping " + name + " ...");
 
-						RageScores.calculateWinner(games[i], Game.getPlayersFromList());
+							RageScores.calculateWinner(name, g.getPlayersFromList());
 
-						for (java.util.Map.Entry<String, String> players : Game.getPlayers().entrySet()) {
-							org.bukkit.entity.Player p = Bukkit.getPlayer(UUID.fromString(players.getValue()));
+							for (PlayerManager players : g.getPlayersFromList()) {
+								Player p = players.getPlayer();
 
-							p.removeMetadata("killedWith", instance);
-							Game.removePlayer(p);
-							RageScores.removePointsForPlayer(players.getValue());
+								p.removeMetadata("killedWith", instance);
+								g.removePlayer(p);
+								RageScores.removePointsForPlayer(players.getGameName());
+							}
+
+							for (Iterator<Entry<UUID, String>> it = g.getSpectatorPlayers().entrySet().iterator(); it
+									.hasNext();) {
+								Player pl = Bukkit.getPlayer(it.next().getKey());
+								g.removeSpectatorPlayer(pl);
+							}
+
+							g.setGameNotRunning(name);
+							GameUtils.setStatus(name, null);
+
+							Debug.logConsole(name + " has been stopped.");
 						}
-
-						for (Iterator<Entry<UUID, String>> it = Game.getSpectatorPlayers().entrySet()
-								.iterator(); it.hasNext();) {
-							Player pl = Bukkit.getPlayer(it.next().getKey());
-							Game.removeSpectatorPlayer(pl);
-						}
-
-						Game.setGameNotRunning(games[i]);
-						GameUtils.setStatus(games[i], null);
-
-						Debug.logConsole(games[i] + " has been stopped.");
 					}
 					i++;
 				}
@@ -386,14 +391,14 @@ public class RageMode extends JavaPlugin {
 				if (game != null) {
 					games.add(new Game(game));
 
-					if (Game.isGameRunning(game)) {
+					if (GameUtils.getGameByName(game).isGameRunning(game)) {
 						GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
 					}
 
 					if (conf.getCV().isBungee())
 						getManager().registerEvents(new BungeeListener(game), this);
 
-					spawns.add(new GameSpawnGetter(game));
+					spawns.add(new GameSpawnGetter(GameUtils.getGameByName(game)));
 
 					SignCreator.updateAllSigns(game);
 				}

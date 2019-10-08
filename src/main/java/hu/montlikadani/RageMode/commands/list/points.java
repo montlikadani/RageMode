@@ -7,24 +7,22 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.SQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
-import hu.montlikadani.ragemode.utils.ICommand;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class points extends ICommand {
+public class points {
 
 	private enum Actions {
 		Set, Add, Take;
 	}
 
-	@Override
 	public boolean run(CommandSender sender, String[] args) {
 		if (sender instanceof Player && !hasPerm(sender, "ragemode.admin.points")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
@@ -58,7 +56,7 @@ public class points extends ICommand {
 			return false;
 		}
 
-		if (Game.isPlayerPlaying(target.getUniqueId().toString())) {
+		if (GameUtils.isPlayerPlaying(target)) {
 			sendMessage(sender, RageMode.getLang().get("commands.points.player-is-in-game", "%player%", args[2]));
 			return false;
 		}
@@ -97,16 +95,6 @@ public class points extends ICommand {
 		}
 
 		switch (RageMode.getInstance().getConfiguration().getCV().getDatabase()) {
-		case "yaml":
-			if (YAMLStats.getFile() != null && YAMLStats.getFile().exists()) {
-				YAMLStats.getConf().set("data." + target.getUniqueId() + ".score", rpp.getPoints());
-				try {
-					YAMLStats.getConf().save(YAMLStats.getFile());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			break;
 		case "sql":
 		case "sqlite":
 			SQLStats.addPlayerStatistics(rpp, RageMode.getSQL());
@@ -115,6 +103,14 @@ public class points extends ICommand {
 			MySQLStats.addPlayerStatistics(rpp, RageMode.getMySQL());
 			break;
 		default:
+			if (YAMLStats.getFile() != null && YAMLStats.getFile().exists()) {
+				YAMLStats.getConf().set("data." + target.getUniqueId() + ".score", rpp.getPoints());
+				try {
+					YAMLStats.getConf().save(YAMLStats.getFile());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 			break;
 		}
 

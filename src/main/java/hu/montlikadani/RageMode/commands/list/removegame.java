@@ -5,21 +5,19 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.API.event.GameDeleteEvent;
+import hu.montlikadani.ragemode.API.event.RMGameDeleteEvent;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.utils.ICommand;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
 import java.util.Iterator;
 
-public class removegame extends ICommand {
+public class removegame {
 
-	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!(sender instanceof Player)) {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
@@ -39,25 +37,24 @@ public class removegame extends ICommand {
 				return false;
 			}
 
-			if (Game.isGameRunning(game)) {
+			if (GameUtils.getGameByName(game).isGameRunning(game)) {
 				sendMessage(p, RageMode.getLang().get("game.running"));
 				return false;
 			}
 
-			GameDeleteEvent event = new GameDeleteEvent(game);
+			RMGameDeleteEvent event = new RMGameDeleteEvent(GameUtils.getGameByName(game));
 			Bukkit.getPluginManager().callEvent(event);
 
 			for (Iterator<GameSpawnGetter> it = plugin.getSpawns().iterator(); it.hasNext();) {
-				GameSpawnGetter spawn = it.next();
-				if (spawn.getGameName().equalsIgnoreCase(game)) {
+				if (it.next().getGame().getName().equalsIgnoreCase(game)) {
 					it.remove();
 				}
 			}
 
 			for (Iterator<Game> gt = plugin.getGames().iterator(); gt.hasNext();) {
-				Game name = gt.next();
-				if (name.getName().equalsIgnoreCase(game)) {
+				if (gt.next().getName().equalsIgnoreCase(game)) {
 					gt.remove();
+					break;
 				}
 			}
 

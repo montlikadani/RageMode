@@ -2,17 +2,19 @@ package hu.montlikadani.ragemode.API.event;
 
 import org.bukkit.entity.Player;
 
+import hu.montlikadani.ragemode.gameLogic.Game;
+
 public class SpectatorJoinToGameEvent extends BaseEvent {
 
-	private String game;
+	private Game game;
 	private Player player;
 
-	public SpectatorJoinToGameEvent(String game, Player player) {
+	public SpectatorJoinToGameEvent(Game game, Player player) {
 		this.game = game;
 		this.player = player;
 	}
 
-	public String getGame() {
+	public Game getGame() {
 		return game;
 	}
 

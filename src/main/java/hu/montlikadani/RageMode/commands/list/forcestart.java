@@ -5,16 +5,13 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.GameLoader;
-import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.utils.ICommand;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class forcestart extends ICommand {
+public class forcestart {
 
-	@Override
 	public boolean run(CommandSender sender, String[] args) {
 		if (!(sender instanceof Player)) {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
@@ -38,28 +35,29 @@ public class forcestart extends ICommand {
 			return false;
 		}
 
-		if (!Game.isPlayerPlaying(p.getUniqueId().toString())) {
+		if (GameUtils.isPlayerPlaying(p)) {
 			sendMessage(p, RageMode.getLang().get("commands.forcestart.player-not-in-game"));
 			return false;
 		}
 
-		if (Game.isGameRunning(game)) {
+		if (GameUtils.getGameByName(game).isGameRunning(game)) {
 			sendMessage(p, RageMode.getLang().get("game.running"));
 			return false;
 		}
 
-		if (Game.getPlayers().size() < 2) {
+		if (GameUtils.getGameByName(game).getPlayers().size() < 2) {
 			sendMessage(p, RageMode.getLang().get("commands.forcestart.not-enough-players"));
 			return false;
 		}
 
-		Game.getLobbyTimer().cancel();
-		// Set level back to 0
-		p.setLevel(0);
+		if (GameUtils.getGameByName(game).getLobbyTimer() != null) {
+			GameUtils.getGameByName(game).getLobbyTimer().cancel();
+			p.setLevel(0); // Set level counter back to 0
+		}
 
 		sendMessage(p, RageMode.getLang().get("commands.forcestart.game-start", "%game%", game));
 		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-				() -> new GameLoader(game));
+				() -> new GameLoader(GameUtils.getGameByName(game)));
 		return false;
 	}
 }

@@ -31,15 +31,13 @@ public class SQLStats {
 
 		points.clear();
 
-		Connection connection = sqlConnect.getConnection().getConnection();
-
-		Statement statement = null;
-		String query = "SELECT * FROM " + sqlConnect.getPrefix() + "stats_players;";
-
 		int currentWins = 0;
 		int currentScore = 0;
 		int currentGames = 0;
 
+		String query = "SELECT * FROM " + sqlConnect.getPrefix() + "stats_players;";
+		Connection connection = sqlConnect.getConnection().getConnection();
+		Statement statement = null;
 		try {
 			statement = connection.createStatement();
 			ResultSet rs = sqlConnect.getConnection().executeQuery(statement, query);
@@ -60,7 +58,7 @@ public class SQLStats {
 
 				points.add(rPP);
 
-				++totalPlayers;
+				totalPlayers++;
 			}
 			rs.close();
 		} catch (SQLException e) {
@@ -69,6 +67,7 @@ public class SQLStats {
 			} catch (SQLException e2) {
 				e2.printStackTrace();
 			}
+
 			return;
 		} finally {
 			if (statement != null) {
@@ -78,6 +77,8 @@ public class SQLStats {
 					e.printStackTrace();
 				}
 			}
+
+			// Do not close the connection to prevent loading issues
 		}
 
 		if (totalPlayers > 0)
@@ -188,6 +189,12 @@ public class SQLStats {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+
+		try {
+			connection.close();
+		} catch (SQLException e2) {
+			e2.printStackTrace();
+		}
 	}
 
 	/**
@@ -198,11 +205,9 @@ public class SQLStats {
 	 * @return the {@link PlayerPoints} class which contains the player stats.
 	 */
 	public static PlayerPoints getPlayerStatistics(String playerUUID) {
-		if (!points.isEmpty()) {
-			for (PlayerPoints rpp : points) {
-				if (rpp.getPlayerUUID().equals(playerUUID)) {
-					return rpp;
-				}
+		for (PlayerPoints pp : points) {
+			if (pp.getPlayerUUID().equals(playerUUID)) {
+				return pp;
 			}
 		}
 
@@ -218,7 +223,6 @@ public class SQLStats {
 		if (!connect.isValid())
 			return Collections.emptyList();
 
-		String uuid = null;
 		List<PlayerPoints> allRPPs = new ArrayList<>();
 
 		Connection connection = connect.getConnection().getConnection();
@@ -228,28 +232,28 @@ public class SQLStats {
 			statement = connection.createStatement();
 			ResultSet rs = connect.getConnection().executeQuery(statement, query);
 			while (rs.next()) {
-				uuid = rs.getString("uuid");
+				String uuid = rs.getString("uuid");
+				if (uuid != null) {
+					allRPPs.add(getPlayerStatistics(uuid));
+				}
 			}
 			rs.close();
 		} catch (SQLException e) {
-			try {
-				connection.close();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-
 			return Collections.emptyList();
 		} finally {
-			try {
-				if (statement != null)
+			if (statement != null) {
+				try {
 					statement.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
-		}
 
-		if (uuid != null) {
-			allRPPs.add(getPlayerStatistics(uuid));
+			try {
+				connection.close();
+			} catch (SQLException e2) {
+				e2.printStackTrace();
+			}
 		}
 
 		return allRPPs;
@@ -340,12 +344,6 @@ public class SQLStats {
 
 			rs.close();
 		} catch (SQLException e) {
-			try {
-				connection.close();
-			} catch (SQLException e2) {
-				e2.printStackTrace();
-			}
-
 			return null;
 		} finally {
 			if (statement != null) {
@@ -354,6 +352,12 @@ public class SQLStats {
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
+			}
+
+			try {
+				connection.close();
+			} catch (SQLException e2) {
+				e2.printStackTrace();
 			}
 		}
 
@@ -430,6 +434,12 @@ public class SQLStats {
 			RageMode.getSQL().getConnection().executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
+		}
+
+		try {
+			connection.close();
+		} catch (SQLException e2) {
+			e2.printStackTrace();
 		}
 		return true;
 	}

@@ -188,7 +188,7 @@ public class RmCommand implements CommandExecutor {
 							String className = a.getValue();
 							Class<?> fclass = Class.forName(className);
 							Object run = fclass.newInstance();
-							Class<?>[] paramTypes = new Class<?>[] { RageMode.class, CommandSender.class, Command.class, String[].class };
+							Class<?>[] paramTypes = { RageMode.class, CommandSender.class, Command.class, String[].class };
 							Method printMethod = null;
 							try {
 								printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
@@ -223,7 +223,7 @@ public class RmCommand implements CommandExecutor {
 							if (printMethod == null)
 								printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
 
-							Object[] arguments = new Object[] { RageMode.getInstance(), sender, cmd, args };
+							Object[] arguments = { RageMode.getInstance(), sender, cmd, args };
 							try {
 								printMethod.invoke(run, arguments);
 								return true;
@@ -256,6 +256,8 @@ public class RmCommand implements CommandExecutor {
 							t.printStackTrace();
 							Debug.throwMsg();
 						}
+
+						break;
 					}
 				}
 			}

@@ -3,19 +3,25 @@ package hu.montlikadani.ragemode.API.event;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
+import hu.montlikadani.ragemode.gameLogic.Game;
+
 public class GameJoinAttemptEvent extends BaseEvent implements Cancellable {
 
-	private String game;
+	private Game game;
 	private Player player;
 	private boolean cancelled = false;
 
-	public GameJoinAttemptEvent(Player player, String game) {
+	public GameJoinAttemptEvent(Game game, Player player) {
 		this.game = game;
 		this.player = player;
 	}
 
-	public String getGame() {
+	public Game getGame() {
 		return game;
+	}
+
+	public Player getPlayer() {
+		return player;
 	}
 
 	public boolean isCancelled() {
@@ -24,9 +30,5 @@ public class GameJoinAttemptEvent extends BaseEvent implements Cancellable {
 
 	public void setCancelled(boolean cancelled) {
 		this.cancelled = cancelled;
-	}
-
-	public Player getPlayer() {
-		return player;
 	}
 }

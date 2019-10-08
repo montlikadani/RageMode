@@ -46,8 +46,8 @@ public class YAMLStats {
 
 			try {
 				file.createNewFile();
-			} catch (IOException e1) {
-				e1.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
 				Debug.throwMsg();
 			}
 

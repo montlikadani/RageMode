@@ -71,6 +71,8 @@ commands:
   listplayers:
     game-not-running: "&cThis game is currently not running."
     player-currently-not-playing: "&cYou are not currently playing."
+  maxplayers:
+    changed: "&2The maxplayers for&e %game%&2 has been changed to&e %value%&2."
 
 hologram-list:
 - "&6Rank:&a %rank%"

@@ -11,14 +11,13 @@ import org.bukkit.inventory.ItemStack;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class givesaveditems extends RmCommand {
+public class givesaveditems {
 
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!plugin.getConfiguration().getCV().isSavePlayerData()) {
@@ -42,7 +41,7 @@ public class givesaveditems extends RmCommand {
 			return false;
 		}
 
-		if (Game.isPlayerPlaying(target.getUniqueId().toString())) {
+		if (GameUtils.isPlayerPlaying(target)) {
 			sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.player-is-in-game", "%player%", args[1]));
 			return false;
 		}

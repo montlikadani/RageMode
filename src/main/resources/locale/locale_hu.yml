@@ -4,13 +4,13 @@ wrong-command: "&cEz nem egy parancs, amire nézel!"
 no-permission: "&cNincs engedélyed ehhez!"
 no-permission-to-interact-sign: "&cNincs engedélyed a táblák használatára!"
 missing-arguments: "&cHiányzó argumentumok! Használat:&e %usage%"
-missing-dependencies: "&e%depend%&c le kell telepíteni, hogy használhasd ezt!"
+missing-dependencies: "&e%depend%&c telepíteni kell, hogy használhasd ezt!"
 not-a-number: "&e%number%&c nem egy szám."
 not-a-boolean: "&e%value%&c nem egy logikai érték."
 invalid-game: "&e%game%&4 nem egy érvényes RageMode Map."
 player-non-existent: "&cEz a játékos nem létezik."
 not-played-yet: "&cEz a játékos&7 %player%&c nem játszot ezen a szerveren még."
-bad-ragemode-name: "&cA játék név tartalmaz speciális karakter, ragemode parancsot vagy a név nagyobb 20-nál."
+bad-ragemode-name: "&cA játék név nem tartalmazhat speciális karaktert, ragemode parancsot vagy nem lehet 20-nál nagyobb."
 
 commands:
   listgames:
@@ -71,6 +71,8 @@ commands:
   listplayers:
     game-not-running: "&cEz a játék jelenleg nem fut."
     player-currently-not-playing: "&cJelenleg nem játszol."
+  maxplayers:
+    changed: "&2A maximum játékosok a(z)&e %game%&2 játékhoz megváltoztatva&e %value%&2 értékre."
 
 hologram-list:
 - "&6Rank:&a %rank%"
@@ -132,7 +134,7 @@ game:
     arrow-kill: "&a%victim%&3 megölve&6 közvetlen nyíl találattal&a %killer%&3-tól/től."
     knife-kill: "&a%victim%&3 megölve&a %killer%&3 által&6 RageKnife&3 fegyverrel."
     explosion-kill: "&a%victim%&6 felrobbant&a %killer%&3 által."
-    grenade-kill: "&a%victim%&3 megölve&a %killer%&3 átal a a&7 Grenade&3 fegyverrel. LOL"
+    grenade-kill: "&a%victim%&3 megölve&a %killer%&3 által a a&7 Grenade&3 fegyverrel. LOL"
     error-kill: "&cHoppá, ez nem kellett volna, hogy megtörténjen..."
     game-end: "&9A játék&e %time%&9 múlva véget ér."
   unknown-killer: "&cTe tudod ki ölt meg? Mert mi nem tudjuk..."

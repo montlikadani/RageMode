@@ -2,25 +2,21 @@ package hu.montlikadani.ragemode.commands.list;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
-import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.utils.ICommand;
+import hu.montlikadani.ragemode.managers.PlayerManager;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class listplayers extends ICommand {
+public class listplayers {
 
-	@Override
 	public boolean run(CommandSender sender, String[] args) {
 		if (sender instanceof Player && !hasPerm(sender, "ragemode.listplayers")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
@@ -36,12 +32,12 @@ public class listplayers extends ICommand {
 			Player p = (Player) sender;
 			StringBuilder sb = new StringBuilder();
 
-			if (!Game.isPlayerPlaying(p.getUniqueId().toString())) {
+			if (!GameUtils.isPlayerPlaying(p)) {
 				sendMessage(p, RageMode.getLang().get("commands.listplayers.player-currently-not-playing"));
 				return false;
 			}
 
-			for (Iterator<String> e = Arrays.asList(Game.getPlayersGame(p)).iterator(); e.hasNext();) {
+			for (Iterator<String> e = Arrays.asList(GameUtils.getGameByPlayer(p).getPlayersGame(p)).iterator(); e.hasNext();) {
 				sb.append("&7-&6 " + p.getName() + "&a - " + e.next());
 			}
 
@@ -62,10 +58,11 @@ public class listplayers extends ICommand {
 			}
 
 			StringBuilder sb = new StringBuilder();
-			for (java.util.Map.Entry<String, String> players : Game.getPlayers().entrySet()) {
-				Player player = Bukkit.getPlayer(UUID.fromString(players.getValue()));
+			for (PlayerManager pm : GameUtils.getGameByName(game).getPlayersFromList()) {
+				Player player = pm.getPlayer();
 
-				for (Iterator<String> e = Arrays.asList(Game.getPlayersGame(player)).iterator(); e.hasNext();) {
+				for (Iterator<String> e = Arrays.asList(GameUtils.getGameByPlayer(player).getPlayersGame(player))
+						.iterator(); e.hasNext();) {
 					sb.append("&7-&6 " + player.getName() + "&a - " + e.next());
 				}
 			}

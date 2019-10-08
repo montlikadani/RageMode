@@ -1,16 +1,18 @@
 package hu.montlikadani.ragemode.API.event;
 
-public class GameCreateEvent extends BaseEvent {
+import hu.montlikadani.ragemode.gameLogic.Game;
 
-	private String game;
+public class RMGameCreateEvent extends BaseEvent {
+
+	private Game game;
 	private int maxPlayers;
 
-	public GameCreateEvent(String game, int maxPlayers) {
+	public RMGameCreateEvent(Game game, int maxPlayers) {
 		this.game = game;
 		this.maxPlayers = maxPlayers;
 	}
 
-	public String getGame() {
+	public Game getGame() {
 		return game;
 	}
 

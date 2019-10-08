@@ -2,17 +2,19 @@ package hu.montlikadani.ragemode.API.event;
 
 import org.bukkit.entity.Player;
 
+import hu.montlikadani.ragemode.gameLogic.Game;
+
 public class SpectatorLeaveFromGameEvent extends BaseEvent {
 
-	private String game;
+	private Game game;
 	private Player player;
 
-	public SpectatorLeaveFromGameEvent(String game, Player player) {
+	public SpectatorLeaveFromGameEvent(Game game, Player player) {
 		this.game = game;
 		this.player = player;
 	}
 
-	public String getGame() {
+	public Game getGame() {
 		return game;
 	}
 

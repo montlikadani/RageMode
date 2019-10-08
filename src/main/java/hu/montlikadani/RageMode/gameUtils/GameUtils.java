@@ -25,7 +25,7 @@ import org.bukkit.util.Vector;
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.API.event.GameStopEvent;
+import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.events.EventListener;
@@ -41,6 +41,7 @@ import hu.montlikadani.ragemode.items.LeaveGame;
 import hu.montlikadani.ragemode.items.RageArrow;
 import hu.montlikadani.ragemode.items.RageBow;
 import hu.montlikadani.ragemode.items.RageKnife;
+import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
@@ -56,16 +57,23 @@ public class GameUtils {
 	private static Map<String, GameStatus> status = new HashMap<>();
 
 	/**
-	 * Broadcast for in-game players to the specified game
+	 * Broadcast a message to the currently playing players for that given game.
+	 * @param name Game Name
+	 * @param message Message
+	 */
+	public static void broadcastToGame(String name, String message) {
+		broadcastToGame(getGameByName(name), message);
+	}
+
+	/**
+	 * Broadcast a message to the currently playing players for that given game.
 	 * @param game Game
 	 * @param message Message
 	 */
-	public static void broadcastToGame(String game, String message) {
-		for (Entry<String, String> players : Game.getPlayers().entrySet()) {
-			if (players != null) {
-				Player p = Bukkit.getPlayer(UUID.fromString(players.getValue()));
-				if (p != null && Game.getPlayersGame(p).equals(game))
-					p.sendMessage(message);
+	public static void broadcastToGame(Game game, String message) {
+		for (PlayerManager pm : game.getPlayersFromList()) {
+			if (pm.getGameName().equalsIgnoreCase(game.getName())) {
+				pm.getPlayer().sendMessage(message);
 			}
 		}
 	}
@@ -112,6 +120,23 @@ public class GameUtils {
 	}
 
 	/**
+	 * Get the game spawn by game.
+	 * @param game Game
+	 * @return GameSpawnGetter
+	 */
+	public static GameSpawnGetter getGameSpawnByGame(Game game) {
+		Validate.notNull(game, "Game can't be null!");
+
+		for (GameSpawnGetter gsg : RageMode.getInstance().getSpawns()) {
+			if (gsg.getGame().equals(game)) {
+				return gsg;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Get the game spawn by name.
 	 * @param name Game name
 	 * @return GameSpawnGetter
@@ -121,9 +146,103 @@ public class GameUtils {
 		Validate.notEmpty(name, "Game name can't be empty!");
 
 		for (GameSpawnGetter gsg : RageMode.getInstance().getSpawns()) {
-			if (gsg.getGameName().equalsIgnoreCase(name))
+			if (gsg.getGame().getName().equalsIgnoreCase(name))
 				return gsg;
 		}
+		return null;
+	}
+
+	/**
+	 * Get the game by player uuid.
+	 * @param uuid UUID
+	 * @return Game if player is in game.
+	 */
+	public static Game getGameByPlayerUUID(String uuid) {
+		Validate.notNull(uuid, "Player UUID can not be null!");
+		Validate.notEmpty(uuid, "Player UUID can't be empty!");
+
+		return getGameByPlayer(Bukkit.getPlayer(UUID.fromString(uuid)));
+	}
+
+	/**
+	 * Get the game by player.
+	 * @param p Player
+	 * @return Game if player is in game.
+	 */
+	public static Game getGameByPlayer(Player p) {
+		Validate.notNull(p, "Player can not be null!");
+
+		for (Game game : RageMode.getInstance().getGames()) {
+			if (game.getPlayers().containsKey(p)) {
+				return game;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get the game by player uuid.
+	 * @param uuid UUID
+	 * @return Game if player is in game.
+	 */
+	public static Game getGameBySpectatorUUID(String uuid) {
+		Validate.notNull(uuid, "Player UUID can not be null!");
+		Validate.notEmpty(uuid, "Player UUID can't be empty!");
+
+		return getGameBySpectator(Bukkit.getPlayer(UUID.fromString(uuid)));
+	}
+
+	/**
+	 * Get the game by spectator player.
+	 * @param p Player
+	 * @return Game if player is in spectator mode and in game.
+	 */
+	public static Game getGameBySpectator(Player p) {
+		Validate.notNull(p, "Player can not be null!");
+
+		for (Game game : RageMode.getInstance().getGames()) {
+			if (game.getSpectatorPlayers().containsKey(p.getUniqueId())) {
+				return game;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Checks if the given player is currently in game.
+	 * @param p Player
+	 * @return true if playing
+	 */
+	public static boolean isPlayerPlaying(Player p) {
+		return getGameByPlayer(p) != null;
+	}
+
+	/**
+	 * Checks if the given spectator player is currently in game.
+	 * @param p Player
+	 * @return true if in game
+	 */
+	public static boolean isSpectatorPlaying(Player p) {
+		return getGameBySpectator(p) != null;
+	}
+
+	/**
+	 * Get the game by name.
+	 * @param name Game
+	 * @return Game if the given name is exists.
+	 */
+	public static Game getGameByName(String name) {
+		Validate.notNull(name, "Game name can not be null!");
+		Validate.notEmpty(name, "Game name can't be empty!");
+
+		for (Game game : RageMode.getInstance().getGames()) {
+			if (game.getName().equalsIgnoreCase(name)) {
+				return game;
+			}
+		}
+
 		return null;
 	}
 
@@ -176,41 +295,17 @@ public class GameUtils {
 	 * @param p Player
 	 */
 	public static void savePlayerData(Player p) {
-		PlayerInventory inv = p.getInventory();
+		if (getGameByPlayer(p) != null) {
+			getGameByPlayer(p).getPlayerManagerByPlayer(p).storePlayerTools();
+		}
+
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
-		Game.oldLocation = p.getLocation();
-		Game.oldInventories = inv.getContents();
-		Game.oldArmor = inv.getArmorContents();
-		Game.oldHealth = p.getHealth();
-		Game.oldHunger = p.getFoodLevel();
-
-		if (!p.getActivePotionEffects().isEmpty())
-			Game.oldEffects = p.getActivePotionEffects();
-
-		Game.oldGameMode = p.getGameMode();
-
-		if (!p.getDisplayName().equals(p.getDisplayName()))
-			Game.oldDisplayName = p.getDisplayName();
-
-		if (!p.getPlayerListName().equals(p.getPlayerListName()))
-			Game.oldListName = p.getPlayerListName();
-
-		if (p.getFireTicks() > 0)
-			Game.oldFire = p.getFireTicks();
-
-		if (p.getExp() > 0d)
-			Game.oldExp = p.getExp();
-
-		if (p.getLevel() > 0)
-			Game.oldExpLevel = p.getLevel();
-
-		if (p.isInsideVehicle())
-			Game.oldVehicle = p.getVehicle();
-
 		if (conf.getDatasFile() != null && conf.getDatasFile().exists()) {
-			org.bukkit.configuration.file.FileConfiguration data = conf.getDatasCfg();
+			FileConfiguration data = conf.getDatasCfg();
 			String path = "datas." + p.getName() + ".";
+
+			PlayerInventory inv = p.getInventory();
 
 			data.set(path + "location", p.getLocation());
 			data.set(path + "contents", inv.getContents());
@@ -244,6 +339,7 @@ public class GameUtils {
 			}
 
 			Configuration.saveFile(data, conf.getDatasFile());
+			Configuration.loadFile(data, conf.getDatasFile());
 		}
 
 		clearPlayerTools(p);
@@ -255,17 +351,18 @@ public class GameUtils {
 	 * join to the game, switching to spectator mode.
 	 * 
 	 * @param p Player
-	 * @param game GameName
+	 * @param game Game
 	 */
-	public static void joinPlayer(Player p, String game) {
+	public static void joinPlayer(Player p, Game game) {
 		PlayerInventory inv = p.getInventory();
 		Configuration conf = RageMode.getInstance().getConfiguration();
+		String name = game.getName();
 
-		if (getStatus(game) == GameStatus.RUNNING) {
+		if (getStatus(name) == GameStatus.RUNNING) {
 			if (conf.getCV().isSpectatorEnabled()) {
-				if (!Game.isPlayerPlaying(p.getUniqueId().toString())) {
-					if (Game.addSpectatorPlayer(p, game)) {
-						getGameSpawnByName(game).randomSpawn(p);
+				if (!isPlayerPlaying(p)) {
+					if (game.addSpectatorPlayer(p, name)) {
+						getGameSpawnByName(name).randomSpawn(p);
 
 						p.setAllowFlight(true);
 						p.setFlying(true);
@@ -279,17 +376,12 @@ public class GameUtils {
 			} else
 				p.sendMessage(RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
 		} else {
-			if (getStatus(game) == GameStatus.NOTREADY) {
+			if (getStatus(name) == GameStatus.NOTREADY) {
 				p.sendMessage(RageMode.getLang().get("commands.join.game-locked"));
 				return;
 			}
 
-			if (Game.isPlayerPlaying(p.getUniqueId().toString())) {
-				p.sendMessage(RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
-				return;
-			}
-
-			MapChecker mapChecker = new MapChecker(game);
+			MapChecker mapChecker = new MapChecker(name);
 			if (!mapChecker.isValid()) {
 				p.sendMessage(mapChecker.getMessage());
 				return;
@@ -311,11 +403,23 @@ public class GameUtils {
 				}
 			}
 
-			if (Game.addPlayer(p, game)) {
-				p.teleport(GetGameLobby.getLobbyLocation(game));
+			if (game.addPlayer(p, name)) {
+				if (!conf.getCV().isSavePlayerData()) {
+					// We still need some data saving
+					game.getPlayerManagerByPlayer(p).getStorePlayer().oldLocation = p.getLocation();
+					game.getPlayerManagerByPlayer(p).getStorePlayer().oldGameMode = p.getGameMode();
 
-				runCommands(p, game, "join");
-				sendActionBarMessages(p, game, "join");
+					p.setGameMode(GameMode.SURVIVAL);
+					clearPlayerTools(p);
+				} else {
+					savePlayerData(p);
+				}
+
+				p.teleport(GetGameLobby.getLobbyLocation(name));
+
+				runCommands(p, name, "join");
+				sendActionBarMessages(p, name, "join");
+				setStatus(name, GameStatus.WAITING, false);
 
 				if (conf.getCfg().contains("items.leavegameitem"))
 					inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getItem());
@@ -323,42 +427,43 @@ public class GameUtils {
 				if (conf.getCfg().contains("items.force-start") && p.hasPermission("ragemode.admin.item.forcestart"))
 					inv.setItem(conf.getCfg().getInt("items.force-start.slot"), ForceStarter.getItem());
 
-				broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
+				broadcastToGame(name, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
 
 				String title = conf.getCV().getTitleJoinGame();
 				String subtitle = conf.getCV().getSubTitleJoinGame();
-				if (title != null && subtitle != null) {
-					title = title.replace("%game%", game);
-					subtitle = subtitle.replace("%game%", game);
+				if (!title.equals("") && !subtitle.equals("")) {
+					title = title.replace("%game%", name);
+					subtitle = subtitle.replace("%game%", name);
 
 					String[] split = conf.getCV().getJoinTitleTime().split(", ");
 					if (split.length == 3) {
 						Titles.sendTitle(p, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
 								Integer.parseInt(split[2]), title, subtitle);
+					} else {
+						Titles.sendTitle(p, 20, 30, 20, title, subtitle);
 					}
 				}
 
-				SignCreator.updateAllSigns(game);
+				SignCreator.updateAllSigns(name);
 			} else
-				Bukkit.getConsoleSender().sendMessage(
-						RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", game));
+				Debug.sendMessage(
+						RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", name));
 		}
 	}
 
 	/**
 	 * Kicks the specified player from the game.
 	 * @param p Player
+	 * @param game Game
+	 * @param run execute listed commands and log to console for left
 	 */
-	public static void kickPlayer(Player p) {
-		// Just removes the spec player
-		Game.removeSpectatorPlayer(p);
-
-		if (Game.isPlayerPlaying(p.getUniqueId().toString()) && getStatus(Game.getPlayersGame(p)) == GameStatus.RUNNING) {
-			if (Game.removePlayer(p)) {
+	public static void kickPlayer(Player p, Game game, boolean run) {
+		if (game != null && getStatus(game.getPlayersGame(p)) == GameStatus.RUNNING) {
+			if (game.removePlayer(p) && run) {
 				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
 
 				List<String> list = RageMode.getInstance().getConfiguration().getCV().getCmdsForPlayerLeave();
-				if (list != null && !list.isEmpty()) {
+				if (list != null) {
 					for (String cmds : list) {
 						cmds = cmds.replace("%player%", p.getName());
 						// For ipban
@@ -368,8 +473,17 @@ public class GameUtils {
 				}
 			}
 		}
+	}
 
-		HoloHolder.deleteHoloObjectsOfPlayer(p);
+	/**
+	 * Kicks the specified spectator player from game.
+	 * @param p Player to be kick
+	 * @param game the game where kick from
+	 */
+	public static void kickSpectatorPlayer(Player p, Game game) {
+		if (game != null) {
+			game.removeSpectatorPlayer(p);
+		}
 	}
 
 	/**
@@ -404,9 +518,8 @@ public class GameUtils {
 	 * @param cmdType Command type, such as death, join or other
 	 */
 	public static void runCommandsForAll(String game, String cmdType) {
-		for (Entry<String, String> players : Game.getPlayers().entrySet()) {
-			Player p = Game.getPlayerByUUID(players.getValue());
-			runCommands(p, game, cmdType);
+		for (Player pl : getGameByName(game).getPlayersInList()) {
+			runCommands(pl, game, cmdType);
 		}
 	}
 
@@ -425,7 +538,7 @@ public class GameUtils {
 		List<String> list = RageMode.getInstance().getConfiguration().getRewardsCfg()
 				.getStringList("rewards.in-game.run-commands");
 
-		if (list != null && !list.isEmpty()) {
+		if (list != null) {
 			for (String cmd : list) {
 				if (cmd.split(":").length < 3 && cmd.split(":").length > 4) {
 					Debug.logConsole(Level.WARNING, "In the rewards file the in-game commands the split length is equal to 3.");
@@ -480,7 +593,7 @@ public class GameUtils {
 
 		List<String> list = conf.getCV().getActionbarActions();
 
-		if (list != null && !list.isEmpty()) {
+		if (list != null) {
 			for (String msg : list) {
 				if (msg.split(":").length < 2 && msg.split(":").length > 2) {
 					Debug.logConsole(Level.WARNING, "In the config file the actionbar messages the split length is equal to 2.");
@@ -503,15 +616,14 @@ public class GameUtils {
 	 * @param spawn GameSpawnGetter
 	 */
 	public static void teleportPlayersToGameSpawns(GameSpawnGetter spawn) {
-		for (Entry<String, String> uuids : Game.getPlayers().entrySet()) {
-			Player player = Bukkit.getPlayer(UUID.fromString(uuids.getValue()));
-			teleportPlayerToGameSpawn(player, spawn);
+		for (Player players : spawn.getGame().getPlayersInList()) {
+			teleportPlayerToGameSpawn(players, spawn);
 		}
 	}
 
 	/**
 	 * Teleports the specified player to a random location.
-	 * This will return if the spawns size 0 because with value 0 are not possible.
+	 * This will return if the spawns size is 0.
 	 * @param p Player who is in game
 	 * @param spawn GameSpawnGetter
 	 */
@@ -551,194 +663,199 @@ public class GameUtils {
 	 * This will saves the player statistic to the database and finally stopping the game.
 	 * @param game name
 	 */
-	public static void stopGame(final String game) {
-		Validate.notNull(game, "Game name can't be null!");
-		Validate.notEmpty(game, "Game name can't be empty!");
+	public static void stopGame(String name) {
+		stopGame(getGameByName(name));
+	}
 
-		if (!Game.isGameRunning(game)) {
+	/**
+	 * Stops the specified game if running.
+	 * This calculates the players who has the highest points and announcing
+	 * to a title message. If there are no winner player valid, players
+	 * will be removed from the game with some rewards.
+	 * This will saves the player statistic to the database and finally stopping the game.
+	 * @param game Game
+	 */
+	public static void stopGame(final Game game) {
+		Validate.notNull(game, "Game can't be null!");
+
+		final String name = game.getName();
+
+		if (!game.isGameRunning(name)) {
 			return;
 		}
 
 		boolean winnervalid = false;
-		final List<String> players = Game.getPlayersFromList();
+		final List<PlayerManager> players = game.getPlayersFromList();
 
-		GameStopEvent gameStopEvent = new GameStopEvent(game, players);
+		RMGameStopEvent gameStopEvent = new RMGameStopEvent(game, players);
 		Utils.callEvent(gameStopEvent);
 
-		String winnerUUID = RageScores.calculateWinner(game, players);
-		if (winnerUUID != null) {
-			if (UUID.fromString(winnerUUID) != null) {
-				if (Bukkit.getPlayer(UUID.fromString(winnerUUID)) != null) {
-					winnervalid = true;
-					Player winner = Bukkit.getPlayer(UUID.fromString(winnerUUID));
+		String winnerUUID = RageScores.calculateWinner(name, players);
+		if (winnerUUID != null && UUID.fromString(winnerUUID) != null) {
+			if (Bukkit.getPlayer(UUID.fromString(winnerUUID)) != null) {
+				winnervalid = true;
+				Player winner = Bukkit.getPlayer(UUID.fromString(winnerUUID));
 
-					for (String playersUUID : players) {
-						Player player = Bukkit.getPlayer(UUID.fromString(playersUUID));
-						hu.montlikadani.ragemode.config.ConfigValues cv = RageMode.getInstance().getConfiguration()
-								.getCV();
-						String wonTitle = cv.getWonTitle();
-						String wonSubtitle = cv.getWonSubTitle();
+				hu.montlikadani.ragemode.config.ConfigValues cv = RageMode.getInstance().getConfiguration().getCV();
+				String wonTitle = cv.getWonTitle();
+				String wonSubtitle = cv.getWonSubTitle();
 
-						String youWonTitle = cv.getYouWonTitle();
-						String youWonSubtitle = cv.getYouWonSubTitle();
+				String youWonTitle = cv.getYouWonTitle();
+				String youWonSubtitle = cv.getYouWonSubTitle();
 
-						wonTitle = wonTitle.replace("%winner%", winner.getName());
-						wonTitle = replaceVariables(wonTitle, winnerUUID);
+				wonTitle = wonTitle.replace("%winner%", winner.getName());
+				wonTitle = replaceVariables(wonTitle, winnerUUID);
+				youWonTitle = replaceVariables(youWonTitle, winnerUUID);
 
-						youWonTitle = replaceVariables(youWonTitle, winnerUUID);
+				wonSubtitle = wonSubtitle.replace("%winner%", winner.getName());
+				wonSubtitle = replaceVariables(wonSubtitle, winnerUUID);
+				youWonSubtitle = replaceVariables(youWonSubtitle, winnerUUID);
 
-						wonSubtitle = wonSubtitle.replace("%winner%", winner.getName());
-						wonSubtitle = replaceVariables(wonSubtitle, winnerUUID);
+				for (PlayerManager pm : players) {
+					Player p = pm.getPlayer();
+					String[] split = null;
 
-						youWonSubtitle = replaceVariables(youWonSubtitle, winnerUUID);
-
-						String[] split = null;
-						if (player != winner) {
-							split = cv.getWonTitleTime().split(", ");
-							if (split.length == 3) {
-								Titles.sendTitle(player, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
-										Integer.parseInt(split[2]), wonTitle, wonSubtitle);
-							}
-
-							if (cv.isSwitchGMForPlayers())
-								player.setGameMode(GameMode.SPECTATOR);
-						} else {
-							split = cv.getYouWonTitleTime().split(", ");
-							if (split.length == 3) {
-								Titles.sendTitle(winner, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
-										Integer.parseInt(split[2]), youWonTitle, youWonSubtitle);
-							}
+					if (p != winner) {
+						split = cv.getWonTitleTime().split(", ");
+						if (split.length == 3) {
+							Titles.sendTitle(p, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
+									Integer.parseInt(split[2]), wonTitle, wonSubtitle);
 						}
 
-						Game.removePlayerSynced(player);
+						if (cv.isSwitchGMForPlayers())
+							p.setGameMode(GameMode.SPECTATOR);
+					} else {
+						split = cv.getYouWonTitleTime().split(", ");
+						if (split.length == 3) {
+							Titles.sendTitle(winner, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
+									Integer.parseInt(split[2]), youWonTitle, youWonSubtitle);
+						}
 					}
+
+					game.removePlayerSynced(p);
 				}
 			}
 		}
+
 		if (!winnervalid) {
-			for (String playerUUID : players) {
-				Player player = Bukkit.getPlayer(UUID.fromString(playerUUID));
-				broadcastToGame(game, RageMode.getLang().get("game.no-won"));
+			broadcastToGame(name, RageMode.getLang().get("game.no-won"));
+
+			for (PlayerManager pm : players) {
 				// Why?
 				Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-						() -> player.setGameMode(GameMode.SPECTATOR));
+						() -> pm.getPlayer().setGameMode(GameMode.SPECTATOR));
 
-				Game.removePlayerSynced(player);
+				game.removePlayerSynced(pm.getPlayer());
 			}
 		}
 
-		if (!EventListener.waitingGames.containsKey(game))
-			EventListener.waitingGames.put(game, true);
+		if (!EventListener.waitingGames.containsKey(name))
+			EventListener.waitingGames.put(name, true);
 		else {
-			EventListener.waitingGames.remove(game);
-			EventListener.waitingGames.put(game, true);
+			EventListener.waitingGames.remove(name);
+			EventListener.waitingGames.put(name, true);
 		}
 
-		setStatus(game, GameStatus.GAMEFREEZE);
+		setStatus(name, GameStatus.GAMEFREEZE);
 
 		final Player winner = winnerUUID != null ? Bukkit.getPlayer(UUID.fromString(winnerUUID)) : null;
 		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 				new Runnable() {
 					@Override
 					public void run() {
-						setStatus(game, null);
-
-						if (EventListener.waitingGames.containsKey(game))
-							EventListener.waitingGames.remove(game);
+						if (EventListener.waitingGames.containsKey(name)) {
+							EventListener.waitingGames.remove(name);
+						}
 
 						finishStopping(game, winner);
 					}
 				}, RageMode.getInstance().getConfiguration().getCV().getGameFreezeTime() * 20);
 	}
 
-	private static void finishStopping(String game, Player winner) {
-		if (Game.isGameRunning(game)) {
-			List<String> players = Game.getPlayersFromList();
-
-			for (String playersUUID : players) {
-				if (playersUUID != null) {
-					final PlayerPoints pP = RageScores.getPlayerPoints(playersUUID);
-					if (pP == null) {
-						continue;
-					}
-
-					Thread th = null;
-					switch (RageMode.getInstance().getConfiguration().getCV().getStatistics()) {
-					case "yaml":
-						th = new Thread(YAMLStats.createPlayersStats(pP));
-						break;
-					case "mysql":
-						th = new Thread(new MySQLThread(pP));
-						break;
-					case "sql":
-					case "sqlite":
-						th = new Thread(new SQLThread(pP));
-						break;
-					default:
-						break;
-					}
-
-					if (th != null) {
-						th.start();
-					}
-
-					Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
-						RuntimePPManager.updatePlayerEntry(pP);
-
-						Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () ->
-							HoloHolder.updateHolosForPlayer(Bukkit.getPlayer(UUID.fromString(playersUUID))));
-					});
-				}
-			}
-
-			if (RageMode.getInstance().getConfiguration().getCV().isRewardEnabled()) {
-				Reward reward = new Reward(game);
-
-				for (String playerUUID : players) {
-					Utils.clearPlayerInventory(Bukkit.getPlayer(UUID.fromString(playerUUID)));
-
-					if (winner != null) {
-						if (Bukkit.getPlayer(UUID.fromString(playerUUID)) == winner) {
-							Utils.clearPlayerInventory(winner);
-
-							reward.rewardForWinner(winner);
-						}
-					}
-
-					reward.rewardForPlayers(winner, Bukkit.getPlayer(UUID.fromString(playerUUID)));
-				}
-			}
-
-			broadcastToGame(game, RageMode.getLang().get("game.stopped", "%game%", game));
-			Game.setGameNotRunning(game);
-			runCommandsForAll(game, "stop");
-			SignCreator.updateAllSigns(game);
-
-			for (String playersUUID : players) {
-				if (playersUUID != null) {
-					sendActionBarMessages(Bukkit.getPlayer(UUID.fromString(playersUUID)), game, "stop");
-					RageScores.removePointsForPlayer(playersUUID);
-					Game.removePlayer(Bukkit.getPlayer(UUID.fromString(playersUUID)));
-				}
-			}
-
-			for (Iterator<Entry<UUID, String>> it = Game.getSpectatorPlayers().entrySet().iterator(); it
-					.hasNext();) {
-				Player pl = Bukkit.getPlayer(it.next().getKey());
-				Game.removeSpectatorPlayer(pl);
-			}
-
-			if (RageMode.getInstance().getConfiguration().getCV().isRestartServerEnabled()) {
-				try {
-					Class.forName("org.spigotmc.SpigotConfig");
-
-					Bukkit.spigot().restart();
-				} catch (ClassNotFoundException e) {
-					Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "restart");
-				}
-			} else if (RageMode.getInstance().getConfiguration().getCV().isStopServerEnabled())
-				Bukkit.shutdown();
+	private static void finishStopping(Game game, Player winner) {
+		if (!game.isGameRunning(game.getName())) {
+			return;
 		}
+
+		List<PlayerManager> players = game.getPlayersFromList();
+
+		for (PlayerManager pm : players) {
+			final PlayerPoints pP = RageScores.getPlayerPoints(pm.getPlayer().getUniqueId().toString());
+			if (pP == null) {
+				continue;
+			}
+
+			Thread th = null;
+			switch (RageMode.getInstance().getConfiguration().getCV().getStatistics()) {
+			case "mysql":
+				th = new Thread(new MySQLThread(pP));
+				break;
+			case "sql":
+			case "sqlite":
+				th = new Thread(new SQLThread(pP));
+				break;
+			default:
+				th = new Thread(YAMLStats.createPlayersStats(pP));
+				break;
+			}
+
+			th.start();
+
+			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
+				RuntimePPManager.updatePlayerEntry(pP);
+
+				Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
+						() -> HoloHolder.updateHolosForPlayer(pm.getPlayer()));
+			});
+		}
+
+		if (RageMode.getInstance().getConfiguration().getCV().isRewardEnabled()) {
+			Reward reward = new Reward(game.getName());
+
+			for (PlayerManager pm : players) {
+				if (winner != null) {
+					if (pm.getPlayer() == winner) {
+						Utils.clearPlayerInventory(winner);
+						reward.rewardForWinner(winner);
+					}
+				} else {
+					Utils.clearPlayerInventory(pm.getPlayer());
+				}
+
+				reward.rewardForPlayers(winner, pm.getPlayer());
+			}
+		}
+
+		broadcastToGame(game.getName(), RageMode.getLang().get("game.stopped", "%game%", game.getName()));
+		game.setGameNotRunning(game.getName());
+		runCommandsForAll(game.getName(), "stop");
+		SignCreator.updateAllSigns(game.getName());
+
+		for (Iterator<Entry<Player, PlayerManager>> it = game.getPlayers().entrySet().iterator(); it.hasNext();) {
+			Player p = it.next().getKey();
+			sendActionBarMessages(p, game.getName(), "stop");
+			RageScores.removePointsForPlayer(p.getUniqueId().toString());
+			game.removePlayer(p);
+		}
+
+		for (Iterator<Entry<UUID, String>> it = game.getSpectatorPlayers().entrySet()
+				.iterator(); it.hasNext();) {
+			Player pl = Bukkit.getPlayer(it.next().getKey());
+			game.removeSpectatorPlayer(pl);
+		}
+
+		setStatus(game.getName(), null);
+
+		if (RageMode.getInstance().getConfiguration().getCV().isRestartServerEnabled()) {
+			try {
+				Class.forName("org.spigotmc.SpigotConfig");
+
+				Bukkit.spigot().restart();
+			} catch (ClassNotFoundException e) {
+				Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "restart");
+			}
+		} else if (RageMode.getInstance().getConfiguration().getCV().isStopServerEnabled())
+			Bukkit.shutdown();
 	}
 
 	/**
@@ -756,23 +873,28 @@ public class GameUtils {
 		int imax = games.length;
 
 		while (i < imax) {
-			if (games[i] != null && Game.isGameRunning(games[i])) {
+			String name = games[i];
+			if (name != null) {
+				Game g = getGameByName(name);
+				if (g.isGameRunning(name)) {
 
-				Debug.logConsole("Stopping " + games[i] + " ...");
+					Debug.logConsole("Stopping " + name + " ...");
 
-				Game.setGameNotRunning(games[i]);
-				setStatus(games[i], null);
+					g.setGameNotRunning(name);
+					setStatus(name, null);
 
-				Game.getPlayersFromList()
-						.forEach(uuids -> Game.removePlayer(Bukkit.getPlayer(UUID.fromString(uuids))));
+					for (PlayerManager pm : g.getPlayersFromList()) {
+						g.removePlayer(pm.getPlayer());
+					}
 
-				for (Iterator<Entry<UUID, String>> it = Game.getSpectatorPlayers().entrySet().iterator(); it
-						.hasNext();) {
-					Player pl = Bukkit.getPlayer(it.next().getKey());
-					Game.removeSpectatorPlayer(pl);
+					for (Iterator<Entry<UUID, String>> it = g.getSpectatorPlayers().entrySet().iterator(); it
+							.hasNext();) {
+						Player pl = Bukkit.getPlayer(it.next().getKey());
+						g.removeSpectatorPlayer(pl);
+					}
+
+					Debug.logConsole(name + " has been stopped.");
 				}
-
-				Debug.logConsole(games[i] + " has been stopped.");
 			}
 			i++;
 		}
@@ -793,10 +915,10 @@ public class GameUtils {
 	/**
 	 * Gets the specified game current set GameStatus by player.
 	 * @param p Player
-	 * @return {@link GameStatus}
+	 * @return {@link GameStatus} if the player is in game
 	 */
 	public static GameStatus getStatus(Player p) {
-		return getStatus(Game.getPlayersGame(p));
+		return isPlayerPlaying(p) ? getStatus(getGameByPlayer(p).getPlayersGame(p)) : null;
 	}
 
 	/**

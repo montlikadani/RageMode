@@ -20,45 +20,45 @@ public class MaterialUtil {
 		BUTTONS.clear();
 		WOODEN_DOORS.clear();
 
-		WALL_SIGNS.add(Material.getMaterial("WALL_SIGN"));
-		WOODEN_PRESSURE_PLATES.add(Material.getMaterial("WOODEN_PRESSURE_PLATE"));
-		TRAPWOODEN_DOORS.add(Material.getMaterial("TRAP_DOOR"));
-		BUTTONS.add(Material.getMaterial("WOODEN_BUTTON"));
-		WOODEN_DOORS.add(Material.getMaterial("WOODEN_DOOR"));
+		WALL_SIGNS.add(getMat("WALL_SIGN"));
+		WOODEN_PRESSURE_PLATES.add(getMat("WOODEN_PRESSURE_PLATE"));
+		TRAPWOODEN_DOORS.add(getMat("TRAP_DOOR"));
+		BUTTONS.add(getMat("WOODEN_BUTTON"));
+		WOODEN_DOORS.add(getMat("WOODEN_DOOR"));
 
-		BUTTONS.add(Material.getMaterial("STONE_BUTTON"));
-		TRAPWOODEN_DOORS.add(Material.getMaterial("IRON_TRAPDOOR"));
-		WOODEN_DOORS.add(Material.getMaterial("ACACIA_DOOR"));
-		WOODEN_DOORS.add(Material.getMaterial("BIRCH_DOOR"));
-		WOODEN_DOORS.add(Material.getMaterial("DARK_OAK_DOOR"));
-		WOODEN_DOORS.add(Material.getMaterial("JUNGLE_DOOR"));
-		WOODEN_DOORS.add(Material.getMaterial("SPRUCE_DOOR"));
+		BUTTONS.add(getMat("STONE_BUTTON"));
+		TRAPWOODEN_DOORS.add(getMat("IRON_TRAPDOOR"));
+		WOODEN_DOORS.add(getMat("ACACIA_DOOR"));
+		WOODEN_DOORS.add(getMat("BIRCH_DOOR"));
+		WOODEN_DOORS.add(getMat("DARK_OAK_DOOR"));
+		WOODEN_DOORS.add(getMat("JUNGLE_DOOR"));
+		WOODEN_DOORS.add(getMat("SPRUCE_DOOR"));
 
-		WALL_SIGNS.add(Material.getMaterial("ACACIA_WALL_SIGN"));
-		WALL_SIGNS.add(Material.getMaterial("BIRCH_WALL_SIGN"));
-		WALL_SIGNS.add(Material.getMaterial("DARK_OAK_WALL_SIGN"));
-		WALL_SIGNS.add(Material.getMaterial("JUNGLE_WALL_SIGN"));
-		WALL_SIGNS.add(Material.getMaterial("OAK_WALL_SIGN"));
-		WALL_SIGNS.add(Material.getMaterial("SPRUCE_WALL_SIGN"));
-		WOODEN_PRESSURE_PLATES.add(Material.getMaterial("OAK_PRESSURE_PLATE"));
-		WOODEN_PRESSURE_PLATES.add(Material.getMaterial("ACACIA_PRESSURE_PLATE"));
-		WOODEN_PRESSURE_PLATES.add(Material.getMaterial("BIRCH_PRESSURE_PLATE"));
-		WOODEN_PRESSURE_PLATES.add(Material.getMaterial("DARK_OAK_PRESSURE_PLATE"));
-		WOODEN_PRESSURE_PLATES.add(Material.getMaterial("JUNGLE_PRESSURE_PLATE"));
-		WOODEN_PRESSURE_PLATES.add(Material.getMaterial("SPRUCE_PRESSURE_PLATE"));
-		TRAPWOODEN_DOORS.add(Material.getMaterial("OAK_TRAPDOOR"));
-		TRAPWOODEN_DOORS.add(Material.getMaterial("ACACIA_TRAPDOOR"));
-		TRAPWOODEN_DOORS.add(Material.getMaterial("BIRCH_TRAPDOOR"));
-		TRAPWOODEN_DOORS.add(Material.getMaterial("DARK_OAK_TRAPDOOR"));
-		TRAPWOODEN_DOORS.add(Material.getMaterial("JUNGLE_TRAPDOOR"));
-		TRAPWOODEN_DOORS.add(Material.getMaterial("SPRUCE_TRAPDOOR"));
-		BUTTONS.add(Material.getMaterial("OAK_BUTTON"));
-		BUTTONS.add(Material.getMaterial("ACACIA_BUTTON"));
-		BUTTONS.add(Material.getMaterial("BIRCH_BUTTON"));
-		BUTTONS.add(Material.getMaterial("DARK_OAK_BUTTON"));
-		BUTTONS.add(Material.getMaterial("JUNGLE_BUTTON"));
-		BUTTONS.add(Material.getMaterial("SPRUCE_BUTTON"));
-		WOODEN_DOORS.add(Material.getMaterial("OAK_DOOR"));
+		WALL_SIGNS.add(getMat("ACACIA_WALL_SIGN"));
+		WALL_SIGNS.add(getMat("BIRCH_WALL_SIGN"));
+		WALL_SIGNS.add(getMat("DARK_OAK_WALL_SIGN"));
+		WALL_SIGNS.add(getMat("JUNGLE_WALL_SIGN"));
+		WALL_SIGNS.add(getMat("OAK_WALL_SIGN"));
+		WALL_SIGNS.add(getMat("SPRUCE_WALL_SIGN"));
+		WOODEN_PRESSURE_PLATES.add(getMat("OAK_PRESSURE_PLATE"));
+		WOODEN_PRESSURE_PLATES.add(getMat("ACACIA_PRESSURE_PLATE"));
+		WOODEN_PRESSURE_PLATES.add(getMat("BIRCH_PRESSURE_PLATE"));
+		WOODEN_PRESSURE_PLATES.add(getMat("DARK_OAK_PRESSURE_PLATE"));
+		WOODEN_PRESSURE_PLATES.add(getMat("JUNGLE_PRESSURE_PLATE"));
+		WOODEN_PRESSURE_PLATES.add(getMat("SPRUCE_PRESSURE_PLATE"));
+		TRAPWOODEN_DOORS.add(getMat("OAK_TRAPDOOR"));
+		TRAPWOODEN_DOORS.add(getMat("ACACIA_TRAPDOOR"));
+		TRAPWOODEN_DOORS.add(getMat("BIRCH_TRAPDOOR"));
+		TRAPWOODEN_DOORS.add(getMat("DARK_OAK_TRAPDOOR"));
+		TRAPWOODEN_DOORS.add(getMat("JUNGLE_TRAPDOOR"));
+		TRAPWOODEN_DOORS.add(getMat("SPRUCE_TRAPDOOR"));
+		BUTTONS.add(getMat("OAK_BUTTON"));
+		BUTTONS.add(getMat("ACACIA_BUTTON"));
+		BUTTONS.add(getMat("BIRCH_BUTTON"));
+		BUTTONS.add(getMat("DARK_OAK_BUTTON"));
+		BUTTONS.add(getMat("JUNGLE_BUTTON"));
+		BUTTONS.add(getMat("SPRUCE_BUTTON"));
+		WOODEN_DOORS.add(getMat("OAK_DOOR"));
 	}
 
 	public static boolean isWallSign(Material mat) {
@@ -79,5 +79,9 @@ public class MaterialUtil {
 
 	public static boolean isWoodenDoor(Material mat) {
 		return WOODEN_DOORS.contains(mat);
+	}
+
+	private static Material getMat(String name) {
+		return Material.getMaterial(name);
 	}
 }

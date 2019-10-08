@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
@@ -51,7 +52,7 @@ public class SignCreator {
 				signData.add(data);
 			} else {
 				Debug.logConsole(Level.WARNING, "World " + world + " not found to load this sign.");
-				return false;
+				continue;
 			}
 		}
 
@@ -121,23 +122,22 @@ public class SignCreator {
 	 * @return True if at least one sign was updated successfully for the given game.
 	 */
 	public static boolean updateAllSigns(String gameName) {
+		Validate.notNull(gameName, "Game name can't be null!");
+		Validate.notEmpty(gameName, "Game name can't be empty!");
+
 		if (RageMode.getInstance().getConfiguration().getCV().isSignsEnable()) {
 			List<String> signs = fileConf.getStringList("signs");
-			if (signs != null && !signs.isEmpty()) {
+			if (signs != null) {
 				for (String signString : signs) {
 					String game = getGameFromString(signString);
-					if (game != null && gameName != null) {
-						if (game.contains(gameName)) {
-							Location signLocation = stringToLocationSign(signString);
-							if (signLocation != null && signLocation.getBlock().getState() instanceof Sign) {
-								signData.forEach(data -> data.updateSign());
-								return true;
-							}
+					if (game != null && game.contains(gameName)) {
+						Location signLocation = stringToLocationSign(signString);
+						if (signLocation != null && signLocation.getBlock().getState() instanceof Sign) {
+							signData.forEach(data -> data.updateSign());
+							return true;
 						}
-					} else
-						return false;
+					}
 				}
-				return true;
 			}
 		}
 		return false;
@@ -150,7 +150,7 @@ public class SignCreator {
 	 */
 	public static boolean isSign(Location loc) {
 		List<String> signs = fileConf.getStringList("signs");
-		if (signs != null && !signs.isEmpty()) {
+		if (signs != null) {
 			for (String signString : signs) {
 				String game = getGameFromString(signString);
 				for (String gameName : GetGames.getGameNames()) {
@@ -172,7 +172,7 @@ public class SignCreator {
 	 */
 	public static String getGameFromString() {
 		List<String> signs = fileConf.getStringList("signs");
-		if (signs != null && !signs.isEmpty()) {
+		if (signs != null) {
 			for (String signString : signs) {
 				String game = getGameFromString(signString);
 				for (String gameName : GetGames.getGameNames()) {

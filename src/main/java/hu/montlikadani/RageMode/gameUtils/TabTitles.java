@@ -5,15 +5,15 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class TabTitles {
 
@@ -24,12 +24,10 @@ public class TabTitles {
 	 * Creates a new instance of TabList, which manages the Tablist for
 	 * the List of Players.
 	 * 
-	 * @param playerString List players that can be add to the list
+	 * @param players List players that can be add to the list
 	 */
-	public TabTitles(List<String> playerString) {
-		for (String player : playerString) {
-			this.player.add(Bukkit.getPlayer(UUID.fromString(player)));
-		}
+	public TabTitles(List<PlayerManager> players) {
+		players.forEach(pm -> this.player.add(pm.getPlayer()));
 	}
 
 	/**
@@ -112,22 +110,22 @@ public class TabTitles {
 	 * Removing the tablist from all online player that are currently playing in the game.
 	 */
 	public void removeTabList() {
-		for (Player player : this.player) {
-			removeTabList(player);
-		}
+		this.player.forEach(this::removeTabList);
 	}
 
 	/**
 	 * Removes the tablist from the specified player that are currently
 	 * playing the game.
-	 * @param player Player name
+	 * @param player Player
 	 */
 	public void removeTabList(Player player) {
 		sendTabTitle(player, null, null);
 
-		for (int i = 0; i < this.player.size(); i++) {
-			if (player.equals(this.player.get(i)))
-				this.player.remove(i);
+		for (Iterator<Player> it = this.player.iterator(); it.hasNext();) {
+			if (it.next().equals(player)) {
+				it.remove();
+				break;
+			}
 		}
 	}
 }

@@ -23,5 +23,6 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="org.eclipse.jdt.annotation_2.2.200.v20180921-1416.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -8,14 +8,12 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
-import hu.montlikadani.ragemode.utils.ICommand;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class stats extends ICommand {
+public class stats {
 
-	@Override
 	public boolean run(CommandSender sender, String[] args) {
 		if (sender instanceof Player && !hasPerm(sender, "ragemode.stats")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));

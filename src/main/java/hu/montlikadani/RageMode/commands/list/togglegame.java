@@ -5,16 +5,13 @@ import org.bukkit.command.CommandSender;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
-import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.utils.ICommand;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
 import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 
-public class togglegame extends ICommand {
+public class togglegame {
 
-	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!hasPerm(sender, "ragemode.admin.togglegame")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
@@ -34,13 +31,13 @@ public class togglegame extends ICommand {
 		}
 
 		boolean toggle = true;
-		if (!Game.isGameRunning(game)) {
+		if (!GameUtils.getGameByName(game).isGameRunning(game)) {
 			if (GameUtils.getStatus(game) == GameStatus.NOTREADY) {
 				GameUtils.setStatus(game, GameStatus.READY);
 				toggle = false;
 			} else {
 				GameUtils.setStatus(game, GameStatus.NOTREADY);
-				Game.setGameNotRunning(game);
+				GameUtils.getGameByName(game).setGameNotRunning(game);
 			}
 
 			plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".lock", toggle);
