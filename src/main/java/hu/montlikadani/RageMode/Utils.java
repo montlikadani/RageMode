@@ -13,9 +13,7 @@ import java.util.jar.JarFile;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 import hu.montlikadani.ragemode.API.event.BaseEvent;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
@@ -81,18 +79,11 @@ public class Utils {
 
 	/**
 	 * Clear the specified player inventory.
-	 * <p>This fixes the crash when the inventory is empty and the
-	 * server throws AssertionError: TRAP, that cause the server crash and stop.
-	 * <p><b>Regenerate world should fix this.</b>
 	 * @param pl Player
 	 */
 	public static void clearPlayerInventory(Player pl) {
-		try {
-			for (ItemStack content : pl.getInventory().getContents()) {
-				if (content != null && !content.getType().equals(Material.AIR))
-					pl.getInventory().clear();
-			}
-		} catch (AssertionError a) {}
+		pl.getInventory().clear();
+		pl.updateInventory();
 	}
 
 	/**

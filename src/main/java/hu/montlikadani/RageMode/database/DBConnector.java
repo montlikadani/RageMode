@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 import hu.montlikadani.ragemode.Debug;
 
-public class Database {
+public class DBConnector {
 
 	private RMConnection conn = null;
 
@@ -14,7 +14,7 @@ public class Database {
 	private String password;
 	private String prefix;
 
-	public Database(String url, String username, String password, String prefix) {
+	public DBConnector(String url, String username, String password, String prefix) {
 		this.url = url;
 		this.username = username;
 		this.password = password;

@@ -24,21 +24,30 @@ public class Language {
 
 	private RageMode plugin;
 	private List<String> lang = new ArrayList<>();
+	private File localeFolder = null;
 
 	public Language(RageMode plugin) {
 		this.plugin = plugin;
 	}
 
 	public void loadLanguage(String lang) {
+		if (lang == null || lang.equals("")) {
+			lang = "en";
+		}
+
 		this.lang.clear();
 		this.lang.add(lang);
 
-		File localeFolder = new File(plugin.getFolder(), "locale");
-		if (!localeFolder.exists())
+		if (localeFolder == null) {
+			localeFolder = new File(plugin.getFolder(), "locale");
+		}
+
+		if (!localeFolder.exists()) {
 			localeFolder.mkdirs();
+		}
 
 		File langFile = null;
-		if (lang == null || lang.equals("") || lang.equals("en")) {
+		if (lang.equals("en")) {
 			langFile = new File(localeFolder, "locale_en.yml");
 			if (!langFile.exists())
 				plugin.saveResource("locale/locale_en.yml", false);
@@ -56,9 +65,11 @@ public class Language {
 				FileConfiguration lf = YamlConfiguration.loadConfiguration(reader);
 				lf.load(langFile);
 				reader.close();
-			} catch (IOException | InvalidConfigurationException e) {
-				e.printStackTrace();
+			} catch (InvalidConfigurationException e) {
+				Debug.logConsole("Bad/invalid string found in your language file: " + e.getLocalizedMessage());
+			} catch (IOException e2) {
 				Debug.throwMsg();
+				e2.printStackTrace();
 			}
 		}
 	}
@@ -107,6 +118,7 @@ public class Language {
 		l.getL("commands.join.game-locked", "&cThis game is locked, so you can not join.");
 		l.getL("commands.join.empty-inventory.armor", "&cYou must empty your armor inventory to join the game.");
 		l.getL("commands.join.empty-inventory.contents", "&cYou must empty your inventory contents to join the game.");
+		l.getL("commands.join.rejoin-delay", "&cYou can't rejoin to the game. Wait&e %delay%&c.");
 		l.getL("commands.points.player-not-found", "&cThe player name can not be null!");
 		l.getL("commands.points.amount-not-less", "&cThe number must be greater than 0.");
 		l.getL("commands.points.changed", "&2The player points has been changed:&e %amount%&2, new:&e %new%");
@@ -287,7 +299,6 @@ public class Language {
 	}
 
 	public File getLangFile() {
-		File localeFolder = new File(plugin.getFolder(), "locale");
 		File file = null;
 		for (String l : this.lang) {
 			if (l.equals(plugin.getConfiguration().getCV().getLang())) {

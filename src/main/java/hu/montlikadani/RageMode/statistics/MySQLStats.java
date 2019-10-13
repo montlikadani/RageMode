@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.statistics;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -14,6 +13,7 @@ import org.bukkit.Bukkit;
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.database.MySQLConnect;
+import hu.montlikadani.ragemode.database.RMConnection;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
@@ -23,7 +23,7 @@ public class MySQLStats {
 	private static List<PlayerPoints> points = new ArrayList<>();
 
 	public static void loadPlayerStatistics(MySQLConnect mySQL) {
-		if (!mySQL.isConnected()) {
+		if (!mySQL.hasConnection()) {
 			return;
 		}
 
@@ -36,11 +36,11 @@ public class MySQLStats {
 		int currentGames = 0;
 
 		String query = "SELECT * FROM " + mySQL.getPrefix() + "stats_players;";
-		Connection connection = mySQL.getConnection().getConnection();
+		RMConnection conn = mySQL.getConnection();
 		Statement statement = null;
 		try {
-			statement = connection.createStatement();
-			ResultSet rs = mySQL.getConnection().executeQuery(statement, query);
+			statement = conn.createStatement();
+			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
 				currentWins = rs.getInt("wins");
 				currentGames = rs.getInt("games");
@@ -63,7 +63,7 @@ public class MySQLStats {
 			rs.close();
 		} catch (SQLException e) {
 			try {
-				connection.close();
+				conn.close();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			}
@@ -104,7 +104,7 @@ public class MySQLStats {
 		if (!mySQL.isValid())
 			return;
 
-		Connection connection = mySQL.getConnection().getConnection();
+		RMConnection conn = mySQL.getConnection();
 
 		Statement statement = null;
 		String query = "SELECT * FROM " + mySQL.getPrefix() + "stats_players WHERE uuid LIKE '" + playerPoints.getPlayerUUID() + "';";
@@ -126,8 +126,8 @@ public class MySQLStats {
 		int oldGames = 0;
 
 		try {
-			statement = connection.createStatement();
-			ResultSet rs = mySQL.getConnection().executeQuery(statement, query);
+			statement = conn.createStatement();
+			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
 				oldKills = rs.getInt("kills");
 				oldAxeKills = rs.getInt("axe_kills");
@@ -185,13 +185,13 @@ public class MySQLStats {
 				+ Integer.toString(newKnifeDeaths) + ", " + Integer.toString(newWins) + ", "
 				+ Integer.toString(newScore) + ", " + Integer.toString(newGames) + ", " + Double.toString(newKD) + ");";
 		try {
-			mySQL.getConnection().executeUpdate(query);
+			conn.executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
 		try {
-			connection.close();
+			conn.close();
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
@@ -225,12 +225,12 @@ public class MySQLStats {
 
 		List<PlayerPoints> allRPPs = new ArrayList<>();
 
-		Connection connection = connect.getConnection().getConnection();
+		RMConnection conn = connect.getConnection();
 		Statement statement = null;
 		String query = "SELECT * FROM " + connect.getPrefix() + "stats_players";
 		try {
-			statement = connection.createStatement();
-			ResultSet rs = connect.getConnection().executeQuery(statement, query);
+			statement = conn.createStatement();
+			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
 				String uuid = rs.getString("uuid");
 				if (uuid != null) {
@@ -250,7 +250,7 @@ public class MySQLStats {
 			}
 
 			try {
-				connection.close();
+				conn.close();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			}
@@ -279,7 +279,7 @@ public class MySQLStats {
 		// Cloning to ignore overwrite
 		pp = (PlayerPoints) pp.clone();
 
-		Connection connection = connect.getConnection().getConnection();
+		RMConnection conn = connect.getConnection();
 
 		Statement statement = null;
 		String query = "SELECT * FROM " + connect.getPrefix() + "stats_players;";
@@ -302,8 +302,8 @@ public class MySQLStats {
 		double currentKD = 0;
 
 		try {
-			statement = connection.createStatement();
-			ResultSet rs = connect.getConnection().executeQuery(statement, query);
+			statement = conn.createStatement();
+			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
 				if (rs.getString("uuid").equals(uuid)) {
 					currentKills = rs.getInt("kills");
@@ -355,7 +355,7 @@ public class MySQLStats {
 			}
 
 			try {
-				connection.close();
+				conn.close();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			}
@@ -377,14 +377,14 @@ public class MySQLStats {
 		if (rpp == null)
 			return false;
 
-		Connection connection = RageMode.getMySQL().getConnection().getConnection();
+		RMConnection conn = RageMode.getMySQL().getConnection();
 
 		Statement statement = null;
 		String query = "SELECT * FROM " + RageMode.getMySQL().getPrefix() + "stats_players;";
 
 		try {
-			statement = connection.createStatement();
-			ResultSet rs = RageMode.getMySQL().getConnection().executeQuery(statement, query);
+			statement = conn.createStatement();
+			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
 				rpp.setKills(0);
 				rpp.setAxeKills(0);
@@ -406,7 +406,7 @@ public class MySQLStats {
 			rs.close();
 		} catch (SQLException e) {
 			try {
-				connection.close();
+				conn.close();
 			} catch (SQLException e2) {
 				e2.printStackTrace();
 			}
@@ -431,13 +431,13 @@ public class MySQLStats {
 				+ Integer.toString(0) + ", " + Integer.toString(0) + ", "
 				+ Integer.toString(0) + ", " + Integer.toString(0) + ", " + Double.toString(0d) + ");";
 		try {
-			RageMode.getMySQL().getConnection().executeUpdate(query);
+			conn.executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
 		try {
-			connection.close();
+			conn.close();
 		} catch (SQLException e2) {
 			e2.printStackTrace();
 		}

@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.statistics;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -13,6 +12,7 @@ import org.bukkit.Bukkit;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.database.RMConnection;
 import hu.montlikadani.ragemode.database.SQLConnect;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
@@ -36,11 +36,11 @@ public class SQLStats {
 		int currentGames = 0;
 
 		String query = "SELECT * FROM " + sqlConnect.getPrefix() + "stats_players;";
-		Connection connection = sqlConnect.getConnection().getConnection();
+		RMConnection conn = sqlConnect.getConnection();
 		Statement statement = null;
 		try {
-			statement = connection.createStatement();
-			ResultSet rs = sqlConnect.getConnection().executeQuery(statement, query);
+			statement = conn.createStatement();
+			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
 				currentWins = rs.getInt("wins");
 				currentGames = rs.getInt("games");
@@ -63,7 +63,7 @@ public class SQLStats {
 			rs.close();
 		} catch (SQLException e) {
 			try {
-				connection.close();
+				conn.close();
 			} catch (SQLException e2) {
 				e2.printStackTrace();
 			}
@@ -104,7 +104,7 @@ public class SQLStats {
 		if (!sqlConnect.isValid())
 			return;
 
-		Connection connection = sqlConnect.getConnection().getConnection();
+		RMConnection conn = sqlConnect.getConnection();
 
 		Statement statement = null;
 		String query = "SELECT * FROM " + sqlConnect.getPrefix() + "stats_players WHERE uuid LIKE '" + playerPoints.getPlayerUUID() + "';";
@@ -126,8 +126,8 @@ public class SQLStats {
 		int oldGames = 0;
 
 		try {
-			statement = connection.createStatement();
-			ResultSet rs = sqlConnect.getConnection().executeQuery(statement, query);
+			statement = conn.createStatement();
+			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
 				oldKills = rs.getInt("kills");
 				oldAxeKills = rs.getInt("axe_kills");
@@ -185,13 +185,13 @@ public class SQLStats {
 				+ Integer.toString(newKnifeDeaths) + ", " + Integer.toString(newWins) + ", "
 				+ Integer.toString(newScore) + ", " + Integer.toString(newGames) + ", " + Double.toString(newKD) + ");";
 		try {
-			sqlConnect.getConnection().executeUpdate(query);
+			conn.executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
 		try {
-			connection.close();
+			conn.close();
 		} catch (SQLException e2) {
 			e2.printStackTrace();
 		}
@@ -225,12 +225,12 @@ public class SQLStats {
 
 		List<PlayerPoints> allRPPs = new ArrayList<>();
 
-		Connection connection = connect.getConnection().getConnection();
+		RMConnection conn = connect.getConnection();
 		Statement statement = null;
 		String query = "SELECT * FROM " + connect.getPrefix() + "stats_players";
 		try {
-			statement = connection.createStatement();
-			ResultSet rs = connect.getConnection().executeQuery(statement, query);
+			statement = conn.createStatement();
+			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
 				String uuid = rs.getString("uuid");
 				if (uuid != null) {
@@ -250,7 +250,7 @@ public class SQLStats {
 			}
 
 			try {
-				connection.close();
+				conn.close();
 			} catch (SQLException e2) {
 				e2.printStackTrace();
 			}
@@ -279,7 +279,7 @@ public class SQLStats {
 		// Cloning to ignore overwrite
 		pp = (PlayerPoints) pp.clone();
 
-		Connection connection = connect.getConnection().getConnection();
+		RMConnection conn = connect.getConnection();
 
 		Statement statement = null;
 		String query = "SELECT * FROM " + connect.getPrefix() + "stats_players;";
@@ -302,8 +302,8 @@ public class SQLStats {
 		double currentKD = 0;
 
 		try {
-			statement = connection.createStatement();
-			ResultSet rs = connect.getConnection().executeQuery(statement, query);
+			statement = conn.createStatement();
+			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
 				if (rs.getString("uuid").equals(uuid)) {
 					currentKills = rs.getInt("kills");
@@ -355,7 +355,7 @@ public class SQLStats {
 			}
 
 			try {
-				connection.close();
+				conn.close();
 			} catch (SQLException e2) {
 				e2.printStackTrace();
 			}
@@ -377,14 +377,14 @@ public class SQLStats {
 		if (rpp == null)
 			return false;
 
-		Connection connection = RageMode.getSQL().getConnection().getConnection();
+		RMConnection conn = RageMode.getSQL().getConnection();
 
 		Statement statement = null;
 		String query = "SELECT * FROM " + RageMode.getSQL().getPrefix() + "stats_players;";
 
 		try {
-			statement = connection.createStatement();
-			ResultSet rs = RageMode.getSQL().getConnection().executeQuery(statement, query);
+			statement = conn.createStatement();
+			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
 				rpp.setKills(0);
 				rpp.setAxeKills(0);
@@ -406,7 +406,7 @@ public class SQLStats {
 			rs.close();
 		} catch (SQLException e) {
 			try {
-				connection.close();
+				conn.close();
 			} catch (SQLException e2) {
 				e2.printStackTrace();
 			}
@@ -431,13 +431,13 @@ public class SQLStats {
 				+ Integer.toString(0) + ", " + Integer.toString(0) + ", "
 				+ Integer.toString(0) + ", " + Integer.toString(0) + ", " + Double.toString(0d) + ");";
 		try {
-			RageMode.getSQL().getConnection().executeUpdate(query);
+			conn.executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
 		try {
-			connection.close();
+			conn.close();
 		} catch (SQLException e2) {
 			e2.printStackTrace();
 		}

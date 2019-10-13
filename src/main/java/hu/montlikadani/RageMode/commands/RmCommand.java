@@ -73,7 +73,7 @@ public class RmCommand implements CommandExecutor {
 				if (hasPerm(sender, "ragemode.admin.help")) {
 					msg += "&7-&6 /rm admin&a - Lists all admin commands.\n";
 
-					if (hasPerm(sender, "ragemode.admin.setup"))
+					if (sender instanceof Player && hasPerm(sender, "ragemode.admin.setup"))
 						msg += "&7-&6 /rm setup&a - Lists all admin setup commands.\n";
 				}
 
@@ -157,7 +157,7 @@ public class RmCommand implements CommandExecutor {
 						msg += "&7-&6 /rm givesaveditems <player> [true]&a - Returns the saved inventory to the player.\n";
 
 					if (hasPerm(sender, "ragemode.admin.latestart"))
-						msg += "&7-&6 /rm latestart <timeInSeconds>&a - Increases the current lobby waiting time.";
+						msg += "&7-&6 /rm latestart <timeInSeconds>&a - Increases the current lobby waiting time.\n";
 
 					if (hasPerm(sender, "ragemode.admin.resetstats"))
 						msg += "&7-&6 /rm resetstats [player]&a - Reset the player's stat.\n";

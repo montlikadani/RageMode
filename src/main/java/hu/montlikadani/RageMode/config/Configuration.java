@@ -61,6 +61,7 @@ public class Configuration {
 				msg += "'config.yml' file created!";
 			}
 
+			// TODO: Do we optimize this to do not call a new class every time if we reloads.
 			cv.loadValues(new FileConfig(config));
 
 			if (!config.isSet("config-version") || !config.get("config-version").equals(configVersion)) {

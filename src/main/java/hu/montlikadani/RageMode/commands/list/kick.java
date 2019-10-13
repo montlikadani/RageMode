@@ -47,7 +47,7 @@ public class kick {
 			return false;
 		}
 
-		if (GameUtils.getGameByPlayer(target) != null) {
+		if (GameUtils.isPlayerPlaying(target)) {
 			Game game = GameUtils.getGameByPlayer(target);
 
 			PlayerKickedFromGame event = new PlayerKickedFromGame(game, sender, target);

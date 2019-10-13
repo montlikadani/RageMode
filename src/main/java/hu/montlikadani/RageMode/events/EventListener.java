@@ -580,7 +580,7 @@ public class EventListener implements Listener {
 	}
 
 	@EventHandler
-	public void onDisabledCommand(PlayerCommandPreprocessEvent event) {
+	public void disableCommand(PlayerCommandPreprocessEvent event) {
 		Player p = event.getPlayer();
 
 		if (event.getMessage() == null) return;
@@ -810,10 +810,10 @@ public class EventListener implements Listener {
 					|| type == InventoryType.DROPPER
 					|| type == InventoryType.HOPPER
 					|| type == InventoryType.BEACON
-					|| type == InventoryType.STONECUTTER
+					|| (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && type == InventoryType.STONECUTTER
 					|| type == InventoryType.BLAST_FURNACE
-					|| type == InventoryType.SHULKER_BOX
 					|| type == InventoryType.MERCHANT)
+					|| (Version.isCurrentEqualOrHigher(Version.v1_11_R1) && type == InventoryType.SHULKER_BOX))
 				e.setCancelled(true);
 		}
 	}

@@ -86,13 +86,13 @@ public class RageMode extends JavaPlugin {
 			mcVersion = new MinecraftVersion();
 
 			if (Version.isCurrentLower(Version.v1_8_R1)) {
-				Bukkit.getLogger().log(Level.SEVERE, "[RageMode] This version is not supported by this plugin! Please use larger 1.8+");
+				getLogger().log(Level.SEVERE, "[RageMode] This version is not supported by this plugin! Please use larger 1.8+");
 				getManager().disablePlugin(this);
 				return;
 			}
 
 			if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
-				Bukkit.getLogger().log(Level.INFO, "[RageMode] This version not fully supported by this plugin, so some options will not work.");
+				getLogger().log(Level.INFO, "[RageMode] This version not fully supported by this plugin, so some options will not work.");
 
 			conf = new Configuration(this);
 			conf.loadConfig();
@@ -147,7 +147,7 @@ public class RageMode extends JavaPlugin {
 				SignConfiguration.initSignConfiguration();
 				SignCreator.loadSigns();
 
-				signTask = Bukkit.getScheduler().runTaskLater(this, sign, 40L);
+				signTask = getServer().getScheduler().runTaskLater(this, sign, 40L);
 			}
 
 			if (conf.getArenasCfg().contains("arenas")) {
@@ -411,7 +411,7 @@ public class RageMode extends JavaPlugin {
 			getManager().registerEvents(sign, this);
 			SignConfiguration.initSignConfiguration();
 
-			signTask = Bukkit.getScheduler().runTaskLater(this, sign, 40L);
+			signTask = getServer().getScheduler().runTaskLater(this, sign, 40L);
 		}
 
 		registerListeners();
@@ -512,7 +512,7 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private PluginManager getManager() {
-		return Bukkit.getPluginManager();
+		return getServer().getPluginManager();
 	}
 
 	public Economy getEconomy() {

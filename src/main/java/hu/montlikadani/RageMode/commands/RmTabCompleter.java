@@ -109,7 +109,7 @@ public class RmTabCompleter implements TabCompleter {
 	private List<String> getGameListCmds() {
 		return Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay", "removegame",
 				"forcestart", "setlobby", "addspawn", "join", "leave", "stop", "stopgame", "togglegame", "spectate",
-				"removespawn", "listplayers");
+				"removespawn", "listplayers", "kick");
 	}
 
 	private List<String> getValueListCmds() {

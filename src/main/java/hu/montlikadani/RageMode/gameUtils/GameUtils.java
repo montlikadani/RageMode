@@ -381,6 +381,11 @@ public class GameUtils {
 				return;
 			}
 
+			if (getStatus(name) == GameStatus.WAITING && game.getPlayers().containsKey(p)) {
+				p.sendMessage(RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
+				return;
+			}
+
 			MapChecker mapChecker = new MapChecker(name);
 			if (!mapChecker.isValid()) {
 				p.sendMessage(mapChecker.getMessage());

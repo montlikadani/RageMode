@@ -78,6 +78,7 @@ public class ConfigValues {
 	private boolean restartServer;
 	private boolean stopServer;
 	private boolean rewardEnable;
+	private boolean rejoinDelayEnabled;
 
 	private int signsUpdateTime;
 	private int minPlayers;
@@ -92,6 +93,9 @@ public class ConfigValues {
 	private int suicide;
 	private int grenadeKill;
 	private int respawnProtectTime;
+	private int rejoinDelayHour;
+	private int rejoinDelayMinute;
+	private int rejoinDelaySecond;
 
 	private List<String> signsList;
 	private List<String> actionBarActions;
@@ -196,6 +200,10 @@ public class ConfigValues {
 		cmdsForPlayerLeave = f.get("game.global.run-commands-for-player-left-while-playing", Collections.emptyList());
 		restartServer = f.get("game.global.game-stop.restart-server", false);
 		stopServer = f.get("game.global.game-stop.stop-server", false);
+		rejoinDelayEnabled = f.get("rejoin-delay.enabled", false);
+		rejoinDelayHour = f.get("rejoin-delay.times.hour", 0);
+		rejoinDelayMinute = f.get("rejoin-delay.times.minute", 0);
+		rejoinDelaySecond = f.get("rejoin-delay.times.second", 30);
 		rewardEnable = f.get("rewards.enable", true);
 		bowKill = f.get("points.bowkill", 25);
 		axeKill = f.get("points.axekill", 30);
@@ -536,6 +544,22 @@ public class ConfigValues {
 
 	public boolean isStopServerEnabled() {
 		return stopServer;
+	}
+
+	public boolean isRejoinDelayEnabled() {
+		return rejoinDelayEnabled;
+	}
+
+	public int getRejoinDelayHour() {
+		return rejoinDelayHour;
+	}
+
+	public int getRejoinDelayMinute() {
+		return rejoinDelayMinute;
+	}
+
+	public int getRejoinDelaySecond() {
+		return rejoinDelaySecond;
 	}
 
 	public boolean isRewardEnabled() {

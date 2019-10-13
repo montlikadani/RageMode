@@ -39,12 +39,22 @@ public class RMConnection {
 		return false;
 	}
 
+	public void close() throws SQLException {
+		if (isConnected()) {
+			conn.close();
+		}
+	}
+
 	public synchronized void commit() throws SQLException {
 		conn.commit();
 	}
 
 	public synchronized void executeUpdate(String query) throws SQLException {
-		conn.createStatement().executeUpdate(query);
+		createStatement().executeUpdate(query);
+	}
+
+	public synchronized Statement createStatement() throws SQLException {
+		return conn.createStatement();
 	}
 
 	public synchronized ResultSet executeQuery(Statement statement, String query) throws SQLException {
