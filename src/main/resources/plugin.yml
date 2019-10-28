@@ -64,3 +64,6 @@ permissions:
   ragemode.bypass.spectatorcommands:
     description: Allows to the spectator player to execute the disabled commands in game.
     default: false
+  ragemode.bypass.rejoindelay:
+    description: Bypasses the rejoining delay to the game.
+    default: false

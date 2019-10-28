@@ -2,8 +2,9 @@
 # You can find all supported languages on: https://github.com/montlikadani/RageMode/wiki/Languages
 language: en
 
-# Statistic types: yaml, mysql, sqlite
-statistics: yaml
+# Database types: yaml, mysql, sqlite
+# To database where the player datas will be saved.
+databaseType: yaml
 
 # Logging console messages, such as error description
 log-console: true
@@ -34,8 +35,8 @@ bungee:
 
 # MySQL database settings.
 MySQL:
-  auto-reconnect: false
-  use-SSL: true
+  auto-reconnect: true
+  use-SSL: false
   username: accountname
   password: password
   database: database
@@ -282,6 +283,16 @@ game-stop:
   # This supports the Spigot restart script
   restart-server: false
   stop-server: false
+
+# After executing the /rm join command, do adds delay to prevent use again?
+rejoin-delay:
+  enabled: false
+
+  # Times for delays.
+  times:
+    hour: 0
+    minute: 0
+    second: 30
 
 # Grant rewards at end of game.
 # Rewards can be found in the rewards.yml file.

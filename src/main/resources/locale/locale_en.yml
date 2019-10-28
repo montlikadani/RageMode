@@ -50,6 +50,7 @@ commands:
     empty-inventory:
       armor: "&cYou must empty your armor inventory to join the game."
       contents: "&cYou must empty your inventory contents to join the game."
+    rejoin-delay: "&cYou can't rejoin to the game. Wait&e %delay%&c."
   points:
     player-not-found: "&cThe player name can not be null!"
     amount-not-less: "&cThe number must be greater than 0."

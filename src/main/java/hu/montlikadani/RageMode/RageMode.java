@@ -528,7 +528,7 @@ public class RageMode extends JavaPlugin {
 			if (newestVersionNumber > currentVersionNumber) {
 				if (sender.equals("player")) {
 					msg = "&8&m&l--------------------------------------------------\n"
-							+ "&a A new update is available!&4 Version:&7 " + versionString
+							+ "&a A new update is available for RageMode!&4 Version:&7 " + versionString
 							+ "\n&6Download:&c &nhttps://www.spigotmc.org/resources/69169/"
 							+ "\n&8&m&l--------------------------------------------------";
 				} else if (sender.equals("console")) {

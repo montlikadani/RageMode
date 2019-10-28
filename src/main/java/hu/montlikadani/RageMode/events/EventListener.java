@@ -176,56 +176,49 @@ public class EventListener implements Listener {
 		if (event.getEntity() != null && event.getEntity().getShooter() != null
 				&& event.getEntity().getShooter() instanceof Player
 				&& GameUtils.isPlayerPlaying((Player) event.getEntity().getShooter())
-				&& GameUtils.getStatus(GameUtils.getGameByPlayer((Player) event.getEntity().getShooter())
-						.getPlayersGame((Player) event.getEntity().getShooter())) == GameStatus.RUNNING) {
-			if (event.getEntity() instanceof Arrow) {
-				Arrow arrow = (Arrow) event.getEntity();
+				&& event.getEntity() instanceof Arrow) {
+			Arrow arrow = (Arrow) event.getEntity();
+			Player shooter = (Player) arrow.getShooter();
+			if (shooter == null) {
+				return;
+			}
 
-				if (arrow.getShooter() != null && arrow.getShooter() instanceof Player) {
-					Player shooter = (Player) arrow.getShooter();
-					if (GameUtils.isPlayerPlaying(shooter)) {
-						if (waitingGames.containsKey(GameUtils.getGameByPlayer(shooter).getPlayersGame(shooter))) {
-							if (waitingGames.get(GameUtils.getGameByPlayer(shooter).getPlayersGame(shooter))) {
-								arrow.remove();
-								return;
-							}
+			String game = GameUtils.getGameByPlayer(shooter).getPlayersGame(shooter);
+
+			if (GameUtils.getStatus(game) == GameStatus.GAMEFREEZE && waitingGames.containsKey(game)) {
+				if (waitingGames.get(game)) {
+					arrow.remove();
+					return;
+				}
+			}
+
+			if (GameUtils.getStatus(game) == GameStatus.RUNNING) {
+				Location location = arrow.getLocation();
+				double x = location.getX();
+				double y = location.getY();
+				double z = location.getZ();
+
+				List<Entity> nears = arrow.getNearbyEntities(10, 10, 10);
+
+				arrow.getWorld().createExplosion(x, y, z, 2f, false, false);
+				arrow.remove();
+
+				int i = 0;
+				int imax = nears.size();
+				while (i < imax) {
+					if (nears.get(i) instanceof Player) {
+						Player near = (Player) nears.get(i);
+						if (explosionVictims.containsKey(near.getUniqueId())) {
+							explosionVictims.remove(near.getUniqueId());
+							// explosionVictims.put(near.getUniqueId(), shooter.getUniqueId());
 						}
+						explosionVictims.put(near.getUniqueId(), shooter.getUniqueId());
 
-						Location location = arrow.getLocation();
-						double x = location.getX();
-						double y = location.getY();
-						double z = location.getZ();
-
-						List<Entity> nears = arrow.getNearbyEntities(10, 10, 10);
-
-						arrow.getWorld().createExplosion(x, y, z, 2f, false, false);
-						arrow.remove();
-
-						int i = 0;
-						int imax = nears.size();
-						while (i < imax) {
-							if (nears.get(i) instanceof Player /*
-															 * && !nears.get(i).
-															 * getUniqueId().
-															 * toString().equals(
-															 * shooter.getUniqueId()
-															 * .toString())
-															 */) {
-								Player near = (Player) nears.get(i);
-								if (explosionVictims != null) {
-									if (explosionVictims.containsKey(near.getUniqueId())) {
-										explosionVictims.remove(near.getUniqueId());
-										explosionVictims.put(near.getUniqueId(), shooter.getUniqueId());
-									}
-								}
-								explosionVictims.put(near.getUniqueId(), shooter.getUniqueId());
-
-								near.removeMetadata("killedWith", plugin);
-								near.setMetadata("killedWith", new FixedMetadataValue(plugin, "explosion"));
-							}
-							i++;
-						}
+						near.removeMetadata("killedWith", plugin);
+						near.setMetadata("killedWith", new FixedMetadataValue(plugin, "explosion"));
 					}
+
+					i++;
 				}
 			}
 		}
@@ -482,15 +475,6 @@ public class EventListener implements Listener {
 						Utils.callEvent(killed);
 					}
 				}
-
-				// Remove arrows from player body
-				//TODO Anyway, this possible?
-				/*if (plugin.getConfiguration().getCfg().getBoolean("game.global.remove-arrows-from-player-body")) {
-					for (Entity e : deceased.getNearbyEntities(1, 1, 1)) {
-						if (e instanceof Arrow)
-							Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> e.remove(), 1L);
-					}
-				}*/
 
 				event.setDroppedExp(0);
 				event.setDeathMessage("");
@@ -826,78 +810,79 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onInteractRedstone(PlayerInteractEvent ev) {
-		Player p = ev.getPlayer();
+		if (ev.getClickedBlock() == null) {
+			return;
+		}
 
+		Player p = ev.getPlayer();
 		if (!GameUtils.isPlayerPlaying(p)) {
 			return;
 		}
 
-		if (ev.getClickedBlock() != null) {
-			Material t = ev.getClickedBlock().getType();
+		Material t = ev.getClickedBlock().getType();
 
-			if (ev.getAction() == Action.PHYSICAL) {
-				if (t == Material.FARMLAND) {
-					ev.setUseInteractedBlock(Event.Result.DENY);
-					ev.setCancelled(true);
-				} else if (RageMode.getInstance().getConfiguration().getCV().isCancelRedstoneActivate()
-						&& GameUtils.getStatus(p) == GameStatus.RUNNING
-						|| GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
-					if (MaterialUtil.isWoodenPressurePlate(t)) {
-						ev.setUseInteractedBlock(Event.Result.DENY);
-						ev.setCancelled(true);
-					}
-
-					if (t.equals(Material.STONE_PRESSURE_PLATE) || t.equals(Material.HEAVY_WEIGHTED_PRESSURE_PLATE)
-							|| t.equals(Material.LIGHT_WEIGHTED_PRESSURE_PLATE)) {
-						ev.setUseInteractedBlock(Event.Result.DENY);
-						ev.setCancelled(true);
-					}
-				}
+		if (ev.getAction() == Action.PHYSICAL) {
+			if (t == Material.FARMLAND) {
+				ev.setUseInteractedBlock(Event.Result.DENY);
+				ev.setCancelled(true);
 			} else if (RageMode.getInstance().getConfiguration().getCV().isCancelRedstoneActivate()
-					&& ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
-				if (GameUtils.getStatus(p) == GameStatus.RUNNING || GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
-					if (MaterialUtil.isTrapdoor(t) || MaterialUtil.isButton(t)) {
-						ev.setUseInteractedBlock(Event.Result.DENY);
-						ev.setCancelled(true);
-					}
-
-					if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
-						if (t.equals(Material.valueOf("REDSTONE_COMPARATOR"))
-								|| t.equals(Material.valueOf("REDSTONE_COMPARATOR_ON"))
-								|| t.equals(Material.valueOf("REDSTONE_COMPARATOR_OFF"))) {
-							ev.setUseInteractedBlock(Event.Result.DENY);
-							ev.setCancelled(true);
-						}
-					} else {
-						if (t.equals(Material.COMPARATOR) || t.equals(Material.REPEATER)) {
-							ev.setUseInteractedBlock(Event.Result.DENY);
-							ev.setCancelled(true);
-						}
-					}
-
-					if (t.equals(Material.LEVER) || t.equals(Material.DAYLIGHT_DETECTOR)) {
-						ev.setUseInteractedBlock(Event.Result.DENY);
-						ev.setCancelled(true);
-					}
-				}
-			}
-
-			if (RageMode.getInstance().getConfiguration().getCV().isCancelDoorUse()
-					&& ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
-				if (GameUtils.getStatus(p) == GameStatus.RUNNING || GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
-					if (MaterialUtil.isWoodenDoor(t)) {
-						ev.setUseInteractedBlock(Event.Result.DENY);
-						ev.setCancelled(true);
-					}
-				}
-			}
-
-			// Just prevent usage of bush
-			if (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
-				if (t.equals(Material.SWEET_BERRY_BUSH) || t.equals(Material.COMPOSTER)) {
+					&& GameUtils.getStatus(p) == GameStatus.RUNNING
+					|| GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
+				if (MaterialUtil.isWoodenPressurePlate(t)) {
 					ev.setUseInteractedBlock(Event.Result.DENY);
 					ev.setCancelled(true);
 				}
+
+				if (t.equals(Material.STONE_PRESSURE_PLATE) || t.equals(Material.HEAVY_WEIGHTED_PRESSURE_PLATE)
+						|| t.equals(Material.LIGHT_WEIGHTED_PRESSURE_PLATE)) {
+					ev.setUseInteractedBlock(Event.Result.DENY);
+					ev.setCancelled(true);
+				}
+			}
+		} else if (RageMode.getInstance().getConfiguration().getCV().isCancelRedstoneActivate()
+				&& ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			if (GameUtils.getStatus(p) == GameStatus.RUNNING || GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
+				if (MaterialUtil.isTrapdoor(t) || MaterialUtil.isButton(t)) {
+					ev.setUseInteractedBlock(Event.Result.DENY);
+					ev.setCancelled(true);
+				}
+
+				if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
+					if (t.equals(Material.valueOf("REDSTONE_COMPARATOR"))
+							|| t.equals(Material.valueOf("REDSTONE_COMPARATOR_ON"))
+							|| t.equals(Material.valueOf("REDSTONE_COMPARATOR_OFF"))) {
+						ev.setUseInteractedBlock(Event.Result.DENY);
+						ev.setCancelled(true);
+					}
+				} else {
+					if (t.equals(Material.COMPARATOR) || t.equals(Material.REPEATER)) {
+						ev.setUseInteractedBlock(Event.Result.DENY);
+						ev.setCancelled(true);
+					}
+				}
+
+				if (t.equals(Material.LEVER) || t.equals(Material.DAYLIGHT_DETECTOR)) {
+					ev.setUseInteractedBlock(Event.Result.DENY);
+					ev.setCancelled(true);
+				}
+			}
+		}
+
+		if (RageMode.getInstance().getConfiguration().getCV().isCancelDoorUse()
+				&& ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			if (GameUtils.getStatus(p) == GameStatus.RUNNING || GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
+				if (MaterialUtil.isWoodenDoor(t)) {
+					ev.setUseInteractedBlock(Event.Result.DENY);
+					ev.setCancelled(true);
+				}
+			}
+		}
+
+		// Just prevent usage of bush
+		if (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			if (t.equals(Material.SWEET_BERRY_BUSH) || t.equals(Material.COMPOSTER)) {
+				ev.setUseInteractedBlock(Event.Result.DENY);
+				ev.setCancelled(true);
 			}
 		}
 	}
