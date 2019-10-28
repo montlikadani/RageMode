@@ -5,13 +5,13 @@ import org.bukkit.event.Cancellable;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
 
-public class GameLeaveAttemptEvent extends BaseEvent implements Cancellable {
+public class RMGameJoinAttemptEvent extends BaseEvent implements Cancellable {
 
 	private Game game;
 	private Player player;
 	private boolean cancelled = false;
 
-	public GameLeaveAttemptEvent(Game game, Player player) {
+	public RMGameJoinAttemptEvent(Game game, Player player) {
 		this.game = game;
 		this.player = player;
 	}

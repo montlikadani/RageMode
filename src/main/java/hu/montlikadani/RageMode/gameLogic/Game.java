@@ -17,7 +17,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.API.event.GameJoinAttemptEvent;
+import hu.montlikadani.ragemode.API.event.RMGameJoinAttemptEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorJoinToGameEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorLeaveFromGameEvent;
 import hu.montlikadani.ragemode.config.Configuration;
@@ -83,7 +83,7 @@ public class Game {
 			return false;
 		}
 
-		GameJoinAttemptEvent event = new GameJoinAttemptEvent(this, player);
+		RMGameJoinAttemptEvent event = new RMGameJoinAttemptEvent(this, player);
 		Utils.callEvent(event);
 		if (event.isCancelled())
 			return false;

@@ -24,8 +24,8 @@ import org.bukkit.util.Vector;
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.API.event.GameLeaveAttemptEvent;
-import hu.montlikadani.ragemode.API.event.GameStatusChangeEvent;
+import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
+import hu.montlikadani.ragemode.API.event.RMGameStatusChangeEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.config.Configuration;
@@ -850,7 +850,7 @@ public class GameUtils {
 			sendActionBarMessages(p, game.getName(), "stop");
 			RageScores.removePointsForPlayer(p.getUniqueId().toString());
 
-			GameLeaveAttemptEvent gameLeaveEvent = new GameLeaveAttemptEvent(game, p);
+			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
 			Utils.callEvent(gameLeaveEvent);
 			if (!gameLeaveEvent.isCancelled()) {
 				game.removePlayer(p);
@@ -987,7 +987,7 @@ public class GameUtils {
 			status = GameStatus.STOPPED;
 		}
 
-		GameStatusChangeEvent event = new GameStatusChangeEvent(getGame(game), status);
+		RMGameStatusChangeEvent event = new RMGameStatusChangeEvent(getGame(game), status);
 		Utils.callEvent(event);
 
 		GameUtils.status.put(game, status);

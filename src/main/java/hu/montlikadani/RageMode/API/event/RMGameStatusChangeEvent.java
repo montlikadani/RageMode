@@ -3,12 +3,12 @@ package hu.montlikadani.ragemode.API.event;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 
-public class GameStatusChangeEvent extends BaseEvent {
+public class RMGameStatusChangeEvent extends BaseEvent {
 
 	private Game game;
 	private GameStatus status;
 
-	public GameStatusChangeEvent(Game game, GameStatus status) {
+	public RMGameStatusChangeEvent(Game game, GameStatus status) {
 		this.game = game;
 		this.status = status;
 	}

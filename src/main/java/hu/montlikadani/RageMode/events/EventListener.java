@@ -57,7 +57,7 @@ import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.API.event.GameLeaveAttemptEvent;
+import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerKilledEvent;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameLoader;
@@ -764,7 +764,7 @@ public class EventListener implements Listener {
 						}
 
 						if (meta.getDisplayName().equals(LeaveGame.getName())) {
-							GameLeaveAttemptEvent gameLeaveEvent = new GameLeaveAttemptEvent(game, p);
+							RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
 							Utils.callEvent(gameLeaveEvent);
 							if (!gameLeaveEvent.isCancelled()) {
 								game.removePlayer(p);
