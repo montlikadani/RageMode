@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.commands.list;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -57,17 +58,32 @@ public class listplayers {
 				return false;
 			}
 
-			StringBuilder sb = new StringBuilder();
-			for (PlayerManager pm : GameUtils.getGame(game).getPlayersFromList()) {
-				Player player = pm.getPlayer();
+			StringBuilder sb = null;
+			if (!GameUtils.getGame(game).getPlayers().isEmpty()) {
+				sb = new StringBuilder();
 
-				for (Iterator<String> e = Arrays.asList(GameUtils.getGameByPlayer(player).getPlayersGame(player))
-						.iterator(); e.hasNext();) {
-					sb.append("&7-&6 " + player.getName() + "&a - " + e.next());
+				for (PlayerManager pm : GameUtils.getGame(game).getPlayersFromList()) {
+					Player player = pm.getPlayer();
+
+					for (Iterator<String> e = Arrays.asList(GameUtils.getGameByPlayer(player).getPlayersGame(player))
+							.iterator(); e.hasNext();) {
+						sb.append("&7-&6 " + player.getName() + "&a - " + e.next());
+					}
 				}
+
+				sendMessage(sender, Utils.colors("&7Players:\n" + sb));
 			}
 
-			sendMessage(sender, Utils.colors("&7Players:\n" + sb));
+			if (!GameUtils.getGame(game).getSpectatorPlayers().isEmpty()) {
+				sb = new StringBuilder();
+
+				for (java.util.Map.Entry<java.util.UUID, String> spec : GameUtils.getGame(game).getSpectatorPlayers()
+						.entrySet()) {
+					sb.append("\n&7-&6 " + Bukkit.getPlayer(spec.getKey()).getName() + "&a - " + spec.getValue());
+				}
+
+				sendMessage(sender, Utils.colors("&7Spectator players:\n" + sb));
+			}
 		}
 		return false;
 	}

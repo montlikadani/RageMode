@@ -341,8 +341,6 @@ public class GameUtils {
 			Configuration.saveFile(data, conf.getDatasFile());
 			Configuration.loadFile(data, conf.getDatasFile());
 		}
-
-		clearPlayerTools(p);
 	}
 
 	/**
@@ -415,10 +413,10 @@ public class GameUtils {
 					game.getPlayerManager(p).getStorePlayer().oldGameMode = p.getGameMode();
 
 					p.setGameMode(GameMode.SURVIVAL);
-					clearPlayerTools(p);
 				} else {
 					savePlayerData(p);
 				}
+				clearPlayerTools(p);
 
 				p.teleport(GetGameLobby.getLobbyLocation(name));
 

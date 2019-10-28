@@ -62,6 +62,7 @@ public class RageMode extends JavaPlugin {
 
 	private boolean hologram = false;
 	private boolean vault = false;
+	private static boolean isSpigot = false;
 
 	private List<Game> games = new ArrayList<>();
 	private List<GameSpawnGetter> spawns = new ArrayList<>();
@@ -74,6 +75,13 @@ public class RageMode extends JavaPlugin {
 			if (!checkJavaVersion()) {
 				getManager().disablePlugin(this);
 				return;
+			}
+
+			try {
+				Class.forName("org.spigotmc.SpigotConfig");
+				isSpigot = true;
+			} catch (ClassNotFoundException c) {
+				isSpigot = false;
 			}
 
 			mcVersion = new MinecraftVersion();
@@ -439,6 +447,10 @@ public class RageMode extends JavaPlugin {
 	 */
 	public static MinecraftVersion getMCVersion() {
 		return mcVersion;
+	}
+
+	public static boolean isSpigot() {
+		return isSpigot;
 	}
 
 	public boolean isHologramEnabled() {

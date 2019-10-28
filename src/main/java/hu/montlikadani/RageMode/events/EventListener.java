@@ -3,8 +3,8 @@ package hu.montlikadani.ragemode.events;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -185,8 +185,10 @@ public class EventListener implements Listener {
 					Player shooter = (Player) arrow.getShooter();
 					if (GameUtils.isPlayerPlaying(shooter)) {
 						if (waitingGames.containsKey(GameUtils.getGameByPlayer(shooter).getPlayersGame(shooter))) {
-							if (waitingGames.get(GameUtils.getGameByPlayer(shooter).getPlayersGame(shooter)))
+							if (waitingGames.get(GameUtils.getGameByPlayer(shooter).getPlayersGame(shooter))) {
+								arrow.remove();
 								return;
+							}
 						}
 
 						Location location = arrow.getLocation();
@@ -477,7 +479,7 @@ public class EventListener implements Listener {
 
 					deceased.removeMetadata("killedWith", plugin);
 					if (killed != null) {
-						Bukkit.getPluginManager().callEvent(killed);
+						Utils.callEvent(killed);
 					}
 				}
 
@@ -498,13 +500,9 @@ public class EventListener implements Listener {
 				GameUtils.runCommands(deceased, game, "death");
 			}
 
-			try {
-				Class.forName("org.spigotmc.SpigotConfig");
-
-				// respawn player instantly
+			// respawn player instantly
+			if (RageMode.isSpigot()) {
 				Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, deceased.spigot()::respawn, 1L);
-			} catch (ClassNotFoundException c) {
-				// Ignore
 			}
 
 			GameUtils.addGameItems(deceased, true);
@@ -519,9 +517,13 @@ public class EventListener implements Listener {
 			return;
 		}
 
+		Game game = GameUtils.getGameByPlayer(p);
+		if (game == null) {
+			return;
+		}
+
 		// If player still is in game with respawn screen then remove player
 		// 1.14 issue
-		Game game = GameUtils.getGameByPlayer(p);
 		if (!game.isGameRunning(game.getPlayersGame(p))) {
 			game.removePlayer(p);
 			return;
@@ -529,8 +531,7 @@ public class EventListener implements Listener {
 
 		GameSpawnGetter gsg = GameUtils.getGameSpawn(game.getPlayersGame(p));
 		if (gsg.getSpawnLocations().size() > 0) {
-			Random rand = new Random();
-			int x = rand.nextInt(gsg.getSpawnLocations().size());
+			int x = ThreadLocalRandom.current().nextInt(gsg.getSpawnLocations().size());
 			e.setRespawnLocation(gsg.getSpawnLocations().get(x));
 		}
 
