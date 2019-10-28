@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +22,8 @@ import hu.montlikadani.ragemode.Utils;
 public class Language {
 
 	private RageMode plugin;
-	private List<String> lang = new ArrayList<>();
+	private String lang;
+
 	private File localeFolder = null;
 
 	public Language(RageMode plugin) {
@@ -31,12 +31,11 @@ public class Language {
 	}
 
 	public void loadLanguage(String lang) {
-		if (lang == null || lang.equals("")) {
+		if (lang == null || lang.isEmpty()) {
 			lang = "en";
 		}
 
-		this.lang.clear();
-		this.lang.add(lang);
+		this.lang = lang;
 
 		if (localeFolder == null) {
 			localeFolder = new File(plugin.getFolder(), "locale");
@@ -233,7 +232,7 @@ public class Language {
 		String msg = "";
 		String missing = "BADF " + key;
 
-		if (key == null || key.equals(""))
+		if (key == null || key.isEmpty())
 			return msg;
 
 		if (!yc.contains(key) || !yc.isString(key)) {
@@ -242,7 +241,7 @@ public class Language {
 			return msg;
 		}
 
-		if (yc.getString(key, "").equals(""))
+		if (yc.getString(key, "").isEmpty())
 			return msg;
 
 		msg = Utils.colors(yc.getString(key));
@@ -261,7 +260,7 @@ public class Language {
 		FileConfiguration yc = YamlConfiguration.loadConfiguration(getLangFile());
 		String missing = "BADF " + key + " ";
 
-		if (key == null || key.equals(""))
+		if (key == null || key.isEmpty())
 			return Collections.emptyList();
 
 		List<String> ls = null;
@@ -299,18 +298,6 @@ public class Language {
 	}
 
 	public File getLangFile() {
-		File file = null;
-		for (String l : this.lang) {
-			if (l.equals(plugin.getConfiguration().getCV().getLang())) {
-				file = new File(localeFolder, "locale_" + l + ".yml");
-				break;
-			}
-		}
-
-		if (file == null) {
-			loadLanguage(plugin.getConfiguration().getCV().getLang());
-		}
-
-		return file;
+		return new File(localeFolder, "locale_" + lang + ".yml");
 	}
 }

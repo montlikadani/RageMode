@@ -92,7 +92,7 @@ public class GameTimer extends TimerTask {
 
 			// Broadcast time message should be in this place, before counting
 			List<Integer> values = conf.getCV().getGameEndBcs();
-			if (values != null && !values.isEmpty()) {
+			if (values != null) {
 				for (int val : values) {
 					if (time == val) {
 						GameUtils.broadcastToGame(game.getName(),
@@ -174,7 +174,7 @@ public class GameTimer extends TimerTask {
 
 			if (gameBoard != null) {
 				String boardTitle = conf.getCV().getSbTitle();
-				if (boardTitle != null && !boardTitle.equals(""))
+				if (boardTitle != null && !boardTitle.isEmpty())
 					gameBoard.setTitle(Utils.colors(boardTitle));
 
 				List<String> rows = conf.getCV().getSbContent();
@@ -188,7 +188,7 @@ public class GameTimer extends TimerTask {
 					}
 
 					for (String row : rows) {
-						if (row.trim().equals("")) {
+						if (row.trim().isEmpty()) {
 							for (int i = 0; i <= rowMax; i++) {
 								row = row + " ";
 							}

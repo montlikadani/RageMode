@@ -4,95 +4,52 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.bukkit.entity.Player;
 
+import hu.montlikadani.ragemode.RageMode;
+
 public class ReJoinDelay {
 
-	private static Map<Player, Map<String, Date>> playerTimes = new HashMap<>();
+	private static Map<Player, Long> playerTimes = new HashMap<>();
 
-	public static void setTime(Player p, String game, int hour, int minute, int second) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(new Date());
+	public static void setTime(Player p, int hour, int minute, int second) {
+		Calendar cal = getCal(new Date());
+
 		cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) + hour);
 		cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE) + minute);
 		cal.set(Calendar.SECOND, cal.get(Calendar.SECOND) + second);
 
 		if (p != null && !playerTimes.containsKey(p)) {
-			Map<String, Date> times = playerTimes.get(p);
-			if (times == null) {
-				times = new HashMap<String, Date>();
-			}
-
-			if (game != null) {
-				times.put(game, cal.getTime());
-			}
-
-			playerTimes.put(p, times);
+			playerTimes.put(p, cal.getTimeInMillis());
 		}
 	}
 
-	public static String serialize(Date date) {
-		Calendar c = getCal(date);
-		int hour = c.get(Calendar.HOUR_OF_DAY);
-		int minute = c.get(Calendar.MINUTE);
-		int second = c.get(Calendar.SECOND);
-		return (hour + ", " + minute + ", " + second);
-	}
+	public static String format(Long ticks) {
+		long hours = ticks / 1000 / 60 / 60;
+		ticks = ticks - (hours * 1000 * 60 * 60);
 
-	public static Date deserialize(String date) {
-		String[] s = date.split(", ");
-		int hour = 0;
-		int minute = 0;
-		int second = 0;
+		long minutes = ticks / 1000 / 60;
+		ticks = ticks - (minutes * 1000 * 60);
 
-		if (s.length == 1) {
-			hour = Integer.valueOf(s[0]);
-		}
-		if (s.length == 2) {
-			minute = Integer.valueOf(s[1]);
-		}
-		if (s.length == 3) {
-			second = Integer.valueOf(s[2]);
-		}
+		long sec = ticks / 1000;
+		ticks = ticks - (sec * 1000);
 
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) + hour);
-		cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE) + minute);
-		cal.set(Calendar.SECOND, cal.get(Calendar.SECOND) + second);
-		return cal.getTime();
-	}
+		String time = "";
 
-	public static String format(Date date) {
-		Calendar c = getCal(date);
-		int hour = c.get(Calendar.HOUR_OF_DAY);
-		int minute = c.get(Calendar.MINUTE);
-		int second = c.get(Calendar.SECOND);
+		if (hours > 0 || (minutes > 0 || sec > 0))
+			time += hours + RageMode.getLang().get("time-formats.hour") + " ";
 
-		c.set(Calendar.HOUR_OF_DAY, c.get(Calendar.HOUR_OF_DAY) + hour);
-		c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) + minute);
-		c.set(Calendar.SECOND, c.get(Calendar.SECOND) + second);
+		if (minutes > 0 || sec > 0 && minutes == 0 && (hours != 0))
+			time += minutes + RageMode.getLang().get("time-formats.minute") + " ";
 
-		// TODO: calculate the remaining time
-		/*long secondsInMilli = 1000;
-		long minutesInMilli = secondsInMilli * 60;
-		long hoursInMilli = minutesInMilli * 60;
-		long daysInMilli = hoursInMilli * 24;
+		if (sec > 0)
+			time += sec + RageMode.getLang().get("time-formats.second");
 
-		long millis = System.currentTimeMillis() - c.getTime().getTime();
-		millis = millis % daysInMilli;
+		if (time.isEmpty())
+			time += 0 + RageMode.getLang().get("time-formats.second");
 
-		long rsHour = TimeUnit.MILLISECONDS.toHours(millis) / hoursInMilli;
-		millis = millis % hoursInMilli;
-
-		long rsMinute = TimeUnit.MILLISECONDS.toMinutes(millis) / minutesInMilli;
-		millis = millis % minutesInMilli;
-
-		long rsSecond = TimeUnit.MILLISECONDS.toSeconds(millis) / secondsInMilli;*/
-
-		return ((hour > 0 ? hour + "h " : "") + (minute > 0 ? minute + "min " : "")
-				+ (second > 0 ? second + "sec" : ""));
+		return time;
 	}
 
 	private static Calendar getCal(Date date) {
@@ -108,27 +65,31 @@ public class ReJoinDelay {
 		}
 	}
 
-	public static boolean isRunning(Player pl) {
-		if (playerTimes.containsKey(pl)) {
-			Date date = new Date();
-			if (date.before(getTimeByPlayer(pl))) {
-				return true;
-			}
+	public static boolean isValid(Player pl) {
+		return isValid(pl, getTimeByPlayer(pl));
+	}
+
+	public static boolean isValid(Player pl, Long time) {
+		if (playerTimes.containsKey(pl) && time > System.currentTimeMillis()) {
+			return true;
 		}
 
 		return false;
 	}
 
-	public static Date getTimeByPlayer(Player p) {
+	public static Long getTimeByPlayer(Player p) {
 		if (playerTimes.containsKey(p)) {
-			for (Entry<String, Date> m : playerTimes.get(p).entrySet()) {
-				return m.getValue();
+			for (Map.Entry<Player, Long> m : playerTimes.entrySet()) {
+				if (m.getKey().equals(p)) {
+					return m.getValue();
+				}
 			}
 		}
+
 		return null;
 	}
 
-	public static Map<Player, Map<String, Date>> getPlayerTimes() {
+	public static Map<Player, Long> getPlayerTimes() {
 		return java.util.Collections.unmodifiableMap(playerTimes);
 	}
 }

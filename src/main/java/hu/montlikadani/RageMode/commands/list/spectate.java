@@ -36,7 +36,7 @@ public class spectate {
 			return false;
 		}
 
-		if (!GameUtils.getGameByName(map).isGameRunning(map)) {
+		if (!GameUtils.getGame(map).isGameRunning(map)) {
 			sendMessage(p, RageMode.getLang().get("game.not-running"));
 			return false;
 		}
@@ -46,8 +46,8 @@ public class spectate {
 			return false;
 		}
 
-		if (GameUtils.getGameByName(map).addSpectatorPlayer(p, map)) {
-			GameUtils.getGameSpawnByName(map).randomSpawn(p);
+		if (GameUtils.getGame(map).addSpectatorPlayer(p, map)) {
+			GameUtils.getGameSpawn(map).randomSpawn(p);
 
 			p.setAllowFlight(true);
 			p.setFlying(true);

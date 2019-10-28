@@ -20,7 +20,7 @@ public class BungeeListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onJoin(PlayerJoinEvent event) {
-		GameUtils.joinPlayer(event.getPlayer(), GameUtils.getGameByName(game));
+		GameUtils.joinPlayer(event.getPlayer(), GameUtils.getGame(game));
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)

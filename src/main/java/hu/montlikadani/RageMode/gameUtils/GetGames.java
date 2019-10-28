@@ -56,7 +56,7 @@ public class GetGames {
 	 * @return actionbar boolean
 	 */
 	public static boolean isActionbarEnabled(String game) {
-		return fi.getBoolean("arenas." + game + ".actionbar");
+		return fi.getBoolean("arenas." + game + ".actionbar", false);
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class GetGames {
 	 * @return bossbar boolean
 	 */
 	public static boolean isBossbarEnabled(String game) {
-		return fi.getBoolean("arenas." + game + ".bossbar");
+		return fi.getBoolean("arenas." + game + ".bossbar", false);
 	}
 
 	/**

@@ -7,7 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
@@ -22,7 +21,7 @@ import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 public class removespawn {
 
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (sender instanceof Player && !hasPerm(sender, "ragemode.admin.removespawn")) {
+		if (!hasPerm(sender, "ragemode.admin.removespawn")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}

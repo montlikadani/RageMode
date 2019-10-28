@@ -1,8 +1,6 @@
 package hu.montlikadani.ragemode.database;
 
-public interface DBInterfaces {
-
-	public boolean hasConnection();
+public interface DBMethods {
 
 	public boolean isTable(String name);
 

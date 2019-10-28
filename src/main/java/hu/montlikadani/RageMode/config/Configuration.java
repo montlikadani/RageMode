@@ -48,20 +48,15 @@ public class Configuration {
 	}
 
 	public void loadConfig() {
-		String msg = "";
-
 		loadFiles();
 
 		try {
 			if (config_file.exists()) {
 				config = YamlConfiguration.loadConfiguration(config_file);
 			} else {
-				plugin.saveResource("config.yml", false);
-				config = YamlConfiguration.loadConfiguration(config_file);
-				msg += "'config.yml' file created!";
+				config = createFile(config_file, "config.yml", false);
 			}
 
-			// TODO: Do we optimize this to do not call a new class every time if we reloads.
 			cv.loadValues(new FileConfig(config));
 
 			if (!config.isSet("config-version") || !config.get("config-version").equals(configVersion)) {
@@ -74,9 +69,7 @@ public class Configuration {
 				loadFile(arenas, arenas_file);
 				saveFile(arenas, arenas_file);
 			} else {
-				arenas_file.createNewFile();
-				arenas = YamlConfiguration.loadConfiguration(arenas_file);
-				msg += "'arenas.yml' file created!";
+				arenas = createFile(arenas_file, "arenas.yml", true);
 			}
 
 			if (cv.isRewardEnabled()) {
@@ -85,9 +78,7 @@ public class Configuration {
 					loadFile(rewards, rewards_file);
 					rewards.load(rewards_file);
 				} else {
-					plugin.saveResource("rewards.yml", false);
-					rewards = YamlConfiguration.loadConfiguration(rewards_file);
-					msg += "'rewards.yml' file created!";
+					rewards = createFile(rewards_file, "rewards.yml", false);
 				}
 			}
 
@@ -97,19 +88,27 @@ public class Configuration {
 					loadFile(datas, datas_file);
 					saveFile(datas, datas_file);
 				} else {
-					datas_file.createNewFile();
-					datas = YamlConfiguration.loadConfiguration(datas_file);
-					msg += "'datas.yml' file created!";
+					datas = createFile(datas_file, "datas.yml", true);
 				}
-			}
-
-			if (!msg.isEmpty()) {
-				Debug.logConsole(msg);
 			}
 		} catch (IOException | InvalidConfigurationException e) {
 			e.printStackTrace();
 			Debug.throwMsg();
 		}
+	}
+
+	FileConfiguration createFile(File file, String name, boolean newFile) {
+		if (newFile) {
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			plugin.saveResource(name, false);
+		}
+		plugin.getLogger().log(java.util.logging.Level.INFO, "The '" + name + "' file successfully created!");
+		return YamlConfiguration.loadConfiguration(file);
 	}
 
 	public ConfigValues getCV() {

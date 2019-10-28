@@ -40,24 +40,24 @@ public class forcestart {
 			return false;
 		}
 
-		if (GameUtils.getGameByName(game).isGameRunning(game)) {
+		if (GameUtils.getGame(game).isGameRunning(game)) {
 			sendMessage(p, RageMode.getLang().get("game.running"));
 			return false;
 		}
 
-		if (GameUtils.getGameByName(game).getPlayers().size() < 2) {
+		if (GameUtils.getGame(game).getPlayers().size() < 2) {
 			sendMessage(p, RageMode.getLang().get("commands.forcestart.not-enough-players"));
 			return false;
 		}
 
-		if (GameUtils.getGameByName(game).getLobbyTimer() != null) {
-			GameUtils.getGameByName(game).getLobbyTimer().cancel();
+		if (GameUtils.getGame(game).getLobbyTimer() != null) {
+			GameUtils.getGame(game).getLobbyTimer().cancel();
 			p.setLevel(0); // Set level counter back to 0
 		}
 
 		sendMessage(p, RageMode.getLang().get("commands.forcestart.game-start", "%game%", game));
 		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-				() -> new GameLoader(GameUtils.getGameByName(game)));
+				() -> new GameLoader(GameUtils.getGame(game)));
 		return false;
 	}
 }

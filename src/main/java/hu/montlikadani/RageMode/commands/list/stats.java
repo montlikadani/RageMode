@@ -15,7 +15,7 @@ import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 public class stats {
 
 	public boolean run(CommandSender sender, String[] args) {
-		if (sender instanceof Player && !hasPerm(sender, "ragemode.stats")) {
+		if (!hasPerm(sender, "ragemode.stats")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}

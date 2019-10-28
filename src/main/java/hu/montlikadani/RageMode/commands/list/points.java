@@ -24,7 +24,7 @@ public class points {
 	}
 
 	public boolean run(CommandSender sender, String[] args) {
-		if (sender instanceof Player && !hasPerm(sender, "ragemode.admin.points")) {
+		if (!hasPerm(sender, "ragemode.admin.points")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}

@@ -18,7 +18,6 @@ import org.bukkit.metadata.FixedMetadataValue;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.GameJoinAttemptEvent;
-import hu.montlikadani.ragemode.API.event.GameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorJoinToGameEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorLeaveFromGameEvent;
 import hu.montlikadani.ragemode.config.Configuration;
@@ -128,7 +127,7 @@ public class Game {
 
 			Utils.clearPlayerInventory(playerToKick);
 
-			getPlayerManagerByPlayer(player).addBackTools();
+			getPlayerManager(player).addBackTools();
 
 			playerToKick.sendMessage(RageMode.getLang().get("game.player-kicked-for-vip"));
 			final Player pl = playerToKick;
@@ -202,7 +201,7 @@ public class Game {
 			}
 
 			SpectatorLeaveFromGameEvent spec = new SpectatorLeaveFromGameEvent(
-					GameUtils.getGameByName(specPlayer.get(player.getUniqueId())), player);
+					GameUtils.getGame(specPlayer.get(player.getUniqueId())), player);
 			Utils.callEvent(spec);
 
 			specPlayer.remove(player.getUniqueId());
@@ -222,13 +221,8 @@ public class Game {
 			return false;
 		}
 
-		GameLeaveAttemptEvent gameLeaveEvent = new GameLeaveAttemptEvent(this, player);
-		Utils.callEvent(gameLeaveEvent);
-		if (gameLeaveEvent.isCancelled())
-			return false;
-
 		Utils.clearPlayerInventory(player);
-		getPlayerManagerByPlayer(player).addBackTools();
+		getPlayerManager(player).addBackTools();
 
 		removePlayerSynced(player);
 		removePlayerFromList(player);
@@ -464,7 +458,7 @@ public class Game {
 	 * @param game Game
 	 * @return Player if the player is in spectator
 	 */
-	public Player getSpectatorPlayerInGame(String game) {
+	public Player getSpectatorPlayer(String game) {
 		Validate.notNull(game, "Game name can't be null!");
 		Validate.notEmpty(game, "Game name can't be empty!");
 
@@ -504,7 +498,7 @@ public class Game {
 	 * @param name Player name
 	 * @return Player
 	 */
-	public Player getPlayerByName(String name) {
+	public Player getPlayer(String name) {
 		Validate.notNull(name, "Name can't be null!");
 		Validate.notEmpty(name, "Name can't be empty!");
 
@@ -526,8 +520,10 @@ public class Game {
 	public List<Player> getPlayersInList() {
 		List<Player> list = new ArrayList<>();
 
-		for (Entry<Player, PlayerManager> players : players.entrySet()) {
-			list.add(players.getKey());
+		if (players != null) {
+			for (Entry<Player, PlayerManager> players : players.entrySet()) {
+				list.add(players.getKey());
+			}
 		}
 
 		return list;
@@ -540,8 +536,10 @@ public class Game {
 	public List<PlayerManager> getPlayersFromList() {
 		List<PlayerManager> list = new ArrayList<>();
 
-		for (Entry<Player, PlayerManager> players : players.entrySet()) {
-			list.add(players.getValue());
+		if (players != null) {
+			for (Entry<Player, PlayerManager> players : players.entrySet()) {
+				list.add(players.getValue());
+			}
 		}
 
 		return list;
@@ -552,7 +550,7 @@ public class Game {
 	 * @param p Player
 	 * @return {@link #PlayerManager} by player
 	 */
-	public PlayerManager getPlayerManagerByPlayer(Player p) {
+	public PlayerManager getPlayerManager(Player p) {
 		Validate.notNull(p, "Player can't be null!");
 
 		if (players != null) {
@@ -575,7 +573,7 @@ public class Game {
 	 * for this class. This prevents that bug when the player re-join to the
 	 * game, then lobby timer does not start.
 	 */
-	public void removeLobbyTimer() {
+	public void cancelLobbyTimer() {
 		if (lobbyTimer != null) {
 			lobbyTimer.cancel();
 			lobbyTimer = null;

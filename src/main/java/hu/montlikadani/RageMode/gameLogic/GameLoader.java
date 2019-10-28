@@ -27,7 +27,7 @@ public class GameLoader {
 	public GameLoader(Game game) {
 		this.game = game;
 
-		game.removeLobbyTimer();
+		game.cancelLobbyTimer();
 
 		if (!checkTeleport()) {
 			return; // stop starting the game if the game not set up correctly
@@ -65,7 +65,7 @@ public class GameLoader {
 				if (Version.isCurrentEqualOrHigher(Version.v1_9_R1)) {
 					String bossMessage = conf.getCV().getBossbarMsg();
 
-					if (!bossMessage.equals("")) {
+					if (!bossMessage.isEmpty()) {
 						bossMessage = bossMessage.replace("%game%", name);
 						bossMessage = bossMessage.replace("%player%", p.getName());
 						bossMessage = Utils.colors(bossMessage);
@@ -83,7 +83,7 @@ public class GameLoader {
 	}
 
 	private boolean checkTeleport() {
-		GameSpawnGetter gameSpawnGetter = GameUtils.getGameSpawnByGame(game);
+		GameSpawnGetter gameSpawnGetter = GameUtils.getGameSpawn(game);
 		if (gameSpawnGetter.isGameReady()) {
 			GameUtils.teleportPlayersToGameSpawns(gameSpawnGetter);
 			return true;

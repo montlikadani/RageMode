@@ -12,7 +12,7 @@ import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 public class listgames {
 
 	public boolean run(CommandSender sender) {
-		if (sender instanceof org.bukkit.entity.Player && !hasPerm(sender, "ragemode.listgames")) {
+		if (!hasPerm(sender, "ragemode.listgames")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}
@@ -26,7 +26,7 @@ public class listgames {
 				sendMessage(sender, RageMode.getLang().get("commands.listgames.listing-games", "%games%", imax));
 
 				while (i < imax) {
-					if (GameUtils.getGameByName(games[i]).isGameRunning(games[i]))
+					if (GameUtils.getGame(games[i]).isGameRunning(games[i]))
 						sendMessage(sender, RageMode.getLang().get("commands.listgames.game-running", "%number%", i + 1, "%game%", games[i]));
 					else
 						sendMessage(sender, RageMode.getLang().get("commands.listgames.game-stopped", "%number%", i + 1, "%game%", games[i]));

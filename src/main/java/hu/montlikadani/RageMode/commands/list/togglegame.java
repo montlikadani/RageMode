@@ -31,13 +31,13 @@ public class togglegame {
 		}
 
 		boolean toggle = true;
-		if (!GameUtils.getGameByName(game).isGameRunning(game)) {
+		if (!GameUtils.getGame(game).isGameRunning(game)) {
 			if (GameUtils.getStatus(game) == GameStatus.NOTREADY) {
 				GameUtils.setStatus(game, GameStatus.READY);
 				toggle = false;
 			} else {
 				GameUtils.setStatus(game, GameStatus.NOTREADY);
-				GameUtils.getGameByName(game).setGameNotRunning(game);
+				GameUtils.getGame(game).setGameNotRunning(game);
 			}
 
 			plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".lock", toggle);

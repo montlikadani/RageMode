@@ -37,12 +37,12 @@ public class removegame {
 				return false;
 			}
 
-			if (GameUtils.getGameByName(game).isGameRunning(game)) {
+			if (GameUtils.getGame(game).isGameRunning(game)) {
 				sendMessage(p, RageMode.getLang().get("game.running"));
 				return false;
 			}
 
-			RMGameDeleteEvent event = new RMGameDeleteEvent(GameUtils.getGameByName(game));
+			RMGameDeleteEvent event = new RMGameDeleteEvent(GameUtils.getGame(game));
 			Bukkit.getPluginManager().callEvent(event);
 
 			for (Iterator<GameSpawnGetter> it = plugin.getSpawns().iterator(); it.hasNext();) {

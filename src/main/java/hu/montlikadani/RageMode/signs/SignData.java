@@ -163,7 +163,7 @@ public class SignData {
 
 		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
 			if (GameUtils.getStatus(game) == GameStatus.WAITING) {
-				if (GameUtils.getGameByName(game).getPlayers().size() == GetGames.getMaxPlayers(game)) {
+				if (GameUtils.getGame(game).getPlayers().size() == GetGames.getMaxPlayers(game)) {
 					if (type.equals("wool"))
 						updateBackground(Material.BLUE_WOOL);
 					else if (type.equals("glass"))
@@ -180,7 +180,7 @@ public class SignData {
 				}
 			}
 
-			if (GameUtils.getGameByName(game).isGameRunning(game)) {
+			if (GameUtils.getGame(game).isGameRunning(game)) {
 				if (type.equals("wool"))
 					updateBackground(Material.LIME_WOOL);
 				else if (type.equals("glass"))
@@ -197,7 +197,7 @@ public class SignData {
 			}
 		} else {
 			if (GameUtils.getStatus(game) == GameStatus.WAITING) {
-				if (GameUtils.getGameByName(game).getPlayers().size() == GetGames.getMaxPlayers(game)) {
+				if (GameUtils.getGame(game).getPlayers().size() == GetGames.getMaxPlayers(game)) {
 					if (type.equals("wool"))
 						updateBackground(Material.getMaterial("WOOL"), 11);
 					else if (type.equals("glass"))
@@ -214,7 +214,7 @@ public class SignData {
 				}
 			}
 
-			if (GameUtils.getStatus(game) == GameStatus.RUNNING && GameUtils.getGameByName(game).isGameRunning(game)) {
+			if (GameUtils.getStatus(game) == GameStatus.RUNNING && GameUtils.getGame(game).isGameRunning(game)) {
 				if (type.equals("wool"))
 					updateBackground(Material.getMaterial("WOOL"), 5);
 				else if (type.equals("glass"))

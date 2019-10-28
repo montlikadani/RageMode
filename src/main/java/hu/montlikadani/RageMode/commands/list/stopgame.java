@@ -21,14 +21,14 @@ import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 public class stopgame {
 
 	public boolean run(CommandSender sender, String[] args) {
-		if (sender instanceof Player && !hasPerm(sender, "ragemode.admin.stopgame")) {
+		if (!hasPerm(sender, "ragemode.admin.stopgame")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}
 
 		if (args.length >= 2) {
 			String game = args[1];
-			Game g = GameUtils.getGameByName(game);
+			Game g = GameUtils.getGame(game);
 
 			if (g.isGameRunning(game)) {
 				RageScores.calculateWinner(game, g.getPlayersFromList());

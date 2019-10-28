@@ -15,7 +15,7 @@ import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 public class kick {
 
 	public boolean run(CommandSender sender, String[] args) {
-		if (sender instanceof Player && !hasPerm(sender, "ragemode.admin.kick")) {
+		if (!hasPerm(sender, "ragemode.admin.kick")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}
@@ -36,7 +36,7 @@ public class kick {
 			return false;
 		}
 
-		if (!GameUtils.getGameByName(name).isGameRunning(name)) {
+		if (!GameUtils.getGame(name).isGameRunning(name)) {
 			sendMessage(sender, RageMode.getLang().get("game.not-running"));
 			return false;
 		}

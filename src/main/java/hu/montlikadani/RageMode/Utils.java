@@ -22,23 +22,23 @@ import hu.montlikadani.ragemode.scores.PlayerPoints;
 public class Utils {
 
 	/**
-	 * Time formatting
-	 * @param time Interval
-	 * @return if minute/hour/second less than 10 and writes 0
+	 * Formats the given time 
+	 * @param time the time in decimal
+	 * @return formatted time
 	 */
-	public static String getFormattedTime(int time) {
+	public static String getFormattedTime(long time) {
 		String sMark = RageMode.getLang().get("time-formats.second");
 		String mMark = RageMode.getLang().get("time-formats.minute");
 		if (time < 60)
 			return time + sMark;
 
-		int mins = time / 60;
-		int remainderSecs = time - (mins * 60);
+		long mins = time / 60;
+		long remainderSecs = time - (mins * 60);
 		if (mins < 60)
 			return (mins < 10 ? "0" : "") + mins + mMark + " " + (remainderSecs < 10 ? "0" : "") + remainderSecs + sMark;
 
-		int hours = mins / 60;
-		int remainderMins = mins - (hours * 60);
+		long hours = mins / 60;
+		long remainderMins = mins - (hours * 60);
 		return (hours < 10 ? "0" : "") + hours + RageMode.getLang().get("time-formats.hour") + " " +
 				(remainderMins < 10 ? "0" : "") + remainderMins + mMark + " "
 				+ (remainderSecs < 10 ? "0" : "") + remainderSecs + sMark;
@@ -47,7 +47,7 @@ public class Utils {
 	/**
 	 * 1.13 fix for default colors not shows in tablist.
 	 * @param prefix Prefix
-	 * @return ChatColor char to show the specified color
+	 * @return ChatColor char to show the given color
 	 */
 	public static ChatColor fromPrefix(String prefix) {
 		char colour = 0;
@@ -78,7 +78,7 @@ public class Utils {
 	}
 
 	/**
-	 * Clear the specified player inventory.
+	 * Clears the given player inventory.
 	 * @param pl Player
 	 */
 	public static void clearPlayerInventory(Player pl) {
@@ -98,10 +98,11 @@ public class Utils {
 
 	/**
 	 * Sets the available placeholders to that string, that manages from RageMode
+	 * <p>If the <code>fromDatabase</code> false, will gets the statistic from class instance.
 	 * @param s String to replace the variables
 	 * @param player Player
-	 * @param fromDatabase true - get stats from database, false - from class instance
-	 * @return String
+	 * @param fromDatabase gets the stats from database
+	 * @return The replaced placeholders
 	 */
 	public static String setPlaceholders(String s, Player player, boolean fromDatabase) {
 		PlayerPoints pp = null;
@@ -189,7 +190,7 @@ public class Utils {
 	}
 
 	/**
-	 * Gets all classes in the specified package.
+	 * Gets all classes in the given package name.
 	 * @param packageName where to find the classes
 	 * @return All classes in list
 	 */
@@ -216,10 +217,10 @@ public class Utils {
 	}
 
 	/**
-	 * Sends the packet to the specified player
+	 * Sends the packet to the given player
 	 * @param player Player
 	 * @param packet Packet name
-	 * @throws Exception if class/method not found
+	 * @throws Exception if something wrong
 	 */
 	public static void sendPacket(Player player, Object packet) throws Exception {
 		Object handle = player.getClass().getMethod("getHandle", new Class[0]).invoke(player, new Object[0]);
@@ -231,7 +232,7 @@ public class Utils {
 	/**
 	 * Gets the NMS class with packet name
 	 * @param name Packet class
-	 * @throws ClassNotFoundException if class not found
+	 * @throws ClassNotFoundException if the given class name not found
 	 * @return Returns class name from the current version
 	 */
 	public static Class<?> getNMSClass(String name) throws ClassNotFoundException {
@@ -240,12 +241,19 @@ public class Utils {
 
 	/**
 	 * Invoke the IChatBaseComponent
-	 * @param name String
-	 * @return JSON
-	 * @throws Exception if class/method not found
+	 * @param name Text to be invoke
+	 * @return A json format
+	 * @throws Exception if something wrong
 	 */
 	public static Object getAsIChatBaseComponent(String name) throws Exception {
 		Class<?> iChatBaseComponent = getNMSClass("IChatBaseComponent");
+		if (getClassVersion().equals("v1_8_R1") || getClassVersion().equals("v1_8_R2")) {
+			Class<?> chatSerializer = getNMSClass("ChatSerializer");
+			Method m = chatSerializer.getMethod("a", String.class);
+			Object t = iChatBaseComponent.cast(m.invoke(chatSerializer, "{\"text\":\"" + name + "\"}"));
+			return t;
+		}
+
 		Class<?> declaredClass = iChatBaseComponent.getDeclaredClasses()[0];
 		Method m = declaredClass.getMethod("a", String.class);
 		return m.invoke(iChatBaseComponent, "{\"text\":\"" + name + "\"}");

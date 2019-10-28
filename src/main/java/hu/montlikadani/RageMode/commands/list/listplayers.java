@@ -18,7 +18,7 @@ import static hu.montlikadani.ragemode.utils.Message.sendMessage;
 public class listplayers {
 
 	public boolean run(CommandSender sender, String[] args) {
-		if (sender instanceof Player && !hasPerm(sender, "ragemode.listplayers")) {
+		if (!hasPerm(sender, "ragemode.listplayers")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}
@@ -58,7 +58,7 @@ public class listplayers {
 			}
 
 			StringBuilder sb = new StringBuilder();
-			for (PlayerManager pm : GameUtils.getGameByName(game).getPlayersFromList()) {
+			for (PlayerManager pm : GameUtils.getGame(game).getPlayersFromList()) {
 				Player player = pm.getPlayer();
 
 				for (Iterator<String> e = Arrays.asList(GameUtils.getGameByPlayer(player).getPlayersGame(player))

@@ -84,7 +84,7 @@ public class HoloHolder {
 		final Player dataPlayer = player;
 		final Hologram dataHologram = hologram;
 
-		switch (RageMode.getInstance().getConfiguration().getCV().getStatistics()) {
+		switch (RageMode.getInstance().getConfiguration().getCV().getDatabaseType()) {
 		case "mysql":
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final PlayerPoints rpp;

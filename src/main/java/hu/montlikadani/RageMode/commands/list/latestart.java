@@ -52,7 +52,7 @@ public class latestart {
 			return false;
 		}
 
-		GameUtils.getGameByName(GameUtils.getGameByPlayer(p).getPlayersGame(p)).getLobbyTimer().addLobbyTime(newTime);
+		GameUtils.getGame(GameUtils.getGameByPlayer(p).getPlayersGame(p)).getLobbyTimer().addLobbyTime(newTime);
 		sendMessage(sender, RageMode.getLang().get("commands.latestart.lobby-timer-increased", "%newtime%", newTime));
 		return false;
 	}

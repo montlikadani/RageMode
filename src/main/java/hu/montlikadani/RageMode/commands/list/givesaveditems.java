@@ -25,7 +25,7 @@ public class givesaveditems {
 			return false;
 		}
 
-		if (sender instanceof Player && !hasPerm(sender, "ragemode.admin.givesaveditems")) {
+		if (!hasPerm(sender, "ragemode.admin.givesaveditems")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}

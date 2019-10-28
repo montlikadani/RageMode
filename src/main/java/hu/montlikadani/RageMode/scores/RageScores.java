@@ -286,7 +286,7 @@ public class RageScores {
 			Bukkit.getPlayer(UUID.fromString(resultPlayer)).sendMessage(RageMode.getLang().get("game.message.player-won",
 					"%player%", winner.getName(), "%game%", game));
 
-		PlayerWinEvent event = new PlayerWinEvent(GameUtils.getGameByName(game), winner);
+		PlayerWinEvent event = new PlayerWinEvent(GameUtils.getGame(game), winner);
 		Utils.callEvent(event);
 		return highest;
 	}

@@ -64,4 +64,16 @@ public class FileConfig {
 	public boolean get(String path, boolean def) {
 		return c.getBoolean(path, def);
 	}
+
+	public String getOriginal(String path) {
+		return c.getString(path);
+	}
+
+	public int getOriginalInt(String path) {
+		return c.getInt(path);
+	}
+
+	public boolean getOriginalBoo(String path) {
+		return c.getBoolean(path);
+	}
 }

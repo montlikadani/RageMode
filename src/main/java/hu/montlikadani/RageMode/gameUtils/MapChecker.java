@@ -54,7 +54,7 @@ public class MapChecker {
 			isValid = false;
 		} else {
 			if (RageMode.getInstance().getConfiguration().getArenasCfg().contains(path + ".world") &&
-					!GetGames.getWorld(gameName).equals("")) {
+					!GetGames.getWorld(gameName).isEmpty()) {
 				maxPlayers = GetGames.getMaxPlayers(gameName);
 				if (maxPlayers != -32500000)
 					isValid = true;
@@ -80,7 +80,7 @@ public class MapChecker {
 			if (aFile.isSet(thisPath + ".x") && aFile.isSet(thisPath + ".y")
 					&& aFile.isSet(thisPath + ".z")
 					&& aFile.isSet(thisPath + ".yaw") && aFile.isSet(thisPath + ".pitch")) {
-				if (aFile.contains(thisPath + ".world") && !GetGames.getWorld(gameName).equals("")) {
+				if (aFile.contains(thisPath + ".world") && !GetGames.getWorld(gameName).isEmpty()) {
 					if (Utils.isDouble(aFile.getString(thisPath + ".x")) && Utils.isDouble(aFile.getString(thisPath + ".y"))
 							&& Utils.isDouble(aFile.getString(thisPath + ".z"))
 							&& Utils.isDouble(aFile.getString(thisPath + ".yaw"))
@@ -112,7 +112,7 @@ public class MapChecker {
 					World world = null;
 					try {
 						world = org.bukkit.Bukkit.getWorld(aFile.getString(path + "." + s + ".world"));
-					} catch (Throwable e) {
+					} catch (Exception e) {
 						isValid = false;
 						world = null;
 					}

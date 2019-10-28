@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.gameLogic.Reward;
+package hu.montlikadani.ragemode.managers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +26,12 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-public class Reward {
+public class RewardManager {
 
 	private String game;
 	private FileConfiguration conf;
 
-	public Reward(String game) {
+	public RewardManager(String game) {
 		this.game = game;
 
 		conf = RageMode.getInstance().getConfiguration().getRewardsCfg();
@@ -43,7 +43,7 @@ public class Reward {
 		double cash = conf.getDouble("rewards.end-game.winner.cash");
 		ConfigurationSection item = conf.getConfigurationSection("rewards.end-game.winner.items");
 
-		if (cmds != null && !cmds.isEmpty()) {
+		if (cmds != null) {
 			for (String path : cmds) {
 				String[] arg = path.split(": ");
 				String cmd = arg[1];
@@ -56,10 +56,9 @@ public class Reward {
 			}
 		}
 
-		if (msgs != null && !msgs.isEmpty()) {
+		if (msgs != null) {
 			for (String path : msgs) {
 				path = replacePlaceholders(path, winner, true);
-
 				winner.sendMessage(path);
 			}
 		}
@@ -80,7 +79,7 @@ public class Reward {
 		double cash = conf.getDouble("rewards.end-game.players.cash", 0D);
 		ConfigurationSection item = conf.getConfigurationSection("rewards.end-game.players.items");
 
-		if (cmds != null && !cmds.isEmpty()) {
+		if (cmds != null) {
 			for (String path : cmds) {
 				String[] arg = path.split(": ");
 				String cmd = arg[1];
@@ -110,7 +109,7 @@ public class Reward {
 
 		path = path.replace("%game%", game);
 		path = path.replace("%player%", p.getName());
-		path = path.replace("%online-ingame-players%", Integer.toString(GameUtils.getGameByName(game).getPlayers().size()));
+		path = path.replace("%online-ingame-players%", Integer.toString(GameUtils.getGame(game).getPlayers().size()));
 		path = path.replace("%reward%", cash > 0D ? Double.toString(cash) : "");
 		path = Utils.setPlaceholders(path, p);
 		return Utils.colors(path);
@@ -144,7 +143,7 @@ public class Reward {
 					if (conf.getBoolean("rewards.end-game." + path + ".items." + num + ".meta")) {
 						ItemMeta itemMeta = itemStack.getItemMeta();
 						String name = conf.getString("rewards.end-game." + path + ".items." + num + ".name", "");
-						if (!name.equals(""))
+						if (!name.isEmpty())
 							itemMeta.setDisplayName(name.replaceAll("&", "\u00a7"));
 
 						List<String> loreList = conf.getStringList("rewards.end-game." + path + ".items." + num + ".lore");
@@ -153,7 +152,7 @@ public class Reward {
 
 						if (type.startsWith("LEATHER_")) {
 							String color = conf.getString("rewards.end-game." + path + ".items." + num + ".color", "");
-							if (!color.equals("")) {
+							if (!color.isEmpty()) {
 								if (itemMeta instanceof LeatherArmorMeta)
 									((LeatherArmorMeta) itemMeta).setColor(Utils.getColorFromString(color));
 							}
@@ -161,7 +160,7 @@ public class Reward {
 
 						String bannerColor = conf.getString("rewards.end-game." + path + ".items." + num + ".banner.color", "");
 						String bannerType = conf.getString("rewards.end-game." + path + ".items." + num + ".banner.type", "");
-						if (!bannerColor.equals("") && !bannerType.equals("")) {
+						if (!bannerColor.isEmpty() && !bannerType.isEmpty()) {
 							if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
 								if (mat.equals(Material.valueOf("BANNER"))) {
 									if (itemMeta instanceof BannerMeta) {
@@ -186,7 +185,7 @@ public class Reward {
 						itemStack.setItemMeta(itemMeta);
 
 						List<String> enchantList = conf.getStringList("rewards.end-game." + path + ".items." + num + ".enchants");
-						if (enchantList != null && !enchantList.isEmpty()) {
+						if (enchantList != null) {
 							for (String enchant : enchantList) {
 								String[] split = enchant.split(":");
 								try {

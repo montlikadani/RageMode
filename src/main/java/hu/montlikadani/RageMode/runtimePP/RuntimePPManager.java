@@ -39,7 +39,7 @@ public class RuntimePPManager {
 	 * @return {@link PlayerPoints}
 	 */
 	public static PlayerPoints getPPFromDatabase(String uuid) {
-		switch (RageMode.getInstance().getConfiguration().getCV().getStatistics()) {
+		switch (RageMode.getInstance().getConfiguration().getCV().getDatabaseType()) {
 		case "sql":
 		case "sqlite":
 			return SQLStats.getPlayerStatsFromData(uuid);
@@ -65,6 +65,10 @@ public class RuntimePPManager {
 			}
 		}
 		return pp;
+	}
+
+	public static List<PlayerPoints> getRuntimePPList() {
+		return RuntimePPList;
 	}
 
 	public synchronized static void updatePlayerEntry(PlayerPoints pp) {

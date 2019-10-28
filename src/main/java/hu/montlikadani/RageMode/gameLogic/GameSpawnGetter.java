@@ -2,7 +2,7 @@ package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -48,15 +48,13 @@ public class GameSpawnGetter {
 	}
 
 	/**
-	 * Teleports the specified player to a random location in game.
-	 * This will not execute if spawns are not set correctly.
+	 * Teleports the given player to a random spawn location in game.
+	 * This will returns if spawns are not set correctly.
 	 * @param player Player
 	 */
 	public void randomSpawn(Player player) {
 		if (spawnLocations.size() > 0) {
-			Random rand = new Random();
-			int x = rand.nextInt(spawnLocations.size());
-
+			int x = ThreadLocalRandom.current().nextInt(spawnLocations.size());
 			player.teleport(spawnLocations.get(x));
 		}
 	}

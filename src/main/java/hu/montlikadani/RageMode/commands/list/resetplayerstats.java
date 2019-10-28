@@ -78,7 +78,7 @@ public class resetplayerstats {
 	}
 
 	private boolean reset(String uuid) {
-		String type = RageMode.getInstance().getConfiguration().getCV().getStatistics();
+		String type = RageMode.getInstance().getConfiguration().getCV().getDatabaseType();
 		switch (type) {
 		case "mysql":
 			MySQLStats.resetPlayerStatistic(uuid);

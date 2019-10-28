@@ -82,7 +82,7 @@ public class SQLStats {
 		}
 
 		if (totalPlayers > 0)
-			Debug.logConsole("Loaded " + totalPlayers + " player" + (totalPlayers > 1 ? "s" : "") + " database.");
+			Debug.logConsole("Loaded " + totalPlayers + " player" + (totalPlayers > 1 ? "s" : "") + " stats database.");
 	}
 
 	/**
@@ -189,12 +189,6 @@ public class SQLStats {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
-		try {
-			conn.close();
-		} catch (SQLException e2) {
-			e2.printStackTrace();
-		}
 	}
 
 	/**
@@ -227,7 +221,7 @@ public class SQLStats {
 
 		RMConnection conn = connect.getConnection();
 		Statement statement = null;
-		String query = "SELECT * FROM " + connect.getPrefix() + "stats_players";
+		String query = "SELECT * FROM " + connect.getPrefix() + "stats_players;";
 		try {
 			statement = conn.createStatement();
 			ResultSet rs = conn.executeQuery(statement, query);
@@ -247,12 +241,6 @@ public class SQLStats {
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
-			}
-
-			try {
-				conn.close();
-			} catch (SQLException e2) {
-				e2.printStackTrace();
 			}
 		}
 
@@ -353,12 +341,6 @@ public class SQLStats {
 					e.printStackTrace();
 				}
 			}
-
-			try {
-				conn.close();
-			} catch (SQLException e2) {
-				e2.printStackTrace();
-			}
 		}
 
 		return pp;
@@ -370,76 +352,43 @@ public class SQLStats {
 	 * @return true if the player found in database
 	 */
 	public static boolean resetPlayerStatistic(String uuid) {
-		if (!RageMode.getSQL().isConnected())
-			return false;
-
 		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
 		if (rpp == null)
 			return false;
 
+		rpp.setAxeKills(0);
+		rpp.setDirectArrowKills(0);
+		rpp.setExplosionKills(0);
+		rpp.setKnifeKills(0);
+
+		rpp.setDeaths(0);
+		rpp.setAxeDeaths(0);
+		rpp.setDirectArrowDeaths(0);
+		rpp.setExplosionDeaths(0);
+		rpp.setKnifeDeaths(0);
+
+		rpp.setWins(0);
+		rpp.setPoints(0);
+		rpp.setGames(0);
+		rpp.setKD(0d);
+
 		RMConnection conn = RageMode.getSQL().getConnection();
-
-		Statement statement = null;
-		String query = "SELECT * FROM " + RageMode.getSQL().getPrefix() + "stats_players;";
-
-		try {
-			statement = conn.createStatement();
-			ResultSet rs = conn.executeQuery(statement, query);
-			while (rs.next()) {
-				rpp.setKills(0);
-				rpp.setAxeKills(0);
-				rpp.setDirectArrowKills(0);
-				rpp.setExplosionKills(0);
-				rpp.setKnifeKills(0);
-
-				rpp.setDeaths(0);
-				rpp.setAxeDeaths(0);
-				rpp.setDirectArrowDeaths(0);
-				rpp.setExplosionDeaths(0);
-				rpp.setKnifeDeaths(0);
-
-				rpp.setWins(0);
-				rpp.setPoints(0);
-				rpp.setGames(0);
-				rpp.setKD(0d);
-			}
-			rs.close();
-		} catch (SQLException e) {
-			try {
-				conn.close();
-			} catch (SQLException e2) {
-				e2.printStackTrace();
-			}
+		if (!conn.isConnected()) {
 			return false;
-		} finally {
-			if (statement != null) {
-				try {
-					statement.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
 		}
 
-		query = "REPLACE INTO " + RageMode.getSQL().getPrefix() + "stats_players (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills, knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths, knife_deaths, wins, score, games, kd) VALUES ("
+		String query = "REPLACE INTO " + RageMode.getSQL().getPrefix()
+				+ "stats_players (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills, knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths, knife_deaths, wins, score, games, kd) VALUES ("
 				+ "'" + Bukkit.getPlayer(UUID.fromString(rpp.getPlayerUUID())).getName() + "', " + "'"
-				+ rpp.getPlayerUUID() + "', " + Integer.toString(0) + ", "
-				+ Integer.toString(0) + ", " + Integer.toString(0) + ", "
-				+ Integer.toString(0) + ", " + Integer.toString(0) + ", "
-				+ Integer.toString(0) + ", " + Integer.toString(0) + ", "
-				+ Integer.toString(0) + ", " + Integer.toString(0) + ", "
-				+ Integer.toString(0) + ", " + Integer.toString(0) + ", "
+				+ rpp.getPlayerUUID() + "', " + Integer.toString(0) + ", " + Integer.toString(0) + ", "
+				+ Integer.toString(0) + ", " + Integer.toString(0) + ", " + Integer.toString(0) + ", "
+				+ Integer.toString(0) + ", " + Integer.toString(0) + ", " + Integer.toString(0) + ", "
+				+ Integer.toString(0) + ", " + Integer.toString(0) + ", " + Integer.toString(0) + ", "
 				+ Integer.toString(0) + ", " + Integer.toString(0) + ", " + Double.toString(0d) + ");";
 		try {
 			conn.executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}
-
-		try {
-			conn.close();
-		} catch (SQLException e2) {
-			e2.printStackTrace();
 		}
 		return true;
 	}

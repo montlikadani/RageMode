@@ -57,6 +57,7 @@ import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.API.event.GameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerKilledEvent;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameLoader;
@@ -153,7 +154,7 @@ public class EventListener implements Listener {
 				format = format.replace("%player-displayname%", p.getDisplayName());
 				format = format.replace("%game%", game);
 				format = format.replace("%online-ingame-players%",
-						Integer.toString(GameUtils.getGameByName(game).getPlayers().size()));
+						Integer.toString(GameUtils.getGame(game).getPlayers().size()));
 				format = format.replace("%message%", event.getMessage());
 				format = Utils.setPlaceholders(format, p);
 
@@ -384,7 +385,7 @@ public class EventListener implements Listener {
 							RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "ragebow");
 						}
 
-						killed = new RMPlayerKilledEvent(GameUtils.getGameByName(game), deceased, deceased.getKiller() != null ?
+						killed = new RMPlayerKilledEvent(GameUtils.getGame(game), deceased, deceased.getKiller() != null ?
 								deceased.getKiller() : null, "arrow");
 						break;
 					case "snowball":
@@ -402,7 +403,7 @@ public class EventListener implements Listener {
 							RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "combataxe");
 						}
 
-						killed = new RMPlayerKilledEvent(GameUtils.getGameByName(game), deceased, deceased.getKiller() != null ?
+						killed = new RMPlayerKilledEvent(GameUtils.getGame(game), deceased, deceased.getKiller() != null ?
 								deceased.getKiller() : null, "snowball");
 						break;
 					case "explosion":
@@ -428,7 +429,7 @@ public class EventListener implements Listener {
 							deceased.sendMessage(RageMode.getLang().get("game.unknown-killer"));
 						}
 
-						killed = new RMPlayerKilledEvent(GameUtils.getGameByName(game), deceased, deceased.getKiller() != null ?
+						killed = new RMPlayerKilledEvent(GameUtils.getGame(game), deceased, deceased.getKiller() != null ?
 								deceased.getKiller() : null, "explosion");
 						break;
 					case "grenade":
@@ -446,7 +447,7 @@ public class EventListener implements Listener {
 							RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "grenade");
 						}
 
-						killed = new RMPlayerKilledEvent(GameUtils.getGameByName(game), deceased, deceased.getKiller() != null ?
+						killed = new RMPlayerKilledEvent(GameUtils.getGame(game), deceased, deceased.getKiller() != null ?
 								deceased.getKiller() : null, "grenade");
 						break;
 					case "knife":
@@ -464,7 +465,7 @@ public class EventListener implements Listener {
 							RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "rageknife");
 						}
 
-						killed = new RMPlayerKilledEvent(GameUtils.getGameByName(game), deceased, deceased.getKiller() != null ?
+						killed = new RMPlayerKilledEvent(GameUtils.getGame(game), deceased, deceased.getKiller() != null ?
 								deceased.getKiller() : null, "knife");
 						break;
 					default:
@@ -526,7 +527,7 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		GameSpawnGetter gsg = GameUtils.getGameSpawnByName(game.getPlayersGame(p));
+		GameSpawnGetter gsg = GameUtils.getGameSpawn(game.getPlayersGame(p));
 		if (gsg.getSpawnLocations().size() > 0) {
 			Random rand = new Random();
 			int x = rand.nextInt(gsg.getSpawnLocations().size());
@@ -752,18 +753,22 @@ public class EventListener implements Listener {
 
 						if (p.hasPermission("ragemode.admin.item.forcestart")
 								&& meta.getDisplayName().equals(ForceStarter.getName())) {
-							if (GameUtils.getGameByName(name).getLobbyTimer() != null) {
-								GameUtils.getGameByName(name).getLobbyTimer().cancel();
+							if (GameUtils.getGame(name).getLobbyTimer() != null) {
+								GameUtils.getGame(name).getLobbyTimer().cancel();
 								p.setLevel(0); // Set level counter back to 0
 							}
 
 							p.sendMessage(RageMode.getLang().get("commands.forcestart.game-start", "%game%", name));
 							RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(
-									RageMode.getInstance(), () -> new GameLoader(GameUtils.getGameByName(name)));
+									RageMode.getInstance(), () -> new GameLoader(GameUtils.getGame(name)));
 						}
 
 						if (meta.getDisplayName().equals(LeaveGame.getName())) {
-							game.removePlayer(p);
+							GameLeaveAttemptEvent gameLeaveEvent = new GameLeaveAttemptEvent(game, p);
+							Utils.callEvent(gameLeaveEvent);
+							if (!gameLeaveEvent.isCancelled()) {
+								game.removePlayer(p);
+							}
 							game.removeSpectatorPlayer(p);
 						}
 					}
@@ -789,7 +794,7 @@ public class EventListener implements Listener {
 					return;
 				}
 
-				GameUtils.joinPlayer(p, GameUtils.getGameByName(game));
+				GameUtils.joinPlayer(p, GameUtils.getGame(game));
 			}
 		}
 	}
@@ -974,7 +979,7 @@ public class EventListener implements Listener {
 		}
 
 		if (p.getLocation().getY() < 0) {
-			GameUtils.getGameSpawnByName(game).randomSpawn(p);
+			GameUtils.getGameSpawn(game).randomSpawn(p);
 
 			// Prevent damaging player when respawned
 			p.setFallDistance(0);

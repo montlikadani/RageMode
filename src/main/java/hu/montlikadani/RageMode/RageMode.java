@@ -6,14 +6,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -40,10 +35,8 @@ import hu.montlikadani.ragemode.gameUtils.BungeeUtils;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.holder.HoloHolder;
-import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.metrics.Metrics;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
-import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignConfiguration;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.signs.SignScheduler;
@@ -62,7 +55,7 @@ public class RageMode extends JavaPlugin {
 	private static SQLConnect sqlConnect = null;
 	private static MinecraftVersion mcVersion = null;
 
-	private static Economy econ = null;
+	private Economy econ = null;
 
 	private static RageMode instance = null;
 	private BukkitTask signTask;
@@ -127,7 +120,7 @@ public class RageMode extends JavaPlugin {
 			registerListeners();
 			registerCommands();
 
-			switch (conf.getCV().getStatistics()) {
+			switch (conf.getCV().getDatabaseType()) {
 			case "mysql":
 				connectMySQL();
 				break;
@@ -158,7 +151,7 @@ public class RageMode extends JavaPlugin {
 						if (conf.getCV().isBungee())
 							getManager().registerEvents(new BungeeListener(game), this);
 
-						spawns.add(new GameSpawnGetter(GameUtils.getGameByName(game)));
+						spawns.add(new GameSpawnGetter(GameUtils.getGame(game)));
 
 						if (conf.getCV().isSignsEnable())
 							SignCreator.updateAllSigns(game);
@@ -183,7 +176,7 @@ public class RageMode extends JavaPlugin {
 
 					metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
 						int totalPlayers = 0;
-						switch (conf.getCV().getStatistics()) {
+						switch (conf.getCV().getDatabaseType()) {
 						case "mysql":
 							totalPlayers = MySQLStats.getAllPlayerStatistics().size();
 							break;
@@ -201,7 +194,7 @@ public class RageMode extends JavaPlugin {
 						return String.valueOf(totalPlayers);
 					}));
 
-					metrics.addCustomChart(new Metrics.SimplePie("statistic_type", conf.getCV()::getStatistics));
+					metrics.addCustomChart(new Metrics.SimplePie("statistic_type", conf.getCV()::getDatabaseType));
 
 					Debug.logConsole("Metrics enabled.");
 				}
@@ -216,47 +209,9 @@ public class RageMode extends JavaPlugin {
 	public void onDisable() {
 		if (instance == null) return;
 
+		GameUtils.stopAllGames();
+
 		Thread thread = new Thread(() -> {
-			Debug.logConsole("Searching games to stop...");
-
-			String[] games = GetGames.getGameNames();
-			if (games != null) {
-				int i = 0;
-				int imax = games.length;
-
-				while (i < imax) {
-					String name = games[i];
-					if (name != null) {
-						Game g = GameUtils.getGameByName(name);
-						if (g.isGameRunning(name)) {
-							Debug.logConsole("Stopping " + name + " ...");
-
-							RageScores.calculateWinner(name, g.getPlayersFromList());
-
-							for (PlayerManager players : g.getPlayersFromList()) {
-								Player p = players.getPlayer();
-
-								p.removeMetadata("killedWith", instance);
-								g.removePlayer(p);
-								RageScores.removePointsForPlayer(players.getGameName());
-							}
-
-							for (Iterator<Entry<UUID, String>> it = g.getSpectatorPlayers().entrySet().iterator(); it
-									.hasNext();) {
-								Player pl = Bukkit.getPlayer(it.next().getKey());
-								g.removeSpectatorPlayer(pl);
-							}
-
-							g.setGameNotRunning(name);
-							GameUtils.setStatus(name, null);
-
-							Debug.logConsole(name + " has been stopped.");
-						}
-					}
-					i++;
-				}
-			}
-
 			getServer().getScheduler().cancelTasks(instance);
 			HandlerList.unregisterAll(this);
 			sign = null;
@@ -294,8 +249,8 @@ public class RageMode extends JavaPlugin {
 		String database = conf.getCV().getDatabase();
 		String username = conf.getCV().getUsername();
 		String password = conf.getCV().getPassword();
-		String characterEnc = conf.getCV().getEncoding().equals("") ? "UTF-8" : conf.getCV().getEncoding();
-		String prefix = conf.getCV().getTablePrefix().equals("") ? "rm_" : conf.getCV().getTablePrefix();
+		String characterEnc = conf.getCV().getEncoding().isEmpty() ? "UTF-8" : conf.getCV().getEncoding();
+		String prefix = conf.getCV().getTablePrefix().isEmpty() ? "rm_" : conf.getCV().getTablePrefix();
 		boolean serverCertificate = conf.getCV().isCertificate();
 		boolean useUnicode = conf.getCV().isUnicode();
 		boolean autoReconnect = conf.getCV().isAutoReconnect();
@@ -337,12 +292,13 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void loadDatabases() {
-		switch (conf.getCV().getStatistics()) {
+		switch (conf.getCV().getDatabaseType()) {
 		case "mysql":
 			if (mySQLConnect == null || !mySQLConnect.getConnection().isConnected()) {
 				connectMySQL();
 			} else {
 				MySQLStats.loadPlayerStatistics(mySQLConnect);
+				RuntimePPManager.getPPListFromMySQL();
 			}
 
 			break;
@@ -352,12 +308,14 @@ public class RageMode extends JavaPlugin {
 				connectSQL();
 			} else {
 				SQLStats.loadPlayerStatistics(sqlConnect);
+				RuntimePPManager.getPPListFromSQL();
 			}
 
 			break;
 		default:
 			YAMLStats.initS();
 			YAMLStats.loadPlayerStatistics();
+			RuntimePPManager.getPPListFromYAML();
 			break;
 		}
 	}
@@ -391,14 +349,14 @@ public class RageMode extends JavaPlugin {
 				if (game != null) {
 					games.add(new Game(game));
 
-					if (GameUtils.getGameByName(game).isGameRunning(game)) {
+					if (GameUtils.getGame(game).isGameRunning(game)) {
 						GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
 					}
 
 					if (conf.getCV().isBungee())
 						getManager().registerEvents(new BungeeListener(game), this);
 
-					spawns.add(new GameSpawnGetter(GameUtils.getGameByName(game)));
+					spawns.add(new GameSpawnGetter(GameUtils.getGame(game)));
 
 					SignCreator.updateAllSigns(game);
 				}

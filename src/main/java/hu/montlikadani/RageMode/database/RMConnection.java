@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.database;
 
 import java.sql.Statement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -49,15 +50,19 @@ public class RMConnection {
 		conn.commit();
 	}
 
-	public synchronized void executeUpdate(String query) throws SQLException {
+	public void executeUpdate(String query) throws SQLException {
 		createStatement().executeUpdate(query);
 	}
 
-	public synchronized Statement createStatement() throws SQLException {
+	public Statement createStatement() throws SQLException {
 		return conn.createStatement();
 	}
 
-	public synchronized ResultSet executeQuery(Statement statement, String query) throws SQLException {
+	public PreparedStatement prepareStatement(String sql) throws SQLException {
+		return conn.prepareStatement(sql);
+	}
+
+	public ResultSet executeQuery(Statement statement, String query) throws SQLException {
 		return statement.executeQuery(query);
 	}
 }

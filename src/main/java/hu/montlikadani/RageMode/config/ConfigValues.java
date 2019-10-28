@@ -11,7 +11,8 @@ import java.util.List;
 public class ConfigValues {
 
 	private String lang;
-	private String statistics;
+	@Deprecated private String statistics;
+	private String databaseType;
 	private String hubName;
 	private String username;
 	private String password;
@@ -111,15 +112,19 @@ public class ConfigValues {
 
 	public void loadValues(FileConfig f) {
 		lang = f.get("language", "en");
-		statistics = f.get("statistics", "yaml");
+		if (f.getOriginal("statistic") != null) {
+			statistics = f.getOriginal("statistics");
+		} else {
+			databaseType = f.get("databaseType", "yaml");
+		}
 		checkForUpdates = f.get("check-for-updates", true);
 		logConsole = f.get("log-console", true);
 		savePlayerData = f.get("save-player-datas-to-file", false);
 		requireEmptyInv = f.get("require-empty-inventory-to-join", true);
 		bungee = f.get("bungee.enable", false);
 		hubName = f.get("bungee.hub-name", "lobby");
-		autoReconnect = f.get("MySQL.auto-reconnect", false);
-		useSSL = f.get("MySQL.use-SSL", true);
+		autoReconnect = f.get("MySQL.auto-reconnect", true);
+		useSSL = f.get("MySQL.use-SSL", false);
 		username = f.get("MySQL.username", "accountname");
 		password = f.get("MySQL.password", "password");
 		database = f.get("MySQL.database", "database");
@@ -218,8 +223,13 @@ public class ConfigValues {
 		return lang;
 	}
 
+	@Deprecated
 	public String getStatistics() {
 		return statistics;
+	}
+
+	public String getDatabaseType() {
+		return databaseType;
 	}
 
 	public String getHubName() {

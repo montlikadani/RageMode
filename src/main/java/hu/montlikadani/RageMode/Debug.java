@@ -37,7 +37,7 @@ public class Debug {
 	 * @param p params
 	 */
 	public static void logConsole(Level lvl, String msg, Object... p) {
-		if (msg != null && !msg.equals("") && RageMode.getInstance().getConfiguration().getCV().isLogConsole())
+		if (msg != null && !msg.isEmpty() && RageMode.getInstance().getConfiguration().getCV().isLogConsole())
 			Bukkit.getLogger().log(lvl, "[RageMode] " + msg, p);
 	}
 

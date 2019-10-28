@@ -19,16 +19,15 @@ public class DBConnector {
 		this.username = username;
 		this.password = password;
 		this.prefix = prefix;
+
+		// Connect to the db
+		getConnection();
 	}
 
 	public RMConnection getConnection() {
 		if (conn == null) {
 			try {
-				if (username == null && password == null) {
-					conn = new RMConnection(DriverManager.getConnection(url));
-				} else {
-					conn = new RMConnection(DriverManager.getConnection(url, username, password));
-				}
+				conn = new RMConnection(DriverManager.getConnection(url, username, password));
 			} catch (SQLException e) {
 				Debug.logConsole(java.util.logging.Level.WARNING, "Could not connect to the database: " + e.getMessage());
 			}
@@ -38,11 +37,11 @@ public class DBConnector {
 	}
 
 	public boolean isValid() {
-		return getConnection() != null && getConnection().isValid();
+		return conn != null && getConnection().isValid();
 	}
 
 	public boolean isConnected() {
-		return getConnection() != null && getConnection().isConnected();
+		return conn != null && getConnection().isConnected();
 	}
 
 	public String getPrefix() {

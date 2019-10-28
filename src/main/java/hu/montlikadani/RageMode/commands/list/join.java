@@ -35,26 +35,31 @@ public class join {
 			return;
 		}
 
+		if (GameUtils.isPlayerPlaying(p)) {
+			sendMessage(p, RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
+			return;
+		}
+
 		hu.montlikadani.ragemode.config.ConfigValues cv = RageMode.getInstance().getConfiguration().getCV();
-		if (!GameUtils.getGameByName(map).getPlayers().containsKey(p) && cv.isRejoinDelayEnabled()) {
+		if (cv.isRejoinDelayEnabled() && !p.hasPermission("ragemode.bypass.rejoindelay")) {
 			int hour = cv.getRejoinDelayHour();
 			int minute = cv.getRejoinDelayMinute();
 			int second = cv.getRejoinDelaySecond();
 
 			if (hour != 0 || minute != 0 || second != 0) {
-				if (ReJoinDelay.isRunning(p)) {
+				if (ReJoinDelay.isValid(p)) {
 					sendMessage(p, RageMode.getLang().get("commands.join.rejoin-delay", "%delay%",
-							ReJoinDelay.format(ReJoinDelay.getTimeByPlayer(p))));
+							ReJoinDelay.format(ReJoinDelay.getTimeByPlayer(p) - System.currentTimeMillis())));
 					return;
 				}
 
 				ReJoinDelay.resetTime(p);
-				ReJoinDelay.setTime(p, map, hour, minute, second);
+				ReJoinDelay.setTime(p, hour, minute, second);
 			} else {
 				hu.montlikadani.ragemode.Debug.logConsole("The rejoin times can't be 0 hour, 0 minute and 0 second.");
 			}
 		}
 
-		GameUtils.joinPlayer(p, GameUtils.getGameByName(map));
+		GameUtils.joinPlayer(p, GameUtils.getGame(map));
 	}
 }
