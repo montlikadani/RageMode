@@ -25,6 +25,7 @@ public class Language {
 	private String lang;
 
 	private File localeFolder = null;
+	private File langFile = null;
 
 	public Language(RageMode plugin) {
 		this.plugin = plugin;
@@ -45,22 +46,19 @@ public class Language {
 			localeFolder.mkdirs();
 		}
 
-		File langFile = null;
-		if (lang.equals("en")) {
-			langFile = new File(localeFolder, "locale_en.yml");
-			if (!langFile.exists())
-				plugin.saveResource("locale/locale_en.yml", false);
+		langFile = new File(localeFolder, "locale_" + lang + ".yml");
 
+		if (!langFile.exists()) {
+			plugin.saveResource("locale/locale_" + lang + ".yml", false);
+		}
+
+		if (lang.equalsIgnoreCase("en")) {
 			FileConfiguration lf = YamlConfiguration.loadConfiguration(langFile);
 			loadMessages(langFile, new FileConfig(lf));
 		} else {
-			langFile = new File(localeFolder, "locale_" + lang + ".yml");
-			if (!langFile.exists())
-				plugin.saveResource("locale/locale_" + lang + ".yml", false);
-
 			try {
 				BufferedReader reader = new BufferedReader(
-						new InputStreamReader(new FileInputStream(langFile), "UTF-8"));
+						new InputStreamReader(new FileInputStream(langFile), java.nio.charset.StandardCharsets.UTF_8));
 				FileConfiguration lf = YamlConfiguration.loadConfiguration(reader);
 				lf.load(langFile);
 				reader.close();
@@ -298,6 +296,10 @@ public class Language {
 	}
 
 	public File getLangFile() {
-		return new File(localeFolder, "locale_" + lang + ".yml");
+		return langFile;
+	}
+
+	public String getCurrentLang() {
+		return lang;
 	}
 }

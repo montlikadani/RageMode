@@ -76,7 +76,6 @@ public class Configuration {
 				if (rewards_file.exists()) {
 					rewards = YamlConfiguration.loadConfiguration(rewards_file);
 					loadFile(rewards, rewards_file);
-					rewards.load(rewards_file);
 				} else {
 					rewards = createFile(rewards_file, "rewards.yml", false);
 				}
@@ -91,7 +90,7 @@ public class Configuration {
 					datas = createFile(datas_file, "datas.yml", true);
 				}
 			}
-		} catch (IOException | InvalidConfigurationException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			Debug.throwMsg();
 		}

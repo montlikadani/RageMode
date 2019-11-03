@@ -3,7 +3,6 @@ package hu.montlikadani.ragemode.commands.list;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -77,14 +76,15 @@ public class listplayers {
 			if (!GameUtils.getGame(game).getSpectatorPlayers().isEmpty()) {
 				sb = new StringBuilder();
 
-				for (java.util.Map.Entry<java.util.UUID, String> spec : GameUtils.getGame(game).getSpectatorPlayers()
+				for (java.util.Map.Entry<Player, PlayerManager> spec : GameUtils.getGame(game).getSpectatorPlayers()
 						.entrySet()) {
-					sb.append("\n&7-&6 " + Bukkit.getPlayer(spec.getKey()).getName() + "&a - " + spec.getValue());
+					sb.append("\n&7-&6 " + spec.getKey().getName() + "&a - " + spec.getValue());
 				}
 
 				sendMessage(sender, Utils.colors("&7Spectator players:\n" + sb));
 			}
 		}
-		return false;
+
+		return true;
 	}
 }

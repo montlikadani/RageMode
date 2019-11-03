@@ -1,7 +1,9 @@
 package hu.montlikadani.ragemode.managers;
 
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.PlayerInventory;
 
+import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.StorePlayerStuffs;
@@ -33,50 +35,70 @@ public class PlayerManager {
 	/**
 	 * Stores the player tools, such as inventory, game mode, location etc.
 	 * @param p Player
+	 * @param spectator the player is spectator or not
 	 */
-	public void storePlayerTools() {
+	public void storePlayerTools(boolean spectator) {
+		PlayerInventory inv = player.getInventory();
+		if (spectator) {
+			sps.fly = player.isFlying();
+			sps.allowFly = player.getAllowFlight();
+		} else {
+			if (player.getHealth() < NMS.getMaxHealth(player)) {
+				sps.oldHealth = player.getHealth();
+			}
+			if (player.getFoodLevel() < 20) {
+				sps.oldHunger = player.getFoodLevel();
+			}
+
+			if (!player.getActivePotionEffects().isEmpty())
+				sps.oldEffects = player.getActivePotionEffects();
+
+			if (!player.getDisplayName().equals(player.getDisplayName()))
+				sps.oldDisplayName = player.getDisplayName();
+
+			if (!player.getPlayerListName().equals(player.getPlayerListName()))
+				sps.oldListName = player.getPlayerListName();
+
+			if (player.getFireTicks() > 0)
+				sps.oldFire = player.getFireTicks();
+
+			sps.oldExp = player.getExp();
+			sps.oldExpLevel = player.getLevel();
+
+			if (player.isInsideVehicle())
+				sps.oldVehicle = player.getVehicle();
+		}
+
 		sps.oldLocation = player.getLocation();
-		sps.oldInventories = player.getInventory().getContents();
-		sps.oldArmor = player.getInventory().getArmorContents();
-		sps.oldHealth = player.getHealth();
-		sps.oldHunger = player.getFoodLevel();
-
-		if (!player.getActivePotionEffects().isEmpty())
-			sps.oldEffects = player.getActivePotionEffects();
-
 		sps.oldGameMode = player.getGameMode();
 
-		if (!player.getDisplayName().equals(player.getDisplayName()))
-			sps.oldDisplayName = player.getDisplayName();
-
-		if (!player.getPlayerListName().equals(player.getPlayerListName()))
-			sps.oldListName = player.getPlayerListName();
-
-		if (player.getFireTicks() > 0)
-			sps.oldFire = player.getFireTicks();
-
-		sps.oldExp = player.getExp();
-		sps.oldExpLevel = player.getLevel();
-
-		if (player.isInsideVehicle())
-			sps.oldVehicle = player.getVehicle();
+		if (inv.getContents() != null) {
+			sps.oldInventories = inv.getContents();
+		}
+		if (inv.getArmorContents() != null) {
+			sps.oldArmor = inv.getArmorContents();
+		}
 	}
 
 	/**
 	 * Adds back the tools to the player if have stored.
 	 * @param player Player
+	 * @param spectator the player is spectator or not
 	 */
-	public void addBackTools() {
+	public void addBackTools(boolean spectator) {
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
 		if (conf.getCV().isBungee()) {
 			RageMode.getInstance().getBungeeUtils().connectToHub(player);
-		} else if (conf.getCV().isSavePlayerData()) {
-			if (sps.oldLocation != null) { // Teleport back to the location
-				player.teleport(sps.oldLocation);
-				sps.oldLocation = null;
-			}
+			return;
+		}
 
+		if (sps.oldLocation != null) { // Teleport back to the location
+			player.teleport(sps.oldLocation);
+			sps.oldLocation = null;
+		}
+
+		if (spectator || !conf.getCV().isSavePlayerData()) {
 			if (sps.oldInventories != null) { // Give him his inventory back.
 				player.getInventory().setContents(sps.oldInventories);
 				sps.oldInventories = null;
@@ -86,62 +108,59 @@ public class PlayerManager {
 				player.getInventory().setArmorContents(sps.oldArmor);
 				sps.oldArmor = null;
 			}
+		}
 
-			if (sps.oldHealth > 0d) { // Give him his health back.
-				player.setHealth(sps.oldHealth);
-				sps.oldHealth = 0d;
-			}
+		if (sps.oldGameMode != null) { // Give him his gamemode back.
+			player.setGameMode(sps.oldGameMode);
+			sps.oldGameMode = null;
+		}
 
-			if (sps.oldHunger > 0) { // Give him his hunger back.
-				player.setFoodLevel(sps.oldHunger);
-				sps.oldHunger = 0;
-			}
-
-			if (sps.oldEffects != null && !sps.oldEffects.isEmpty()) { // Give him his potion effects back.
-				player.addPotionEffects(sps.oldEffects);
-				sps.oldEffects.clear();
-			}
-
-			if (sps.oldGameMode != null) { // Give him his gamemode back.
-				player.setGameMode(sps.oldGameMode);
-				sps.oldGameMode = null;
-			}
-
-			if (sps.oldListName != null) { // Give him his list name back.
-				player.setPlayerListName(sps.oldListName);
-				sps.oldListName = null;
-			}
-
-			if (sps.oldDisplayName != null) { // Give him his display name back.
-				player.setDisplayName(sps.oldDisplayName);
-				sps.oldDisplayName = null;
-			}
-
-			if (sps.oldFire > 0) { // Give him his fire back.
-				player.setFireTicks(sps.oldFire);
-				sps.oldFire = 0;
-			}
-
-			player.setExp(sps.oldExp); // Give him his exp back.
-
-			player.setLevel(sps.oldExpLevel); // Give him his exp level back.
-
-			if (sps.oldVehicle != null) { // Give him his vehicle back.
-				sps.oldVehicle.getVehicle().teleport(player);
-				sps.oldVehicle = null;
-			}
-
-			conf.getDatasCfg().set("datas." + player.getName(), null);
-			Configuration.saveFile(conf.getDatasCfg(), conf.getDatasFile());
+		if (spectator) {
+			player.setAllowFlight(sps.allowFly);
+			player.setFlying(sps.fly);
 		} else {
-			if (sps.oldLocation != null) { // Get him back to his old location.
-				player.teleport(sps.oldLocation);
-				sps.oldLocation = null;
-			}
+			if (conf.getCV().isSavePlayerData()) {
+				if (sps.oldHealth > 0d) { // Give him his health back.
+					player.setHealth(sps.oldHealth);
+					sps.oldHealth = 0d;
+				}
 
-			if (sps.oldGameMode != null) { // Give him his gamemode back.
-				player.setGameMode(sps.oldGameMode);
-				sps.oldGameMode = null;
+				if (sps.oldHunger > 0) { // Give him his hunger back.
+					player.setFoodLevel(sps.oldHunger);
+					sps.oldHunger = 0;
+				}
+
+				if (sps.oldEffects != null && !sps.oldEffects.isEmpty()) { // Give him his potion effects back.
+					player.addPotionEffects(sps.oldEffects);
+					sps.oldEffects.clear();
+				}
+
+				if (sps.oldListName != null) { // Give him his list name back.
+					player.setPlayerListName(sps.oldListName);
+					sps.oldListName = null;
+				}
+
+				if (sps.oldDisplayName != null) { // Give him his display name back.
+					player.setDisplayName(sps.oldDisplayName);
+					sps.oldDisplayName = null;
+				}
+
+				if (sps.oldFire > 0) { // Give him his fire back.
+					player.setFireTicks(sps.oldFire);
+					sps.oldFire = 0;
+				}
+
+				player.setExp(sps.oldExp); // Give him his exp back.
+
+				player.setLevel(sps.oldExpLevel); // Give him his exp level back.
+
+				if (sps.oldVehicle != null) { // Give him his vehicle back.
+					sps.oldVehicle.getVehicle().teleport(player);
+					sps.oldVehicle = null;
+				}
+
+				conf.getDatasCfg().set("datas." + player.getName(), null);
+				Configuration.saveFile(conf.getDatasCfg(), conf.getDatasFile());
 			}
 		}
 	}

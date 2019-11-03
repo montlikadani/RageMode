@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 import java.util.Map.Entry;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
@@ -19,14 +19,13 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameJoinAttemptEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorJoinToGameEvent;
-import hu.montlikadani.ragemode.API.event.SpectatorLeaveFromGameEvent;
+import hu.montlikadani.ragemode.API.event.SpectatorLeaveGameEvent;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGameLobby;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
 import hu.montlikadani.ragemode.gameUtils.ScoreTeam;
-import hu.montlikadani.ragemode.gameUtils.StorePlayerStuffs;
 import hu.montlikadani.ragemode.gameUtils.TabTitles;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
@@ -35,7 +34,7 @@ public class Game {
 	private String name;
 
 	private Map<Player, PlayerManager> players = new HashMap<>();
-	private Map<UUID, String> specPlayer = new HashMap<>();
+	private Map<Player, PlayerManager> specPlayer = new HashMap<>();
 	private Map<String, Boolean> running = new HashMap<>();
 
 	private LobbyTimer lobbyTimer;
@@ -50,7 +49,7 @@ public class Game {
 
 	/**
 	 * Get the players who added to the list.
-	 * @return Players
+	 * @return Unmodifiable map
 	 */
 	public Map<Player, PlayerManager> getPlayers() {
 		return Collections.unmodifiableMap(players);
@@ -58,14 +57,14 @@ public class Game {
 
 	/**
 	 * Gets the spectator players who added to the list.
-	 * @return Players
+	 * @return Unmodifiable map
 	 */
-	public Map<UUID, String> getSpectatorPlayers() {
+	public Map<Player, PlayerManager> getSpectatorPlayers() {
 		return Collections.unmodifiableMap(specPlayer);
 	}
 
-	private boolean isSpectator(UUID uuid) {
-		return specPlayer.containsKey(uuid);
+	private boolean isSpectator(Player p) {
+		return specPlayer.containsKey(p);
 	}
 
 	private boolean isInList(Player p) {
@@ -91,8 +90,10 @@ public class Game {
 		Configuration conf = RageMode.getInstance().getConfiguration();
 		int time = GetGameLobby.getLobbyTime(game);
 
+		PlayerManager pm = new PlayerManager(player, game);
+
 		if (players.size() < GetGames.getMaxPlayers(game)) {
-			players.put(player, new PlayerManager(player, game));
+			players.put(player, pm);
 
 			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", game));
 
@@ -113,23 +114,21 @@ public class Game {
 		// Gets a random player who is in game and kicks from the game
 		// to join the VIP player.
 		if (player.hasPermission("ragemode.vip") && hasRoomForVIP(game)) {
-			Random random = new Random();
 			boolean isVIP = false;
 			Player playerToKick;
 
 			do {
-				int kickposition = random.nextInt(GetGames.getMaxPlayers(game) - 1);
+				int kickposition = ThreadLocalRandom.current().nextInt(GetGames.getMaxPlayers(game) - 1);
 				playerToKick = getPlayersFromList().get(kickposition).getPlayer();
 				isVIP = playerToKick.hasPermission("ragemode.vip");
 			} while (isVIP);
 
 			player.setMetadata("Leaving", new FixedMetadataValue(RageMode.getInstance(), true));
-
 			Utils.clearPlayerInventory(playerToKick);
-
-			getPlayerManager(player).addBackTools();
+			pm.addBackTools(false);
 
 			playerToKick.sendMessage(RageMode.getLang().get("game.player-kicked-for-vip"));
+
 			final Player pl = playerToKick;
 			players.entrySet().removeIf(u -> u.getKey().equals(pl));
 
@@ -164,50 +163,37 @@ public class Game {
 	}
 
 	public boolean addSpectatorPlayer(Player player, String game) {
-		if (!RageMode.getInstance().getConfiguration().getCV().isBungee()) {
-			StorePlayerStuffs sps = new StorePlayerStuffs();
-			sps.inventory = player.getInventory().getContents();
-			sps.armor = player.getInventory().getArmorContents();
-			sps.loc = player.getLocation();
-			sps.gMode = player.getGameMode();
-			sps.fly = player.isFlying();
-			sps.allowFly = player.getAllowFlight();
+		PlayerManager pm = new PlayerManager(player, game);
+		specPlayer.put(player, pm);
 
-			player.getInventory().clear();
+		if (!RageMode.getInstance().getConfiguration().getCV().isBungee()) {
+			pm.storePlayerTools(true);
+			Utils.clearPlayerInventory(player);
 		}
 
-		SpectatorJoinToGameEvent spec = new SpectatorJoinToGameEvent(this, player);
-		Utils.callEvent(spec);
+		Utils.callEvent(new SpectatorJoinToGameEvent(this, player));
 
-		specPlayer.put(player.getUniqueId(), game);
-		return specPlayer.containsKey(player.getUniqueId());
+		return isSpectator(player);
 	}
 
 	public boolean removeSpectatorPlayer(Player player) {
 		if (!RageMode.getInstance().getConfiguration().getCV().isSpectatorEnabled())
 			return false;
 
-		if (isSpectator(player.getUniqueId())) {
-			if (!RageMode.getInstance().getConfiguration().getCV().isBungee()) {
-				player.getInventory().clear();
-
-				StorePlayerStuffs sps = new StorePlayerStuffs();
-				player.getInventory().setContents(sps.inventory);
-				player.getInventory().setArmorContents(sps.armor);
-				player.teleport(sps.loc);
-				player.setGameMode(sps.gMode);
-				player.setFlying(sps.fly);
-				player.setAllowFlight(sps.allowFly);
-			}
-
-			SpectatorLeaveFromGameEvent spec = new SpectatorLeaveFromGameEvent(
-					GameUtils.getGame(specPlayer.get(player.getUniqueId())), player);
-			Utils.callEvent(spec);
-
-			specPlayer.remove(player.getUniqueId());
-			return true;
+		if (!isSpectator(player)) {
+			return false;
 		}
-		return false;
+
+		if (!RageMode.getInstance().getConfiguration().getCV().isBungee()) {
+			Utils.clearPlayerInventory(player);
+			getSpectatorPlayerManager(player).addBackTools(true);
+		}
+
+		Utils.callEvent(
+				new SpectatorLeaveGameEvent(GameUtils.getGame(specPlayer.get(player).getGameName()), player));
+
+		specPlayer.remove(player);
+		return true;
 	}
 
 	public boolean removePlayer(Player player) {
@@ -222,10 +208,14 @@ public class Game {
 		}
 
 		Utils.clearPlayerInventory(player);
-		getPlayerManager(player).addBackTools();
+		getPlayerManager(player).addBackTools(false);
 
 		removePlayerSynced(player);
 		removePlayerFromList(player);
+
+		if (!player.isCustomNameVisible()) {
+			player.setCustomNameVisible(true);
+		}
 
 		player.sendMessage(RageMode.getLang().get("game.player-left"));
 
@@ -377,16 +367,16 @@ public class Game {
 
 	/**
 	 * Gets the spectator player game by uuid from list.
-	 * @param uuid Spectator player UUID
+	 * @param p Spectator player
 	 * @return game if the spectator player is in game
 	 */
-	public String getSpectatorPlayerGame(UUID uuid) {
-		Validate.notNull(uuid, "UUID can't be null!");
+	public String getSpectatorPlayerGame(Player p) {
+		Validate.notNull(p, "Player can't be null!");
 
 		if (specPlayer != null) {
-			for (Entry<UUID, String> spec : specPlayer.entrySet()) {
-				if (spec.getKey().equals(uuid)) {
-					return spec.getValue();
+			for (Entry<Player, PlayerManager> spec : specPlayer.entrySet()) {
+				if (spec.getKey().equals(p)) {
+					return spec.getValue().getGameName();
 				}
 			}
 		}
@@ -411,22 +401,22 @@ public class Game {
 	 * @param p Player
 	 * @return game if the spectator player is in game
 	 */
-	public String getSpectatorPlayerGame(Player p) {
-		Validate.notNull(p, "Player can't be null!");
+	public String getSpectatorPlayerGame(UUID uuid) {
+		Validate.notNull(uuid, "UUID can't be null!");
 
-		return getSpectatorPlayerGame(p.getUniqueId());
+		return getSpectatorPlayerGame(Bukkit.getPlayer(uuid));
 	}
 
 	/**
 	 * Gets the spectator players converted to list.
-	 * @return Spectator players in list
+	 * @return List of spectator players
 	 */
-	public List<Player> getSpectatorPlayersFromList() {
+	public List<Player> getSpectatorPlayersInList() {
 		List<Player> list = new ArrayList<>();
 
 		if (specPlayer != null) {
-			for (Entry<UUID, String> entries : specPlayer.entrySet()) {
-				list.add(Bukkit.getPlayer(entries.getKey()));
+			for (Entry<Player, PlayerManager> entries : specPlayer.entrySet()) {
+				list.add(entries.getKey());
 			}
 		}
 
@@ -463,9 +453,9 @@ public class Game {
 		Validate.notEmpty(game, "Game name can't be empty!");
 
 		if (specPlayer != null) {
-			for (Entry<UUID, String> spec : specPlayer.entrySet()) {
-				if (spec.getValue().equalsIgnoreCase(game)) {
-					return Bukkit.getPlayer(spec.getKey());
+			for (Entry<Player, PlayerManager> spec : specPlayer.entrySet()) {
+				if (spec.getValue().getGameName().equalsIgnoreCase(game)) {
+					return spec.getKey();
 				}
 			}
 		}
@@ -515,7 +505,7 @@ public class Game {
 
 	/**
 	 * Gets the players converted to list.
-	 * @return players in list
+	 * @return List of players
 	 */
 	public List<Player> getPlayersInList() {
 		List<Player> list = new ArrayList<>();
@@ -530,8 +520,8 @@ public class Game {
 	}
 
 	/**
-	 * Gets the {@link #PlayerManager} converted to list.
-	 * @return {@link #PlayerManager} in list
+	 * Gets the {@link #PlayerManager} player converted to list.
+	 * @return list of {@link #PlayerManager}
 	 */
 	public List<PlayerManager> getPlayersFromList() {
 		List<PlayerManager> list = new ArrayList<>();
@@ -543,6 +533,41 @@ public class Game {
 		}
 
 		return list;
+	}
+
+	/**
+	 * Gets the {@link #PlayerManager} spectator players converted to list.
+	 * @return list of {@link #PlayerManager}
+	 */
+	public List<PlayerManager> getSpectatorPlayersFromList() {
+		List<PlayerManager> list = new ArrayList<>();
+
+		if (players != null) {
+			for (Entry<Player, PlayerManager> players : specPlayer.entrySet()) {
+				list.add(players.getValue());
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * Gets the {@link #PlayerManager} by spectator player.
+	 * @param p Spectator player
+	 * @return {@link #PlayerManager} by spectator player
+	 */
+	public PlayerManager getSpectatorPlayerManager(Player p) {
+		Validate.notNull(p, "Player can't be null!");
+
+		if (players != null) {
+			for (Entry<Player, PlayerManager> players : specPlayer.entrySet()) {
+				if (players.getKey().equals(p)) {
+					return players.getValue();
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**

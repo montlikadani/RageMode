@@ -1,15 +1,15 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameCreateEvent;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.events.BungeeListener;
 import hu.montlikadani.ragemode.gameLogic.Game;
-import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
+import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
@@ -65,10 +65,9 @@ public class addgame {
 		Game g = new Game(game);
 		plugin.getGames().add(g);
 
-		plugin.getSpawns().add(new GameSpawnGetter(g));
+		plugin.getSpawns().add(new GameSpawn(g));
 
-		RMGameCreateEvent event = new RMGameCreateEvent(g, x);
-		Bukkit.getPluginManager().callEvent(event);
+		Utils.callEvent(new RMGameCreateEvent(g, x));
 
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".maxplayers", x);
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".world", p.getWorld().getName());

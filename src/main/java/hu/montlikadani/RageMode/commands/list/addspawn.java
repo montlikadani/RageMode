@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
+import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 import static hu.montlikadani.ragemode.utils.Message.hasPerm;
@@ -57,9 +57,9 @@ public class addspawn {
 		aFile.set(path + ".spawns." + i + ".pitch", Double.valueOf(loc.getPitch()));
 		Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
-		for (GameSpawnGetter spawn : plugin.getSpawns()) {
+		for (GameSpawn spawn : plugin.getSpawns()) {
 			if (spawn.getGame().getName().equalsIgnoreCase(args[1])) {
-				spawn.getSpawnLocations().add(loc);
+				spawn.addSpawn(loc);
 				break;
 			}
 		}

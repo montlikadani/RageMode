@@ -17,24 +17,31 @@ public class listgames {
 			return false;
 		}
 
-		if (GetGames.getConfigGamesCount() > 0) {
-			if (GetGames.getGameNames() != null) {
-				String[] games = GetGames.getGameNames();
-				int i = 0;
-				int imax = games.length;
-
-				sendMessage(sender, RageMode.getLang().get("commands.listgames.listing-games", "%games%", imax));
-
-				while (i < imax) {
-					if (GameUtils.getGame(games[i]).isGameRunning(games[i]))
-						sendMessage(sender, RageMode.getLang().get("commands.listgames.game-running", "%number%", i + 1, "%game%", games[i]));
-					else
-						sendMessage(sender, RageMode.getLang().get("commands.listgames.game-stopped", "%number%", i + 1, "%game%", games[i]));
-					i++;
-				}
-			}
-		} else
+		if (GetGames.getConfigGamesCount() < 0) {
 			sendMessage(sender, RageMode.getLang().get("commands.listgames.no-games-available"));
-		return false;
+			return false;
+		}
+
+		String[] games = GetGames.getGameNames();
+		if (games == null) {
+			return false;
+		}
+
+		int i = 0;
+		int imax = games.length;
+
+		sendMessage(sender, RageMode.getLang().get("commands.listgames.listing-games", "%games%", imax));
+
+		while (i < imax) {
+			if (GameUtils.getGame(games[i]).isGameRunning(games[i]))
+				sendMessage(sender, RageMode.getLang().get("commands.listgames.game-running", "%number%", i + 1,
+						"%game%", games[i]));
+			else
+				sendMessage(sender, RageMode.getLang().get("commands.listgames.game-stopped", "%number%", i + 1,
+						"%game%", games[i]));
+			i++;
+		}
+
+		return true;
 	}
 }

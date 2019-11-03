@@ -10,13 +10,9 @@ import org.bukkit.potion.PotionEffect;
 
 public class StorePlayerStuffs {
 
-	public Location oldLocation;
-	public ItemStack[] oldInventories;
-	public ItemStack[] oldArmor;
 	public Double oldHealth = 0d;
 	public Integer oldHunger = Integer.valueOf(0);
 	public Collection<PotionEffect> oldEffects;
-	public GameMode oldGameMode = GameMode.SURVIVAL;
 	public String oldDisplayName;
 	public String oldListName;
 	public Integer oldFire = Integer.valueOf(0);
@@ -25,10 +21,12 @@ public class StorePlayerStuffs {
 	public Entity oldVehicle;
 
 	// Spectator datas
-	public ItemStack[] inventory;
-	public ItemStack[] armor;
-	public Location loc;
-	public GameMode gMode = GameMode.SURVIVAL;
 	public boolean fly = false;
 	public boolean allowFly = false;
+
+	// Both
+	public Location oldLocation;
+	public ItemStack[] oldInventories;
+	public ItemStack[] oldArmor;
+	public GameMode oldGameMode = GameMode.SURVIVAL;
 }

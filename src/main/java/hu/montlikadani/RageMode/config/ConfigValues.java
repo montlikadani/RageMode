@@ -64,6 +64,7 @@ public class ConfigValues {
 	private boolean chatEnableinLobby;
 	private boolean playerLevelAsTimeCounter;
 	private boolean damagePlayerFall;
+	private boolean hidePlayerNameTag;
 	private boolean cancelRedstoneActivating;
 	private boolean cancelDoorUse;
 	private boolean enableChatInGame;
@@ -175,6 +176,7 @@ public class ConfigValues {
 				new ArrayList<Integer>(Arrays.asList(30, 20, 10, 5, 4, 3, 2, 1)));
 		damagePlayerFall = f.get("game.global.damage-player-fall", false);
 		respawnProtectTime = f.get("game.global.respawn-protection", 3);
+		hidePlayerNameTag = f.get("game.global.hide-players-name-tag", false);
 		gameEndBc = f.get("game.global.values-to-send-game-end-broadcast",
 				new ArrayList<Integer>(Arrays.asList(60, 30, 20, 10, 5, 4, 3, 2, 1)));
 		cancelRedstoneActivating = f.get("game.global.cancel-redstone-activating-blocks", true);
@@ -603,5 +605,9 @@ public class ConfigValues {
 
 	public int getSuicide() {
 		return suicide;
+	}
+
+	public boolean isHidePlayerNameTag() {
+		return hidePlayerNameTag;
 	}
 }

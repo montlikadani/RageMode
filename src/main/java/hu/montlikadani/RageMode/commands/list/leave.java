@@ -26,20 +26,25 @@ public class leave {
 			return false;
 		}
 
+		// Make sure the meta removed
 		p.removeMetadata("killedWith", RageMode.getInstance());
+
 		Game game = GameUtils.getGameByPlayer(p) == null ? null : GameUtils.getGameByPlayer(p);
-		if (game != null) {
-			GameUtils.runCommands(p, game.getPlayersGame(p), "leave");
-			GameUtils.sendActionBarMessages(p, game.getPlayersGame(p), "leave");
-			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
-			Utils.callEvent(gameLeaveEvent);
-			if (!gameLeaveEvent.isCancelled()) {
-				game.removePlayer(p);
-			}
-			game.removeSpectatorPlayer(p);
-		} else {
+		if (game == null) {
 			p.sendMessage(RageMode.getLang().get("game.player-not-ingame"));
+			return false;
 		}
-		return false;
+
+		GameUtils.runCommands(p, game.getPlayersGame(p), "leave");
+		GameUtils.sendActionBarMessages(p, game.getPlayersGame(p), "leave");
+		RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
+		Utils.callEvent(gameLeaveEvent);
+		if (!gameLeaveEvent.isCancelled()) {
+			game.removePlayer(p);
+		}
+
+		game.removeSpectatorPlayer(p);
+
+		return true;
 	}
 }

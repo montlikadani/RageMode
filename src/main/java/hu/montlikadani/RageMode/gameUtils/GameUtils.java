@@ -12,16 +12,14 @@ import java.util.logging.Level;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.util.Vector;
 
 import hu.montlikadani.ragemode.Debug;
+import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
@@ -30,7 +28,7 @@ import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.events.EventListener;
-import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
+import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.holder.HoloHolder;
@@ -71,9 +69,17 @@ public class GameUtils {
 	 * @param message Message
 	 */
 	public static void broadcastToGame(Game game, String message) {
+		Validate.notNull(game, "Game can't be null!");
+
 		for (PlayerManager pm : game.getPlayersFromList()) {
 			if (pm.getGameName().equalsIgnoreCase(game.getName())) {
 				pm.getPlayer().sendMessage(message);
+			}
+		}
+
+		for (PlayerManager pm2 : game.getSpectatorPlayersFromList()) {
+			if (pm2.getGameName().equalsIgnoreCase(game.getName())) {
+				pm2.getPlayer().sendMessage(message);
 			}
 		}
 	}
@@ -121,13 +127,13 @@ public class GameUtils {
 
 	/**
 	 * Get the game spawn by game.
-	 * @param game Game
-	 * @return GameSpawnGetter
+	 * @param game {@link Game}
+	 * @return {@link GameSpawn}
 	 */
-	public static GameSpawnGetter getGameSpawn(Game game) {
+	public static GameSpawn getGameSpawn(Game game) {
 		Validate.notNull(game, "Game can't be null!");
 
-		for (GameSpawnGetter gsg : RageMode.getInstance().getSpawns()) {
+		for (GameSpawn gsg : RageMode.getInstance().getSpawns()) {
 			if (gsg.getGame().equals(game)) {
 				return gsg;
 			}
@@ -139,13 +145,13 @@ public class GameUtils {
 	/**
 	 * Get the game spawn by name.
 	 * @param name Game name
-	 * @return GameSpawnGetter
+	 * @return {@link GameSpawn}
 	 */
-	public static GameSpawnGetter getGameSpawn(String name) {
+	public static GameSpawn getGameSpawn(String name) {
 		Validate.notNull(name, "Game name can't be null!");
 		Validate.notEmpty(name, "Game name can't be empty!");
 
-		for (GameSpawnGetter gsg : RageMode.getInstance().getSpawns()) {
+		for (GameSpawn gsg : RageMode.getInstance().getSpawns()) {
 			if (gsg.getGame().getName().equalsIgnoreCase(name))
 				return gsg;
 		}
@@ -202,7 +208,7 @@ public class GameUtils {
 		Validate.notNull(p, "Player can not be null!");
 
 		for (Game game : RageMode.getInstance().getGames()) {
-			if (game.getSpectatorPlayers().containsKey(p.getUniqueId())) {
+			if (game.getSpectatorPlayers().containsKey(p)) {
 				return game;
 			}
 		}
@@ -296,7 +302,7 @@ public class GameUtils {
 	 */
 	public static void savePlayerData(Player p) {
 		if (getGameByPlayer(p) != null) {
-			getGameByPlayer(p).getPlayerManager(p).storePlayerTools();
+			getGameByPlayer(p).getPlayerManager(p).storePlayerTools(false);
 		}
 
 		Configuration conf = RageMode.getInstance().getConfiguration();
@@ -308,10 +314,18 @@ public class GameUtils {
 			PlayerInventory inv = p.getInventory();
 
 			data.set(path + "location", p.getLocation());
-			data.set(path + "contents", inv.getContents());
-			data.set(path + "armor-contents", inv.getArmorContents());
-			data.set(path + "health", p.getHealth());
-			data.set(path + "food", p.getFoodLevel());
+			if (inv.getContents() != null) {
+				data.set(path + "contents", inv.getContents());
+			}
+			if (inv.getArmorContents() != null) {
+				data.set(path + "armor-contents", inv.getArmorContents());
+			}
+			if (p.getHealth() < NMS.getMaxHealth(p)) {
+				data.set(path + "health", p.getHealth());
+			}
+			if (p.getFoodLevel() < 20) {
+				data.set(path + "food", p.getFoodLevel());
+			}
 			if (!p.getActivePotionEffects().isEmpty())
 				data.set(path + "potion-effects", p.getActivePotionEffects());
 
@@ -349,7 +363,7 @@ public class GameUtils {
 	 * join to the game, switching to spectator mode.
 	 * 
 	 * @param p Player
-	 * @param game Game
+	 * @param game {@link Game}
 	 */
 	public static void joinPlayer(Player p, Game game) {
 		PlayerInventory inv = p.getInventory();
@@ -360,7 +374,7 @@ public class GameUtils {
 			if (conf.getCV().isSpectatorEnabled()) {
 				if (!isPlayerPlaying(p)) {
 					if (game.addSpectatorPlayer(p, name)) {
-						getGameSpawn(name).randomSpawn(p);
+						p.teleport(getGameSpawn(name).getRandomSpawn());
 
 						p.setAllowFlight(true);
 						p.setFlying(true);
@@ -452,7 +466,7 @@ public class GameUtils {
 	/**
 	 * Kicks the given player from the game.
 	 * @param p Player
-	 * @param game Game
+	 * @param game {@link Game}
 	 * @param run execute listed commands and log to console for left
 	 */
 	public static void kickPlayer(Player p, Game game, boolean run) {
@@ -611,36 +625,26 @@ public class GameUtils {
 	}
 
 	/**
-	 * Teleports players to a random location.
-	 * This will return if the spawns size 0 because with value 0 are not possible.
-	 * @param spawn GameSpawnGetter
+	 * Teleports all players to a random spawn location.
+	 * This will return if there are no spawn added to list.
+	 * @param spawn {@link GameSpawn}
 	 */
-	public static void teleportPlayersToGameSpawns(GameSpawnGetter spawn) {
+	public static void teleportPlayersToGameSpawns(GameSpawn spawn) {
 		for (Player players : spawn.getGame().getPlayersInList()) {
 			teleportPlayerToGameSpawn(players, spawn);
 		}
 	}
 
 	/**
-	 * Teleports the specified player to a random location.
-	 * This will return if the spawns size is 0.
-	 * @param p Player who is in game
-	 * @param spawn GameSpawnGetter
+	 * Teleports the given player to a random spawn location.
+	 * This will return if there are no spawn added to list.
+	 * @param p Player
+	 * @param spawn {@link GameSpawn}
 	 */
-	public static void teleportPlayerToGameSpawn(Player p, GameSpawnGetter spawn) {
+	public static void teleportPlayerToGameSpawn(Player p, GameSpawn spawn) {
 		if (spawn.getSpawnLocations().size() > 0) {
-			int x = ThreadLocalRandom.current().nextInt(spawn.getSpawnLocations().size());
-			Location location = spawn.getSpawnLocations().get(x);
-			p.teleport(location);
+			p.teleport(spawn.getRandomSpawn());
 		}
-	}
-
-	public static boolean getLookingAt(Player player, LivingEntity livingEntity) {
-		Location eye = player.getEyeLocation();
-		Vector toEntity = livingEntity.getLocation().toVector().subtract(eye.toVector());
-		double dot = toEntity.normalize().dot(eye.getDirection());
-
-		return dot >= 0.99D;
 	}
 
 	private static List<String> reservedNames = buildReservedNameList();
@@ -672,7 +676,7 @@ public class GameUtils {
 	 * to a title message. If there are no winner player valid, players
 	 * will be removed from the game with some rewards.
 	 * This will saves the player statistic to the database and finally stopping the game.
-	 * @param game Game
+	 * @param game {@link Game}
 	 */
 	public static void stopGame(final Game game) {
 		Validate.notNull(game, "Game can't be null!");
@@ -855,9 +859,9 @@ public class GameUtils {
 			}
 		}
 
-		for (Iterator<Entry<UUID, String>> it = game.getSpectatorPlayers().entrySet()
+		for (Iterator<Entry<Player, PlayerManager>> it = game.getSpectatorPlayers().entrySet()
 				.iterator(); it.hasNext();) {
-			Player pl = Bukkit.getPlayer(it.next().getKey());
+			Player pl = it.next().getKey();
 			game.removeSpectatorPlayer(pl);
 		}
 
@@ -905,9 +909,9 @@ public class GameUtils {
 							RageScores.removePointsForPlayer(players.getGameName());
 						}
 
-						for (Iterator<Entry<UUID, String>> it = g.getSpectatorPlayers().entrySet().iterator(); it
+						for (Iterator<Entry<Player, PlayerManager>> it = g.getSpectatorPlayers().entrySet().iterator(); it
 								.hasNext();) {
-							Player pl = Bukkit.getPlayer(it.next().getKey());
+							Player pl = it.next().getKey();
 							g.removeSpectatorPlayer(pl);
 						}
 

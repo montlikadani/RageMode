@@ -2,9 +2,7 @@ package hu.montlikadani.ragemode.commands.list;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -40,9 +38,9 @@ public class stopgame {
 					g.removePlayer(player);
 				}
 
-				for (Iterator<Entry<UUID, String>> it = g.getSpectatorPlayers().entrySet().iterator(); it
+				for (Iterator<Entry<Player, PlayerManager>> it = g.getSpectatorPlayers().entrySet().iterator(); it
 						.hasNext();) {
-					Player pl = Bukkit.getPlayer(it.next().getKey());
+					Player pl = it.next().getKey();
 					g.removeSpectatorPlayer(pl);
 				}
 

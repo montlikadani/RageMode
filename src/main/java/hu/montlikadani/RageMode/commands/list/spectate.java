@@ -47,7 +47,7 @@ public class spectate {
 		}
 
 		if (GameUtils.getGame(map).addSpectatorPlayer(p, map)) {
-			GameUtils.getGameSpawn(map).randomSpawn(p);
+			p.teleport(GameUtils.getGameSpawn(map).getRandomSpawn());
 
 			p.setAllowFlight(true);
 			p.setFlying(true);
@@ -56,6 +56,7 @@ public class spectate {
 				p.getInventory().setItem(RageMode.getInstance().getConfiguration().getCfg().getInt("items.leavegameitem.slot"),
 						LeaveGame.getItem());
 		}
-		return false;
+
+		return true;
 	}
 }

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -29,7 +30,7 @@ import hu.montlikadani.ragemode.events.EventListener;
 import hu.montlikadani.ragemode.events.Listeners_1_8;
 import hu.montlikadani.ragemode.events.Listeners_1_9;
 import hu.montlikadani.ragemode.gameLogic.Game;
-import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
+import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.BungeeUtils;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -65,7 +66,7 @@ public class RageMode extends JavaPlugin {
 	private static boolean isSpigot = false;
 
 	private List<Game> games = new ArrayList<>();
-	private List<GameSpawnGetter> spawns = new ArrayList<>();
+	private List<GameSpawn> spawns = new ArrayList<>();
 
 	@Override
 	public void onEnable() {
@@ -159,7 +160,7 @@ public class RageMode extends JavaPlugin {
 						if (conf.getCV().isBungee())
 							getManager().registerEvents(new BungeeListener(game), this);
 
-						spawns.add(new GameSpawnGetter(GameUtils.getGame(game)));
+						spawns.add(new GameSpawn(GameUtils.getGame(game)));
 
 						if (conf.getCV().isSignsEnable())
 							SignCreator.updateAllSigns(game);
@@ -264,13 +265,22 @@ public class RageMode extends JavaPlugin {
 		boolean autoReconnect = conf.getCV().isAutoReconnect();
 		boolean useSSL = conf.getCV().isUseSSL();
 
+		mySQLConnect = new MySQLConnect(host, port, database, username, password, serverCertificate, useUnicode,
+				characterEnc, autoReconnect, useSSL, prefix);
 		if (mySQLConnect == null) {
-			mySQLConnect = new MySQLConnect(host, port, database, username, password, serverCertificate,
-					useUnicode, characterEnc, autoReconnect, useSSL, prefix);
+			return;
+		}
+
+		if (!mySQLConnect.isValid()) {
+			return;
 		}
 
 		MySQLStats.loadPlayerStatistics(mySQLConnect);
 		RuntimePPManager.getPPListFromMySQL();
+
+		if (mySQLConnect.isConnected()) {
+			Debug.logConsole("Successfully connected to MySQL!");
+		}
 	}
 
 	private void connectSQL() {
@@ -291,18 +301,27 @@ public class RageMode extends JavaPlugin {
 			}
 		}
 
+		sqlConnect = new SQLConnect(sqlFile, conf.getCV().getSqlTablePrefix());
 		if (sqlConnect == null) {
-			sqlConnect = new SQLConnect(sqlFile, conf.getCV().getSqlTablePrefix());
+			return;
+		}
+
+		if (!sqlConnect.isValid()) {
+			return;
 		}
 
 		SQLStats.loadPlayerStatistics(sqlConnect);
 		RuntimePPManager.getPPListFromSQL();
+
+		if (sqlConnect.isConnected()) {
+			Debug.logConsole("Successfully connected to SQL!");
+		}
 	}
 
 	private void loadDatabases() {
 		switch (conf.getCV().getDatabaseType()) {
 		case "mysql":
-			if (mySQLConnect == null || !mySQLConnect.getConnection().isConnected()) {
+			if (mySQLConnect == null || !mySQLConnect.isConnected()) {
 				connectMySQL();
 			} else {
 				MySQLStats.loadPlayerStatistics(mySQLConnect);
@@ -312,7 +331,7 @@ public class RageMode extends JavaPlugin {
 			break;
 		case "sql":
 		case "sqlite":
-			if (sqlConnect == null || !sqlConnect.getConnection().isConnected()) {
+			if (sqlConnect == null || !sqlConnect.isConnected()) {
 				connectSQL();
 			} else {
 				SQLStats.loadPlayerStatistics(sqlConnect);
@@ -364,7 +383,7 @@ public class RageMode extends JavaPlugin {
 					if (conf.getCV().isBungee())
 						getManager().registerEvents(new BungeeListener(game), this);
 
-					spawns.add(new GameSpawnGetter(GameUtils.getGame(game)));
+					spawns.add(new GameSpawn(GameUtils.getGame(game)));
 
 					SignCreator.updateAllSigns(game);
 				}
@@ -407,6 +426,47 @@ public class RageMode extends JavaPlugin {
 			dataFolder.mkdir();
 
 		return dataFolder;
+	}
+
+	/**
+	 * Removes a game from the list.
+	 * @param game Game
+	 */
+	public void removeGame(Game game) {
+		removeGame(game.getName());
+	}
+
+	/**
+	 * Removes a game from the list by name.
+	 * @param name Game name
+	 */
+	public void removeGame(String name) {
+		for (Iterator<Game> gt = games.iterator(); gt.hasNext();) {
+			if (gt.next().getName().equalsIgnoreCase(name)) {
+				gt.remove();
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Removes the given game all spawns.
+	 * @param game Game
+	 */
+	public void removeSpawn(Game game) {
+		removeSpawn(game.getName());
+	}
+
+	/**
+	 * Removes the given game name all spawns.
+	 * @param name Game name
+	 */
+	public void removeSpawn(String name) {
+		for (Iterator<GameSpawn> it = spawns.iterator(); it.hasNext();) {
+			if (it.next().getGame().getName().equalsIgnoreCase(name)) {
+				it.remove();
+			}
+		}
 	}
 
 	/**
@@ -477,7 +537,7 @@ public class RageMode extends JavaPlugin {
 		return games;
 	}
 
-	public List<GameSpawnGetter> getSpawns() {
+	public List<GameSpawn> getSpawns() {
 		return spawns;
 	}
 

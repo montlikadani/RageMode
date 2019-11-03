@@ -19,7 +19,7 @@ public class RmTabCompleter implements TabCompleter {
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		if (cmd.getName().equals("ragemode") || cmd.getName().equals("rm")) {
+		if (cmd.getName().equalsIgnoreCase("ragemode") || cmd.getName().equalsIgnoreCase("rm")) {
 			List<String> completionList = new ArrayList<>();
 			List<String> cmds = new ArrayList<>();
 			String partOfCommand = "";

@@ -33,8 +33,7 @@ public class GameLoader {
 			return; // stop starting the game if the game not set up correctly
 		}
 
-		RMGameStartEvent RMGameStartEvent = new RMGameStartEvent(game, game.getPlayersFromList());
-		Utils.callEvent(RMGameStartEvent);
+		Utils.callEvent(new RMGameStartEvent(game, game.getPlayersFromList()));
 
 		String name = game.getName();
 
@@ -78,14 +77,18 @@ public class GameLoader {
 					Debug.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
 			}
 
+			if (conf.getCV().isHidePlayerNameTag()) {
+				p.setCustomNameVisible(false);
+			}
+
 			GameUtils.sendActionBarMessages(p, name, "start");
 		}
 	}
 
 	private boolean checkTeleport() {
-		GameSpawnGetter gameSpawnGetter = GameUtils.getGameSpawn(game);
-		if (gameSpawnGetter.isGameReady()) {
-			GameUtils.teleportPlayersToGameSpawns(gameSpawnGetter);
+		GameSpawn gameSpawn = GameUtils.getGameSpawn(game);
+		if (gameSpawn.isGameReady()) {
+			GameUtils.teleportPlayersToGameSpawns(gameSpawn);
 			return true;
 		}
 

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -59,9 +58,11 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerKilledEvent;
+import hu.montlikadani.ragemode.API.event.RMPlayerPreRespawnEvent;
+import hu.montlikadani.ragemode.API.event.RMPlayerRespawnedEvent;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameLoader;
-import hu.montlikadani.ragemode.gameLogic.GameSpawnGetter;
+import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
@@ -210,7 +211,6 @@ public class EventListener implements Listener {
 						Player near = (Player) nears.get(i);
 						if (explosionVictims.containsKey(near.getUniqueId())) {
 							explosionVictims.remove(near.getUniqueId());
-							// explosionVictims.put(near.getUniqueId(), shooter.getUniqueId());
 						}
 						explosionVictims.put(near.getUniqueId(), shooter.getUniqueId());
 
@@ -513,16 +513,23 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		GameSpawnGetter gsg = GameUtils.getGameSpawn(game.getPlayersGame(p));
+		RMPlayerPreRespawnEvent preRespawn = new RMPlayerPreRespawnEvent(game, p);
+		Utils.callEvent(preRespawn);
+		if (preRespawn.isCancelled()) {
+			return;
+		}
+
+		GameSpawn gsg = GameUtils.getGameSpawn(game.getPlayersGame(p));
 		if (gsg.getSpawnLocations().size() > 0) {
-			int x = ThreadLocalRandom.current().nextInt(gsg.getSpawnLocations().size());
-			e.setRespawnLocation(gsg.getSpawnLocations().get(x));
+			e.setRespawnLocation(gsg.getRandomSpawn());
 		}
 
 		int time = plugin.getConfiguration().getCV().getRespawnProtectTime();
 		if (time > 0) {
 			p.setNoDamageTicks(time * 20);
 		}
+
+		Utils.callEvent(new RMPlayerRespawnedEvent(game, p, gsg));
 	}
 
 	@EventHandler
@@ -665,9 +672,7 @@ public class EventListener implements Listener {
 				// Remove egg in 1 second of the game when a player dropped
 				if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getPlayersGame(p))) {
 					if (waitingGames.get(GameUtils.getGameByPlayer(p).getPlayersGame(p))) {
-						if (grenadeExplosionVictims != null) {
-							grenadeExplosionVictims.clear();
-						}
+						grenadeExplosionVictims.clear();
 
 						grenade.remove();
 						cancel();
@@ -688,11 +693,8 @@ public class EventListener implements Listener {
 				while (i < imax) {
 					if (nears.get(i) instanceof Player) {
 						Player near = (Player) nears.get(i);
-						if (grenadeExplosionVictims != null) {
-							if (grenadeExplosionVictims.containsKey(near.getUniqueId())) {
-								grenadeExplosionVictims.remove(near.getUniqueId());
-								grenadeExplosionVictims.put(near.getUniqueId(), p.getUniqueId());
-							}
+						if (grenadeExplosionVictims.containsKey(near.getUniqueId())) {
+							grenadeExplosionVictims.remove(near.getUniqueId());
 						}
 						grenadeExplosionVictims.put(near.getUniqueId(), p.getUniqueId());
 
@@ -965,7 +967,7 @@ public class EventListener implements Listener {
 		}
 
 		if (p.getLocation().getY() < 0) {
-			GameUtils.getGameSpawn(game).randomSpawn(p);
+			p.teleport(GameUtils.getGameSpawn(game).getRandomSpawn());
 
 			// Prevent damaging player when respawned
 			p.setFallDistance(0);

@@ -1,10 +1,8 @@
 package hu.montlikadani.ragemode.gameLogic;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
 
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -17,8 +15,6 @@ import hu.montlikadani.ragemode.gameUtils.TabTitles;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class GameTimer extends TimerTask {
-
-	private List<Player> le = new ArrayList<>();
 
 	private TabTitles gameTab = null;
 	private ScoreBoard gameBoard = null;
@@ -104,117 +100,85 @@ public class GameTimer extends TimerTask {
 
 			time--;
 
-			for (PlayerManager pm : game.getPlayersFromList()) {
-				Player player = pm.getPlayer();
-
-				if (conf.getCfg().getBoolean("game.global.show-name-above-player-when-look")) {
-					// making the game more difficult
-					for (Entity e : player.getNearbyEntities(25, 10, 25)) {
-						if (e instanceof Player) {
-							Player p = (Player) e;
-
-							if (!le.contains(p))
-								le.add(p);
-
-							p.setCustomNameVisible(false);
-
-							// TODO fix issue when the player looks through the block and the name appears within the 10 radius
-							if (GameUtils.getLookingAt(player, p))
-								p.setCustomNameVisible(true);
-						}
-					}
-				}
-			}
-
 			Player player = game.getPlayerInGame(game.getName());
-			if (player == null || !player.isOnline())
-				return;
+			if (player != null && player.isOnline()) {
+				if (gameTab != null) {
+					List<String> tabHeader = conf.getCV().getTabHeader();
+					List<String> tabFooter = conf.getCV().getTabFooter();
 
-			if (gameTab != null) {
-				List<String> tabHeader = conf.getCV().getTabHeader();
-				List<String> tabFooter = conf.getCV().getTabFooter();
+					String he = "";
+					String fo = "";
+					int s = 0;
+					for (String line : tabHeader) {
+						s++;
+						if (s > 1)
+							he = he + "\n\u00a7r";
 
-				String he = "";
-				String fo = "";
-				int s = 0;
-				for (String line : tabHeader) {
-					s++;
-					if (s > 1)
-						he = he + "\n\u00a7r";
+						he = he + line;
+					}
+					s = 0;
+					for (String line : tabFooter) {
+						s++;
+						if (s > 1)
+							fo = fo + "\n\u00a7r";
 
-					he = he + line;
-				}
-				s = 0;
-				for (String line : tabFooter) {
-					s++;
-					if (s > 1)
-						fo = fo + "\n\u00a7r";
-
-					fo = fo + line;
-				}
-
-				he = Utils.setPlaceholders(he, player);
-				he = he.replace("%game-time%", tFormat);
-
-				fo = Utils.setPlaceholders(fo, player);
-				fo = fo.replace("%game-time%", tFormat);
-
-				gameTab.sendTabTitle(he, fo);
-			}
-
-			if (scoreTeam != null) {
-				String prefix = conf.getCV().getTabPrefix();
-				String suffix = conf.getCV().getTabSuffix();
-
-				prefix = Utils.setPlaceholders(prefix, player);
-				suffix = Utils.setPlaceholders(suffix, player);
-
-				scoreTeam.setTeam(prefix, suffix);
-			}
-
-			if (gameBoard != null) {
-				String boardTitle = conf.getCV().getSbTitle();
-				if (boardTitle != null && !boardTitle.isEmpty())
-					gameBoard.setTitle(Utils.colors(boardTitle));
-
-				List<String> rows = conf.getCV().getSbContent();
-				if (rows != null && !rows.isEmpty()) {
-					int rowMax = rows.size();
-
-					// should fix duplicated lines
-					org.bukkit.scoreboard.Scoreboard sb = gameBoard.getScoreboards().get(player).getScoreboard();
-					for (String entry : sb.getEntries()) {
-						sb.resetScores(entry);
+						fo = fo + line;
 					}
 
-					for (String row : rows) {
-						if (row.trim().isEmpty()) {
-							for (int i = 0; i <= rowMax; i++) {
-								row = row + " ";
-							}
+					he = Utils.setPlaceholders(he, player);
+					he = he.replace("%game-time%", tFormat);
+
+					fo = Utils.setPlaceholders(fo, player);
+					fo = fo.replace("%game-time%", tFormat);
+
+					gameTab.sendTabTitle(he, fo);
+				}
+
+				if (scoreTeam != null) {
+					String prefix = conf.getCV().getTabPrefix();
+					String suffix = conf.getCV().getTabSuffix();
+
+					prefix = Utils.setPlaceholders(prefix, player);
+					suffix = Utils.setPlaceholders(suffix, player);
+
+					scoreTeam.setTeam(prefix, suffix);
+				}
+
+				if (gameBoard != null) {
+					String boardTitle = conf.getCV().getSbTitle();
+					if (boardTitle != null && !boardTitle.isEmpty())
+						gameBoard.setTitle(Utils.colors(boardTitle));
+
+					List<String> rows = conf.getCV().getSbContent();
+					if (rows != null && !rows.isEmpty()) {
+						int rowMax = rows.size();
+
+						// should fix duplicated lines
+						org.bukkit.scoreboard.Scoreboard sb = gameBoard.getScoreboards().get(player).getScoreboard();
+						for (String entry : sb.getEntries()) {
+							sb.resetScores(entry);
 						}
 
-						row = Utils.setPlaceholders(row, player);
-						row = row.replace("%game-time%", tFormat);
+						for (String row : rows) {
+							if (row.trim().isEmpty()) {
+								for (int i = 0; i <= rowMax; i++) {
+									row = row + " ";
+								}
+							}
 
-						gameBoard.setLine(row, rowMax);
-						rowMax--;
+							row = Utils.setPlaceholders(row, player);
+							row = row.replace("%game-time%", tFormat);
 
-						gameBoard.setScoreBoard();
+							gameBoard.setLine(row, rowMax);
+							rowMax--;
+
+							gameBoard.setScoreBoard();
+						}
 					}
 				}
 			}
 
 			if (time == 0) {
-				if (le != null && !le.isEmpty()) {
-					for (int i = 0; i < le.size(); i++) {
-						if (le.get(i).isCustomNameVisible())
-							le.get(i).setCustomNameVisible(true);
-					}
-
-					le.clear();
-				}
-
 				cancel();
 				RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 						() -> GameUtils.stopGame(game.getName()));

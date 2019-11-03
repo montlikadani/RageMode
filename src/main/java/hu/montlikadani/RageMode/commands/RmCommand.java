@@ -35,7 +35,7 @@ public class RmCommand implements CommandExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (cmd.getName().equals("ragemode")) {
+		if (cmd.getName().equalsIgnoreCase("ragemode")) {
 			if (args.length == 0) {
 				String msg = "";
 
@@ -86,7 +86,7 @@ public class RmCommand implements CommandExecutor {
 			}
 
 			if (args.length >= 1) {
-				if (args[0].equals("setup")) {
+				if (args[0].equalsIgnoreCase("setup")) {
 					if (!(sender instanceof Player)) {
 						sendMessage(sender, RageMode.getLang().get("in-game-only"));
 						return true;
@@ -139,7 +139,7 @@ public class RmCommand implements CommandExecutor {
 					if (!msg.isEmpty()) {
 						sendMessage(sender, Utils.colors(msg));
 					}
-				} else if (args[0].equals("admin")) {
+				} else if (args[0].equalsIgnoreCase("admin")) {
 					if (!hasPerm(sender, "ragemode.admin.help")) {
 						sendMessage(sender, RageMode.getLang().get("no-permission"));
 						return true;

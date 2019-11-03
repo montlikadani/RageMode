@@ -65,6 +65,7 @@ public class givesaveditems {
 				target.setExp(datas.getInt("datas." + names + ".exp"));
 				target.setLevel(datas.getInt("datas." + names + ".level"));
 				target.setGameMode(GameMode.valueOf(datas.getString("datas." + names + ".game-mode")));
+				break;
 			} else if (datas.getConfigurationSection("datas").getKeys(false).isEmpty()) {
 				sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.no-player-saved-inventory"));
 				return false;
@@ -78,6 +79,7 @@ public class givesaveditems {
 				Configuration.saveFile(datas, plugin.getConfiguration().getDatasFile());
 			}
 		}
-		return false;
+
+		return true;
 	}
 }

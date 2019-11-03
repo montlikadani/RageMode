@@ -27,6 +27,10 @@ public class SQLStats {
 			return;
 		}
 
+		if (!sqlConnect.isValid()) {
+			return;
+		}
+
 		int totalPlayers = 0;
 
 		points.clear();

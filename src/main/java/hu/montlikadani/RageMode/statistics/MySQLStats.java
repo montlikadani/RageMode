@@ -27,6 +27,10 @@ public class MySQLStats {
 			return;
 		}
 
+		if (!mySQL.isValid()) {
+			return;
+		}
+
 		int totalPlayers = 0;
 
 		points.clear();
