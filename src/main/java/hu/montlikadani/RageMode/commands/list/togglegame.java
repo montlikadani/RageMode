@@ -7,8 +7,8 @@ import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class togglegame {
 
@@ -31,13 +31,13 @@ public class togglegame {
 		}
 
 		boolean toggle = true;
-		if (!GameUtils.getGame(game).isGameRunning(game)) {
+		if (!GameUtils.getGame(game).isGameRunning()) {
 			if (GameUtils.getStatus(game) == GameStatus.NOTREADY) {
 				GameUtils.setStatus(game, GameStatus.READY);
 				toggle = false;
 			} else {
 				GameUtils.setStatus(game, GameStatus.NOTREADY);
-				GameUtils.getGame(game).setGameNotRunning(game);
+				GameUtils.getGame(game).setGameNotRunning();
 			}
 
 			plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".lock", toggle);
@@ -50,9 +50,11 @@ public class togglegame {
 					RageMode.getLang().get("commands.togglegame.successfully-toggled", "%game%", game, "%status%",
 							!toggle ? RageMode.getLang().get("commands.togglegame.status.on")
 									: RageMode.getLang().get("commands.togglegame.status.off")));
-		} else
+		} else {
 			sendMessage(sender, RageMode.getLang().get("commands.togglegame.game-is-running"));
+			return false;
+		}
 
-		return false;
+		return true;
 	}
 }

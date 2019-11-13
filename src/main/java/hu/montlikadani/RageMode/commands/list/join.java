@@ -7,8 +7,8 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class join {
 

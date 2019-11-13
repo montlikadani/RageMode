@@ -4,8 +4,8 @@ import org.bukkit.command.CommandSender;
 
 import hu.montlikadani.ragemode.RageMode;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class reload {
 
@@ -15,9 +15,11 @@ public class reload {
 			return false;
 		}
 
-		plugin.reload();
+		if (plugin.reload()) {
+			sendMessage(sender, RageMode.getLang().get("commands.reload.success"));
+			return true;
+		}
 
-		sendMessage(sender, RageMode.getLang().get("commands.reload.success"));
 		return false;
 	}
 }

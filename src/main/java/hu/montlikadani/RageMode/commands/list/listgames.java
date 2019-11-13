@@ -6,8 +6,8 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class listgames {
 
@@ -33,7 +33,7 @@ public class listgames {
 		sendMessage(sender, RageMode.getLang().get("commands.listgames.listing-games", "%games%", imax));
 
 		while (i < imax) {
-			if (GameUtils.getGame(games[i]).isGameRunning(games[i]))
+			if (GameUtils.getGame(games[i]).isGameRunning())
 				sendMessage(sender, RageMode.getLang().get("commands.listgames.game-running", "%number%", i + 1,
 						"%game%", games[i]));
 			else

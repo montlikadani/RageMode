@@ -7,8 +7,8 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.GameLoader;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class forcestart {
 
@@ -40,7 +40,7 @@ public class forcestart {
 			return false;
 		}
 
-		if (GameUtils.getGame(game).isGameRunning(game)) {
+		if (GameUtils.getGame(game).isGameRunning()) {
 			sendMessage(p, RageMode.getLang().get("game.running"));
 			return false;
 		}
@@ -58,6 +58,6 @@ public class forcestart {
 		sendMessage(p, RageMode.getLang().get("commands.forcestart.game-start", "%game%", game));
 		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 				() -> new GameLoader(GameUtils.getGame(game)));
-		return false;
+		return true;
 	}
 }

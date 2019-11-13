@@ -44,7 +44,7 @@ public class LobbyTimer extends TimerTask {
 
 	@Override
 	public void run() {
-		if (game.isGameRunning(game.getName())) {
+		if (game.isGameRunning()) {
 			cancel();
 			return;
 		}

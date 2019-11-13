@@ -79,6 +79,13 @@ public class GameSpawn {
 	}
 
 	/**
+	 * Removes all spawns location in game.
+	 */
+	public void removeAllSpawn() {
+		spawnLocations.clear();
+	}
+
+	/**
 	 * Teleports the given player to a random spawn location in game.
 	 * This will returns if spawns are not set correctly.
 	 * @param player Player

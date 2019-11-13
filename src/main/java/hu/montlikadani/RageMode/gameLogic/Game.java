@@ -6,12 +6,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.lang.Validate;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 
@@ -35,8 +33,10 @@ public class Game {
 
 	private Map<Player, PlayerManager> players = new HashMap<>();
 	private Map<Player, PlayerManager> specPlayer = new HashMap<>();
-	private Map<String, Boolean> running = new HashMap<>();
+	@Deprecated
+	private Map<String, Boolean> runningGame = new HashMap<>();
 
+	private boolean running = false;
 	private LobbyTimer lobbyTimer;
 
 	public Game(String name) {
@@ -71,9 +71,9 @@ public class Game {
 		return players.containsKey(p);
 	}
 
-	public boolean addPlayer(Player player, String game) {
-		if (isGameRunning(game)) {
-			player.sendMessage(RageMode.getLang().get("game.running"));
+	public boolean addPlayer(Player player) {
+		if (isGameRunning()) {
+			player.sendMessage(RageMode.getLang().get("game.runningGame"));
 			return false;
 		}
 
@@ -88,14 +88,14 @@ public class Game {
 			return false;
 
 		Configuration conf = RageMode.getInstance().getConfiguration();
-		int time = GetGameLobby.getLobbyTime(game);
+		int time = GetGameLobby.getLobbyTime(name);
 
-		PlayerManager pm = new PlayerManager(player, game);
+		PlayerManager pm = new PlayerManager(player, name);
 
-		if (players.size() < GetGames.getMaxPlayers(game)) {
+		if (players.size() < GetGames.getMaxPlayers(name)) {
 			players.put(player, pm);
 
-			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", game));
+			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
 
 			if (conf.getCV().getMinPlayers() > 1) {
 				if (players.size() == conf.getCV().getMinPlayers() && lobbyTimer == null) {
@@ -108,17 +108,18 @@ public class Game {
 					lobbyTimer.loadTimer();
 				}
 			}
+
 			return true;
 		}
 
 		// Gets a random player who is in game and kicks from the game
 		// to join the VIP player.
-		if (player.hasPermission("ragemode.vip") && hasRoomForVIP(game)) {
+		if (player.hasPermission("ragemode.vip") && hasRoomForVIP(name)) {
 			boolean isVIP = false;
 			Player playerToKick;
 
 			do {
-				int kickposition = ThreadLocalRandom.current().nextInt(GetGames.getMaxPlayers(game) - 1);
+				int kickposition = ThreadLocalRandom.current().nextInt(GetGames.getMaxPlayers(name) - 1);
 				playerToKick = getPlayersFromList().get(kickposition).getPlayer();
 				isVIP = playerToKick.hasPermission("ragemode.vip");
 			} while (isVIP);
@@ -154,7 +155,7 @@ public class Game {
 				}
 			}
 
-			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", game));
+			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
 			return true;
 		}
 
@@ -202,11 +203,6 @@ public class Game {
 			return false;
 		}
 
-		String game = getPlayersGame(player);
-		if (game == null) {
-			return false;
-		}
-
 		Utils.clearPlayerInventory(player);
 		getPlayerManager(player).addBackTools(false);
 
@@ -224,20 +220,14 @@ public class Game {
 	}
 
 	public void removePlayerSynced(Player player) {
-		String game = getPlayersGame(player);
-		// Just a null check if the player not find in the list
-		if (game == null) {
-			return;
-		}
+		if (ScoreBoard.allScoreBoards.containsKey(name))
+			ScoreBoard.allScoreBoards.get(name).removeScoreBoard(player, true);
 
-		if (ScoreBoard.allScoreBoards.containsKey(game))
-			ScoreBoard.allScoreBoards.get(game).removeScoreBoard(player, true);
+		if (TabTitles.allTabLists.containsKey(name))
+			TabTitles.allTabLists.get(name).remove(player);
 
-		if (TabTitles.allTabLists.containsKey(game))
-			TabTitles.allTabLists.get(game).removeTabList(player);
-
-		if (ScoreTeam.allTeams.containsKey(game))
-			ScoreTeam.allTeams.get(game).removeTeam(player);
+		if (ScoreTeam.allTeams.containsKey(name))
+			ScoreTeam.allTeams.get(name).remove(player);
 	}
 
 	private void removePlayerFromList(Player player) {
@@ -251,14 +241,49 @@ public class Game {
 
 	/**
 	 * Checks whatever the game is running or not.
+	 * @return true if the game running currently.
+	 */
+	public boolean isGameRunning() {
+		return running;
+	}
+
+	/**
+	 * Sets the game to running.
+	 * @return true if the game not running currently
+	 */
+	public boolean setGameRunning() {
+		if (running) {
+			return false;
+		}
+
+		running = true;
+		return true;
+	}
+
+	/**
+	 * Sets the game not running.
+	 * @return true if the game is running currently
+	 */
+	public boolean setGameNotRunning() {
+		if (running) {
+			running = false;
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whatever the game is running or not.
 	 * @param game Game
 	 * @return true if the game is exist and running.
 	 */
+	@Deprecated
 	public boolean isGameRunning(String game) {
 		Validate.notNull(game, "Game name can't be null!");
 		Validate.notEmpty(game, "Game name can't be empty!");
 
-		if (GetGames.isGameExistent(game) && running.get(game) != null && running.get(game)) {
+		if (GetGames.isGameExistent(game) && runningGame.get(game) != null && runningGame.get(game)) {
 			return true;
 		}
 
@@ -270,6 +295,7 @@ public class Game {
 	 * @param game Game
 	 * @return true if game exist and the game not running
 	 */
+	@Deprecated
 	public boolean setGameRunning(String game) {
 		Validate.notNull(game, "Game name can't be null!");
 		Validate.notEmpty(game, "Game name can't be empty!");
@@ -277,11 +303,11 @@ public class Game {
 		if (!GetGames.isGameExistent(game))
 			return false;
 
-		if (running.get(game) != null && running.get(game)) {
+		if (runningGame.get(game) != null && runningGame.get(game)) {
 			return false;
 		}
 
-		running.put(game, true);
+		runningGame.put(game, true);
 		return true;
 	}
 
@@ -290,6 +316,7 @@ public class Game {
 	 * @param game Game
 	 * @return true if game exist and the game is running
 	 */
+	@Deprecated
 	public boolean setGameNotRunning(String game) {
 		Validate.notNull(game, "Game name can't be null!");
 		Validate.notEmpty(game, "Game name can't be empty!");
@@ -297,8 +324,8 @@ public class Game {
 		if (!GetGames.isGameExistent(game))
 			return false;
 
-		if (running.get(game) != null && running.get(game)) {
-			running.remove(game);
+		if (runningGame.get(game) != null && runningGame.get(game)) {
+			runningGame.remove(game);
 			return true;
 		}
 
@@ -335,95 +362,6 @@ public class Game {
 	}
 
 	/**
-	 * Gets the specified player game from list.
-	 * @param player Player
-	 * @return game if player playing
-	 */
-	public String getPlayersGame(Player player) {
-		Validate.notNull(player, "Player can't be null!");
-
-		if (players != null) {
-			for (Entry<Player, PlayerManager> players : players.entrySet()) {
-				if (players.getKey().equals(player)) {
-					return players.getValue().getGameName();
-				}
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * Gets the game by player uuid from list.
-	 * @param uuid Player UUID
-	 * @return game if player playing
-	 */
-	public String getPlayersGame(String uuid) {
-		Validate.notNull(uuid, "UUID can't be null!");
-		Validate.notEmpty(uuid, "UUID can't be empty!");
-
-		return getPlayersGame(Bukkit.getPlayer(UUID.fromString(uuid)));
-	}
-
-	/**
-	 * Gets the spectator player game by uuid from list.
-	 * @param p Spectator player
-	 * @return game if the spectator player is in game
-	 */
-	public String getSpectatorPlayerGame(Player p) {
-		Validate.notNull(p, "Player can't be null!");
-
-		if (specPlayer != null) {
-			for (Entry<Player, PlayerManager> spec : specPlayer.entrySet()) {
-				if (spec.getKey().equals(p)) {
-					return spec.getValue().getGameName();
-				}
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * Gets the spectator player game by uuid from list.
-	 * @param uuid Spectator player UUID
-	 * @return game if the spectator player is in game
-	 */
-	public String getSpectatorPlayerGame(String uuid) {
-		Validate.notNull(uuid, "UUID can't be null!");
-		Validate.notEmpty(uuid, "UUID can't be empty!");
-
-		return getSpectatorPlayerGame(UUID.fromString(uuid));
-	}
-
-	/**
-	 * Gets the spectator player game by player from list.
-	 * @param p Player
-	 * @return game if the spectator player is in game
-	 */
-	public String getSpectatorPlayerGame(UUID uuid) {
-		Validate.notNull(uuid, "UUID can't be null!");
-
-		return getSpectatorPlayerGame(Bukkit.getPlayer(uuid));
-	}
-
-	/**
-	 * Gets the spectator players converted to list.
-	 * @return List of spectator players
-	 */
-	public List<Player> getSpectatorPlayersInList() {
-		List<Player> list = new ArrayList<>();
-
-		if (specPlayer != null) {
-			for (Entry<Player, PlayerManager> entries : specPlayer.entrySet()) {
-				list.add(entries.getKey());
-			}
-		}
-
-		return list;
-	}
-
-	/**
 	 * Get the player who playing in game.
 	 * @param game Game
 	 * @return Player who in game currently.
@@ -444,11 +382,11 @@ public class Game {
 	}
 
 	/**
-	 * Gets the spectator player in the specified game.
+	 * Gets the spectator player by the given game.
 	 * @param game Game
-	 * @return Player if the player is in spectator
+	 * @return Player if the player is spectator and in the given game
 	 */
-	public Player getSpectatorPlayer(String game) {
+	public Player getSpectatorPlayerInGame(String game) {
 		Validate.notNull(game, "Game name can't be null!");
 		Validate.notEmpty(game, "Game name can't be empty!");
 
@@ -456,26 +394,6 @@ public class Game {
 			for (Entry<Player, PlayerManager> spec : specPlayer.entrySet()) {
 				if (spec.getValue().getGameName().equalsIgnoreCase(game)) {
 					return spec.getKey();
-				}
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * Get the player by uuid from list.
-	 * @param uuid Player UUID
-	 * @return Player
-	 */
-	public Player getPlayerByUUID(String uuid) {
-		Validate.notNull(uuid, "UUID can't be null!");
-		Validate.notEmpty(uuid, "UUID can't be empty!");
-
-		if (players != null) {
-			for (Entry<Player, PlayerManager> players : players.entrySet()) {
-				if (players.getKey().getUniqueId().equals(UUID.fromString(uuid))) {
-					return players.getKey();
 				}
 			}
 		}
@@ -504,6 +422,26 @@ public class Game {
 	}
 
 	/**
+	 * Get the spectator player by name from list.
+	 * @param name Player name
+	 * @return Player
+	 */
+	public Player getSpecatorPlayer(String name) {
+		Validate.notNull(name, "Name can't be null!");
+		Validate.notEmpty(name, "Name can't be empty!");
+
+		if (players != null) {
+			for (Entry<Player, PlayerManager> specs : specPlayer.entrySet()) {
+				if (specs.getKey().getName().equalsIgnoreCase(name)) {
+					return specs.getKey();
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Gets the players converted to list.
 	 * @return List of players
 	 */
@@ -520,8 +458,24 @@ public class Game {
 	}
 
 	/**
-	 * Gets the {@link #PlayerManager} player converted to list.
-	 * @return list of {@link #PlayerManager}
+	 * Gets the spectator players converted to list.
+	 * @return List of spectator players
+	 */
+	public List<Player> getSpectatorPlayersInList() {
+		List<Player> list = new ArrayList<>();
+
+		if (specPlayer != null) {
+			for (Entry<Player, PlayerManager> entries : specPlayer.entrySet()) {
+				list.add(entries.getKey());
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * Gets the {@link PlayerManager} player converted to list.
+	 * @return list of {@link PlayerManager}
 	 */
 	public List<PlayerManager> getPlayersFromList() {
 		List<PlayerManager> list = new ArrayList<>();
@@ -536,8 +490,8 @@ public class Game {
 	}
 
 	/**
-	 * Gets the {@link #PlayerManager} spectator players converted to list.
-	 * @return list of {@link #PlayerManager}
+	 * Gets the {@link PlayerManager} spectator players converted to list.
+	 * @return list of {@link PlayerManager}
 	 */
 	public List<PlayerManager> getSpectatorPlayersFromList() {
 		List<PlayerManager> list = new ArrayList<>();
@@ -552,9 +506,9 @@ public class Game {
 	}
 
 	/**
-	 * Gets the {@link #PlayerManager} by spectator player.
+	 * Gets the {@link PlayerManager} by spectator player.
 	 * @param p Spectator player
-	 * @return {@link #PlayerManager} by spectator player
+	 * @return {@link PlayerManager} by spectator player
 	 */
 	public PlayerManager getSpectatorPlayerManager(Player p) {
 		Validate.notNull(p, "Player can't be null!");
@@ -571,9 +525,9 @@ public class Game {
 	}
 
 	/**
-	 * Gets the {@link #PlayerManager} by player.
+	 * Gets the {@link PlayerManager} by player.
 	 * @param p Player
-	 * @return {@link #PlayerManager} by player
+	 * @return {@link PlayerManager} by player
 	 */
 	public PlayerManager getPlayerManager(Player p) {
 		Validate.notNull(p, "Player can't be null!");

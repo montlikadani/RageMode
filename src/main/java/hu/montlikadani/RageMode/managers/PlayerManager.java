@@ -34,7 +34,6 @@ public class PlayerManager {
 
 	/**
 	 * Stores the player tools, such as inventory, game mode, location etc.
-	 * @param p Player
 	 * @param spectator the player is spectator or not
 	 */
 	public void storePlayerTools(boolean spectator) {
@@ -82,7 +81,6 @@ public class PlayerManager {
 
 	/**
 	 * Adds back the tools to the player if have stored.
-	 * @param player Player
 	 * @param spectator the player is spectator or not
 	 */
 	public void addBackTools(boolean spectator) {

@@ -180,7 +180,7 @@ public class SignData {
 				}
 			}
 
-			if (GameUtils.getGame(game).isGameRunning(game)) {
+			if (GameUtils.getGame(game).isGameRunning()) {
 				if (type.equals("wool"))
 					updateBackground(Material.LIME_WOOL);
 				else if (type.equals("glass"))
@@ -214,7 +214,7 @@ public class SignData {
 				}
 			}
 
-			if (GameUtils.getStatus(game) == GameStatus.RUNNING && GameUtils.getGame(game).isGameRunning(game)) {
+			if (GameUtils.getStatus(game) == GameStatus.RUNNING && GameUtils.getGame(game).isGameRunning()) {
 				if (type.equals("wool"))
 					updateBackground(Material.getMaterial("WOOL"), 5);
 				else if (type.equals("glass"))

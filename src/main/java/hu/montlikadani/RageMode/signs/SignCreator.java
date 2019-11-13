@@ -40,20 +40,20 @@ public class SignCreator {
 		for (String one : list) {
 			String[] splited = one.split(",");
 			String world = splited[0];
+			if (world != null && Bukkit.getWorld(world) == null) {
+				Debug.logConsole(Level.WARNING, "World " + world + " not found to load this sign.");
+				continue;
+			}
+
 			double x = Double.parseDouble(splited[1]);
 			double y = Double.parseDouble(splited[2]);
 			double z = Double.parseDouble(splited[3]);
 			String game = splited[4];
 
-			if (Bukkit.getWorld(world) != null) {
-				Location loc = new Location(Bukkit.getWorld(world), x, y, z);
-				SignData data = new SignData(loc, game, signPlaceholder);
+			Location loc = new Location(Bukkit.getWorld(world), x, y, z);
+			SignData data = new SignData(loc, game, signPlaceholder);
 
-				signData.add(data);
-			} else {
-				Debug.logConsole(Level.WARNING, "World " + world + " not found to load this sign.");
-				continue;
-			}
+			signData.add(data);
 		}
 
 		totalSigns += list.size();

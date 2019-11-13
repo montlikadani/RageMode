@@ -6,8 +6,8 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class holostats {
 
@@ -23,34 +23,39 @@ public class holostats {
 			return false;
 		}
 
-		if (RageMode.getInstance().isHologramEnabled()) {
-			if (args.length >= 2) {
-				switch (args[1].toLowerCase()) {
-				case "add":
-					HoloHolder.addHolo(p.getLocation());
-					break;
-				case "remove":
-					if (!HoloHolder.deleteHologram(HoloHolder.getClosest(p, true))) {
-						sendMessage(p, RageMode.getLang().get("commands.holostats.no-holo-found"));
-						return false;
-					}
-
-					break;
-				case "tp":
-					if (HoloHolder.getHologramLocation(HoloHolder.getClosest(p, false)) == null) {
-						sendMessage(p, RageMode.getLang().get("commands.holostats.no-holo-found"));
-						return false;
-					}
-
-					p.teleport(HoloHolder.getHologramLocation(HoloHolder.getClosest(p, false)));
-					break;
-				default:
-					break;
-				}
-			} else
-				sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <add/remove/tp>"));
-		} else
+		if (!RageMode.getInstance().isHologramEnabled()) {
 			sendMessage(p, RageMode.getLang().get("missing-dependencies", "%depend%", "HolographicDisplays"));
-		return false;
+			return false;
+		}
+		if (args.length >= 2) {
+			switch (args[1].toLowerCase()) {
+			case "add":
+				HoloHolder.addHolo(p.getLocation());
+				break;
+			case "remove":
+				if (!HoloHolder.deleteHologram(HoloHolder.getClosest(p, true))) {
+					sendMessage(p, RageMode.getLang().get("commands.holostats.no-holo-found"));
+					return false;
+				}
+
+				break;
+			case "tp":
+				if (HoloHolder.getHologramLocation(HoloHolder.getClosest(p, false)) == null) {
+					sendMessage(p, RageMode.getLang().get("commands.holostats.no-holo-found"));
+					return false;
+				}
+
+				p.teleport(HoloHolder.getHologramLocation(HoloHolder.getClosest(p, false)));
+				break;
+			default:
+				break;
+			}
+		} else {
+			sendMessage(p,
+					RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <add/remove/tp>"));
+			return false;
+		}
+
+		return true;
 	}
 }

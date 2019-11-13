@@ -8,8 +8,8 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.LeaveGame;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class spectate {
 
@@ -36,7 +36,7 @@ public class spectate {
 			return false;
 		}
 
-		if (!GameUtils.getGame(map).isGameRunning(map)) {
+		if (!GameUtils.getGame(map).isGameRunning()) {
 			sendMessage(p, RageMode.getLang().get("game.not-running"));
 			return false;
 		}
@@ -55,8 +55,9 @@ public class spectate {
 			if (RageMode.getInstance().getConfiguration().getCfg().contains("items.leavegameitem"))
 				p.getInventory().setItem(RageMode.getInstance().getConfiguration().getCfg().getInt("items.leavegameitem.slot"),
 						LeaveGame.getItem());
+			return true;
 		}
 
-		return true;
+		return false;
 	}
 }

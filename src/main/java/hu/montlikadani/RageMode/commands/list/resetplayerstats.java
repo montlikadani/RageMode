@@ -10,8 +10,8 @@ import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.SQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class resetplayerstats {
 
@@ -36,7 +36,9 @@ public class resetplayerstats {
 			if (reset(target.getUniqueId().toString())) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.target-stats-reseted", "%player%", target.getName()));
 				sendMessage(target, RageMode.getLang().get("commands.stats.reseted"));
+				return true;
 			}
+
 			return false;
 		}
 
@@ -61,6 +63,7 @@ public class resetplayerstats {
 			if (reset(target.getUniqueId().toString())) {
 				sendMessage(p, RageMode.getLang().get("commands.stats.target-stats-reseted", "%player%", target.getName()));
 				sendMessage(target, RageMode.getLang().get("commands.stats.reseted"));
+				return true;
 			}
 
 			return false;
@@ -71,8 +74,10 @@ public class resetplayerstats {
 			return false;
 		}
 
-		if (reset(p.getUniqueId().toString()))
+		if (reset(p.getUniqueId().toString())) {
 			sendMessage(p, RageMode.getLang().get("commands.stats.reseted"));
+			return true;
+		}
 
 		return false;
 	}
@@ -81,15 +86,12 @@ public class resetplayerstats {
 		String type = RageMode.getInstance().getConfiguration().getCV().getDatabaseType();
 		switch (type) {
 		case "mysql":
-			MySQLStats.resetPlayerStatistic(uuid);
-			return true;
+			return MySQLStats.resetPlayerStatistic(uuid);
 		case "sql":
 		case "sqlite":
-			SQLStats.resetPlayerStatistic(uuid);
-			return true;
+			return SQLStats.resetPlayerStatistic(uuid);
 		default:
-			YAMLStats.resetPlayerStatistic(uuid);
-			return true;
+			return YAMLStats.resetPlayerStatistic(uuid);
 		}
 	}
 }

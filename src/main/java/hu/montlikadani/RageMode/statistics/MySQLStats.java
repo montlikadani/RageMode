@@ -1,5 +1,6 @@
 package hu.montlikadani.ragemode.statistics;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -39,7 +40,7 @@ public class MySQLStats {
 		int currentScore = 0;
 		int currentGames = 0;
 
-		String query = "SELECT * FROM " + mySQL.getPrefix() + "stats_players;";
+		String query = "SELECT * FROM `" + mySQL.getPrefix() + "stats_players`;";
 		RMConnection conn = mySQL.getConnection();
 		Statement statement = null;
 		try {
@@ -105,7 +106,7 @@ public class MySQLStats {
 		RMConnection conn = mySQL.getConnection();
 
 		Statement statement = null;
-		String query = "SELECT * FROM " + mySQL.getPrefix() + "stats_players WHERE uuid LIKE '" + playerPoints.getPlayerUUID() + "';";
+		String query = "SELECT * FROM `" + mySQL.getPrefix() + "stats_players` WHERE uuid LIKE `" + playerPoints.getPlayerUUID() + "`;";
 
 		int oldKills = 0;
 		int oldAxeKills = 0;
@@ -145,7 +146,7 @@ public class MySQLStats {
 			}
 			rs.close();
 		} catch (SQLException e) {
-			Debug.logConsole(Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID()))
+			Debug.logConsole(Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID())).getName()
 					+ " has no statistics yet! Creating one special row for him...");
 		}
 		if (statement != null) {
@@ -173,19 +174,43 @@ public class MySQLStats {
 		int newGames = oldGames + 1;
 		double newKD = (newDeaths != 0) ? (((double) newKills) / ((double) newDeaths)) : 1;
 
-		query = "REPLACE INTO " + mySQL.getPrefix() + "stats_players (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills, knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths, knife_deaths, wins, score, games, kd) VALUES ("
-				+ "'" + Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID())).getName() + "', " + "'"
-				+ playerPoints.getPlayerUUID() + "', " + Integer.toString(newKills) + ", "
-				+ Integer.toString(newAxeKills) + ", " + Integer.toString(newDirectArrowKills) + ", "
-				+ Integer.toString(newExplosionKills) + ", " + Integer.toString(newKnifeKills) + ", "
-				+ Integer.toString(newDeaths) + ", " + Integer.toString(newAxeDeaths) + ", "
-				+ Integer.toString(newDirectArrowDeaths) + ", " + Integer.toString(newExplosionDeaths) + ", "
-				+ Integer.toString(newKnifeDeaths) + ", " + Integer.toString(newWins) + ", "
-				+ Integer.toString(newScore) + ", " + Integer.toString(newGames) + ", " + Double.toString(newKD) + ");";
+		PreparedStatement prestt = null;
 		try {
-			conn.executeUpdate(query);
+			prestt = conn.prepareStatement("REPLACE INTO `" + mySQL.getPrefix()
+					+ "stats_players` (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills,"
+					+ " knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
+					+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+			if (prestt == null) {
+				return;
+			}
+
+			prestt.setString(1, Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID())).getName());
+			prestt.setString(2, playerPoints.getPlayerUUID());
+			prestt.setInt(3, newKills);
+			prestt.setInt(4, newAxeKills);
+			prestt.setInt(5, newDirectArrowKills);
+			prestt.setInt(6, newExplosionKills);
+			prestt.setInt(7, newKnifeKills);
+			prestt.setInt(8, newDeaths);
+			prestt.setInt(9, newAxeDeaths);
+			prestt.setInt(10, newDirectArrowDeaths);
+			prestt.setInt(11, newExplosionDeaths);
+			prestt.setInt(12, newKnifeDeaths);
+			prestt.setInt(13, newWins);
+			prestt.setInt(14, newScore);
+			prestt.setInt(15, newGames);
+			prestt.setDouble(16, newKD);
+			prestt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			if (prestt != null) {
+				try {
+					prestt.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
@@ -219,19 +244,18 @@ public class MySQLStats {
 
 		RMConnection conn = connect.getConnection();
 		Statement statement = null;
-		String query = "SELECT * FROM " + connect.getPrefix() + "stats_players;";
+		String query = "SELECT * FROM `" + connect.getPrefix() + "stats_players`;";
 		try {
 			statement = conn.createStatement();
 			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
 				String uuid = rs.getString("uuid");
-				if (uuid != null) {
+				if (uuid != null && getPlayerStatistics(uuid) != null) {
 					allRPPs.add(getPlayerStatistics(uuid));
 				}
 			}
 			rs.close();
 		} catch (SQLException e) {
-			return Collections.emptyList();
 		} finally {
 			if (statement != null) {
 				try {
@@ -268,7 +292,7 @@ public class MySQLStats {
 		RMConnection conn = connect.getConnection();
 
 		Statement statement = null;
-		String query = "SELECT * FROM " + connect.getPrefix() + "stats_players;";
+		String query = "SELECT * FROM `" + connect.getPrefix() + "stats_players`;";
 
 		int currentKills = 0;
 		int currentAxeKills = 0;
@@ -376,19 +400,35 @@ public class MySQLStats {
 			return false;
 		}
 
-		String query = "REPLACE INTO " + RageMode.getMySQL().getPrefix()
-				+ "stats_players (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills, knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths, knife_deaths, wins, score, games, kd) VALUES ("
-				+ "'" + Bukkit.getPlayer(UUID.fromString(rpp.getPlayerUUID())).getName() + "', " + "'"
-				+ rpp.getPlayerUUID() + "', " + Integer.toString(0) + ", " + Integer.toString(0) + ", "
-				+ Integer.toString(0) + ", " + Integer.toString(0) + ", " + Integer.toString(0) + ", "
-				+ Integer.toString(0) + ", " + Integer.toString(0) + ", " + Integer.toString(0) + ", "
-				+ Integer.toString(0) + ", " + Integer.toString(0) + ", " + Integer.toString(0) + ", "
-				+ Integer.toString(0) + ", " + Integer.toString(0) + ", " + Double.toString(0d) + ");";
+		PreparedStatement prestt = null;
 		try {
-			conn.executeUpdate(query);
+			prestt = conn.prepareStatement("REPLACE INTO `" + RageMode.getMySQL().getPrefix()
+					+ "stats_players` (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills,"
+					+ " knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
+					+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+			if (prestt == null) {
+				return false;
+			}
+
+			prestt.setString(1, Bukkit.getPlayer(UUID.fromString(rpp.getPlayerUUID())).getName());
+			prestt.setString(2, rpp.getPlayerUUID());
+			for (int i = 3; i <= 15; i++) {
+				prestt.setInt(i, 0);
+			}
+			prestt.setDouble(16, 0d);
+			prestt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			if (prestt != null) {
+				try {
+					prestt.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
 		}
+
 		return true;
 	}
 }

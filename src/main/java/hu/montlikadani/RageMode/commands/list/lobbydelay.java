@@ -8,8 +8,8 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class lobbydelay {
 
@@ -41,14 +41,21 @@ public class lobbydelay {
 				return false;
 			}
 
-			if (Utils.isInt(args[2])) {
-				plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".lobbydelay", Integer.parseInt(args[2]));
-				Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
-				sendMessage(p, RageMode.getLang().get("setup.success"));
-			} else
+			if (!Utils.isInt(args[2])) {
 				sendMessage(p, RageMode.getLang().get("not-a-number", "%number%", args[2]));
-		} else
-			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm lobbydelay <gameName> <seconds>"));
-		return false;
+				return false;
+			}
+
+			plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".lobbydelay",
+					Integer.parseInt(args[2]));
+			Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
+			sendMessage(p, RageMode.getLang().get("setup.success"));
+		} else {
+			sendMessage(p,
+					RageMode.getLang().get("missing-arguments", "%usage%", "/rm lobbydelay <gameName> <seconds>"));
+			return false;
+		}
+
+		return true;
 	}
 }

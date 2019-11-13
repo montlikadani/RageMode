@@ -3,7 +3,7 @@ package hu.montlikadani.ragemode.utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class Message {
+public class Misc {
 
 	public static boolean hasPerm(CommandSender sender, String perm) {
 		if (!(sender instanceof Player) || sender.hasPermission(perm))

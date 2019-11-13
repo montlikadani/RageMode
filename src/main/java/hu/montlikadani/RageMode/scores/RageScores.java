@@ -165,8 +165,11 @@ public class RageScores {
 	}
 
 	public static void removePointsForPlayer(String playerUUID) {
-		if (playerpoints.containsKey(playerUUID))
+		Validate.notNull(playerUUID, "Player UUID can't be null!");
+
+		if (playerpoints.containsKey(playerUUID)) {
 			playerpoints.remove(playerUUID);
+		}
 	}
 
 	public static void removePointsForPlayers(List<String> playerUUIDs) {
@@ -177,9 +180,9 @@ public class RageScores {
 	}
 
 	/**
-	 * Gets the specified player points
+	 * Gets the given player points
 	 * @param playerUUID UUID of player
-	 * @return playerPoints Player points
+	 * @return {@link PlayerPoints}
 	 */
 	public static PlayerPoints getPlayerPoints(String playerUUID) {
 		Validate.notNull(playerUUID, "Player UUId can't be null!");
@@ -189,26 +192,28 @@ public class RageScores {
 	}
 
 	/**
-	 * Gets the {@link #playerpoints} map
-	 * @return playerpoints
+	 * Gets the {@link PlayerPoints}
+	 * @return {@link #playerpoints}
 	 */
 	public static HashMap<String, PlayerPoints> getPlayerPointsMap() {
 		return playerpoints;
 	}
 
 	private static int addPoints(Player player, int points, boolean killer) {
-		// returns total points
 		String playerUUID = player.getUniqueId().toString();
+		int totalKills = 0;
+		int totalDeaths = 0;
+		int currentStreak = 0;
+		int longestStreak = 0;
+
 		if (playerpoints.containsKey(playerUUID)) {
 			PlayerPoints pointsHolder = getPlayerPoints(playerUUID);
 			int oldPoints = pointsHolder.getPoints();
 			int oldKills = pointsHolder.getKills();
 			int oldDeaths = pointsHolder.getDeaths();
 			int totalPoints = (oldPoints + points);
-			int totalKills = oldKills;
-			int totalDeaths = oldDeaths;
-			int currentStreak = 0;
-			int longestStreak = 0;
+			totalKills = oldKills;
+			totalDeaths = oldDeaths;
 			if (killer) {
 				totalKills++;
 				currentStreak = pointsHolder.getCurrentStreak() + 1;
@@ -227,10 +232,6 @@ public class RageScores {
 			return totalPoints;
 		}
 
-		int totalKills = 0;
-		int totalDeaths = 0;
-		int currentStreak = 0;
-		int longestStreak = 0;
 		if (killer) {
 			totalKills = 1;
 			currentStreak = 1;
@@ -256,6 +257,9 @@ public class RageScores {
 		int highestPoints = 0;
 		for (PlayerManager pm : players) {
 			String uuid = pm.getPlayer().getUniqueId().toString();
+			if (uuid == null) {
+				continue;
+			}
 
 			if (playerpoints.containsKey(uuid)) {
 				if (getPlayerPoints(uuid).getPoints() > highestPoints) {

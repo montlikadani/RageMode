@@ -1,7 +1,7 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -42,8 +42,11 @@ public class gametime {
 				sendMessage(p, RageMode.getLang().get("setup.set-game-time-success", "%game%", args[1], "%time%", args[2]));
 			} else
 				sendMessage(p, RageMode.getLang().get("not-a-number", "%number%", args[2]));
-		} else
+		} else {
 			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm gametime <gameName> <minutes>"));
-		return false;
+			return false;
+		}
+
+		return true;
 	}
 }

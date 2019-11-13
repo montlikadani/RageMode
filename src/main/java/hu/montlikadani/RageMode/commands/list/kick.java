@@ -10,8 +10,8 @@ import hu.montlikadani.ragemode.API.event.PlayerKickedFromGame;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class kick {
 
@@ -37,7 +37,7 @@ public class kick {
 			return false;
 		}
 
-		if (!GameUtils.getGame(name).isGameRunning(name)) {
+		if (!GameUtils.getGame(name).isGameRunning()) {
 			sendMessage(sender, RageMode.getLang().get("game.not-running"));
 			return false;
 		}
@@ -48,15 +48,19 @@ public class kick {
 			return false;
 		}
 
-		if (GameUtils.isPlayerPlaying(target)) {
-			Game game = GameUtils.getGameByPlayer(target);
-
-			Utils.callEvent(new PlayerKickedFromGame(game, sender, target));
-			game.removePlayer(target);
-
-			sendMessage(sender, RageMode.getLang().get("commands.kick.player-kicked", "%player%", target.getName(), "%game%", game));
-		} else
+		if (!GameUtils.isPlayerPlaying(target)) {
 			sendMessage(sender, RageMode.getLang().get("commands.kick.player-currently-not-playing"));
-		return false;
+			return false;
+		}
+
+		Game game = GameUtils.getGameByPlayer(target);
+
+		Utils.callEvent(new PlayerKickedFromGame(game, sender, target));
+		game.removePlayer(target);
+
+		sendMessage(sender,
+				RageMode.getLang().get("commands.kick.player-kicked", "%player%", target.getName(), "%game%", name));
+
+		return true;
 	}
 }

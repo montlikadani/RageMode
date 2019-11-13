@@ -45,7 +45,7 @@ public class SignPlaceholder {
 				}
 
 				line = line.replace("%running%",
-						GameUtils.getGame(game).isGameRunning(game)
+						GameUtils.getGame(game).isGameRunning()
 								? RageMode.getInstance().getConfiguration().getCV().getSignGameRunning()
 								: GameUtils.getStatus(game) == GameStatus.NOTREADY
 										? RageMode.getInstance().getConfiguration().getCV().getSignGameLocked()

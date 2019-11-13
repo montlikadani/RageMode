@@ -53,25 +53,31 @@ public class GameTimer extends TimerTask {
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
 		if (conf.getCV().isScoreboardEnabled()) {
-			gameBoard = new ScoreBoard(listPlayers, false);
-			gameBoard.addToScoreBoards(game.getName(), true);
+			gameBoard = new ScoreBoard(listPlayers);
+			gameBoard.addToList(game.getName());
 		}
 
 		if (conf.getCV().isTabEnabled()) {
 			gameTab = new TabTitles(listPlayers);
-			gameTab.addToTabList(game.getName(), true);
+			gameTab.addToList(game.getName());
 		}
 
 		if (conf.getCV().isTabFormatEnabled()) {
 			scoreTeam = new ScoreTeam(listPlayers);
-			scoreTeam.addToTeam(game.getName(), true);
+			scoreTeam.addToList(game.getName());
 		}
 	}
 
 	@Override
 	public void run() {
+		// Cancel the task if the instance is null, due to server restart
+		if (RageMode.getInstance() == null) {
+			cancel();
+			return;
+		}
+
 		try { // Stop the game if something wrong or missing
-			if (!game.isGameRunning(game.getName())) {
+			if (!game.isGameRunning()) {
 				GameUtils.setStatus(game.getName(), null);
 				cancel();
 				return;
@@ -146,7 +152,7 @@ public class GameTimer extends TimerTask {
 
 				if (gameBoard != null) {
 					String boardTitle = conf.getCV().getSbTitle();
-					if (boardTitle != null && !boardTitle.isEmpty())
+					if (!boardTitle.isEmpty())
 						gameBoard.setTitle(Utils.colors(boardTitle));
 
 					List<String> rows = conf.getCV().getSbContent();

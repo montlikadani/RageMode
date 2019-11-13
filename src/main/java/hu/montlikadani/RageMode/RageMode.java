@@ -220,28 +220,15 @@ public class RageMode extends JavaPlugin {
 
 		GameUtils.stopAllGames();
 
-		Thread thread = new Thread(() -> {
-			getServer().getScheduler().cancelTasks(instance);
-			HandlerList.unregisterAll(this);
-			sign = null;
-			instance = null;
-		});
-
-		thread.start();
-		while (thread.isAlive()) {
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+		getServer().getScheduler().cancelTasks(instance);
+		HandlerList.unregisterAll(this);
+		sign = null;
+		instance = null;
 	}
 
 	private void initYamlStatistics() {
 		YAMLStats.initS();
 		YAMLStats.loadPlayerStatistics();
-
-		RuntimePPManager.getPPListFromYAML();
 	}
 
 	private void connectMySQL() {
@@ -276,7 +263,6 @@ public class RageMode extends JavaPlugin {
 		}
 
 		MySQLStats.loadPlayerStatistics(mySQLConnect);
-		RuntimePPManager.getPPListFromMySQL();
 
 		if (mySQLConnect.isConnected()) {
 			Debug.logConsole("Successfully connected to MySQL!");
@@ -311,7 +297,6 @@ public class RageMode extends JavaPlugin {
 		}
 
 		SQLStats.loadPlayerStatistics(sqlConnect);
-		RuntimePPManager.getPPListFromSQL();
 
 		if (sqlConnect.isConnected()) {
 			Debug.logConsole("Successfully connected to SQL!");
@@ -325,7 +310,6 @@ public class RageMode extends JavaPlugin {
 				connectMySQL();
 			} else {
 				MySQLStats.loadPlayerStatistics(mySQLConnect);
-				RuntimePPManager.getPPListFromMySQL();
 			}
 
 			break;
@@ -335,16 +319,16 @@ public class RageMode extends JavaPlugin {
 				connectSQL();
 			} else {
 				SQLStats.loadPlayerStatistics(sqlConnect);
-				RuntimePPManager.getPPListFromSQL();
 			}
 
 			break;
 		default:
 			YAMLStats.initS();
 			YAMLStats.loadPlayerStatistics();
-			RuntimePPManager.getPPListFromYAML();
 			break;
 		}
+
+		RuntimePPManager.loadPPListFromDatabase();
 	}
 
 	private void initEconomy() {
@@ -376,7 +360,7 @@ public class RageMode extends JavaPlugin {
 				if (game != null) {
 					games.add(new Game(game));
 
-					if (GameUtils.getGame(game).isGameRunning(game)) {
+					if (GameUtils.getGame(game).isGameRunning()) {
 						GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
 					}
 

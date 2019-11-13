@@ -13,8 +13,8 @@ import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class stopgame {
 
@@ -28,31 +28,36 @@ public class stopgame {
 			String game = args[1];
 			Game g = GameUtils.getGame(game);
 
-			if (g.isGameRunning(game)) {
-				RageScores.calculateWinner(game, g.getPlayersFromList());
-
-				for (Iterator<PlayerManager> it = g.getPlayersFromList().iterator(); it.hasNext();) {
-					Player player = it.next().getPlayer();
-
-					player.removeMetadata("killedWith", RageMode.getInstance());
-					g.removePlayer(player);
-				}
-
-				for (Iterator<Entry<Player, PlayerManager>> it = g.getSpectatorPlayers().entrySet().iterator(); it
-						.hasNext();) {
-					Player pl = it.next().getKey();
-					g.removeSpectatorPlayer(pl);
-				}
-
-				GameUtils.broadcastToGame(game, RageMode.getLang().get("game.stopped", "%game%", game));
-
-				g.setGameNotRunning(game);
-				GameUtils.setStatus(game, null);
-				SignCreator.updateAllSigns(game);
-			} else
+			if (!g.isGameRunning()) {
 				sendMessage(sender, RageMode.getLang().get("game.not-running"));
-		} else
-			sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName>"));
-		return false;
+				return false;
+			}
+
+			RageScores.calculateWinner(game, g.getPlayersFromList());
+
+			for (Iterator<PlayerManager> it = g.getPlayersFromList().iterator(); it.hasNext();) {
+				Player player = it.next().getPlayer();
+
+				player.removeMetadata("killedWith", RageMode.getInstance());
+				sendMessage(player, RageMode.getLang().get("game.stopped", "%game%", game));
+				g.removePlayer(player);
+			}
+
+			for (Iterator<Entry<Player, PlayerManager>> it = g.getSpectatorPlayers().entrySet().iterator(); it
+					.hasNext();) {
+				Player pl = it.next().getKey();
+				g.removeSpectatorPlayer(pl);
+			}
+
+			g.setGameNotRunning();
+			GameUtils.setStatus(game, null);
+			SignCreator.updateAllSigns(game);
+		} else {
+			sendMessage(sender,
+					RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName>"));
+			return false;
+		}
+
+		return true;
 	}
 }

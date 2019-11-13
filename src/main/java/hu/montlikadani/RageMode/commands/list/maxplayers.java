@@ -1,7 +1,7 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -52,6 +52,6 @@ public class maxplayers {
 		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 
 		sendMessage(p, RageMode.getLang().get("commands.maxplayers.changed", "%game%", game, "%value%", x));
-		return false;
+		return true;
 	}
 }

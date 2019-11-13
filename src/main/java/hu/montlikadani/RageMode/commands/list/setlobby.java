@@ -9,8 +9,8 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class setlobby {
 
@@ -50,8 +50,11 @@ public class setlobby {
 
 			Configuration.saveFile(aCfg, plugin.getConfiguration().getArenasFile());
 			sendMessage(p, RageMode.getLang().get("setup.lobby.set-success", "%game%", gameName));
-		} else
+		} else {
 			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm setlobby <gameName>"));
-		return false;
+			return false;
+		}
+
+		return true;
 	}
 }

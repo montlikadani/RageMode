@@ -13,8 +13,8 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class removespawn {
 
@@ -47,9 +47,10 @@ public class removespawn {
 			Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
 			if (GameUtils.getGameSpawn(name) != null) {
-				GameUtils.getGameSpawn(name).getSpawnLocations().clear();
+				GameUtils.getGameSpawn(name).removeAllSpawn();
 				sendMessage(sender, RageMode.getLang().get("commands.removespawn.remove-success", "%number%", "all",
 						"%game%", name));
+				return true;
 			}
 
 			return false;
@@ -98,6 +99,6 @@ public class removespawn {
 
 		sendMessage(sender, RageMode.getLang().get("commands.removespawn.remove-success", "%number%", i, "%game%", name));
 
-		return false;
+		return true;
 	}
 }

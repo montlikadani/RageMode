@@ -37,6 +37,7 @@ import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerEggThrowEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
@@ -130,7 +131,7 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		String game = GameUtils.getGameByPlayer(p).getPlayersGame(p);
+		String game = GameUtils.getGameByPlayer(p).getName();
 
 		if (GameUtils.getStatus(game) == GameStatus.WAITING) {
 			if (!plugin.getConfiguration().getCV().isChatEnabledinLobby()
@@ -184,7 +185,7 @@ public class EventListener implements Listener {
 				return;
 			}
 
-			String game = GameUtils.getGameByPlayer(shooter).getPlayersGame(shooter);
+			String game = GameUtils.getGameByPlayer(shooter).getName();
 
 			if (GameUtils.getStatus(game) == GameStatus.GAMEFREEZE && waitingGames.containsKey(game)) {
 				if (waitingGames.get(game)) {
@@ -241,8 +242,8 @@ public class EventListener implements Listener {
 				Player killer = (Player) event.getDamager();
 
 				if (GameUtils.isPlayerPlaying(killer)) {
-					if (waitingGames.containsKey(GameUtils.getGameByPlayer(killer).getPlayersGame(killer))) {
-						if (waitingGames.get(GameUtils.getGameByPlayer(killer).getPlayersGame(killer))) {
+					if (waitingGames.containsKey(GameUtils.getGameByPlayer(killer).getName())) {
+						if (waitingGames.get(GameUtils.getGameByPlayer(killer).getName())) {
 							event.setCancelled(true);
 							return;
 						}
@@ -294,7 +295,7 @@ public class EventListener implements Listener {
 		}
 
 		Player victim = (Player) e;
-		String game = GameUtils.getGameByPlayer(victim).getPlayersGame(victim);
+		String game = GameUtils.getGameByPlayer(victim).getName();
 
 		// Hit player event
 		if (GameUtils.getStatus(victim) == GameStatus.RUNNING) {
@@ -329,8 +330,8 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getPlayersGame(p))) {
-			if (waitingGames.get(GameUtils.getGameByPlayer(p).getPlayersGame(p))) {
+		if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())) {
+			if (waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
 				e.setCancelled(true);
 			}
 		}
@@ -345,15 +346,15 @@ public class EventListener implements Listener {
 
 		if (deceased != null && GameUtils.isPlayerPlaying(deceased)
 				&& GameUtils.getStatus(deceased) == GameStatus.RUNNING) {
-			String game = GameUtils.getGameByPlayer(deceased).getPlayersGame(deceased);
+			String game = GameUtils.getGameByPlayer(deceased).getName();
 
 			if ((deceased.getKiller() != null && GameUtils.isPlayerPlaying(deceased.getKiller()))
 					|| deceased.getKiller() == null) {
 				boolean doDeathBroadcast = plugin.getConfiguration().getCV().isDeathMsgs();
 
 				if (plugin.getConfiguration().getArenasCfg().isSet("arenas." + game + ".death-messages")) {
-					String gameBroadcast = plugin.getConfiguration().getArenasCfg().getString("arenas." + game + ".death-messages");
-					if (gameBroadcast != null && gameBroadcast != "") {
+					String gameBroadcast = plugin.getConfiguration().getArenasCfg().getString("arenas." + game + ".death-messages", "");
+					if (!gameBroadcast.isEmpty()) {
 						if (gameBroadcast.equals("true") || gameBroadcast.equals("false"))
 							doDeathBroadcast = Boolean.parseBoolean(gameBroadcast);
 					}
@@ -508,7 +509,7 @@ public class EventListener implements Listener {
 
 		// If player still is in game with respawn screen then remove player
 		// 1.14 issue
-		if (!game.isGameRunning(game.getPlayersGame(p))) {
+		if (!game.isGameRunning()) {
 			game.removePlayer(p);
 			return;
 		}
@@ -519,7 +520,7 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		GameSpawn gsg = GameUtils.getGameSpawn(game.getPlayersGame(p));
+		GameSpawn gsg = GameUtils.getGameSpawn(game.getName());
 		if (gsg.getSpawnLocations().size() > 0) {
 			e.setRespawnLocation(gsg.getRandomSpawn());
 		}
@@ -593,8 +594,8 @@ public class EventListener implements Listener {
 		}
 
 		if (GameUtils.isPlayerPlaying(p)) {
-			if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getPlayersGame(p))) {
-				if (waitingGames.get(GameUtils.getGameByPlayer(p).getPlayersGame(p))) {
+			if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())) {
+				if (waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
 					p.sendMessage(RageMode.getLang().get("game.command-disabled-in-end-game"));
 					event.setCancelled(true);
 					return;
@@ -638,8 +639,8 @@ public class EventListener implements Listener {
 		event.setHatching(false);
 
 		// check if player is in waiting game (game freeze)
-		if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getPlayersGame(p))) {
-			if (waitingGames.get(GameUtils.getGameByPlayer(p).getPlayersGame(p)))
+		if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())) {
+			if (waitingGames.get(GameUtils.getGameByPlayer(p).getName()))
 				return;
 		}
 
@@ -670,8 +671,8 @@ public class EventListener implements Listener {
 				}
 
 				// Remove egg in 1 second of the game when a player dropped
-				if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getPlayersGame(p))) {
-					if (waitingGames.get(GameUtils.getGameByPlayer(p).getPlayersGame(p))) {
+				if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())) {
+					if (waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
 						grenadeExplosionVictims.clear();
 
 						grenade.remove();
@@ -714,8 +715,8 @@ public class EventListener implements Listener {
 		if (GameUtils.isPlayerPlaying(p)) {
 			if (GameUtils.getStatus(p) == GameStatus.RUNNING) {
 				Player thrower = event.getPlayer();
-				if (waitingGames.containsKey(GameUtils.getGameByPlayer(thrower).getPlayersGame(thrower))) {
-					if (waitingGames.get(GameUtils.getGameByPlayer(thrower).getPlayersGame(thrower)))
+				if (waitingGames.containsKey(GameUtils.getGameByPlayer(thrower).getName())) {
+					if (waitingGames.get(GameUtils.getGameByPlayer(thrower).getName()))
 						return;
 				}
 
@@ -736,7 +737,7 @@ public class EventListener implements Listener {
 					ItemMeta meta = hand.getItemMeta();
 					if (meta != null && meta.getDisplayName() != null) {
 						Game game = GameUtils.getGameByPlayer(p);
-						String name = game.getPlayersGame(p);
+						String name = game.getName();
 
 						if (p.hasPermission("ragemode.admin.item.forcestart")
 								&& meta.getDisplayName().equals(ForceStarter.getName())) {
@@ -807,6 +808,13 @@ public class EventListener implements Listener {
 					|| type == InventoryType.MERCHANT)
 					|| (Version.isCurrentEqualOrHigher(Version.v1_11_R1) && type == InventoryType.SHULKER_BOX))
 				e.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onEntityInteract(PlayerInteractEntityEvent e) {
+		if (GameUtils.isPlayerPlaying(e.getPlayer())) {
+			e.setCancelled(true);
 		}
 	}
 
@@ -948,7 +956,7 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		String game = GameUtils.getGameByPlayer(p).getPlayersGame(p);
+		String game = GameUtils.getGameByPlayer(p).getName();
 
 		if (GameUtils.getStatus(p) == GameStatus.RUNNING) {
 			if (waitingGames != null && waitingGames.containsKey(game)) {
@@ -979,7 +987,7 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void onWorldChangedEvent(PlayerTeleportEvent event) {
 		if (GameUtils.isPlayerPlaying(event.getPlayer()) && !MapChecker.isGameWorld(
-				GameUtils.getGameByPlayer(event.getPlayer()).getPlayersGame(event.getPlayer()),
+				GameUtils.getGameByPlayer(event.getPlayer()).getName(),
 				event.getTo().getWorld())) {
 			if (!event.getPlayer().hasMetadata("Leaving"))
 				event.getPlayer().performCommand("rm leave");

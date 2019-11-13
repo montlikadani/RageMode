@@ -8,8 +8,8 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class latestart {
 
@@ -36,7 +36,7 @@ public class latestart {
 			return false;
 		}
 
-		if (GameUtils.getStatus(GameUtils.getGameByPlayer(p).getPlayersGame(p)) != GameStatus.WAITING) {
+		if (GameUtils.getStatus(GameUtils.getGameByPlayer(p).getName()) != GameStatus.WAITING) {
 			sendMessage(sender, RageMode.getLang().get("commands.latestart.player-not-in-lobby"));
 			return false;
 		}
@@ -52,8 +52,8 @@ public class latestart {
 			return false;
 		}
 
-		GameUtils.getGame(GameUtils.getGameByPlayer(p).getPlayersGame(p)).getLobbyTimer().addLobbyTime(newTime);
+		GameUtils.getGame(GameUtils.getGameByPlayer(p).getName()).getLobbyTimer().addLobbyTime(newTime);
 		sendMessage(sender, RageMode.getLang().get("commands.latestart.lobby-timer-increased", "%newtime%", newTime));
-		return false;
+		return true;
 	}
 }

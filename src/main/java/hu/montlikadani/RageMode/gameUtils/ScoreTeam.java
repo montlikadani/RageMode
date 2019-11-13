@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
-public class ScoreTeam {
+public class ScoreTeam implements IObjectives {
 
 	public static HashMap<String, ScoreTeam> allTeams = new HashMap<>();
 	private List<Player> players = new ArrayList<>();
@@ -18,22 +18,29 @@ public class ScoreTeam {
 	/**
 	 * Creates a new instance of Team, which manages the Team for
 	 * the team prefixes/suffixes.
-	 * 
-	 * @param playerString List players that can be add to the list
+	 * @param players The list of {@link PlayerManager}
 	 */
 	public ScoreTeam(List<PlayerManager> players) {
 		players.forEach(pm -> this.players.add(pm.getPlayer()));
 	}
 
 	/**
-	 * Adds this instance to the global ScoreTeam. This
-	 * can be accessed with the getScore(String gameName) method.
-	 * 
+	 * Adds this instance to the global ScoreTeam.
+	 * @param gameName the unique game-name for which the ScoreTeam element should be saved for.
+	 * @return Whether the ScoreTeam was stored successfully or not.
+	 */
+	public boolean addToList(String gameName) {
+		return addToList(gameName, true);
+	}
+
+	/**
+	 * Adds this instance to the global ScoreTeam.
 	 * @param gameName the unique game-name for which the ScoreTeam element should be saved for.
 	 * @param forceReplace force the game put to the list
 	 * @return Whether the ScoreTeam was stored successfully or not.
 	 */
-	public boolean addToTeam(String gameName, boolean forceReplace) {
+	@Override
+	public boolean addToList(String gameName, boolean forceReplace) {
 		if (!allTeams.containsKey(gameName)) {
 			allTeams.put(gameName, this);
 			return true;
@@ -43,14 +50,6 @@ public class ScoreTeam {
 			return true;
 		} else
 			return false;
-	}
-
-	/**
-	 * Returns the stored players who added to the list.
-	 * @return List player
-	 */
-	public List<Player> getPlayers() {
-		return Collections.unmodifiableList(players);
 	}
 
 	/**
@@ -75,10 +74,21 @@ public class ScoreTeam {
 	}
 
 	/**
+	 * Removing the team from all online player that are currently playing in a game.
+	 */
+	@Override
+	public void remove() {
+		for (Player player : this.players) {
+			remove(player);
+		}
+	}
+
+	/**
 	 * Removes the team from player
 	 * @param player Player
 	 */
-	public void removeTeam(Player player) {
+	@Override
+	public void remove(Player player) {
 		player.setPlayerListName(player.getName());
 
 		for (Iterator<Player> it = this.players.iterator(); it.hasNext();) {
@@ -90,11 +100,18 @@ public class ScoreTeam {
 	}
 
 	/**
-	 * Removing the team from all online player that are currently playing in the game.
+	 * Returns the HashMap with all the ScoreTeam elements.
+	 * @return {@link #allTeams}
 	 */
-	public void removeTeam() {
-		for (Player player : this.players) {
-			removeTeam(player);
-		}
+	public HashMap<String, ScoreTeam> getTeams() {
+		return allTeams;
+	}
+
+	/**
+	 * Returns the stored players who added to the list.
+	 * @return An unmodifiable list of players
+	 */
+	public List<Player> getPlayers() {
+		return Collections.unmodifiableList(players);
 	}
 }

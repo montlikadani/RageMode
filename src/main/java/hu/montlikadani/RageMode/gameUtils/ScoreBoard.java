@@ -17,27 +17,28 @@ import org.bukkit.scoreboard.ScoreboardManager;
 import hu.montlikadani.ragemode.holder.ScoreBoardHolder;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
-public class ScoreBoard {
+public class ScoreBoard implements IObjectives {
 
 	public static HashMap<String, ScoreBoard> allScoreBoards = new HashMap<>();
-	private List<Player> player = new ArrayList<>();
+	private List<Player> players = new ArrayList<>();
 	private ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
 	private HashMap<Player, ScoreBoardHolder> scoreboards = new HashMap<>();
 
 	/**
 	 * Creates a new instance of ScoreBoard, which manages the ScoreBoards for
-	 * the given List of Players.
-	 * @param player The List of player, the ScoreBoard should be set to later.
+	 * the given List of Player UUID Strings.
+	 * 
+	 * @param players The list of {@link PlayerManager}
 	 */
 	@SuppressWarnings("deprecation")
-	public ScoreBoard(List<Player> player) {
-		this.player = player;
-		for (Player loopPlayer : player) {
+	public ScoreBoard(List<PlayerManager> players) {
+		players.forEach(pm -> this.players.add(pm.getPlayer()));
+
+		for (Player loopPlayer : this.players) {
 			Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
 			scoreboard.clearSlot(DisplaySlot.SIDEBAR);
 			removeScoreBoard(loopPlayer, false);
 
-			// TODO Make this to Reflection
 			Objective objective = scoreboard.registerNewObjective("ragescores", "dummy");
 			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 			scoreboards.put(loopPlayer, new ScoreBoardHolder(loopPlayer, scoreboard, objective));
@@ -45,28 +46,31 @@ public class ScoreBoard {
 	}
 
 	/**
-	 * Creates a new instance of ScoreBoard, which manages the ScoreBoards for
-	 * the given List of Player UUID Strings.
-	 * 
-	 * @param playerString The List of player, the ScoreBoard should be set to later.
-	 * @param isList Set it to whatever you want, it won't be used. Just to be able to create a new
-	 * constructor with the List parameter.
+	 * Adds this instance to the global ScoreBoards list allScoreBoards.
+	 * @param gameName the unique game-name for which the ScoreBoards element should be saved for.
+	 * @return Whether the ScoreBoard was stored successfully or not.
 	 */
-	@SuppressWarnings("deprecation")
-	public ScoreBoard(List<PlayerManager> players, boolean isList) {
-		for (PlayerManager pm : players) {
-			this.player.add(pm.getPlayer());
-		}
+	public boolean addToList(String gameName) {
+		return addToList(gameName, true);
+	}
 
-		for (Player loopPlayer : this.player) {
-			Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
-			scoreboard.clearSlot(DisplaySlot.SIDEBAR);
-			removeScoreBoard(loopPlayer, false);
-
-			Objective objective = scoreboard.registerNewObjective("ragescores", "dummy");
-			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-			scoreboards.put(loopPlayer, new ScoreBoardHolder(loopPlayer, scoreboard, objective));
-		}
+	/**
+	 * Adds this instance to the global ScoreBoards list allScoreBoards.
+	 * @param gameName the unique game-name for which the ScoreBoards element should be saved for.
+	 * @param forceReplace force the game put to the list
+	 * @return Whether the ScoreBoard was stored successfully or not.
+	 */
+	@Override
+	public boolean addToList(String gameName, boolean forceReplace) {
+		if (!allScoreBoards.containsKey(gameName)) {
+			allScoreBoards.put(gameName, this);
+			return true;
+		} else if (forceReplace) {
+			allScoreBoards.remove(gameName);
+			allScoreBoards.put(gameName, this);
+			return true;
+		} else
+			return false;
 	}
 
 	/**
@@ -74,7 +78,7 @@ public class ScoreBoard {
 	 * @param title The String, where the title should be set to.
 	 */
 	public void setTitle(String title) {
-		for (Player player : this.player) {
+		for (Player player : this.players) {
 			scoreboards.get(player).getObjective().setDisplayName(title);
 		}
 	}
@@ -87,7 +91,7 @@ public class ScoreBoard {
 	 * @param dummyScore The integer, the score should be set to.
 	 */
 	public void setLine(String line, int dummyScore) {
-		for (Player player : this.player) {
+		for (Player player : this.players) {
 			Score score = scoreboards.get(player).getObjective().getScore(line);
 			score.setScore(dummyScore);
 		}
@@ -112,7 +116,7 @@ public class ScoreBoard {
 	 * Sets the ScoreBoard for all the Players given in the constructor.
 	 */
 	public void setScoreBoard() {
-		this.player.forEach(this::setScoreBoard);
+		this.players.forEach(this::setScoreBoard);
 	}
 
 	/**
@@ -124,11 +128,26 @@ public class ScoreBoard {
 	}
 
 	/**
-	 * Removes the ScoreBoard for all the Players given in the constructor.
+	 * Removes the ScoreBoard for all the players given in the constructor.
 	 */
-	public void removeScoreBoard() {
-		for (Player player : this.player) {
+	@Override
+	public void remove() {
+		for (Player player : this.players) {
 			removeScoreBoard(player, false);
+		}
+	}
+
+	/**
+	 * Removes the player from the stored list.
+	 * @param pl Player
+	 */
+	@Override
+	public void remove(Player pl) {
+		for (Iterator<Player> it = players.iterator(); it.hasNext();) {
+			if (it.next().equals(pl)) {
+				it.remove();
+				break;
+			}
 		}
 	}
 
@@ -142,46 +161,13 @@ public class ScoreBoard {
 		scoreboards.remove(player);
 
 		if (rem) {
-			removePlayer(player);
+			remove(player);
 		}
-	}
-
-	/**
-	 * Removes the player from the stored list.
-	 * @param pl Player
-	 */
-	public void removePlayer(Player pl) {
-		for (Iterator<Player> it = player.iterator(); it.hasNext();) {
-			if (it.next().equals(pl)) {
-				it.remove();
-				break;
-			}
-		}
-	}
-
-	/**
-	 * Adds this instance to the global ScoreBoards list allScoreBoards. This
-	 * can be accessed with the getScoreBoard(String gameName) method.
-	 * 
-	 * @param gameName the unique game-name for which the ScoreBoards element should be saved for.
-	 * @param forceReplace force the game put to the list
-	 * @return Whether the ScoreBoard was stored successfully or not.
-	 */
-	public boolean addToScoreBoards(String gameName, boolean forceReplace) {
-		if (!allScoreBoards.containsKey(gameName)) {
-			allScoreBoards.put(gameName, this);
-			return true;
-		} else if (forceReplace) {
-			allScoreBoards.remove(gameName);
-			allScoreBoards.put(gameName, this);
-			return true;
-		} else
-			return false;
 	}
 
 	/**
 	 * Returns the HashMap with all the ScoreBoardHolder elements for each Player within this ScoreBoard.
-	 * @return The ScoreBoardHolder HashMap.
+	 * @return {@link #scoreboards}
 	 */
 	public HashMap<Player, ScoreBoardHolder> getScoreboards() {
 		return scoreboards;
@@ -192,6 +178,6 @@ public class ScoreBoard {
 	 * @return List player
 	 */
 	public List<Player> getPlayers() {
-		return Collections.unmodifiableList(player);
+		return Collections.unmodifiableList(players);
 	}
 }

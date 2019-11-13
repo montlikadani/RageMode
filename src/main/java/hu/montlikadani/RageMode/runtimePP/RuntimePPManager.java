@@ -1,11 +1,11 @@
 package hu.montlikadani.ragemode.runtimePP;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameUtils.MergeSort;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.SQLStats;
@@ -13,24 +13,21 @@ import hu.montlikadani.ragemode.statistics.YAMLStats;
 
 public class RuntimePPManager {
 
-	private static List<PlayerPoints> RuntimePPList;
+	private static List<PlayerPoints> RuntimePPList = new ArrayList<>();
 
-	public static void getPPListFromMySQL() {
-		RuntimePPList = MySQLStats.getAllPlayerStatistics();
-		MergeSort ms = new MergeSort();
-		ms.sort(RuntimePPList);
-	}
-
-	public static void getPPListFromSQL() {
-		RuntimePPList = SQLStats.getAllPlayerStatistics();
-		MergeSort ms = new MergeSort();
-		ms.sort(RuntimePPList);
-	}
-
-	public static void getPPListFromYAML() {
-		RuntimePPList = YAMLStats.getAllPlayerStatistics();
-		MergeSort ms = new MergeSort();
-		ms.sort(RuntimePPList);
+	public static void loadPPListFromDatabase() {
+		switch (RageMode.getInstance().getConfiguration().getCV().getDatabaseType()) {
+		case "sql":
+		case "sqlite":
+			RuntimePPList.addAll(SQLStats.getAllPlayerStatistics());
+			break;
+		case "mysql":
+			RuntimePPList.addAll(MySQLStats.getAllPlayerStatistics());
+			break;
+		default:
+			RuntimePPList.addAll(YAMLStats.getAllPlayerStatistics());
+			break;
+		}
 	}
 
 	/**

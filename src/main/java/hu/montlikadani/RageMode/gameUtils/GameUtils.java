@@ -48,7 +48,7 @@ import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.statistics.DBThreads;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class GameUtils {
 
@@ -57,7 +57,7 @@ public class GameUtils {
 	/**
 	 * Broadcast a message to the currently playing players for that given game.
 	 * @param name Game Name
-	 * @param message Message
+	 * @param message Misc
 	 */
 	public static void broadcastToGame(String name, String message) {
 		broadcastToGame(getGame(name), message);
@@ -66,7 +66,7 @@ public class GameUtils {
 	/**
 	 * Broadcast a message to the currently playing players for that given game.
 	 * @param game Game
-	 * @param message Message
+	 * @param message Misc
 	 */
 	public static void broadcastToGame(Game game, String message) {
 		Validate.notNull(game, "Game can't be null!");
@@ -420,7 +420,7 @@ public class GameUtils {
 				}
 			}
 
-			if (game.addPlayer(p, name)) {
+			if (game.addPlayer(p)) {
 				if (!conf.getCV().isSavePlayerData()) {
 					// We still need some data saving
 					game.getPlayerManager(p).getStorePlayer().oldLocation = p.getLocation();
@@ -470,7 +470,7 @@ public class GameUtils {
 	 * @param run execute listed commands and log to console for left
 	 */
 	public static void kickPlayer(Player p, Game game, boolean run) {
-		if (game != null && getStatus(game.getPlayersGame(p)) == GameStatus.RUNNING) {
+		if (game != null && getStatus(game.getName()) == GameStatus.RUNNING) {
 			if (game.removePlayer(p) && run) {
 				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
 
@@ -683,7 +683,7 @@ public class GameUtils {
 
 		final String name = game.getName();
 
-		if (!game.isGameRunning(name)) {
+		if (!game.isGameRunning()) {
 			return;
 		}
 
@@ -740,7 +740,7 @@ public class GameUtils {
 		if (!winnervalid) {
 			broadcastToGame(name, RageMode.getLang().get("game.no-won"));
 
-			for (PlayerManager pm : players) {
+			for (final PlayerManager pm : players) {
 				// Why?
 				Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 						() -> pm.getPlayer().setGameMode(GameMode.SPECTATOR));
@@ -773,7 +773,7 @@ public class GameUtils {
 	}
 
 	private static void finishStopping(Game game, Player winner) {
-		if (!game.isGameRunning(game.getName())) {
+		if (!game.isGameRunning()) {
 			return;
 		}
 
@@ -799,22 +799,9 @@ public class GameUtils {
 
 			th.start();
 
-			// Lets try to load the stats if null or empty
-			if (RuntimePPManager.getRuntimePPList() == null || RuntimePPManager.getRuntimePPList().isEmpty()) {
-				switch (RageMode.getInstance().getConfiguration().getCV().getDatabaseType()) {
-				case "mysql":
-					RuntimePPManager.getPPListFromMySQL();
-					break;
-				case "sql":
-				case "sqlite":
-					RuntimePPManager.getPPListFromSQL();
-					break;
-				case "yaml":
-					RuntimePPManager.getPPListFromYAML();
-					break;
-				default:
-					break;
-				}
+			// Lets try to load the stats if empty
+			if (RuntimePPManager.getRuntimePPList().isEmpty()) {
+				RuntimePPManager.loadPPListFromDatabase();
 			}
 
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
@@ -843,7 +830,7 @@ public class GameUtils {
 		}
 
 		broadcastToGame(game.getName(), RageMode.getLang().get("game.stopped", "%game%", game.getName()));
-		game.setGameNotRunning(game.getName());
+		game.setGameNotRunning();
 		runCommandsForAll(game.getName(), "stop");
 		SignCreator.updateAllSigns(game.getName());
 
@@ -868,15 +855,14 @@ public class GameUtils {
 		setStatus(game.getName(), null);
 
 		if (RageMode.getInstance().getConfiguration().getCV().isRestartServerEnabled()) {
-			try {
-				Class.forName("org.spigotmc.SpigotConfig");
-
+			if (RageMode.isSpigot()) {
 				Bukkit.spigot().restart();
-			} catch (ClassNotFoundException e) {
+			} else {
 				Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "restart");
 			}
-		} else if (RageMode.getInstance().getConfiguration().getCV().isStopServerEnabled())
+		} else if (RageMode.getInstance().getConfiguration().getCV().isStopServerEnabled()) {
 			Bukkit.shutdown();
+		}
 	}
 
 	/**
@@ -896,7 +882,7 @@ public class GameUtils {
 			if (name != null) {
 				Game g = getGame(name);
 				if (g != null) {
-					if (g.isGameRunning(name)) {
+					if (g.isGameRunning()) {
 						Debug.logConsole("Stopping " + name + " ...");
 
 						RageScores.calculateWinner(name, g.getPlayersFromList());
@@ -915,7 +901,7 @@ public class GameUtils {
 							g.removeSpectatorPlayer(pl);
 						}
 
-						g.setGameNotRunning(name);
+						g.setGameNotRunning();
 
 						Debug.logConsole(name + " has been stopped.");
 					} else if (getStatus(name) == GameStatus.WAITING) {
@@ -946,7 +932,7 @@ public class GameUtils {
 	 * @return {@link GameStatus} if the player is in game
 	 */
 	public static GameStatus getStatus(Player p) {
-		return isPlayerPlaying(p) ? getStatus(getGameByPlayer(p).getPlayersGame(p)) : null;
+		return isPlayerPlaying(p) ? getStatus(getGameByPlayer(p).getName()) : null;
 	}
 
 	/**

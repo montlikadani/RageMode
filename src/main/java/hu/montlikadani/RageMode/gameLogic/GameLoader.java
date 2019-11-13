@@ -37,7 +37,7 @@ public class GameLoader {
 
 		String name = game.getName();
 
-		game.setGameRunning(name);
+		game.setGameRunning();
 		GameUtils.setStatus(name, GameStatus.RUNNING);
 
 		Configuration conf = RageMode.getInstance().getConfiguration();

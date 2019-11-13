@@ -12,8 +12,8 @@ import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class listplayers {
 
@@ -37,7 +37,7 @@ public class listplayers {
 				return false;
 			}
 
-			for (Iterator<String> e = Arrays.asList(GameUtils.getGameByPlayer(p).getPlayersGame(p)).iterator(); e.hasNext();) {
+			for (Iterator<String> e = Arrays.asList(GameUtils.getGameByPlayer(p).getName()).iterator(); e.hasNext();) {
 				sb.append("&7-&6 " + p.getName() + "&a - " + e.next());
 			}
 
@@ -64,7 +64,7 @@ public class listplayers {
 				for (PlayerManager pm : GameUtils.getGame(game).getPlayersFromList()) {
 					Player player = pm.getPlayer();
 
-					for (Iterator<String> e = Arrays.asList(GameUtils.getGameByPlayer(player).getPlayersGame(player))
+					for (Iterator<String> e = Arrays.asList(GameUtils.getGameByPlayer(player).getName())
 							.iterator(); e.hasNext();) {
 						sb.append("&7-&6 " + player.getName() + "&a - " + e.next());
 					}

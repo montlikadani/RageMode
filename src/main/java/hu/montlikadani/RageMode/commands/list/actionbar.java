@@ -7,8 +7,8 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class actionbar {
 
@@ -43,8 +43,11 @@ public class actionbar {
 			plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".actionbar", Boolean.parseBoolean(args[2]));
 			Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 			sendMessage(p, RageMode.getLang().get("setup.success"));
-		} else
+		} else {
 			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm actionbar <gameName> <true|false>"));
-		return false;
+			return false;
+		}
+
+		return true;
 	}
 }

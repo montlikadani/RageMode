@@ -9,8 +9,8 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class stats {
 
@@ -33,7 +33,7 @@ public class stats {
 			}
 
 			showStats(sender, target);
-			return false;
+			return true;
 		}
 
 		Player p = (Player) sender;
@@ -45,11 +45,11 @@ public class stats {
 			}
 
 			showStats(p, target);
-			return false;
+			return true;
 		}
 
 		showStats(p, p);
-		return false;
+		return true;
 	}
 
 	private void showStats(CommandSender sender, Player t) {

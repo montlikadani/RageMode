@@ -14,8 +14,8 @@ import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.SQLStats;
 import hu.montlikadani.ragemode.statistics.YAMLStats;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
-import static hu.montlikadani.ragemode.utils.Message.sendMessage;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class points {
 
@@ -115,6 +115,6 @@ public class points {
 		}
 
 		sendMessage(sender, RageMode.getLang().get("commands.points.changed", "%amount%", amount, "%new%", rpp.getPoints()));
-		return false;
+		return true;
 	}
 }

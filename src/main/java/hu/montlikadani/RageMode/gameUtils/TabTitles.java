@@ -15,7 +15,7 @@ import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
-public class TabTitles {
+public class TabTitles implements IObjectives {
 
 	public static HashMap<String, TabTitles> allTabLists = new HashMap<>();
 	private List<Player> player = new ArrayList<>();
@@ -23,22 +23,29 @@ public class TabTitles {
 	/**
 	 * Creates a new instance of TabList, which manages the Tablist for
 	 * the List of Players.
-	 * 
-	 * @param players List players that can be add to the list
+	 * @param players The list of {@link PlayerManager}
 	 */
 	public TabTitles(List<PlayerManager> players) {
 		players.forEach(pm -> this.player.add(pm.getPlayer()));
 	}
 
 	/**
-	 * Adds this instance to the global TabList list allTabLists. This
-	 * can be accessed with the getTabList(String gameName) method.
-	 * 
+	 * Adds this instance to the global TabList list allTabLists.
+	 * @param gameName the unique game-name for which the TabList element should be saved for.
+	 * @return Whether the TabList was stored successfully or not.
+	 */
+	public boolean addToList(String gameName) {
+		return addToList(gameName, true);
+	}
+
+	/**
+	 * Adds this instance to the global TabList list allTabLists.
 	 * @param gameName the unique game-name for which the TabList element should be saved for.
 	 * @param forceReplace force the game put to the list
 	 * @return Whether the TabList was stored successfully or not.
 	 */
-	public boolean addToTabList(String gameName, boolean forceReplace) {
+	@Override
+	public boolean addToList(String gameName, boolean forceReplace) {
 		if (!allTabLists.containsKey(gameName)) {
 			allTabLists.put(gameName, this);
 			return true;
@@ -48,14 +55,6 @@ public class TabTitles {
 			return true;
 		} else
 			return false;
-	}
-
-	/**
-	 * Returns the players who added to the list.
-	 * @return List player
-	 */
-	public List<Player> getPlayers() {
-		return Collections.unmodifiableList(player);
 	}
 
 	/**
@@ -107,18 +106,19 @@ public class TabTitles {
 	}
 
 	/**
-	 * Removing the tablist from all online player that are currently playing in the game.
+	 * Removing the tablist from all online player that are currently playing in a game.
 	 */
-	public void removeTabList() {
-		this.player.forEach(this::removeTabList);
+	@Override
+	public void remove() {
+		this.player.forEach(this::remove);
 	}
 
 	/**
-	 * Removes the tablist from the specified player that are currently
-	 * playing the game.
+	 * Removes the tablist from the given player that are currently playing in a game.
 	 * @param player Player
 	 */
-	public void removeTabList(Player player) {
+	@Override
+	public void remove(Player player) {
 		sendTabTitle(player, null, null);
 
 		for (Iterator<Player> it = this.player.iterator(); it.hasNext();) {
@@ -127,5 +127,21 @@ public class TabTitles {
 				break;
 			}
 		}
+	}
+
+	/**
+	 * Returns the HashMap with all the TabTitle elements.
+	 * @return {@link #allTabLists}
+	 */
+	public HashMap<String, TabTitles> getTabLists() {
+		return allTabLists;
+	}
+
+	/**
+	 * Returns the players who added to the list.
+	 * @return List player
+	 */
+	public List<Player> getPlayers() {
+		return Collections.unmodifiableList(player);
 	}
 }

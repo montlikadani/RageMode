@@ -1,6 +1,6 @@
 package hu.montlikadani.ragemode.commands;
 
-import static hu.montlikadani.ragemode.utils.Message.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -108,8 +108,8 @@ public class RmTabCompleter implements TabCompleter {
 
 	private List<String> getGameListCmds() {
 		return Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay", "removegame",
-				"forcestart", "setlobby", "addspawn", "join", "leave", "stop", "stopgame", "togglegame", "spectate",
-				"removespawn", "listplayers", "kick");
+				"forcestart", "setlobby", "addspawn", "join", "stop", "stopgame", "togglegame", "spectate",
+				"removespawn", "listplayers", "kick", "maxplayers");
 	}
 
 	private List<String> getValueListCmds() {
