@@ -341,7 +341,7 @@ public class RageMode extends JavaPlugin {
 			return;
 	}
 
-	public synchronized void reload() {
+	public synchronized boolean reload() {
 		HandlerList.unregisterAll(this);
 
 		if (signTask != null) {
@@ -389,6 +389,8 @@ public class RageMode extends JavaPlugin {
 
 		if (hologram)
 			HoloHolder.initHoloHolder();
+
+		return true;
 	}
 
 	private void registerCommands() {
