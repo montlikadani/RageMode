@@ -11,7 +11,7 @@ import java.util.List;
 public class ConfigValues {
 
 	private String lang;
-	@Deprecated private String statistics;
+	@Deprecated private String statistics; // remove in the next update
 	private String databaseType;
 	private String hubName;
 	private String username;
@@ -83,7 +83,7 @@ public class ConfigValues {
 	private boolean rejoinDelayEnabled;
 
 	private int signsUpdateTime;
-	private int minPlayers;
+	@Deprecated private int minPlayers; // remove in the next update
 	private int gameFreezeTime;
 	private int lobbyDelay;
 	private int gameTime;
@@ -427,6 +427,7 @@ public class ConfigValues {
 		return spectatorCmds;
 	}
 
+	@Deprecated
 	public int getMinPlayers() {
 		return minPlayers;
 	}

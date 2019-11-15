@@ -74,6 +74,8 @@ commands:
     player-currently-not-playing: "&cJelenleg nem játszol."
   maxplayers:
     changed: "&2A maximum játékosok a(z)&e %game%&2 játékhoz megváltoztatva&e %value%&2 értékre."
+  minplayers:
+    changed: "&2A minimum játékosok a(z)&e %game%&2 játékhoz megváltoztatva&e %value%&2 értékre."
 
 hologram-list:
 - "&6Rank:&a %rank%"
@@ -98,7 +100,7 @@ setup:
     special-chars: "&cEz a név tartalmaz speciális karaktert a ragemode map-hoz."
     name-greater: "&cEz a név túl hosszú a ragemode map-hoz&7 (< 20)."
     bad-name: "&cEz a ragemode map név tartalmaz parancs neveket."
-  at-least-two: "&cA max. játékosok értéke legalább 2-nek kell lennie."
+  at-least-two: "&cA értéknek legalább 2-nek kell lennie."
   spawn-set-success: "&2A spawn&e %number%&3 %game%&2 játékhoz sikeresen beállítva!"
   success: "&2Sikeres!"
   removed-non-existent-game: "&cNe törölj nem-létező játékokat!"

@@ -13,7 +13,7 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 			boolean serverCertificate, boolean useUnicode, String charEncode, boolean autoReconnect,
 			boolean useSSL, String prefix) {
 		super("jdbc:mysql://" + host + ":" + port + "/" + database + "?verifyServerCertificate=" + serverCertificate
-				+ "&useUnicode=" + useUnicode + "&characterEncoding=" + charEncode + "&autoReconnect="
+				+ "&maxReconnects=1&useUnicode=" + useUnicode + "&characterEncoding=" + charEncode + "&autoReconnect="
 				+ autoReconnect + "&useSSL=" + useSSL, userName, password, prefix);
 
 		createStatsTable();

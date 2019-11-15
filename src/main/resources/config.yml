@@ -155,10 +155,6 @@ game:
   global:
     # Lobby settings
     lobby:
-      # Minimum players to start the lobby timer.
-      # If this is less than 1, then 2 defaults.
-      min-players-to-start-lobby-timer: 2
-
       # Sending lobby waiting message to start game in seconds.
       time-to-send-message: 9
 
@@ -180,10 +176,9 @@ game:
     # If the value 0, ignoring the protection.
     respawn-protection: 3
 
-    # Show the player name above player head.
-    # This makes the game more difficult, because if it is enabled, it hides the names of 
-    # the players if the target player is not in the position of the other player's 10 radius eye.
-    show-name-above-player-when-look: true
+    # Hide the players name tag who in game and playing?
+    # It makes the game harder, but the experience is better.
+    hide-players-name-tag: false
 
     # Time intervals when the game timer reaches, for example, 60 seconds, write it into the chat.
     values-to-send-game-end-broadcast: [60, 30, 20, 10, 5, 4, 3, 2, 1]

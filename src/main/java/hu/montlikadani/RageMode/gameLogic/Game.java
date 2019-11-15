@@ -18,7 +18,6 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameJoinAttemptEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorJoinToGameEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorLeaveGameEvent;
-import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGameLobby;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
@@ -73,7 +72,7 @@ public class Game {
 
 	public boolean addPlayer(Player player) {
 		if (isGameRunning()) {
-			player.sendMessage(RageMode.getLang().get("game.runningGame"));
+			player.sendMessage(RageMode.getLang().get("game.running"));
 			return false;
 		}
 
@@ -87,9 +86,7 @@ public class Game {
 		if (event.isCancelled())
 			return false;
 
-		Configuration conf = RageMode.getInstance().getConfiguration();
 		int time = GetGameLobby.getLobbyTime(name);
-
 		PlayerManager pm = new PlayerManager(player, name);
 
 		if (players.size() < GetGames.getMaxPlayers(name)) {
@@ -97,8 +94,8 @@ public class Game {
 
 			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
 
-			if (conf.getCV().getMinPlayers() > 1) {
-				if (players.size() == conf.getCV().getMinPlayers() && lobbyTimer == null) {
+			if (GetGames.getMinPlayers(name) > 1) {
+				if (players.size() == GetGames.getMinPlayers(name) && lobbyTimer == null) {
 					lobbyTimer = new LobbyTimer(this, time);
 					lobbyTimer.loadTimer();
 				}
@@ -112,46 +109,37 @@ public class Game {
 			return true;
 		}
 
-		// Gets a random player who is in game and kicks from the game
-		// to join the VIP player.
+		// Gets a random player who is in game and kicks from the game to join the VIP player.
 		if (player.hasPermission("ragemode.vip") && hasRoomForVIP(name)) {
 			boolean isVIP = false;
 			Player playerToKick;
 
 			do {
-				int kickposition = ThreadLocalRandom.current().nextInt(GetGames.getMaxPlayers(name) - 1);
+				int kickposition = GetGames.getMaxPlayers(name) < 2 ? 0
+						: ThreadLocalRandom.current().nextInt(GetGames.getMaxPlayers(name) - 1);
 				playerToKick = getPlayersFromList().get(kickposition).getPlayer();
 				isVIP = playerToKick.hasPermission("ragemode.vip");
 			} while (isVIP);
 
-			player.setMetadata("Leaving", new FixedMetadataValue(RageMode.getInstance(), true));
+			playerToKick.setMetadata("Leaving", new FixedMetadataValue(RageMode.getInstance(), true));
+
 			Utils.clearPlayerInventory(playerToKick);
-			pm.addBackTools(false);
+			getPlayerManager(playerToKick).addBackTools();
+			players.remove(playerToKick);
 
 			playerToKick.sendMessage(RageMode.getLang().get("game.player-kicked-for-vip"));
 
-			final Player pl = playerToKick;
-			players.entrySet().removeIf(u -> u.getKey().equals(pl));
+			players.put(player, pm);
 
-			if (conf.getCV().getMinPlayers() > 1) {
-				if (players.size() == conf.getCV().getMinPlayers()) {
-					if (lobbyTimer == null) {
-						lobbyTimer = new LobbyTimer(this, time);
-						lobbyTimer.loadTimer();
-					}
-				} else {
-					lobbyTimer = null;
-					return false;
+			if (GetGames.getMinPlayers(name) > 1) {
+				if (players.size() == GetGames.getMinPlayers(name) && lobbyTimer == null) {
+					lobbyTimer = new LobbyTimer(this, time);
+					lobbyTimer.loadTimer();
 				}
 			} else {
-				if (players.size() == 2) {
-					if (lobbyTimer == null) {
-						lobbyTimer = new LobbyTimer(this, time);
-						lobbyTimer.loadTimer();
-					}
-				} else {
-					lobbyTimer = null;
-					return false;
+				if (players.size() == 2 && lobbyTimer == null) {
+					lobbyTimer = new LobbyTimer(this, time);
+					lobbyTimer.loadTimer();
 				}
 			}
 
@@ -204,7 +192,7 @@ public class Game {
 		}
 
 		Utils.clearPlayerInventory(player);
-		getPlayerManager(player).addBackTools(false);
+		getPlayerManager(player).addBackTools();
 
 		removePlayerSynced(player);
 		removePlayerFromList(player);
@@ -341,7 +329,7 @@ public class Game {
 		Validate.notNull(game, "Game name can't be null!");
 		Validate.notEmpty(game, "Game name can't be empty!");
 
-		if (players != null) {
+		if (players == null) {
 			return false;
 		}
 

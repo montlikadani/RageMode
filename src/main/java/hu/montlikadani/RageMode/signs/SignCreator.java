@@ -41,7 +41,7 @@ public class SignCreator {
 			String[] splited = one.split(",");
 			String world = splited[0];
 			if (world != null && Bukkit.getWorld(world) == null) {
-				Debug.logConsole(Level.WARNING, "World " + world + " not found to load this sign.");
+				Debug.logConsole(Level.WARNING, "World {0} not found to load this sign.", world);
 				continue;
 			}
 
@@ -58,8 +58,9 @@ public class SignCreator {
 
 		totalSigns += list.size();
 
-		if (totalSigns > 0)
-			Debug.logConsole("Loaded " + totalSigns + " sign" + (totalSigns > 1 ? "s" : "") + ".");
+		if (totalSigns > 0) {
+			Debug.logConsole("Loaded {0} sign{1}.", totalSigns, (totalSigns > 1 ? "s" : ""));
+		}
 
 		return true;
 	}

@@ -104,8 +104,6 @@ public class GameTimer extends TimerTask {
 				}
 			}
 
-			time--;
-
 			Player player = game.getPlayerInGame(game.getName());
 			if (player != null && player.isOnline()) {
 				if (gameTab != null) {
@@ -189,6 +187,8 @@ public class GameTimer extends TimerTask {
 				RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 						() -> GameUtils.stopGame(game.getName()));
 			}
+
+			time--;
 		} catch (Exception e) {
 			e.printStackTrace();
 			cancel();

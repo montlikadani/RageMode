@@ -87,12 +87,12 @@ public class SQLStats {
 		}
 
 		if (totalPlayers > 0)
-			Debug.logConsole("Loaded " + totalPlayers + " player" + (totalPlayers > 1 ? "s" : "") + " stats database.");
+			Debug.logConsole("Loaded {0} player{1} stats database.", totalPlayers, (totalPlayers > 1 ? "s" : ""));
 	}
 
 	/**
-	 * {@link #addPlayerStatistics(PlayerPoints, SQLConnect)}
-	 * @param playerPoints PlayerPoints
+	 * See {@link #addPlayerStatistics(PlayerPoints, SQLConnect)}
+	 * @param playerPoints {@link PlayerPoints}
 	 */
 	public static void addPlayerStatistics(PlayerPoints playerPoints) {
 		addPlayerStatistics(playerPoints, RageMode.getSQL());

@@ -78,9 +78,7 @@ public class ScoreTeam implements IObjectives {
 	 */
 	@Override
 	public void remove() {
-		for (Player player : this.players) {
-			remove(player);
-		}
+		this.players.forEach(this::remove);
 	}
 
 	/**

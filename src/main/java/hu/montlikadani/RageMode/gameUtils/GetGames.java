@@ -35,10 +35,20 @@ public class GetGames {
 	 * Get max players from a file
 	 * <p>This will return -1 if the value not found in the file.
 	 * @param game Game
-	 * @return int number
+	 * @return int the maximum players
 	 */
 	public static int getMaxPlayers(String game) {
 		return fi.getInt("arenas." + game + ".maxplayers", -1);
+	}
+
+	/**
+	 * Get min players from a file
+	 * <p>This will return -1 if the value not found in the file.
+	 * @param game Game
+	 * @return int the minimum players
+	 */
+	public static int getMinPlayers(String game) {
+		return fi.getInt("arenas." + game + ".minplayers", -1);
 	}
 
 	/**

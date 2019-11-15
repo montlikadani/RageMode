@@ -1,5 +1,6 @@
 package hu.montlikadani.ragemode.gameUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -302,7 +303,7 @@ public class GameUtils {
 	 */
 	public static void savePlayerData(Player p) {
 		if (getGameByPlayer(p) != null) {
-			getGameByPlayer(p).getPlayerManager(p).storePlayerTools(false);
+			getGameByPlayer(p).getPlayerManager(p).storePlayerTools();
 		}
 
 		Configuration conf = RageMode.getInstance().getConfiguration();
@@ -650,7 +651,7 @@ public class GameUtils {
 	private static List<String> reservedNames = buildReservedNameList();
 
 	private static List<String> buildReservedNameList() {
-		List<String> reservedNames = new java.util.ArrayList<>();
+		List<String> reservedNames = new ArrayList<>();
 		for (Entry<String, String> cmds : RmCommand.arg.entrySet()) {
 			reservedNames.add(cmds.getKey());
 		}
@@ -667,7 +668,7 @@ public class GameUtils {
 	 * @param game name
 	 */
 	public static void stopGame(String name) {
-		stopGame(getGame(name));
+		stopGame(getGame(name), true);
 	}
 
 	/**
@@ -677,8 +678,9 @@ public class GameUtils {
 	 * will be removed from the game with some rewards.
 	 * This will saves the player statistic to the database and finally stopping the game.
 	 * @param game {@link Game}
+	 * @param useFreeze if true using game freeze
 	 */
-	public static void stopGame(final Game game) {
+	public static void stopGame(final Game game, boolean useFreeze) {
 		Validate.notNull(game, "Game can't be null!");
 
 		final String name = game.getName();
@@ -759,6 +761,11 @@ public class GameUtils {
 		setStatus(name, GameStatus.GAMEFREEZE);
 
 		final Player winner = winnerUUID != null ? Bukkit.getPlayer(UUID.fromString(winnerUUID)) : null;
+		if (!useFreeze) {
+			finishStopping(game, winner, false);
+			return;
+		}
+
 		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 				new Runnable() {
 					@Override
@@ -767,12 +774,12 @@ public class GameUtils {
 							EventListener.waitingGames.remove(name);
 						}
 
-						finishStopping(game, winner);
+						finishStopping(game, winner, true);
 					}
 				}, RageMode.getInstance().getConfiguration().getCV().getGameFreezeTime() * 20);
 	}
 
-	private static void finishStopping(Game game, Player winner) {
+	private static void finishStopping(Game game, Player winner, boolean serverStop) {
 		if (!game.isGameRunning()) {
 			return;
 		}
@@ -834,10 +841,19 @@ public class GameUtils {
 		runCommandsForAll(game.getName(), "stop");
 		SignCreator.updateAllSigns(game.getName());
 
-		for (Iterator<Entry<Player, PlayerManager>> it = game.getPlayers().entrySet().iterator(); it.hasNext();) {
-			Player p = it.next().getKey();
+		List<Player> rewardPlayers = null;
+
+		for (PlayerManager pm : game.getPlayersFromList()) {
+			Player p = pm.getPlayer();
 			sendActionBarMessages(p, game.getName(), "stop");
 			RageScores.removePointsForPlayer(p.getUniqueId().toString());
+			if (RageMode.getInstance().getConfiguration().getCV().isRewardEnabled()) {
+				if (rewardPlayers == null) {
+					rewardPlayers = new ArrayList<>();
+				}
+
+				rewardPlayers.add(p);
+			}
 
 			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
 			Utils.callEvent(gameLeaveEvent);
@@ -846,22 +862,43 @@ public class GameUtils {
 			}
 		}
 
-		for (Iterator<Entry<Player, PlayerManager>> it = game.getSpectatorPlayers().entrySet()
-				.iterator(); it.hasNext();) {
+		for (Iterator<Entry<Player, PlayerManager>> it = game.getSpectatorPlayers().entrySet().iterator(); it
+				.hasNext();) {
 			Player pl = it.next().getKey();
 			game.removeSpectatorPlayer(pl);
 		}
 
+		if (RageMode.getInstance().getConfiguration().getCV().isRewardEnabled() && rewardPlayers != null) {
+			RewardManager reward = new RewardManager(game.getName());
+
+			for (Player p : rewardPlayers) {
+				if (winner != null) {
+					if (p == winner) {
+						Utils.clearPlayerInventory(winner);
+						reward.rewardForWinner(winner);
+					}
+				} else {
+					Utils.clearPlayerInventory(p);
+				}
+
+				reward.rewardForPlayers(winner, p);
+			}
+
+			rewardPlayers.clear();
+		}
+
 		setStatus(game.getName(), null);
 
-		if (RageMode.getInstance().getConfiguration().getCV().isRestartServerEnabled()) {
-			if (RageMode.isSpigot()) {
-				Bukkit.spigot().restart();
-			} else {
-				Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "restart");
+		if (serverStop) {
+			if (RageMode.getInstance().getConfiguration().getCV().isRestartServerEnabled()) {
+				if (RageMode.isSpigot()) {
+					Bukkit.spigot().restart();
+				} else {
+					Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "restart");
+				}
+			} else if (RageMode.getInstance().getConfiguration().getCV().isStopServerEnabled()) {
+				Bukkit.shutdown();
 			}
-		} else if (RageMode.getInstance().getConfiguration().getCV().isStopServerEnabled()) {
-			Bukkit.shutdown();
 		}
 	}
 

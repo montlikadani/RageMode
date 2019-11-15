@@ -155,12 +155,13 @@ public class RageMode extends JavaPlugin {
 			if (conf.getArenasCfg().contains("arenas")) {
 				for (String game : GetGames.getGameNames()) {
 					if (game != null) {
-						games.add(new Game(game));
+						Game g = new Game(game);
+						games.add(g);
 
 						if (conf.getCV().isBungee())
 							getManager().registerEvents(new BungeeListener(game), this);
 
-						spawns.add(new GameSpawn(GameUtils.getGame(game)));
+						spawns.add(new GameSpawn(g));
 
 						if (conf.getCV().isSignsEnable())
 							SignCreator.updateAllSigns(game);
@@ -171,7 +172,7 @@ public class RageMode extends JavaPlugin {
 						} else
 							GameUtils.setStatus(game, GameStatus.READY);
 
-						Debug.logConsole("Loaded " + game + " game!");
+						Debug.logConsole("Loaded {0} game!", game);
 					}
 				}
 			}
@@ -358,22 +359,22 @@ public class RageMode extends JavaPlugin {
 		if (conf.getArenasCfg().contains("arenas")) {
 			for (String game : GetGames.getGameNames()) {
 				if (game != null) {
-					games.add(new Game(game));
-
 					if (GameUtils.getGame(game).isGameRunning()) {
+						GameUtils.stopGame(GameUtils.getGame(game), false);
 						GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
 					}
+
+					Game g = new Game(game);
+					games.add(g);
 
 					if (conf.getCV().isBungee())
 						getManager().registerEvents(new BungeeListener(game), this);
 
-					spawns.add(new GameSpawn(GameUtils.getGame(game)));
+					spawns.add(new GameSpawn(g));
 
 					SignCreator.updateAllSigns(game);
 				}
 			}
-
-			GameUtils.stopAllGames();
 		}
 
 		if (conf.getCV().isSignsEnable()) {

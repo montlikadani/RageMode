@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.gameUtils.Titles;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
@@ -50,7 +51,7 @@ public class LobbyTimer extends TimerTask {
 		}
 
 		hu.montlikadani.ragemode.config.ConfigValues fc = RageMode.getInstance().getConfiguration().getCV();
-		if (game.getPlayers().size() < fc.getMinPlayers()) {
+		if (game.getPlayers().size() < GetGames.getMinPlayers(game.getName())) {
 			GameUtils.setStatus(game.getName(), null);
 			cancel();
 			return;

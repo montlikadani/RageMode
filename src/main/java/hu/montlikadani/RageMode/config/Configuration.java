@@ -60,8 +60,9 @@ public class Configuration {
 			cv.loadValues(new FileConfig(config));
 
 			if (!config.isSet("config-version") || !config.get("config-version").equals(configVersion)) {
-				Debug.logConsole(Level.WARNING, "Found outdated configuration (config.yml)! (Your version: "
-						+ config.getDouble("config-version") + " | Newest version: " + configVersion + ")");
+				Debug.logConsole(Level.WARNING,
+						"Found outdated configuration (config.yml)! (Your version: {0} | Newest version: {1})",
+						config.getDouble("config-version"), configVersion);
 			}
 
 			if (arenas_file.exists()) {
@@ -106,7 +107,7 @@ public class Configuration {
 		} else {
 			plugin.saveResource(name, false);
 		}
-		plugin.getLogger().log(java.util.logging.Level.INFO, "The '" + name + "' file successfully created!");
+		plugin.getLogger().log(java.util.logging.Level.INFO, "The '{0}' file successfully created!", name);
 		return YamlConfiguration.loadConfiguration(file);
 	}
 

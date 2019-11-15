@@ -62,7 +62,7 @@ public class stats {
 
 		for (String list : RageMode.getLang().getList("statistic-list")) {
 			list = list.replace("%player%", t.getName());
-			list = Utils.setPlaceholders(list, t, true);
+			list = Utils.setPlaceholders(list, t);
 
 			sendMessage(sender, list);
 		}

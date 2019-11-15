@@ -31,7 +31,7 @@ public class RuntimePPManager {
 	}
 
 	/**
-	 * Gets the specified player statistics from database.
+	 * Gets the given player statistics from database.
 	 * @param uuid Player uuid
 	 * @return {@link PlayerPoints}
 	 */
@@ -47,20 +47,30 @@ public class RuntimePPManager {
 		}
 	}
 
+	/**
+	 * Get the points database for the given player uuid.
+	 * @param sUUID Player uuid
+	 * @return {@link PlayerPoints}
+	 */
 	public static PlayerPoints getPPForPlayer(String sUUID) {
-		PlayerPoints pp = null;
-		if (RuntimePPList != null) {
-			int i = 0;
-			int imax = RuntimePPList.size();
-			while (i < imax) {
-				if (RuntimePPList.get(i).getPlayerUUID().equals(sUUID)) {
-					pp = RuntimePPList.get(i);
-					pp.setRank(i + 1);
-					break;
-				}
-				i++;
-			}
+		if (RuntimePPList == null) {
+			RuntimePPList = new ArrayList<>();
+			return null;
 		}
+
+		PlayerPoints pp = null;
+		int i = 0;
+		int imax = RuntimePPList.size();
+		while (i < imax) {
+			if (RuntimePPList.get(i).getPlayerUUID().equals(sUUID)) {
+				pp = RuntimePPList.get(i);
+				pp.setRank(i + 1);
+				break;
+			}
+
+			i++;
+		}
+
 		return pp;
 	}
 
@@ -141,7 +151,7 @@ public class RuntimePPManager {
 			newPP.setKnifeDeaths(pp.getKnifeDeaths());
 			newPP.setKnifeKills(pp.getKnifeKills());
 			newPP.setLongestStreak(pp.getLongestStreak());
-			newPP.setPoints(pp.getPoints());
+			newPP.addPoints(pp.getPoints());
 
 			if (pp.isWinner())
 				newPP.setWins(oldPP.getWins() + 1);
@@ -193,7 +203,7 @@ public class RuntimePPManager {
 			newPP.setKnifeDeaths(pp.getKnifeDeaths());
 			newPP.setKnifeKills(pp.getKnifeKills());
 			newPP.setLongestStreak(pp.getLongestStreak());
-			newPP.setPoints(pp.getPoints());
+			newPP.addPoints(pp.getPoints());
 
 			if (pp.isWinner())
 				newPP.setWins(oldPP.getWins() + 1);

@@ -34,6 +34,13 @@ public class PlayerManager {
 
 	/**
 	 * Stores the player tools, such as inventory, game mode, location etc.
+	 */
+	public void storePlayerTools() {
+		storePlayerTools(false);
+	}
+
+	/**
+	 * Stores the player tools, such as inventory, game mode, location etc.
 	 * @param spectator the player is spectator or not
 	 */
 	public void storePlayerTools(boolean spectator) {
@@ -77,6 +84,13 @@ public class PlayerManager {
 		if (inv.getArmorContents() != null) {
 			sps.oldArmor = inv.getArmorContents();
 		}
+	}
+
+	/**
+	 * Adds back the tools to the player if have stored.
+	 */
+	public void addBackTools() {
+		addBackTools(false);
 	}
 
 	/**

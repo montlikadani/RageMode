@@ -106,6 +106,9 @@ public class RmCommand implements CommandExecutor {
 					if (hasPerm(sender, "ragemode.admin.maxplayers"))
 						msg += "&7-&6 /rm maxplayers <gameName> <maxPlayers>&a - Modifies the maxplayers value for the game.\n";
 
+					if (hasPerm(sender, "ragemode.admin.minplayers"))
+						msg += "&7-&6 /rm minplayers <gameName> <minPlayers>&a - Modifies the minplayers value for the game.\n";
+
 					if (hasPerm(sender, "ragemode.admin.setlobby"))
 						msg += "&7-&6 /rm setlobby <gameName>&a - Adds a lobby spawn for the new game.\n";
 

@@ -86,7 +86,7 @@ public class RmTabCompleter implements TabCompleter {
 		List<String> c = new ArrayList<>();
 		for (String cmds : Arrays.asList("addgame", "addspawn", "setlobby", "reload", "holostats", "removegame",
 				"resetstats", "forcestart", "kick", "stopgame", "signupdate", "togglegame", "points", "givesaveditems",
-				"removespawn", "latestart", "maxplayers")) {
+				"removespawn", "latestart", "maxplayers", "minplayers")) {
 			if (sender instanceof Player && !hasPerm(sender, "ragemode.admin." + cmds))
 				continue;
 
@@ -109,7 +109,7 @@ public class RmTabCompleter implements TabCompleter {
 	private List<String> getGameListCmds() {
 		return Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay", "removegame",
 				"forcestart", "setlobby", "addspawn", "join", "stop", "stopgame", "togglegame", "spectate",
-				"removespawn", "listplayers", "kick", "maxplayers");
+				"removespawn", "listplayers", "kick", "maxplayers", "minplayers");
 	}
 
 	private List<String> getValueListCmds() {

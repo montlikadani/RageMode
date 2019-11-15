@@ -74,6 +74,8 @@ commands:
     player-currently-not-playing: "&cYou are not currently playing."
   maxplayers:
     changed: "&2The maxplayers for&e %game%&2 has been changed to&e %value%&2."
+  minplayers:
+    changed: "&2The minplayers for&e %game%&2 has been changed to&e %value%&2."
 
 hologram-list:
 - "&6Rank:&a %rank%"
@@ -98,7 +100,7 @@ setup:
     special-chars: "&cThe name of the ragemode map contains special characters."
     name-greater: "&cThe name of the ragemode map is too long&7 (< 20)."
     bad-name: "&cThe name of the ragemode map is contains the command name."
-  at-least-two: "&cThe maxplayers value must be at least two."
+  at-least-two: "&cThe value must be at least two."
   spawn-set-success: "&2Spawn&e %number%&2 for the game&3 %game%&2 was set successfully!"
   success: "&2Success!"
   removed-non-existent-game: "&cDon't remove non-existent games!"

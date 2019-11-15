@@ -133,6 +133,7 @@ public class Language {
 		l.getL("commands.listplayers.game-not-running", "&cThis game is currently not running.");
 		l.getL("commands.listplayers.player-currently-not-playing", "&cYou are not currently playing.");
 		l.getL("commands.maxplayers.changed", "&2The maxplayers for&e %game%&2 has been changed to&e %value%&2.");
+		l.getL("commands.minplayers.changed", "&2The minplayers for&e %game%&2 has been changed to&e %value%&2.");
 
 		List<String> holoList = Arrays.asList("&6Rank:&a %rank%", "&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
 				"&5KD:&a %kd%", "&4Kills:&a %kills%", "&7Deaths:&a %deaths%");
@@ -149,7 +150,7 @@ public class Language {
 		l.getL("setup.addgame.special-chars", "&cThe name of the ragemode map contains special characters.");
 		l.getL("setup.addgame.name-greater", "&cThe name of the ragemode map is too long&7 (< 20).");
 		l.getL("setup.addgame.bad-name", "&cThe name of the ragemode map is contains the command name.");
-		l.getL("setup.at-least-two", "&cThe maxplayers value must be at least two.");
+		l.getL("setup.at-least-two", "&cThe value must be at least two.");
 		l.getL("setup.spawn-set-success", "&2Spawn&e %number%&2 for the game&3 %game%&2 was set successfully!");
 		l.getL("setup.success", "&2Success!");
 		l.getL("setup.removed-non-existent-game", "&cDon't remove non-existent games!");

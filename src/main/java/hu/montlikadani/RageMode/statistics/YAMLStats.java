@@ -91,7 +91,7 @@ public class YAMLStats {
 		totalPlayers += section.getKeys(false).size();
 
 		if (totalPlayers > 0)
-			Debug.logConsole("Loaded " + totalPlayers + " player" + (totalPlayers > 1 ? "s" : "") + " database.");
+			Debug.logConsole("Loaded {0} player{1} database.", totalPlayers, (totalPlayers > 1 ? "s" : ""));
 	}
 
 	public static void addPlayerStatistics(PlayerPoints points) {
