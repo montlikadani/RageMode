@@ -76,10 +76,11 @@ public class YAMLStats {
 
 		for (String one : section.getKeys(false)) {
 			String path = "data." + one + ".";
-			PlayerPoints plPo = RuntimePPManager.getPPForPlayer(one);
+			UUID uuid = UUID.fromString(one);
+			PlayerPoints plPo = RuntimePPManager.getPPForPlayer(uuid);
 			if (plPo == null) {
-				plPo = new PlayerPoints(one);
-				RageScores.getPlayerPointsMap().put(UUID.fromString(one).toString(), plPo);
+				plPo = new PlayerPoints(uuid);
+				RageScores.getPlayerPointsMap().put(uuid, plPo);
 			}
 
 			plPo.setWins(statsConf.getInt(path + "wins"));
@@ -97,12 +98,12 @@ public class YAMLStats {
 	public static void addPlayerStatistics(PlayerPoints points) {
 		if (!inited) return;
 
-		String uuid = points.getPlayerUUID();
+		UUID uuid = points.getUUID();
 		String path = "data." + uuid + ".";
 
 		if (statsConf.isConfigurationSection("data")
-				&& statsConf.getConfigurationSection("data").getKeys(false).contains(uuid)) {
-			statsConf.set(path + "name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
+				&& statsConf.getConfigurationSection("data").getKeys(false).contains(uuid.toString())) {
+			statsConf.set(path + "name", Bukkit.getPlayer(uuid).getName());
 
 			int kills = statsConf.getInt(path + "kills");
 			int axeKills = statsConf.getInt(path + "axe-kills");
@@ -146,7 +147,7 @@ public class YAMLStats {
 				statsConf.set(path + "KD", 1.0d);
 
 		} else {
-			statsConf.set(path + "name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
+			statsConf.set(path + "name", Bukkit.getPlayer(uuid).getName());
 
 			statsConf.set(path + "kills", points.getKills());
 			statsConf.set(path + "axe_kills", points.getAxeKills());
@@ -177,19 +178,28 @@ public class YAMLStats {
 	}
 
 	/**
-	 * Gets the specified uuid of player statistic
-	 * @param sUUID Player uuid
+	 * Gets the given uuid of player statistic
+	 * @param uuid Player uuid
 	 * @return returns a PlayerPoints object containing the GLOBAL statistics of a player
 	 */
-	public static PlayerPoints getPlayerStatistics(String sUUID) {
-		Validate.notNull(sUUID, "Player UUID can't be null!");
-		Validate.notEmpty(sUUID, "Player UUID can't be empty!");
+	@Deprecated
+	public static PlayerPoints getPlayerStatistics(String uuid) {
+		return getPlayerStatistics(UUID.fromString(uuid));
+	}
+
+	/**
+	 * Gets the given uuid of player statistic
+	 * @param uuid Player uuid
+	 * @return returns a PlayerPoints object containing the GLOBAL statistics of a player
+	 */
+	public static PlayerPoints getPlayerStatistics(UUID uuid) {
+		Validate.notNull(uuid, "Player UUID can't be null!");
 
 		if (!inited || points.isEmpty())
 			return null;
 
 		for (PlayerPoints rpp : points) {
-			if (rpp.getPlayerUUID().equals(sUUID)) {
+			if (rpp.getUUID().equals(uuid)) {
 				return rpp;
 			}
 		}
@@ -222,7 +232,19 @@ public class YAMLStats {
 	 * @param uuid Player uuid
 	 * @return {@link PlayerPoints}
 	 */
+	@Deprecated
 	public static PlayerPoints getPlayerStatsFromData(String uuid) {
+		return getPlayerStatsFromData(UUID.fromString(uuid));
+	}
+
+	/**
+	 * Gets all player stats from database.
+	 * <p>If the player never played and not found in the database, will be ignored.
+	 * 
+	 * @param uuid Player uuid
+	 * @return {@link PlayerPoints}
+	 */
+	public static PlayerPoints getPlayerStatsFromData(UUID uuid) {
 		PlayerPoints pp = null;
 
 		if (!statsConf.contains("data." + uuid)) {
@@ -277,15 +299,25 @@ public class YAMLStats {
 	}
 
 	/**
-	 * Restores all data of the specified player to 0
+	 * Restores all data of the given player to 0
 	 * @param uuid UUID of player
 	 * @return true if the class inited and player found in database
 	 */
+	@Deprecated
 	public static boolean resetPlayerStatistic(String uuid) {
+		return resetPlayerStatistic(UUID.fromString(uuid));
+	}
+
+	/**
+	 * Restores all data of the given player to 0
+	 * @param uuid UUID of player
+	 * @return true if the class inited and player found in database
+	 */
+	public static boolean resetPlayerStatistic(UUID uuid) {
 		if (!inited)
 			return false;
 
-		if (statsConf.getConfigurationSection("data").getKeys(false).contains(uuid)) {
+		if (statsConf.getConfigurationSection("data").getKeys(false).contains(uuid.toString())) {
 			String path = "data." + uuid + ".";
 			statsConf.set(path + "kills", 0);
 			statsConf.set(path + "axe_kills", 0);

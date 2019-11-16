@@ -1,8 +1,11 @@
 package hu.montlikadani.ragemode.scores;
 
+import java.util.UUID;
+
 public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 
-	private String playerUUID;
+	private UUID uuid;
+	@Deprecated private String playerUUID;
 
 	private int kills = 0;
 	private int axeKills = 0;
@@ -26,12 +29,22 @@ public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 
 	private boolean isWinner = false;
 
+	public PlayerPoints(UUID uuid) {
+		this.uuid = uuid;
+	}
+
+	@Deprecated
 	public PlayerPoints(String playerUUID) {
 		this.playerUUID = playerUUID;
 	}
 
+	@Deprecated
 	public String getPlayerUUID() {
 		return playerUUID;
+	}
+
+	public UUID getUUID() {
+		return uuid;
 	}
 
 	public int getKills() {

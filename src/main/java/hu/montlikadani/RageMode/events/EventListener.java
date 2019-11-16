@@ -483,6 +483,9 @@ public class EventListener implements Listener {
 				event.getDrops().clear();
 
 				GameUtils.runCommands(deceased, game, "death");
+				if (deceased.getKiller() != null) {
+					GameUtils.getBonus().addKillBonus(deceased.getKiller());
+				}
 			}
 
 			// respawn player instantly

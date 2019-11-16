@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -81,17 +82,17 @@ public class HoloHolder {
 		visibilityManager.showTo(player);
 		visibilityManager.setVisibleByDefault(false);
 
-		final Player dataPlayer = player;
+		final UUID uuid = player.getUniqueId();
 		final Hologram dataHologram = hologram;
 
 		switch (RageMode.getInstance().getConfiguration().getCV().getDatabaseType()) {
 		case "mysql":
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final PlayerPoints rpp;
-				if (RuntimePPManager.getPPForPlayer(dataPlayer.getUniqueId().toString()) == null)
-					rpp = MySQLStats.getPlayerStatistics(dataPlayer.getUniqueId().toString());
+				if (RuntimePPManager.getPPForPlayer(uuid) == null)
+					rpp = MySQLStats.getPlayerStatistics(uuid);
 				else
-					rpp = RuntimePPManager.getPPForPlayer(dataPlayer.getUniqueId().toString());
+					rpp = RuntimePPManager.getPPForPlayer(uuid);
 
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 					if (rpp != null)
@@ -103,10 +104,10 @@ public class HoloHolder {
 		case "yaml":
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final PlayerPoints rpp;
-				if (RuntimePPManager.getPPForPlayer(dataPlayer.getUniqueId().toString()) == null)
-					rpp = YAMLStats.getPlayerStatistics(dataPlayer.getUniqueId().toString());
+				if (RuntimePPManager.getPPForPlayer(uuid) == null)
+					rpp = YAMLStats.getPlayerStatistics(uuid);
 				else
-					rpp = RuntimePPManager.getPPForPlayer(dataPlayer.getUniqueId().toString());
+					rpp = RuntimePPManager.getPPForPlayer(uuid);
 
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 					if (rpp != null)
@@ -119,10 +120,10 @@ public class HoloHolder {
 		case "sqlite":
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final PlayerPoints rpp;
-				if (RuntimePPManager.getPPForPlayer(dataPlayer.getUniqueId().toString()) == null)
-					rpp = SQLStats.getPlayerStatistics(dataPlayer.getUniqueId().toString());
+				if (RuntimePPManager.getPPForPlayer(uuid) == null)
+					rpp = SQLStats.getPlayerStatistics(uuid);
 				else
-					rpp = RuntimePPManager.getPPForPlayer(dataPlayer.getUniqueId().toString());
+					rpp = RuntimePPManager.getPPForPlayer(uuid);
 
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 					if (rpp != null)

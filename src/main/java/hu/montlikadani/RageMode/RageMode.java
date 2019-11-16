@@ -350,6 +350,13 @@ public class RageMode extends JavaPlugin {
 			signTask = null;
 		}
 
+		for (String game : GetGames.getGameNames()) {
+			if (game != null && GameUtils.getGame(game) != null && GameUtils.getGame(game).isGameRunning()) {
+				GameUtils.stopGame(GameUtils.getGame(game), false);
+				GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
+			}
+		}
+
 		games.clear();
 		spawns.clear();
 
@@ -359,11 +366,6 @@ public class RageMode extends JavaPlugin {
 		if (conf.getArenasCfg().contains("arenas")) {
 			for (String game : GetGames.getGameNames()) {
 				if (game != null) {
-					if (GameUtils.getGame(game).isGameRunning()) {
-						GameUtils.stopGame(GameUtils.getGame(game), false);
-						GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
-					}
-
 					Game g = new Game(game);
 					games.add(g);
 

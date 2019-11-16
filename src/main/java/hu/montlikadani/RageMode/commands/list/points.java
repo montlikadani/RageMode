@@ -61,7 +61,7 @@ public class points {
 			return false;
 		}
 
-		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(target.getUniqueId().toString());
+		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(target.getUniqueId());
 		if (rpp == null) {
 			sendMessage(sender, RageMode.getLang().get("not-played-yet", "%player%", args[2]));
 			return false;

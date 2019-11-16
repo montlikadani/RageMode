@@ -98,6 +98,7 @@ public class ConfigValues {
 	private int rejoinDelayHour;
 	private int rejoinDelayMinute;
 	private int rejoinDelaySecond;
+	private int killBonusChance;
 
 	private List<String> signsList;
 	private List<String> actionBarActions;
@@ -110,6 +111,7 @@ public class ConfigValues {
 	private List<String> sbContent;
 	private List<String> allowedCmds;
 	private List<String> cmdsForPlayerLeave;
+	private List<String> killBonuses;
 
 	public void loadValues(FileConfig f) {
 		lang = f.get("language", "en");
@@ -213,6 +215,8 @@ public class ConfigValues {
 		rejoinDelayMinute = f.get("rejoin-delay.times.minute", 0);
 		rejoinDelaySecond = f.get("rejoin-delay.times.second", 30);
 		rewardEnable = f.get("rewards.enable", true);
+		killBonusChance = f.get("bonuses.kill-bonuses.chance", 75);
+		killBonuses = f.get("bonuses.kill-bonuses.list", Arrays.asList("effect:regeneration:20:2", "effect:speed:30:1", "points:15"));
 		bowKill = f.get("points.bowkill", 25);
 		axeKill = f.get("points.axekill", 30);
 		axeDeath = f.get("points.axedeath", -50);
@@ -578,6 +582,14 @@ public class ConfigValues {
 
 	public boolean isRewardEnabled() {
 		return rewardEnable;
+	}
+
+	public List<String> getKillBonuses() {
+		return killBonuses;
+	}
+
+	public int getKillBonusChance() {
+		return killBonusChance;
 	}
 
 	public int getBowKill() {

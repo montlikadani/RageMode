@@ -18,16 +18,16 @@ import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class RageScores {
 
-	private static HashMap<String, PlayerPoints> playerpoints = new HashMap<>();
+	private static HashMap<UUID, PlayerPoints> playerpoints = new HashMap<>();
 	private static int totalPoints = 0;
 
 	public static void addPointsToPlayer(Player killer, Player victim, String killCause) {
-		String killerUUID = killer.getUniqueId().toString();
+		UUID killerUUID = killer.getUniqueId();
 		PlayerPoints killerPoints = null;
 
 		// Check if player not killed itself
-		if (!killerUUID.equals(victim.getUniqueId().toString())) {
-			String victimUUID = victim.getUniqueId().toString();
+		if (!killerUUID.equals(victim.getUniqueId())) {
+			UUID victimUUID = victim.getUniqueId();
 			PlayerPoints victimPoints = null;
 
 			switch (killCause.toLowerCase().trim()) {
@@ -137,7 +137,7 @@ public class RageScores {
 			PlayerPoints currentPoints = getPlayerPoints(killerUUID);
 			int currentStreak = currentPoints.getCurrentStreak();
 			if (currentStreak == 3 || currentStreak % 5 == 0) {
-				currentPoints.setPoints(currentPoints.getPoints() + (currentStreak * 10));
+				currentPoints.addPoints(currentStreak * 10);
 
 				killer.sendMessage(RageMode.getLang().get("game.message.streak", "%number%", Integer.toString(currentStreak), "%points%",
 						"+" + Integer.toString(currentStreak * 10)));
@@ -149,11 +149,11 @@ public class RageScores {
 			PlayerPoints pointsHolder = getPlayerPoints(killerUUID);
 			if (pointsHolder != null) {
 				if (pointLoss != 0) {
-					if ((pointsHolder.getPoints() + pointLoss) < 0) {
+					pointsHolder.addPoints(pointLoss);
+
+					/*if ((pointsHolder.getPoints() + pointLoss) < 0) {
 						killer.sendMessage(RageMode.getLang().get("game.no-enough-points"));
-					} else {
-						pointsHolder.addPoints(pointLoss);
-					}
+					}*/
 				}
 			} else {
 				pointsHolder = new PlayerPoints(killerUUID);
@@ -164,18 +164,19 @@ public class RageScores {
 		}
 	}
 
-	public static void removePointsForPlayer(String playerUUID) {
+	@Deprecated
+	public static void removePointForPlayer(String uuid) {
+		Validate.notNull(uuid, "Player UUID can't be null!");
+		Validate.notEmpty(uuid, "Player UUID can't be empty!");
+
+		removePointsForPlayer(UUID.fromString(uuid));
+	}
+
+	public static void removePointsForPlayer(UUID playerUUID) {
 		Validate.notNull(playerUUID, "Player UUID can't be null!");
 
 		if (playerpoints.containsKey(playerUUID)) {
 			playerpoints.remove(playerUUID);
-		}
-	}
-
-	public static void removePointsForPlayers(List<String> playerUUIDs) {
-		for (String playerUUID : playerUUIDs) {
-			if (playerpoints.containsKey(playerUUID))
-				playerpoints.remove(playerUUID);
 		}
 	}
 
@@ -184,9 +185,21 @@ public class RageScores {
 	 * @param playerUUID UUID of player
 	 * @return {@link PlayerPoints}
 	 */
-	public static PlayerPoints getPlayerPoints(String playerUUID) {
-		Validate.notNull(playerUUID, "Player UUId can't be null!");
-		Validate.notEmpty(playerUUID, "Player UUID can't be empty!");
+	@Deprecated
+	public static PlayerPoints getPlayerPoints(String uuid) {
+		Validate.notNull(uuid, "Player UUID can't be null!");
+		Validate.notEmpty(uuid, "Player UUID can't be empty!");
+
+		return getPlayerPoints(UUID.fromString(uuid));
+	}
+
+	/**
+	 * Gets the given player points
+	 * @param playerUUID UUID of player
+	 * @return {@link PlayerPoints}
+	 */
+	public static PlayerPoints getPlayerPoints(UUID playerUUID) {
+		Validate.notNull(playerUUID, "Player UUID can't be null!");
 
 		return playerpoints.get(playerUUID);
 	}
@@ -195,12 +208,12 @@ public class RageScores {
 	 * Gets the {@link PlayerPoints}
 	 * @return {@link #playerpoints}
 	 */
-	public static HashMap<String, PlayerPoints> getPlayerPointsMap() {
+	public static HashMap<UUID, PlayerPoints> getPlayerPointsMap() {
 		return playerpoints;
 	}
 
 	private static int addPoints(Player player, int points, boolean killer) {
-		String playerUUID = player.getUniqueId().toString();
+		UUID playerUUID = player.getUniqueId();
 		int totalKills = 0;
 		int totalDeaths = 0;
 		int currentStreak = 0;
@@ -223,11 +236,16 @@ public class RageScores {
 			}
 			longestStreak = (currentStreak > pointsHolder.getLongestStreak()) ? currentStreak : pointsHolder.getLongestStreak();
 
-			pointsHolder.addPoints(totalPoints);
 			pointsHolder.setKills(totalKills);
 			pointsHolder.setDeaths(totalDeaths);
 			pointsHolder.setCurrentStreak(currentStreak);
 			pointsHolder.setLongestStreak(longestStreak);
+			if (killer) {
+				int newPoints = (totalPoints + GameUtils.getBonus().getPointBonus(player));
+				pointsHolder.addPoints(newPoints);
+			} else {
+				pointsHolder.addPoints(totalPoints);
+			}
 
 			return totalPoints;
 		}
@@ -250,13 +268,13 @@ public class RageScores {
 		return points;
 	}
 
-	public static String calculateWinner(String game, List<PlayerManager> players) {
-		String highest = UUID.randomUUID().toString();
-		String resultPlayer = null;
-		String goy = highest;
+	public static UUID calculateWinner(String game, List<PlayerManager> players) {
+		UUID highest = UUID.randomUUID();
+		UUID resultPlayer = null;
+		UUID goy = highest;
 		int highestPoints = 0;
 		for (PlayerManager pm : players) {
-			String uuid = pm.getPlayer().getUniqueId().toString();
+			UUID uuid = pm.getPlayer().getUniqueId();
 			if (uuid == null) {
 				continue;
 			}
@@ -276,22 +294,23 @@ public class RageScores {
 		}
 
 		if (goy == highest) {
-			Bukkit.getPlayer(UUID.fromString(resultPlayer)).sendMessage(
+			Bukkit.getPlayer(resultPlayer).sendMessage(
 					RageMode.getLang().get("game.message.player-won", "%player%", "Herobrine", "%game%", game));
 			return null;
 		}
 
 		getPlayerPoints(highest).setWinner(true);
 
-		Player winner = Bukkit.getPlayer(UUID.fromString(highest));
+		Player winner = Bukkit.getPlayer(highest);
 		if (resultPlayer.equals(highest))
 			winner.sendMessage(RageMode.getLang().get("game.message.you-won", "%game%", game));
 		else
-			Bukkit.getPlayer(UUID.fromString(resultPlayer)).sendMessage(RageMode.getLang().get("game.message.player-won",
+			Bukkit.getPlayer(resultPlayer).sendMessage(RageMode.getLang().get("game.message.player-won",
 					"%player%", winner.getName(), "%game%", game));
 
 		PlayerWinEvent event = new PlayerWinEvent(GameUtils.getGame(game), winner);
 		Utils.callEvent(event);
+
 		return highest;
 	}
 }

@@ -31,7 +31,7 @@ public class Placeholder extends PlaceholderExpansion {
 		if (p == null)
 			return "";
 
-		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(p.getUniqueId().toString());
+		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(p.getUniqueId());
 		if (rpp == null)
 			return "";
 

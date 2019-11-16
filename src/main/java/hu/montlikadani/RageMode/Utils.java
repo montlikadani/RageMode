@@ -107,9 +107,9 @@ public class Utils {
 	public static String setPlaceholders(String s, Player player, boolean fromDatabase) {
 		PlayerPoints pp = null;
 		if (fromDatabase) {
-			pp = RuntimePPManager.getPPFromDatabase(player.getUniqueId().toString());
+			pp = RuntimePPManager.getPPFromDatabase(player.getUniqueId());
 		} else {
-			pp = RuntimePPManager.getPPForPlayer(player.getUniqueId().toString());
+			pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
 		}
 
 		if (s.contains("%kills%")) {

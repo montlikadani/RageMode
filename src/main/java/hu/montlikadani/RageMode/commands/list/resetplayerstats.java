@@ -13,6 +13,8 @@ import hu.montlikadani.ragemode.statistics.YAMLStats;
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
+import java.util.UUID;
+
 public class resetplayerstats {
 
 	public boolean run(CommandSender sender, String[] args) {
@@ -33,7 +35,7 @@ public class resetplayerstats {
 				return false;
 			}
 
-			if (reset(target.getUniqueId().toString())) {
+			if (reset(target.getUniqueId())) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.target-stats-reseted", "%player%", target.getName()));
 				sendMessage(target, RageMode.getLang().get("commands.stats.reseted"));
 				return true;
@@ -60,7 +62,7 @@ public class resetplayerstats {
 				return false;
 			}
 
-			if (reset(target.getUniqueId().toString())) {
+			if (reset(target.getUniqueId())) {
 				sendMessage(p, RageMode.getLang().get("commands.stats.target-stats-reseted", "%player%", target.getName()));
 				sendMessage(target, RageMode.getLang().get("commands.stats.reseted"));
 				return true;
@@ -74,7 +76,7 @@ public class resetplayerstats {
 			return false;
 		}
 
-		if (reset(p.getUniqueId().toString())) {
+		if (reset(p.getUniqueId())) {
 			sendMessage(p, RageMode.getLang().get("commands.stats.reseted"));
 			return true;
 		}
@@ -82,7 +84,7 @@ public class resetplayerstats {
 		return false;
 	}
 
-	private boolean reset(String uuid) {
+	private boolean reset(UUID uuid) {
 		String type = RageMode.getInstance().getConfiguration().getCV().getDatabaseType();
 		switch (type) {
 		case "mysql":

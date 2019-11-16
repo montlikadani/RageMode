@@ -294,6 +294,21 @@ rejoin-delay:
 rewards:
   enable: true
 
+# Various bonuses in game.
+bonuses:
+  # When a player kills someone
+  kill-bonuses:
+    # The chance to give bonus to the killer
+    chance: 75
+
+    # The list of bonuses
+    # If you don't know how to modify this list, follow this:
+    # 
+    list:
+    - "effect:regeneration:20:2"
+    - "effect:speed:30:1"
+    - "points:15"
+
 # Points for killing or deaths.
 points:
   bowkill: 25

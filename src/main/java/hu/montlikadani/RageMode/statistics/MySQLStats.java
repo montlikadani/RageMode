@@ -51,10 +51,11 @@ public class MySQLStats {
 				currentGames = rs.getInt("games");
 
 				String playerUUID = rs.getString("uuid");
-				PlayerPoints rPP = RuntimePPManager.getPPForPlayer(playerUUID);
+				UUID uuid = UUID.fromString(playerUUID);
+				PlayerPoints rPP = RuntimePPManager.getPPForPlayer(uuid);
 				if (rPP == null) {
-					rPP = new PlayerPoints(playerUUID);
-					RageScores.getPlayerPointsMap().put(UUID.fromString(playerUUID).toString(), rPP);
+					rPP = new PlayerPoints(uuid);
+					RageScores.getPlayerPointsMap().put(uuid, rPP);
 				}
 
 				rPP.setWins(currentWins);
@@ -106,7 +107,8 @@ public class MySQLStats {
 		RMConnection conn = mySQL.getConnection();
 
 		Statement statement = null;
-		String query = "SELECT * FROM `" + mySQL.getPrefix() + "stats_players` WHERE uuid LIKE `" + playerPoints.getPlayerUUID() + "`;";
+		String query = "SELECT * FROM `" + mySQL.getPrefix() + "stats_players` WHERE uuid LIKE `"
+				+ playerPoints.getUUID() + "`;";
 
 		int oldKills = 0;
 		int oldAxeKills = 0;
@@ -146,7 +148,7 @@ public class MySQLStats {
 			}
 			rs.close();
 		} catch (SQLException e) {
-			Debug.logConsole(Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID())).getName()
+			Debug.logConsole(Bukkit.getPlayer(playerPoints.getUUID()).getName()
 					+ " has no statistics yet! Creating one special row for him...");
 		}
 		if (statement != null) {
@@ -184,8 +186,8 @@ public class MySQLStats {
 				return;
 			}
 
-			prestt.setString(1, Bukkit.getPlayer(UUID.fromString(playerPoints.getPlayerUUID())).getName());
-			prestt.setString(2, playerPoints.getPlayerUUID());
+			prestt.setString(1, Bukkit.getPlayer(playerPoints.getUUID()).getName());
+			prestt.setString(2, playerPoints.getUUID().toString());
 			prestt.setInt(3, newKills);
 			prestt.setInt(4, newAxeKills);
 			prestt.setInt(5, newDirectArrowKills);
@@ -221,9 +223,21 @@ public class MySQLStats {
 	 * @param playerUUID The Player instance for which the statistic should be gotten.
 	 * @return {@link PlayerPoints} class
 	 */
+	@Deprecated
 	public static PlayerPoints getPlayerStatistics(String playerUUID) {
+		return getPlayerStatistics(UUID.fromString(playerUUID));
+	}
+
+	/**
+	 * Returns an PlayerPoints instance with the statistics from the database
+	 * connection for the given Player.
+	 * 
+	 * @param playerUUID The Player instance for which the statistic should be gotten.
+	 * @return {@link PlayerPoints} class
+	 */
+	public static PlayerPoints getPlayerStatistics(UUID uuid) {
 		for (PlayerPoints rpp : points) {
-			if (rpp.getPlayerUUID().equals(playerUUID)) {
+			if (rpp.getUUID().equals(uuid)) {
 				return rpp;
 			}
 		}
@@ -276,7 +290,19 @@ public class MySQLStats {
 	 * @param uuid Player uuid
 	 * @return {@link PlayerPoints}
 	 */
+	@Deprecated
 	public static PlayerPoints getPlayerStatsFromData(String uuid) {
+		return getPlayerStatsFromData(UUID.fromString(uuid));
+	}
+
+	/**
+	 * Gets all player stats from database.
+	 * <p>If the player never played and not found in the database, will be ignored.
+	 * 
+	 * @param uuid Player uuid
+	 * @return {@link PlayerPoints}
+	 */
+	public static PlayerPoints getPlayerStatsFromData(UUID uuid) {
 		MySQLConnect connect = RageMode.getMySQL();
 		if (!connect.isValid())
 			return null;
@@ -315,7 +341,7 @@ public class MySQLStats {
 			statement = conn.createStatement();
 			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
-				if (rs.getString("uuid").equals(uuid)) {
+				if (rs.getString("uuid").equals(uuid.toString())) {
 					currentKills = rs.getInt("kills");
 					currentAxeKills = rs.getInt("axe_kills");
 					currentDirectArrowKills = rs.getInt("direct_arrow_kills");
@@ -369,11 +395,21 @@ public class MySQLStats {
 	}
 
 	/**
-	 * Restores all data of the specified player to 0
+	 * Restores all data of the given player to 0
 	 * @param uuid UUID of player
 	 * @return true if the player found in database
 	 */
+	@Deprecated
 	public static boolean resetPlayerStatistic(String uuid) {
+		return resetPlayerStatistic(UUID.fromString(uuid));
+	}
+
+	/**
+	 * Restores all data of the given player to 0
+	 * @param uuid UUID of player
+	 * @return true if the player found in database
+	 */
+	public static boolean resetPlayerStatistic(UUID uuid) {
 		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
 		if (rpp == null)
 			return false;
@@ -410,8 +446,8 @@ public class MySQLStats {
 				return false;
 			}
 
-			prestt.setString(1, Bukkit.getPlayer(UUID.fromString(rpp.getPlayerUUID())).getName());
-			prestt.setString(2, rpp.getPlayerUUID());
+			prestt.setString(1, Bukkit.getPlayer(rpp.getUUID()).getName());
+			prestt.setString(2, rpp.getUUID().toString());
 			for (int i = 3; i <= 15; i++) {
 				prestt.setInt(i, 0);
 			}

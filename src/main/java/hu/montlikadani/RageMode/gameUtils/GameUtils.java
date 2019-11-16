@@ -31,6 +31,7 @@ import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.events.EventListener;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
+import hu.montlikadani.ragemode.gameLogic.Bonus;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.items.CombatAxe;
@@ -54,6 +55,8 @@ import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 public class GameUtils {
 
 	private static Map<String, GameStatus> status = new HashMap<>();
+
+	private static Bonus bonuses = null;
 
 	/**
 	 * Broadcast a message to the currently playing players for that given game.
@@ -251,6 +254,19 @@ public class GameUtils {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Get the {@link Bonus} instance
+	 * <p>If the instance of the class not exist, will create new.
+	 * @return {@link Bonus}
+	 */
+	public static Bonus getBonus() {
+		if (bonuses == null) {
+			bonuses = new Bonus();
+		}
+
+		return bonuses;
 	}
 
 	/**
@@ -695,11 +711,10 @@ public class GameUtils {
 		RMGameStopEvent gameStopEvent = new RMGameStopEvent(game, players);
 		Utils.callEvent(gameStopEvent);
 
-		String winnerUUID = RageScores.calculateWinner(name, players);
-		if (winnerUUID != null && UUID.fromString(winnerUUID) != null
-				&& Bukkit.getPlayer(UUID.fromString(winnerUUID)) != null) {
+		UUID winnerUUID = RageScores.calculateWinner(name, players);
+		if (winnerUUID != null && Bukkit.getPlayer(winnerUUID) != null) {
 			winnervalid = true;
-			Player winner = Bukkit.getPlayer(UUID.fromString(winnerUUID));
+			Player winner = Bukkit.getPlayer(winnerUUID);
 
 			hu.montlikadani.ragemode.config.ConfigValues cv = RageMode.getInstance().getConfiguration().getCV();
 			String wonTitle = cv.getWonTitle();
@@ -760,7 +775,7 @@ public class GameUtils {
 
 		setStatus(name, GameStatus.GAMEFREEZE);
 
-		final Player winner = winnerUUID != null ? Bukkit.getPlayer(UUID.fromString(winnerUUID)) : null;
+		final Player winner = winnerUUID != null ? Bukkit.getPlayer(winnerUUID) : null;
 		if (!useFreeze) {
 			finishStopping(game, winner, false);
 			return;
@@ -787,7 +802,7 @@ public class GameUtils {
 		List<PlayerManager> players = game.getPlayersFromList();
 
 		for (PlayerManager pm : players) {
-			final PlayerPoints pP = RageScores.getPlayerPoints(pm.getPlayer().getUniqueId().toString());
+			final PlayerPoints pP = RageScores.getPlayerPoints(pm.getPlayer().getUniqueId());
 			if (pP == null) {
 				continue;
 			}
@@ -846,7 +861,7 @@ public class GameUtils {
 		for (PlayerManager pm : game.getPlayersFromList()) {
 			Player p = pm.getPlayer();
 			sendActionBarMessages(p, game.getName(), "stop");
-			RageScores.removePointsForPlayer(p.getUniqueId().toString());
+			RageScores.removePointsForPlayer(p.getUniqueId());
 			if (RageMode.getInstance().getConfiguration().getCV().isRewardEnabled()) {
 				if (rewardPlayers == null) {
 					rewardPlayers = new ArrayList<>();
@@ -929,7 +944,7 @@ public class GameUtils {
 
 							p.removeMetadata("killedWith", RageMode.getInstance());
 							g.removePlayer(p);
-							RageScores.removePointsForPlayer(players.getGameName());
+							RageScores.removePointsForPlayer(p.getUniqueId());
 						}
 
 						for (Iterator<Entry<Player, PlayerManager>> it = g.getSpectatorPlayers().entrySet().iterator(); it
@@ -951,7 +966,7 @@ public class GameUtils {
 		}
 	}
 
-	private static String replaceVariables(String s, String uuid) {
+	private static String replaceVariables(String s, UUID uuid) {
 		PlayerPoints score = RageScores.getPlayerPoints(uuid);
 
 		if (s.contains("%points%"))

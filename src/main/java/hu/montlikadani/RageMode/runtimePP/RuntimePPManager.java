@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.runtimePP;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 
 import hu.montlikadani.ragemode.Debug;
@@ -35,7 +36,7 @@ public class RuntimePPManager {
 	 * @param uuid Player uuid
 	 * @return {@link PlayerPoints}
 	 */
-	public static PlayerPoints getPPFromDatabase(String uuid) {
+	public static PlayerPoints getPPFromDatabase(UUID uuid) {
 		switch (RageMode.getInstance().getConfiguration().getCV().getDatabaseType()) {
 		case "sql":
 		case "sqlite":
@@ -52,7 +53,17 @@ public class RuntimePPManager {
 	 * @param sUUID Player uuid
 	 * @return {@link PlayerPoints}
 	 */
+	@Deprecated
 	public static PlayerPoints getPPForPlayer(String sUUID) {
+		return getPPForPlayer(UUID.fromString(sUUID));
+	}
+
+	/**
+	 * Get the points database for the given player uuid.
+	 * @param sUUID Player uuid
+	 * @return {@link PlayerPoints}
+	 */
+	public static PlayerPoints getPPForPlayer(UUID UUID) {
 		if (RuntimePPList == null) {
 			RuntimePPList = new ArrayList<>();
 			return null;
@@ -62,7 +73,7 @@ public class RuntimePPManager {
 		int i = 0;
 		int imax = RuntimePPList.size();
 		while (i < imax) {
-			if (RuntimePPList.get(i).getPlayerUUID().equals(sUUID)) {
+			if (RuntimePPList.get(i).getUUID().equals(UUID)) {
 				pp = RuntimePPList.get(i);
 				pp.setRank(i + 1);
 				break;
@@ -85,13 +96,13 @@ public class RuntimePPManager {
 			return;
 		}
 
-		PlayerPoints oldPP = getPPForPlayer(pp.getPlayerUUID());
+		PlayerPoints oldPP = getPPForPlayer(pp.getUUID());
 		if (oldPP == null) {
 			int i = 0;
 			while (RuntimePPList.get(i).getPoints() < pp.getPoints())
 				i++;
 
-			PlayerPoints newPP = new PlayerPoints(pp.getPlayerUUID());
+			PlayerPoints newPP = new PlayerPoints(pp.getUUID());
 			newPP.setAxeDeaths(pp.getAxeDeaths());
 			newPP.setAxeKills(pp.getAxeKills());
 			newPP.setCurrentStreak(pp.getCurrentStreak());
@@ -138,7 +149,7 @@ public class RuntimePPManager {
 				break;
 			}
 
-			PlayerPoints newPP = new PlayerPoints(pp.getPlayerUUID());
+			PlayerPoints newPP = new PlayerPoints(pp.getUUID());
 			newPP.setAxeDeaths(pp.getAxeDeaths());
 			newPP.setAxeKills(pp.getAxeKills());
 			newPP.setCurrentStreak(pp.getCurrentStreak());
@@ -190,7 +201,7 @@ public class RuntimePPManager {
 				}
 			}
 
-			PlayerPoints newPP = new PlayerPoints(pp.getPlayerUUID());
+			PlayerPoints newPP = new PlayerPoints(pp.getUUID());
 			newPP.setAxeDeaths(pp.getAxeDeaths());
 			newPP.setAxeKills(pp.getAxeKills());
 			newPP.setCurrentStreak(pp.getCurrentStreak());
