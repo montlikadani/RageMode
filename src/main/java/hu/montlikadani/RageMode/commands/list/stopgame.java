@@ -39,7 +39,9 @@ public class stopgame {
 				Player player = it.next().getPlayer();
 
 				player.removeMetadata("killedWith", RageMode.getInstance());
-				sendMessage(player, RageMode.getLang().get("game.stopped", "%game%", game));
+				if (player.isOp()) {
+					sendMessage(player, RageMode.getLang().get("game.stopped", "%game%", game));
+				}
 				g.removePlayer(player);
 			}
 

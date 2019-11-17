@@ -82,7 +82,7 @@ public class addgame {
 
 		plugin.getSpawns().add(new GameSpawn(g));
 
-		Utils.callEvent(new RMGameCreateEvent(g, x));
+		Utils.callEvent(new RMGameCreateEvent(g, x, m));
 
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".maxplayers", x);
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".minplayers", x);

@@ -104,64 +104,68 @@ public class GameTimer extends TimerTask {
 				}
 			}
 
-			Player player = game.getPlayerInGame(game.getName());
-			if (player != null && player.isOnline()) {
-				if (gameTab != null) {
-					List<String> tabHeader = conf.getCV().getTabHeader();
-					List<String> tabFooter = conf.getCV().getTabFooter();
+			if (gameTab != null) {
+				List<String> tabHeader = conf.getCV().getTabHeader();
+				List<String> tabFooter = conf.getCV().getTabFooter();
 
-					String he = "";
-					String fo = "";
-					int s = 0;
-					for (String line : tabHeader) {
-						s++;
-						if (s > 1)
-							he = he + "\n\u00a7r";
+				String he = "";
+				String fo = "";
+				int s = 0;
+				for (String line : tabHeader) {
+					s++;
+					if (s > 1)
+						he = he + "\n\u00a7r";
 
-						he = he + line;
-					}
-					s = 0;
-					for (String line : tabFooter) {
-						s++;
-						if (s > 1)
-							fo = fo + "\n\u00a7r";
+					he = he + line;
+				}
+				s = 0;
+				for (String line : tabFooter) {
+					s++;
+					if (s > 1)
+						fo = fo + "\n\u00a7r";
 
-						fo = fo + line;
-					}
-
-					he = Utils.setPlaceholders(he, player);
-					he = he.replace("%game-time%", tFormat);
-
-					fo = Utils.setPlaceholders(fo, player);
-					fo = fo.replace("%game-time%", tFormat);
-
-					gameTab.sendTabTitle(he, fo);
+					fo = fo + line;
 				}
 
-				if (scoreTeam != null) {
-					String prefix = conf.getCV().getTabPrefix();
-					String suffix = conf.getCV().getTabSuffix();
-
-					prefix = Utils.setPlaceholders(prefix, player);
-					suffix = Utils.setPlaceholders(suffix, player);
-
-					scoreTeam.setTeam(prefix, suffix);
+				for (Player pl : gameTab.getPlayers()) {
+					he = Utils.setPlaceholders(he, pl);
+					fo = Utils.setPlaceholders(fo, pl);
 				}
 
-				if (gameBoard != null) {
-					String boardTitle = conf.getCV().getSbTitle();
-					if (!boardTitle.isEmpty())
+				he = he.replace("%game-time%", tFormat);
+				fo = fo.replace("%game-time%", tFormat);
+
+				gameTab.sendTabTitle(he, fo);
+			}
+
+			if (scoreTeam != null) {
+				String prefix = conf.getCV().getTabPrefix();
+				String suffix = conf.getCV().getTabSuffix();
+
+				for (Player pl : scoreTeam.getPlayers()) {
+					prefix = Utils.setPlaceholders(prefix, pl);
+					suffix = Utils.setPlaceholders(suffix, pl);
+				}
+
+				scoreTeam.setTeam(prefix, suffix);
+			}
+
+			if (gameBoard != null) {
+				String boardTitle = conf.getCV().getSbTitle();
+				List<String> rows = conf.getCV().getSbContent();
+				for (Player pl : gameBoard.getPlayers()) {
+					if (!boardTitle.isEmpty()) {
 						gameBoard.setTitle(Utils.colors(boardTitle));
+					}
 
-					List<String> rows = conf.getCV().getSbContent();
+					// should fix duplicated lines
+					org.bukkit.scoreboard.Scoreboard sb = gameBoard.getScoreboards().get(pl).getScoreboard();
+					for (String entry : sb.getEntries()) {
+						sb.resetScores(entry);
+					}
+
 					if (rows != null && !rows.isEmpty()) {
 						int rowMax = rows.size();
-
-						// should fix duplicated lines
-						org.bukkit.scoreboard.Scoreboard sb = gameBoard.getScoreboards().get(player).getScoreboard();
-						for (String entry : sb.getEntries()) {
-							sb.resetScores(entry);
-						}
 
 						for (String row : rows) {
 							if (row.trim().isEmpty()) {
@@ -170,13 +174,13 @@ public class GameTimer extends TimerTask {
 								}
 							}
 
-							row = Utils.setPlaceholders(row, player);
+							row = Utils.setPlaceholders(row, pl);
 							row = row.replace("%game-time%", tFormat);
 
 							gameBoard.setLine(row, rowMax);
 							rowMax--;
 
-							gameBoard.setScoreBoard();
+							gameBoard.setScoreBoard(pl);
 						}
 					}
 				}

@@ -45,7 +45,7 @@ public class Bonus {
 			}
 
 			PotionEffect pe = new PotionEffect(effect, (split.length > 2 ? Integer.parseInt(split[1]) : 5) * 20,
-					(split.length > 3 ? Integer.parseInt(split[2]) : 10), true);
+					(split.length > 3 ? Integer.parseInt(split[2]) : 1));
 			player.addPotionEffect(pe);
 		}
 	}
@@ -65,17 +65,16 @@ public class Bonus {
 			return 0;
 		}
 
-		String[] split = null;
 		for (String b : list) {
 			if (!b.startsWith("points:")) {
 				continue;
 			}
 
-			b = b.replace("points:", "");
+			b = b.replace("points", "");
 
-			split = b.split(":");
+			String[] split = b.split(":");
 
-			if (split.length == 1) {
+			if (split.length > 1) {
 				int amount = Integer.parseInt(split[1]);
 				return amount;
 			}

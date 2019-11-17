@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.API.event.BaseEvent;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.scores.RageScores;
 
 public class Utils {
 
@@ -106,10 +107,15 @@ public class Utils {
 	 */
 	public static String setPlaceholders(String s, Player player, boolean fromDatabase) {
 		PlayerPoints pp = null;
+		java.util.UUID uuid = player.getUniqueId();
 		if (fromDatabase) {
-			pp = RuntimePPManager.getPPFromDatabase(player.getUniqueId());
+			pp = RuntimePPManager.getPPFromDatabase(uuid);
 		} else {
-			pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
+			if (RageScores.getPlayerPoints(uuid) == null) {
+				pp = RuntimePPManager.getPPForPlayer(uuid);
+			} else {
+				pp = RageScores.getPlayerPoints(uuid);
+			}
 		}
 
 		if (s.contains("%kills%")) {

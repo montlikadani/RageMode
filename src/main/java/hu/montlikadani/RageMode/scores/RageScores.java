@@ -221,10 +221,9 @@ public class RageScores {
 
 		if (playerpoints.containsKey(playerUUID)) {
 			PlayerPoints pointsHolder = getPlayerPoints(playerUUID);
-			int oldPoints = pointsHolder.getPoints();
 			int oldKills = pointsHolder.getKills();
 			int oldDeaths = pointsHolder.getDeaths();
-			int totalPoints = (oldPoints + points);
+
 			totalKills = oldKills;
 			totalDeaths = oldDeaths;
 			if (killer) {
@@ -241,13 +240,12 @@ public class RageScores {
 			pointsHolder.setCurrentStreak(currentStreak);
 			pointsHolder.setLongestStreak(longestStreak);
 			if (killer) {
-				int newPoints = (totalPoints + GameUtils.getBonus().getPointBonus(player));
-				pointsHolder.addPoints(newPoints);
+				pointsHolder.addPoints(points + GameUtils.getBonus().getPointBonus(player));
 			} else {
-				pointsHolder.addPoints(totalPoints);
+				pointsHolder.addPoints(points);
 			}
 
-			return totalPoints;
+			return pointsHolder.getPoints();
 		}
 
 		if (killer) {
@@ -265,7 +263,7 @@ public class RageScores {
 		pointsHolder.setCurrentStreak(currentStreak);
 		pointsHolder.setLongestStreak(longestStreak);
 		playerpoints.put(playerUUID, pointsHolder);
-		return points;
+		return pointsHolder.getPoints();
 	}
 
 	public static UUID calculateWinner(String game, List<PlayerManager> players) {

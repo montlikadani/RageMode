@@ -85,7 +85,7 @@ public class RmTabCompleter implements TabCompleter {
 	private List<String> getAdminCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
 		for (String cmds : Arrays.asList("addgame", "addspawn", "setlobby", "reload", "holostats", "removegame",
-				"resetstats", "forcestart", "kick", "stopgame", "signupdate", "togglegame", "points", "givesaveditems",
+				"resetplayerstats", "forcestart", "kick", "stopgame", "signupdate", "togglegame", "points", "givesaveditems",
 				"removespawn", "latestart", "maxplayers", "minplayers")) {
 			if (sender instanceof Player && !hasPerm(sender, "ragemode.admin." + cmds))
 				continue;

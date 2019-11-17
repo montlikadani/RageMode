@@ -79,9 +79,7 @@ public class RmCommand implements CommandExecutor {
 
 				msg += "&7==========";
 
-				if (!msg.isEmpty())
-					sendMessage(sender, Utils.colors(msg));
-
+				sendMessage(sender, Utils.colors(msg));
 				return true;
 			}
 
@@ -188,8 +186,7 @@ public class RmCommand implements CommandExecutor {
 				for (Entry<String, String> a : arg.entrySet()) {
 					if (args[0].equalsIgnoreCase(a.getKey())) {
 						try {
-							String className = a.getValue();
-							Class<?> fclass = Class.forName(className);
+							Class<?> fclass = Class.forName(a.getValue());
 							Object run = fclass.newInstance();
 							Class<?>[] paramTypes = { RageMode.class, CommandSender.class, Command.class, String[].class };
 							Method printMethod = null;

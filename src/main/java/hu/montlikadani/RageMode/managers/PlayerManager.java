@@ -110,7 +110,7 @@ public class PlayerManager {
 			sps.oldLocation = null;
 		}
 
-		if (spectator || !conf.getCV().isSavePlayerData()) {
+		if (spectator || conf.getCV().isSavePlayerData()) {
 			if (sps.oldInventories != null) { // Give him his inventory back.
 				player.getInventory().setContents(sps.oldInventories);
 				sps.oldInventories = null;

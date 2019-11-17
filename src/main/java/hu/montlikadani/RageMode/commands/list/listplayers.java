@@ -30,19 +30,33 @@ public class listplayers {
 			}
 
 			Player p = (Player) sender;
-			StringBuilder sb = new StringBuilder();
-
-			if (!GameUtils.isPlayerPlaying(p)) {
+			if (!GameUtils.isPlayerPlaying(p) || !GameUtils.isSpectatorPlaying(p)) {
 				sendMessage(p, RageMode.getLang().get("commands.listplayers.player-currently-not-playing"));
 				return false;
 			}
 
-			for (Iterator<String> e = Arrays.asList(GameUtils.getGameByPlayer(p).getName()).iterator(); e.hasNext();) {
-				sb.append("&7-&6 " + p.getName() + "&a - " + e.next());
+			StringBuilder sb = null;
+			if (!GameUtils.getGameByPlayer(p).getPlayersFromList().isEmpty()) {
+				sb = new StringBuilder();
+
+				for (Iterator<PlayerManager> e = GameUtils.getGameByPlayer(p).getPlayersFromList().iterator(); e.hasNext();) {
+					sb.append("&7-&6 " + e.next().getPlayer().getName() + "&a - " + e.next().getGameName());
+				}
+
+				sendMessage(p, Utils.colors("&7Players:\n" + sb));
 			}
 
-			sendMessage(p, Utils.colors("&7Players:\n" + sb));
-			return false;
+			if (!GameUtils.getGameBySpectator(p).getPlayersFromList().isEmpty()) {
+				sb = new StringBuilder();
+
+				for (Iterator<PlayerManager> e = GameUtils.getGameBySpectator(p).getPlayersFromList().iterator(); e.hasNext();) {
+					sb.append("&7-&6 " + e.next().getPlayer().getName() + "&a - " + e.next().getGameName());
+				}
+
+				sendMessage(sender, Utils.colors("&7Spectator players:\n" + sb));
+			}
+
+			return true;
 		}
 
 		if (args.length >= 2) {

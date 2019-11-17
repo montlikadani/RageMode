@@ -84,6 +84,7 @@ public class YAMLStats {
 			}
 
 			plPo.setWins(statsConf.getInt(path + "wins"));
+			plPo.setPoints(statsConf.getInt(path + "score"));
 			plPo.setGames(statsConf.getInt(path + "games"));
 
 			points.add(plPo);

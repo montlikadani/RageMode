@@ -34,13 +34,7 @@ import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.Bonus;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.holder.HoloHolder;
-import hu.montlikadani.ragemode.items.CombatAxe;
-import hu.montlikadani.ragemode.items.ForceStarter;
-import hu.montlikadani.ragemode.items.Grenade;
-import hu.montlikadani.ragemode.items.LeaveGame;
-import hu.montlikadani.ragemode.items.RageArrow;
-import hu.montlikadani.ragemode.items.RageBow;
-import hu.montlikadani.ragemode.items.RageKnife;
+import hu.montlikadani.ragemode.items.*;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.managers.RewardManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
@@ -547,8 +541,8 @@ public class GameUtils {
 	 * @param cmdType Command type, such as death, join or other
 	 */
 	public static void runCommandsForAll(String game, String cmdType) {
-		for (Player pl : getGame(game).getPlayersInList()) {
-			runCommands(pl, game, cmdType);
+		for (PlayerManager pl : getGame(game).getPlayersFromList()) {
+			runCommands(pl.getPlayer(), game, cmdType);
 		}
 	}
 
@@ -647,8 +641,8 @@ public class GameUtils {
 	 * @param spawn {@link GameSpawn}
 	 */
 	public static void teleportPlayersToGameSpawns(GameSpawn spawn) {
-		for (Player players : spawn.getGame().getPlayersInList()) {
-			teleportPlayerToGameSpawn(players, spawn);
+		for (PlayerManager pm : spawn.getGame().getPlayersFromList()) {
+			teleportPlayerToGameSpawn(pm.getPlayer(), spawn);
 		}
 	}
 
@@ -714,6 +708,7 @@ public class GameUtils {
 		UUID winnerUUID = RageScores.calculateWinner(name, players);
 		if (winnerUUID != null && Bukkit.getPlayer(winnerUUID) != null) {
 			winnervalid = true;
+
 			Player winner = Bukkit.getPlayer(winnerUUID);
 
 			hu.montlikadani.ragemode.config.ConfigValues cv = RageMode.getInstance().getConfiguration().getCV();
@@ -731,9 +726,9 @@ public class GameUtils {
 			wonSubtitle = replaceVariables(wonSubtitle, winnerUUID);
 			youWonSubtitle = replaceVariables(youWonSubtitle, winnerUUID);
 
+			String[] split = null;
 			for (PlayerManager pm : players) {
-				Player p = pm.getPlayer();
-				String[] split = null;
+				final Player p = pm.getPlayer();
 
 				if (p != winner) {
 					split = cv.getWonTitleTime().split(", ");
@@ -748,6 +743,10 @@ public class GameUtils {
 					Titles.sendTitle(p, (split.length > 1 ? Integer.parseInt(split[0]) : 20),
 							(split.length > 2 ? Integer.parseInt(split[1]) : 30),
 							(split.length > 3 ? Integer.parseInt(split[2]) : 20), youWonTitle, youWonSubtitle);
+				}
+
+				if (!p.getActivePotionEffects().isEmpty()) {
+					p.getActivePotionEffects().forEach(e -> p.removePotionEffect(e.getType()));
 				}
 
 				game.removePlayerSynced(p);
@@ -834,23 +833,6 @@ public class GameUtils {
 			});
 		}
 
-		if (RageMode.getInstance().getConfiguration().getCV().isRewardEnabled()) {
-			RewardManager reward = new RewardManager(game.getName());
-
-			for (PlayerManager pm : players) {
-				if (winner != null) {
-					if (pm.getPlayer() == winner) {
-						Utils.clearPlayerInventory(winner);
-						reward.rewardForWinner(winner);
-					}
-				} else {
-					Utils.clearPlayerInventory(pm.getPlayer());
-				}
-
-				reward.rewardForPlayers(winner, pm.getPlayer());
-			}
-		}
-
 		broadcastToGame(game.getName(), RageMode.getLang().get("game.stopped", "%game%", game.getName()));
 		game.setGameNotRunning();
 		runCommandsForAll(game.getName(), "stop");
@@ -887,13 +869,8 @@ public class GameUtils {
 			RewardManager reward = new RewardManager(game.getName());
 
 			for (Player p : rewardPlayers) {
-				if (winner != null) {
-					if (p == winner) {
-						Utils.clearPlayerInventory(winner);
-						reward.rewardForWinner(winner);
-					}
-				} else {
-					Utils.clearPlayerInventory(p);
+				if (winner != null && p == winner) {
+					reward.rewardForWinner(winner);
 				}
 
 				reward.rewardForPlayers(winner, p);

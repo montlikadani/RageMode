@@ -142,6 +142,8 @@ public class RageMode extends JavaPlugin {
 				break;
 			}
 
+			RuntimePPManager.loadPPListFromDatabase();
+
 			if (conf.getCV().isSignsEnable()) {
 				sign = new SignScheduler(this);
 				getManager().registerEvents(sign, this);

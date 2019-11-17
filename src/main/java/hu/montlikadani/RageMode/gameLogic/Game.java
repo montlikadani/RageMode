@@ -185,13 +185,16 @@ public class Game {
 		return true;
 	}
 
-	public boolean removePlayer(Player player) {
+	public boolean removePlayer(final Player player) {
 		if (!isInList(player)) {
 			player.sendMessage(RageMode.getLang().get("game.player-not-ingame"));
 			return false;
 		}
 
 		Utils.clearPlayerInventory(player);
+		if (!player.getActivePotionEffects().isEmpty()) {
+			player.getActivePotionEffects().forEach(e -> player.removePotionEffect(e.getType()));
+		}
 		getPlayerManager(player).addBackTools();
 
 		removePlayerSynced(player);
@@ -326,8 +329,9 @@ public class Game {
 	 * @return true if the players size not equal to vips size
 	 */
 	public boolean hasRoomForVIP(String game) {
-		Validate.notNull(game, "Game name can't be null!");
-		Validate.notEmpty(game, "Game name can't be empty!");
+		if (game == null || game.isEmpty()) {
+			game = name;
+		}
 
 		if (players == null) {
 			return false;
@@ -350,43 +354,65 @@ public class Game {
 	}
 
 	/**
-	 * Get the player who playing in game.
-	 * @param game Game
-	 * @return Player who in game currently.
+	 * Gets the list of players who's playing in the given game.
+	 * @return The list of players
 	 */
-	public Player getPlayerInGame(String game) {
-		Validate.notNull(game, "Game name can't be null!");
-		Validate.notEmpty(game, "Game name can't be empty!");
+	public List<Player> getPlayersInGame() {
+		return getPlayersInGame("");
+	}
+
+	/**
+	 * Gets the list of players who's playing in the given game.
+	 * @param game Game name
+	 * @return The list of players
+	 */
+	public List<Player> getPlayersInGame(String game) {
+		if (game == null || game.isEmpty()) {
+			game = name;
+		}
+
+		List<Player> list = new ArrayList<>();
 
 		if (players != null) {
 			for (Entry<Player, PlayerManager> players : players.entrySet()) {
 				if (players.getValue().getGameName().equalsIgnoreCase(game)) {
-					return players.getKey();
+					list.add(players.getKey());
 				}
 			}
 		}
 
-		return null;
+		return list;
 	}
 
 	/**
-	 * Gets the spectator player by the given game.
-	 * @param game Game
-	 * @return Player if the player is spectator and in the given game
+	 * Gets the list of spectator players who's playing in the given game.
+	 * @return The list of spectator players
 	 */
-	public Player getSpectatorPlayerInGame(String game) {
-		Validate.notNull(game, "Game name can't be null!");
-		Validate.notEmpty(game, "Game name can't be empty!");
+	public List<Player> getSpectatorPlayersInGame() {
+		return getSpectatorPlayersInGame("");
+	}
 
-		if (specPlayer != null) {
-			for (Entry<Player, PlayerManager> spec : specPlayer.entrySet()) {
-				if (spec.getValue().getGameName().equalsIgnoreCase(game)) {
-					return spec.getKey();
+	/**
+	 * Gets the list of spectator players who's playing in the given game.
+	 * @param game Game name
+	 * @return The list of spectator players
+	 */
+	public List<Player> getSpectatorPlayersInGame(String game) {
+		if (game == null || game.isEmpty()) {
+			game = name;
+		}
+
+		List<Player> list = new ArrayList<>();
+
+		if (players != null) {
+			for (Entry<Player, PlayerManager> players : specPlayer.entrySet()) {
+				if (players.getValue().getGameName().equalsIgnoreCase(game)) {
+					list.add(players.getKey());
 				}
 			}
 		}
 
-		return null;
+		return list;
 	}
 
 	/**
@@ -427,38 +453,6 @@ public class Game {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Gets the players converted to list.
-	 * @return List of players
-	 */
-	public List<Player> getPlayersInList() {
-		List<Player> list = new ArrayList<>();
-
-		if (players != null) {
-			for (Entry<Player, PlayerManager> players : players.entrySet()) {
-				list.add(players.getKey());
-			}
-		}
-
-		return list;
-	}
-
-	/**
-	 * Gets the spectator players converted to list.
-	 * @return List of spectator players
-	 */
-	public List<Player> getSpectatorPlayersInList() {
-		List<Player> list = new ArrayList<>();
-
-		if (specPlayer != null) {
-			for (Entry<Player, PlayerManager> entries : specPlayer.entrySet()) {
-				list.add(entries.getKey());
-			}
-		}
-
-		return list;
 	}
 
 	/**

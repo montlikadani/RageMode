@@ -49,6 +49,7 @@ public class SQLStats {
 			while (rs.next()) {
 				currentWins = rs.getInt("wins");
 				currentGames = rs.getInt("games");
+				currentScore = rs.getInt("score");
 
 				String playerUUID = rs.getString("uuid");
 				UUID uuid = UUID.fromString(playerUUID);
@@ -420,6 +421,7 @@ public class SQLStats {
 		if (rpp == null)
 			return false;
 
+		rpp.setKills(0);
 		rpp.setAxeKills(0);
 		rpp.setDirectArrowKills(0);
 		rpp.setExplosionKills(0);

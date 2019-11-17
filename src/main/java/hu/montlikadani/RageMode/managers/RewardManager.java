@@ -24,7 +24,6 @@ import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class RewardManager {
 
@@ -46,7 +45,13 @@ public class RewardManager {
 		if (cmds != null) {
 			for (String path : cmds) {
 				String[] arg = path.split(": ");
-				String cmd = arg[1];
+				String cmd = path;
+				if (arg.length < 2) {
+					arg[0] = "console";
+				} else {
+					cmd = arg[1];
+				}
+
 				cmd = replacePlaceholders(cmd, winner, true);
 
 				if (arg[0].equals("console"))
@@ -82,7 +87,13 @@ public class RewardManager {
 		if (cmds != null) {
 			for (String path : cmds) {
 				String[] arg = path.split(": ");
-				String cmd = arg[1];
+				String cmd = path;
+				if (arg.length < 2) {
+					arg[0] = "console";
+				} else {
+					cmd = arg[1];
+				}
+
 				cmd = replacePlaceholders(cmd, pls, false);
 
 				if (arg[0].equals("console"))
@@ -109,7 +120,6 @@ public class RewardManager {
 
 		path = path.replace("%game%", game);
 		path = path.replace("%player%", p.getName());
-		path = path.replace("%online-ingame-players%", Integer.toString(GameUtils.getGame(game).getPlayers().size()));
 		path = path.replace("%reward%", cash > 0D ? Double.toString(cash) : "");
 		path = Utils.setPlaceholders(path, p);
 		return Utils.colors(path);
@@ -126,12 +136,12 @@ public class RewardManager {
 						Debug.logConsole(Level.WARNING, "Unknown item name: " + type);
 						Debug.logConsole("Find and double check item names using this page:");
 						Debug.logConsole("https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html");
-						return;
+						continue;
 					}
 
 					if (mat.equals(Material.AIR)) {
 						Debug.logConsole("AIR is not supported.");
-						return;
+						continue;
 					}
 
 					ItemStack itemStack = new ItemStack(mat);
@@ -152,9 +162,8 @@ public class RewardManager {
 
 						if (type.startsWith("LEATHER_")) {
 							String color = conf.getString("rewards.end-game." + path + ".items." + num + ".color", "");
-							if (!color.isEmpty()) {
-								if (itemMeta instanceof LeatherArmorMeta)
-									((LeatherArmorMeta) itemMeta).setColor(Utils.getColorFromString(color));
+							if (!color.isEmpty() && itemMeta instanceof LeatherArmorMeta) {
+								((LeatherArmorMeta) itemMeta).setColor(Utils.getColorFromString(color));
 							}
 						}
 
@@ -190,11 +199,14 @@ public class RewardManager {
 								String[] split = enchant.split(":");
 								try {
 									if (itemStack.getItemMeta() instanceof EnchantmentStorageMeta) {
-										EnchantmentStorageMeta enchMeta = (EnchantmentStorageMeta) itemStack.getItemMeta();
-										enchMeta.addStoredEnchant(NMS.getEnchant(split[0]), Integer.parseInt(split[1]), true);
+										EnchantmentStorageMeta enchMeta = (EnchantmentStorageMeta) itemStack
+												.getItemMeta();
+										enchMeta.addStoredEnchant(NMS.getEnchant(split[0]),
+												(split.length > 2 ? Integer.parseInt(split[1]) : 1), true);
 										itemStack.setItemMeta(enchMeta);
 									} else
-										itemStack.addUnsafeEnchantment(NMS.getEnchant(split[0]), Integer.parseInt(split[1]));
+										itemStack.addUnsafeEnchantment(NMS.getEnchant(split[0]),
+												Integer.parseInt(split[1]));
 								} catch (IllegalArgumentException b) {
 									Debug.logConsole(Level.WARNING, "Bad enchantment name: " + split[0]);
 									continue;

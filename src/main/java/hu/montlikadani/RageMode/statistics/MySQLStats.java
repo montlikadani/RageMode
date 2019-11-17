@@ -49,6 +49,7 @@ public class MySQLStats {
 			while (rs.next()) {
 				currentWins = rs.getInt("wins");
 				currentGames = rs.getInt("games");
+				currentScore = rs.getInt("score");
 
 				String playerUUID = rs.getString("uuid");
 				UUID uuid = UUID.fromString(playerUUID);
