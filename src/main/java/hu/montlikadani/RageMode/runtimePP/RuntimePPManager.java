@@ -6,7 +6,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import hu.montlikadani.ragemode.Debug;
-import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.statistics.MySQLStats;
 import hu.montlikadani.ragemode.statistics.SQLStats;
@@ -17,7 +17,7 @@ public class RuntimePPManager {
 	private static List<PlayerPoints> RuntimePPList = new ArrayList<>();
 
 	public static void loadPPListFromDatabase() {
-		switch (RageMode.getInstance().getConfiguration().getCV().getDatabaseType()) {
+		switch (ConfigValues.getDatabaseType()) {
 		case "sql":
 		case "sqlite":
 			RuntimePPList.addAll(SQLStats.getAllPlayerStatistics());
@@ -28,23 +28,6 @@ public class RuntimePPManager {
 		default:
 			RuntimePPList.addAll(YAMLStats.getAllPlayerStatistics());
 			break;
-		}
-	}
-
-	/**
-	 * Gets the given player statistics from database.
-	 * @param uuid Player uuid
-	 * @return {@link PlayerPoints}
-	 */
-	public static PlayerPoints getPPFromDatabase(UUID uuid) {
-		switch (RageMode.getInstance().getConfiguration().getCV().getDatabaseType()) {
-		case "sql":
-		case "sqlite":
-			return SQLStats.getPlayerStatsFromData(uuid);
-		case "mysql":
-			return MySQLStats.getPlayerStatsFromData(uuid);
-		default:
-			return YAMLStats.getPlayerStatsFromData(uuid);
 		}
 	}
 
@@ -69,20 +52,17 @@ public class RuntimePPManager {
 			return null;
 		}
 
-		PlayerPoints pp = null;
 		int i = 0;
 		int imax = RuntimePPList.size();
 		while (i < imax) {
 			if (RuntimePPList.get(i).getUUID().equals(UUID)) {
-				pp = RuntimePPList.get(i);
-				pp.setRank(i + 1);
-				break;
+				return RuntimePPList.get(i);
 			}
 
 			i++;
 		}
 
-		return pp;
+		return null;
 	}
 
 	public static List<PlayerPoints> getRuntimePPList() {
@@ -130,109 +110,44 @@ public class RuntimePPManager {
 			newPP.setGames(1);
 
 			RuntimePPList.add(i + 1, newPP);
-		} else if (pp.getPoints() == oldPP.getPoints())
-			return;// TODO kills&deaths...
-		else if (pp.getPoints() > oldPP.getPoints()) {
-			boolean norankchange = false;
-			int i = oldPP.getRank() - 2;
-
-			if (RuntimePPList.get(i).getPoints() < pp.getPoints()) {
-				RuntimePPList.remove(i + 1);
-				i--;
-			} else
-				norankchange = true;
-
-			while (RuntimePPList.get(i).getPoints() < pp.getPoints()) {
-				i--;
-				if (i < 0)
-					i = 0;
-				break;
-			}
-
-			PlayerPoints newPP = new PlayerPoints(pp.getUUID());
-			newPP.setAxeDeaths(pp.getAxeDeaths());
-			newPP.setAxeKills(pp.getAxeKills());
-			newPP.setCurrentStreak(pp.getCurrentStreak());
-			newPP.setDeaths(pp.getDeaths());
-			newPP.setDirectArrowDeaths(pp.getDirectArrowDeaths());
-			newPP.setDirectArrowKills(pp.getDirectArrowKills());
-			newPP.setExplosionDeaths(pp.getExplosionDeaths());
-			newPP.setExplosionKills(pp.getExplosionKills());
-			newPP.setKills(pp.getKills());
-			newPP.setKnifeDeaths(pp.getKnifeDeaths());
-			newPP.setKnifeKills(pp.getKnifeKills());
-			newPP.setLongestStreak(pp.getLongestStreak());
-			newPP.addPoints(pp.getPoints());
-
-			if (pp.isWinner())
-				newPP.setWins(oldPP.getWins() + 1);
-			else
-				newPP.setWins(oldPP.getWins());
-
-			if (oldPP.getDeaths() + pp.getDeaths() != 0)
-				newPP.setKD(((double) (pp.getKills() + oldPP.getKills()))
-						/ ((double) (pp.getDeaths() + oldPP.getDeaths())));
-			else
-				newPP.setKD(1.0d);
-
-			newPP.setGames(oldPP.getGames() + 1);
-
-			if (norankchange)
-				RuntimePPList.set(oldPP.getRank() - 1, newPP);
-			else
-				RuntimePPList.add(i + 1, newPP);
 		} else {
-			boolean norankchange = false;
-			boolean last = false;
-			int i = oldPP.getRank();
-			int imax = RuntimePPList.size();
+			int i = 0;
 
-			if (RuntimePPList.get(i).getPoints() > pp.getPoints())
-				RuntimePPList.remove(i - 1);
-			else
-				norankchange = true;
+			while (i < RuntimePPList.size()) {
+				if (RuntimePPList.get(i).getUUID().equals(pp.getUUID())) {
+					PlayerPoints newPP = new PlayerPoints(pp.getUUID());
+					newPP.setAxeDeaths(oldPP.getAxeDeaths() + pp.getAxeDeaths());
+					newPP.setAxeKills(oldPP.getAxeKills() + pp.getAxeKills());
+					newPP.setCurrentStreak(oldPP.getCurrentStreak() + pp.getCurrentStreak());
+					newPP.setDeaths(oldPP.getDeaths() + pp.getDeaths());
+					newPP.setDirectArrowDeaths(oldPP.getDirectArrowDeaths() + pp.getDirectArrowDeaths());
+					newPP.setDirectArrowKills(oldPP.getDirectArrowKills() + pp.getDirectArrowKills());
+					newPP.setExplosionDeaths(oldPP.getExplosionDeaths() + pp.getExplosionDeaths());
+					newPP.setExplosionKills(oldPP.getExplosionKills() + pp.getExplosionKills());
+					newPP.setKills(oldPP.getKills() + pp.getKills());
+					newPP.setKnifeDeaths(oldPP.getKnifeDeaths() + pp.getKnifeDeaths());
+					newPP.setKnifeKills(oldPP.getKnifeKills() + pp.getKnifeKills());
+					newPP.setLongestStreak(oldPP.getLongestStreak() + pp.getLongestStreak());
+					newPP.setPoints(oldPP.getPoints() + pp.getPoints());
 
-			while (RuntimePPList.get(i).getPoints() > pp.getPoints()) {
-				i++;
-				if (i >= imax) {
-					i = imax;
-					last = true;
-					break;
+					if (pp.isWinner())
+						newPP.setWins(oldPP.getWins() + 1);
+					else
+						newPP.setWins(oldPP.getWins());
+
+					if (oldPP.getDeaths() + pp.getDeaths() != 0)
+						newPP.setKD(((double) (pp.getKills() + oldPP.getKills()))
+								/ ((double) (pp.getDeaths() + oldPP.getDeaths())));
+					else
+						newPP.setKD(1.0d);
+
+					newPP.setGames(oldPP.getGames() + 1);
+
+					RuntimePPList.set(i, newPP);
 				}
+
+				i++;
 			}
-
-			PlayerPoints newPP = new PlayerPoints(pp.getUUID());
-			newPP.setAxeDeaths(pp.getAxeDeaths());
-			newPP.setAxeKills(pp.getAxeKills());
-			newPP.setCurrentStreak(pp.getCurrentStreak());
-			newPP.setDeaths(pp.getDeaths());
-			newPP.setDirectArrowDeaths(pp.getDirectArrowDeaths());
-			newPP.setDirectArrowKills(pp.getDirectArrowKills());
-			newPP.setExplosionDeaths(pp.getExplosionDeaths());
-			newPP.setExplosionKills(pp.getExplosionKills());
-			newPP.setKills(pp.getKills());
-			newPP.setKnifeDeaths(pp.getKnifeDeaths());
-			newPP.setKnifeKills(pp.getKnifeKills());
-			newPP.setLongestStreak(pp.getLongestStreak());
-			newPP.addPoints(pp.getPoints());
-
-			if (pp.isWinner())
-				newPP.setWins(oldPP.getWins() + 1);
-			else
-				newPP.setWins(oldPP.getWins());
-
-			if (oldPP.getDeaths() + pp.getDeaths() != 0)
-				newPP.setKD(((double) (pp.getKills() + oldPP.getKills())) / ((double) (pp.getDeaths() + oldPP.getDeaths())));
-			else
-				newPP.setKD(1.0d);
-
-			newPP.setGames(oldPP.getGames() + 1);
-			if (norankchange)
-				RuntimePPList.set(oldPP.getRank() - 1, newPP);
-			else if (last)
-				RuntimePPList.add(newPP);
-			else
-				RuntimePPList.add(i, newPP);
 		}
 	}
 }

@@ -13,6 +13,7 @@ import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.PlayerWinEvent;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
@@ -32,7 +33,7 @@ public class RageScores {
 
 			switch (killCause.toLowerCase().trim()) {
 			case "ragebow":
-				int bowPoints = RageMode.getInstance().getConfiguration().getCV().getBowKill();
+				int bowPoints = ConfigValues.getBowKill();
 				totalPoints = addPoints(killer, bowPoints, true);
 				addPoints(victim, 0, false);
 
@@ -54,7 +55,7 @@ public class RageScores {
 				break;
 			case "combataxe":
 				int axePoints = RageMode.getInstance().getConfiguration().getCfg().getInt("points.axekill");
-				int axeMinusPoints = RageMode.getInstance().getConfiguration().getCV().getAxeDeath();
+				int axeMinusPoints = ConfigValues.getAxeDeath();
 				totalPoints = addPoints(killer, axePoints, true);
 				addPoints(victim, axeMinusPoints, false);
 
@@ -75,7 +76,7 @@ public class RageScores {
 				killer.sendMessage(RageMode.getLang().get("game.message.current-points", "%points%", Integer.toString(totalPoints)));
 				break;
 			case "rageknife":
-				int knifePoints = RageMode.getInstance().getConfiguration().getCV().getKnifeKill();
+				int knifePoints = ConfigValues.getKnifeKill();
 				totalPoints = addPoints(killer, knifePoints, true);
 				addPoints(victim, 0, false);
 
@@ -96,7 +97,7 @@ public class RageScores {
 				killer.sendMessage(RageMode.getLang().get("game.message.current-points", "%points%", Integer.toString(totalPoints)));
 				break;
 			case "explosion":
-				int explosionPoints = RageMode.getInstance().getConfiguration().getCV().getExplosionKill();
+				int explosionPoints = ConfigValues.getExplosionKill();
 				totalPoints = addPoints(killer, explosionPoints, true);
 				addPoints(victim, 0, false);
 
@@ -118,7 +119,7 @@ public class RageScores {
 				killer.sendMessage(RageMode.getLang().get("game.message.current-points", "%points%", Integer.toString(totalPoints)));
 				break;
 			case "grenade":
-				int grenadePoints = RageMode.getInstance().getConfiguration().getCV().getGrenadeKill();
+				int grenadePoints = ConfigValues.getGrenadeKill();
 				totalPoints = addPoints(killer, grenadePoints, true);
 				addPoints(victim, 0, false);
 
@@ -145,19 +146,18 @@ public class RageScores {
 		} else {
 			killer.sendMessage(RageMode.getLang().get("game.message.suicide"));
 
-			int pointLoss = RageMode.getInstance().getConfiguration().getCV().getSuicide();
 			PlayerPoints pointsHolder = getPlayerPoints(killerUUID);
-			if (pointsHolder != null) {
-				if (pointLoss != 0) {
-					pointsHolder.addPoints(pointLoss);
-
-					/*if ((pointsHolder.getPoints() + pointLoss) < 0) {
-						killer.sendMessage(RageMode.getLang().get("game.no-enough-points"));
-					}*/
-				}
-			} else {
+			if (pointsHolder == null) {
 				pointsHolder = new PlayerPoints(killerUUID);
 				playerpoints.put(killerUUID, pointsHolder);
+			}
+
+			int pointLoss = ConfigValues.getSuicide();
+			if (pointLoss != 0) {
+				pointsHolder.addPoints(pointLoss);
+				/*if ((pointsHolder.getPoints() + pointLoss) < 0) {
+					killer.sendMessage(RageMode.getLang().get("game.no-enough-points"));
+				}*/
 			}
 
 			pointsHolder.setDeaths(pointsHolder.getDeaths() + 1);

@@ -48,13 +48,14 @@ public class TabTitles implements IObjectives {
 	public boolean addToList(String gameName, boolean forceReplace) {
 		if (!allTabLists.containsKey(gameName)) {
 			allTabLists.put(gameName, this);
-			return true;
 		} else if (forceReplace) {
 			allTabLists.remove(gameName);
 			allTabLists.put(gameName, this);
-			return true;
-		} else
+		} else {
 			return false;
+		}
+
+		return true;
 	}
 
 	/**

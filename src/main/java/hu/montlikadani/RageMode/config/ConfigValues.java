@@ -10,110 +10,111 @@ import java.util.List;
  */
 public class ConfigValues {
 
-	private String lang;
-	@Deprecated private String statistics; // remove in the next update
-	private String databaseType;
-	private String hubName;
-	private String username;
-	private String password;
-	private String database;
-	private String host;
-	private String port;
-	private String tablePrefix;
-	private String encoding;
-	private String sqlFileName;
-	private String sqlTablePrefix;
-	private String signGameRunning;
-	private String signGameWaiting;
-	private String signGameFull;
-	private String signGameLocked;
-	private String signBackgrType;
-	private String bossbarMsg;
-	private String bossbarStyle;
-	private String bossbarColor;
-	private String titleJoinGame;
-	private String subtitleJoinGame;
-	private String joinTitleTime;
-	private String lobbyTitle;
-	private String subtitleLobby;
-	private String lobbyTitleTime;
-	private String wonTitle;
-	private String wonsubtitle;
-	private String wonTitleTime;
-	private String youwonTitle;
-	private String youwonsubtitle;
-	private String youwonTitleTime;
-	private String tabPrefix;
-	private String tabSuffix;
-	private String sbTitle;
-	private String chatFormat;
+	private static String lang;
+	@Deprecated private static String statistics; // remove in the next update
+	private static String databaseType;
+	private static String hubName;
+	private static String username;
+	private static String password;
+	private static String database;
+	private static String host;
+	private static String port;
+	private static String tablePrefix;
+	private static String encoding;
+	private static String sqlFileName;
+	private static String sqlTablePrefix;
+	private static String signGameRunning;
+	private static String signGameWaiting;
+	private static String signGameFull;
+	private static String signGameLocked;
+	private static String signBackgrType;
+	@Deprecated private static String bossbarMsg;
+	@Deprecated private static String bossbarStyle;
+	@Deprecated private static String bossbarColor;
+	private static String titleJoinGame;
+	private static String subtitleJoinGame;
+	private static String joinTitleTime;
+	private static String lobbyTitle;
+	private static String subtitleLobby;
+	private static String lobbyTitleTime;
+	private static String wonTitle;
+	private static String wonsubtitle;
+	private static String wonTitleTime;
+	private static String youwonTitle;
+	private static String youwonsubtitle;
+	private static String youwonTitleTime;
+	private static String tabPrefix;
+	private static String tabSuffix;
+	private static String sbTitle;
+	private static String chatFormat;
 
-	private boolean checkForUpdates;
-	private boolean logConsole;
-	private boolean savePlayerData;
-	private boolean requireEmptyInv;
-	private boolean bungee;
-	private boolean autoReconnect;
-	private boolean useSSL;
-	private boolean unicode;
-	private boolean certificate;
-	private boolean signsEnable;
-	private boolean signBackground;
-	private boolean enableLobbyTitle;
-	private boolean spectatorEnable;
-	private boolean chatEnableinLobby;
-	private boolean playerLevelAsTimeCounter;
-	private boolean damagePlayerFall;
-	private boolean hidePlayerNameTag;
-	private boolean cancelRedstoneActivating;
-	private boolean cancelDoorUse;
-	private boolean enableChatInGame;
-	private boolean deathMsgs;
-	private boolean bossbarEnable;
-	private boolean actionbarEnable;
-	private boolean switchGMForPlayers;
-	private boolean enableChatAfterEnd;
-	private boolean tabFormatEnable;
-	private boolean tabEnable;
-	private boolean scoreboardEnable;
-	private boolean enableChatFormat;
-	private boolean restartServer;
-	private boolean stopServer;
-	private boolean rewardEnable;
-	private boolean rejoinDelayEnabled;
+	private static boolean checkForUpdates;
+	private static boolean logConsole;
+	private static boolean savePlayerData;
+	private static boolean requireEmptyInv;
+	private static boolean bungee;
+	private static boolean autoReconnect;
+	private static boolean useSSL;
+	private static boolean unicode;
+	private static boolean certificate;
+	private static boolean signsEnable;
+	private static boolean signBackground;
+	private static boolean enableLobbyTitle;
+	private static boolean spectatorEnable;
+	private static boolean chatEnableinLobby;
+	private static boolean playerLevelAsTimeCounter;
+	private static boolean damagePlayerFall;
+	private static boolean hidePlayerNameTag;
+	private static boolean cancelRedstoneActivating;
+	private static boolean cancelDoorUse;
+	private static boolean enableChatInGame;
+	private static boolean deathMsgs;
+	private static boolean bossbarEnable;
+	private static boolean actionbarEnable;
+	private static boolean switchGMForPlayers;
+	private static boolean enableChatAfterEnd;
+	private static boolean tabFormatEnable;
+	private static boolean tabEnable;
+	private static boolean scoreboardEnable;
+	private static boolean enableChatFormat;
+	private static boolean restartServer;
+	private static boolean stopServer;
+	private static boolean rewardEnable;
+	private static boolean rejoinDelayEnabled;
 
-	private int signsUpdateTime;
-	@Deprecated private int minPlayers; // remove in the next update
-	private int gameFreezeTime;
-	private int lobbyDelay;
-	private int gameTime;
-	private int bowKill;
-	private int axeKill;
-	private int axeDeath;
-	private int knifeKill;
-	private int explosionKill;
-	private int suicide;
-	private int grenadeKill;
-	private int respawnProtectTime;
-	private int rejoinDelayHour;
-	private int rejoinDelayMinute;
-	private int rejoinDelaySecond;
-	private int killBonusChance;
+	private static int signsUpdateTime;
+	@Deprecated private static int minPlayers; // remove in the next update
+	private static int gameFreezeTime;
+	private static int lobbyDelay;
+	private static int gameTime;
+	private static int bowKill;
+	private static int axeKill;
+	private static int axeDeath;
+	private static int knifeKill;
+	private static int explosionKill;
+	private static int suicide;
+	private static int grenadeKill;
+	private static int respawnProtectTime;
+	private static int rejoinDelayHour;
+	private static int rejoinDelayMinute;
+	private static int rejoinDelaySecond;
+	private static int killBonusChance;
 
-	private List<String> signsList;
-	private List<String> actionBarActions;
-	private List<Integer> lobbyTitleStartMsgs;
-	private List<String> spectatorCmds;
-	private List<Integer> lobbyTimeMsgs;
-	private List<Integer> gameEndBc;
-	private List<String> tabHeader;
-	private List<String> tabFooter;
-	private List<String> sbContent;
-	private List<String> allowedCmds;
-	private List<String> cmdsForPlayerLeave;
-	private List<String> killBonuses;
+	private static List<String> signsList;
+	private static List<String> actionBarActions;
+	private static List<String> bossBarActions;
+	private static List<Integer> lobbyTitleStartMsgs;
+	private static List<String> spectatorCmds;
+	private static List<Integer> lobbyTimeMsgs;
+	private static List<Integer> gameEndBc;
+	private static List<String> tabHeader;
+	private static List<String> tabFooter;
+	private static List<String> sbContent;
+	private static List<String> allowedCmds;
+	private static List<String> cmdsForPlayerLeave;
+	private static List<String> killBonuses;
 
-	public void loadValues(FileConfig f) {
+	public static void loadValues(FileConfig f) {
 		lang = f.get("language", "en");
 		if (f.getOriginal("statistic") != null) {
 			statistics = f.getOriginal("statistics");
@@ -151,9 +152,17 @@ public class ConfigValues {
 		signBackgrType = f.get("signs.background.type", "glass");
 		actionBarActions = f.get("actionbar-messages.actions",
 				Arrays.asList("start:&aGame has started!&2 We wish you a good game!"));
-		bossbarMsg = f.get("bossbar-messages.message", "&bWelcome&a %player%&b to the&c %game%&b game!");
-		bossbarStyle = f.get("bossbar-messages.style", "SEGMENTED_6");
-		bossbarColor = f.get("bossbar-messages.color", "GREEN");
+		bossbarMsg = f.getOriginal("bossbar-messages.join.message");
+		bossbarStyle = f.getOriginal("bossbar-messages.join.style");
+		bossbarColor = f.getOriginal("bossbar-messages.join.color");
+		if (bossbarMsg != null) {
+			bossBarActions = f.get("bossbar-messages.actions",
+					Arrays.asList("start:" + bossbarMsg + ":" + (bossbarStyle != null ? bossbarStyle
+							: "SEGMENTED_6") + ":" + (bossbarColor != null ? bossbarColor : "GREEN")));
+		} else {
+			bossBarActions = f.get("bossbar-messages.actions",
+					Arrays.asList("start:&bWelcome&a %player%&b to the&c %game%&b game!:SEGMENTED_6:GREEN"));
+		}
 		titleJoinGame = f.get("titles.join-game.title", "&e%game%");
 		subtitleJoinGame = f.get("titles.join-game.subtitle", "&3by yourname");
 		joinTitleTime = f.get("titles.join-game.time", "20, 50, 20");
@@ -172,51 +181,52 @@ public class ConfigValues {
 		spectatorEnable = f.get("spectator.enable", true);
 		spectatorCmds = f.get("spectator.allowed-spectator-commands", Arrays.asList("/rm leave", "/ragemode leave"));
 		minPlayers = f.get("game.global.lobby.min-players-to-start-lobby-timer", 2);
-		chatEnableinLobby = f.get("game.global.lobby.enable-chat-in-lobby", true);
-		playerLevelAsTimeCounter = f.get("game.global.lobby.player-level-as-time-counter", false);
-		lobbyTimeMsgs = f.get("game.global.lobby.values-to-send-start-message",
+		chatEnableinLobby = f.get("lobby.enable-chat-in-lobby", true);
+		playerLevelAsTimeCounter = f.get("lobby.player-level-as-time-counter", false);
+		lobbyTimeMsgs = f.get("lobby.values-to-send-start-message",
 				new ArrayList<Integer>(Arrays.asList(30, 20, 10, 5, 4, 3, 2, 1)));
-		damagePlayerFall = f.get("game.global.damage-player-fall", false);
-		respawnProtectTime = f.get("game.global.respawn-protection", 3);
-		hidePlayerNameTag = f.get("game.global.hide-players-name-tag", false);
-		gameEndBc = f.get("game.global.values-to-send-game-end-broadcast",
+		damagePlayerFall = f.get("game.damage-player-fall", false);
+		respawnProtectTime = f.get("game.respawn-protection", 3);
+		hidePlayerNameTag = f.get("game.hide-players-name-tag", false);
+		gameEndBc = f.get("game.values-to-send-game-end-broadcast",
 				new ArrayList<Integer>(Arrays.asList(60, 30, 20, 10, 5, 4, 3, 2, 1)));
-		cancelRedstoneActivating = f.get("game.global.cancel-redstone-activating-blocks", true);
-		cancelDoorUse = f.get("game.global.cancel-door-use", false);
-		gameFreezeTime = f.get("game.global.game-freeze-time-at-end-game", 10);
-		enableChatInGame = f.get("game.global.enable-chat-in-game", true);
-		deathMsgs = f.get("game.global.defaults.death-messages", true);
-		bossbarEnable = f.get("game.global.defaults.bossbar", false);
-		actionbarEnable = f.get("game.global.defaults.actionbar", true);
-		lobbyDelay = f.get("game.global.defaults.lobby-delay", 30);
-		gameTime = f.get("game.global.defaults.gametime", 10);
-		switchGMForPlayers = f.get("game.global.switch-gamemode-to-spectator-at-end-of-game", true);
-		enableChatAfterEnd = f.get("game.global.enable-chat-after-end", true);
-		tabFormatEnable = f.get("game.global.tablist.player-format.enable", false);
-		tabPrefix = f.get("game.global.tablist.player-format.prefix", "");
-		tabSuffix = f.get("game.global.tablist.player-format.suffix", "&e %kills%");
-		tabEnable = f.get("game.global.tablist.list.enable", false);
-		tabHeader = f.get("game.global.tablist.list.header",
+		cancelRedstoneActivating = f.get("game.cancel-redstone-activating-blocks", true);
+		cancelDoorUse = f.get("game.cancel-door-use", false);
+		gameFreezeTime = f.get("game.game-freeze-time-at-end-game", 10);
+		enableChatInGame = f.get("game.enable-chat-in-game", true);
+		deathMsgs = f.get("game.defaults.death-messages", true);
+		bossbarEnable = f.get("game.defaults.bossbar", false);
+		actionbarEnable = f.get("game.defaults.actionbar", true);
+		lobbyDelay = f.get("game.defaults.lobby-delay", 30);
+		gameTime = f.get("game.defaults.gametime", 10);
+		switchGMForPlayers = f.get("game.switch-gamemode-to-spectator-at-end-of-game", true);
+		enableChatAfterEnd = f.get("game.enable-chat-after-end", true);
+		tabFormatEnable = f.get("game.tablist.player-format.enable", false);
+		tabPrefix = f.get("game.tablist.player-format.prefix", "");
+		tabSuffix = f.get("game.tablist.player-format.suffix", "&e %kills%");
+		tabEnable = f.get("game.tablist.list.enable", false);
+		tabHeader = f.get("game.tablist.list.header",
 				Arrays.asList("&cRage&bMode&e minigame stats", "&aYour kills/deaths:&e %kd%"));
-		tabFooter = f.get("game.global.tablist.list.footer", Arrays.asList("&6Points:&e %points%"));
-		scoreboardEnable = f.get("game.global.scoreboard.enable", true);
-		sbTitle = f.get("game.global.scoreboard.title", "&6RageMode");
-		sbContent = f.get("game.global.scoreboard.content",
+		tabFooter = f.get("game.tablist.list.footer", Arrays.asList("&6Points:&e %points%"));
+		scoreboardEnable = f.get("game.scoreboard.enable", true);
+		sbTitle = f.get("game.scoreboard.title", "&6RageMode");
+		sbContent = f.get("game.scoreboard.content",
 				Arrays.asList("", "&7------", "&aPoints:&e %points%", "", "&5Wins:&e %wins%", "&7------", ""));
-		enableChatFormat = f.get("game.global.chat-format.enable", false);
-		chatFormat = f.get("game.global.chat-format.format", "&e[%points%]&r %player%&7:&r %message%");
-		allowedCmds = f.get("game.global.allowed-commands",
-				Arrays.asList("/rm leave", "/ragemode leave", "/ragemode stop"));
-		cmdsForPlayerLeave = f.get("game.global.run-commands-for-player-left-while-playing", Collections.emptyList());
-		restartServer = f.get("game.global.game-stop.restart-server", false);
-		stopServer = f.get("game.global.game-stop.stop-server", false);
+		enableChatFormat = f.get("game.chat-format.enable", false);
+		chatFormat = f.get("game.chat-format.format", "&e[%points%]&r %player%&7:&r %message%");
+		allowedCmds = f.get("game.allowed-commands",
+				Arrays.asList("/rm leave", "/ragemode leave", "/ragemode stopgame"));
+		cmdsForPlayerLeave = f.get("game.run-commands-for-player-left-while-playing", Collections.emptyList());
+		restartServer = f.get("game.game-stop.restart-server", false);
+		stopServer = f.get("game.game-stop.stop-server", false);
 		rejoinDelayEnabled = f.get("rejoin-delay.enabled", false);
 		rejoinDelayHour = f.get("rejoin-delay.times.hour", 0);
 		rejoinDelayMinute = f.get("rejoin-delay.times.minute", 0);
 		rejoinDelaySecond = f.get("rejoin-delay.times.second", 30);
 		rewardEnable = f.get("rewards.enable", true);
 		killBonusChance = f.get("bonuses.kill-bonuses.chance", 75);
-		killBonuses = f.get("bonuses.kill-bonuses.list", Arrays.asList("effect:regeneration:20:2", "effect:speed:30:1", "points:15"));
+		killBonuses = f.get("bonuses.kill-bonuses.list",
+				Arrays.asList("effect:regeneration:20:2", "effect:speed:30:1", "points:15"));
 		bowKill = f.get("points.bowkill", 25);
 		axeKill = f.get("points.axekill", 30);
 		axeDeath = f.get("points.axedeath", -50);
@@ -226,401 +236,408 @@ public class ConfigValues {
 		suicide = f.get("points.suicide", -20);
 	}
 
-	public String getLang() {
+	public static String getLang() {
 		return lang;
 	}
 
 	@Deprecated
-	public String getStatistics() {
+	public static String getStatistics() {
 		return statistics;
 	}
 
-	public String getDatabaseType() {
+	public static String getDatabaseType() {
 		return databaseType;
 	}
 
-	public String getHubName() {
+	public static String getHubName() {
 		return hubName;
 	}
 
-	public String getUsername() {
+	public static String getUsername() {
 		return username;
 	}
 
-	public String getPassword() {
+	public static String getPassword() {
 		return password;
 	}
 
-	public String getDatabase() {
+	public static String getDatabase() {
 		return database;
 	}
 
-	public String getHost() {
+	public static String getHost() {
 		return host;
 	}
 
-	public String getPort() {
+	public static String getPort() {
 		return port;
 	}
 
-	public String getTablePrefix() {
+	public static String getTablePrefix() {
 		return tablePrefix;
 	}
 
-	public String getEncoding() {
+	public static String getEncoding() {
 		return encoding;
 	}
 
-	public boolean isLogConsole() {
+	public static boolean isLogConsole() {
 		return logConsole;
 	}
 
-	public boolean isCheckForUpdates() {
+	public static boolean isCheckForUpdates() {
 		return checkForUpdates;
 	}
 
-	public boolean isSavePlayerData() {
+	public static boolean isSavePlayerData() {
 		return savePlayerData;
 	}
 
-	public boolean isRequireEmptyInv() {
+	public static boolean isRequireEmptyInv() {
 		return requireEmptyInv;
 	}
 
-	public boolean isBungee() {
+	public static boolean isBungee() {
 		return bungee;
 	}
 
-	public boolean isAutoReconnect() {
+	public static boolean isAutoReconnect() {
 		return autoReconnect;
 	}
 
-	public boolean isUseSSL() {
+	public static boolean isUseSSL() {
 		return useSSL;
 	}
 
-	public boolean isUnicode() {
+	public static boolean isUnicode() {
 		return unicode;
 	}
 
-	public boolean isCertificate() {
+	public static boolean isCertificate() {
 		return certificate;
 	}
 
-	public String getSqlFileName() {
+	public static String getSqlFileName() {
 		return sqlFileName;
 	}
 
-	public String getSqlTablePrefix() {
+	public static String getSqlTablePrefix() {
 		return sqlTablePrefix;
 	}
 
-	public boolean isSignsEnable() {
+	public static boolean isSignsEnable() {
 		return signsEnable;
 	}
 
-	public int getSignsUpdateTime() {
+	public static int getSignsUpdateTime() {
 		return signsUpdateTime;
 	}
 
-	public String getSignGameRunning() {
+	public static String getSignGameRunning() {
 		return signGameRunning;
 	}
 
-	public String getSignGameWaiting() {
+	public static String getSignGameWaiting() {
 		return signGameWaiting;
 	}
 
-	public String getSignGameFull() {
+	public static String getSignGameFull() {
 		return signGameFull;
 	}
 
-	public String getSignGameLocked() {
+	public static String getSignGameLocked() {
 		return signGameLocked;
 	}
 
-	public List<String> getSignsList() {
+	public static List<String> getSignsList() {
 		return signsList;
 	}
 
-	public boolean isSignBackground() {
+	public static boolean isSignBackground() {
 		return signBackground;
 	}
 
-	public String getSignBackground() {
+	public static String getSignBackground() {
 		return signBackgrType;
 	}
 
-	public List<String> getActionbarActions() {
+	public static List<String> getActionbarActions() {
 		return actionBarActions;
 	}
 
-	public String getBossbarMsg() {
+	public static List<String> getBossbarActions() {
+		return bossBarActions;
+	}
+
+	@Deprecated
+	public static String getBossbarMsg() {
 		return bossbarMsg;
 	}
 
-	public String getBossbarStyle() {
+	@Deprecated
+	public static String getBossbarStyle() {
 		return bossbarStyle;
 	}
 
-	public String getBossbarColor() {
+	@Deprecated
+	public static String getBossbarColor() {
 		return bossbarColor;
 	}
 
-	public String getTitleJoinGame() {
+	public static String getTitleJoinGame() {
 		return titleJoinGame;
 	}
 
-	public String getSubTitleJoinGame() {
+	public static String getSubTitleJoinGame() {
 		return subtitleJoinGame;
 	}
 
-	public String getJoinTitleTime() {
+	public static String getJoinTitleTime() {
 		return joinTitleTime;
 	}
 
-	public boolean isLobbyTitle() {
+	public static boolean isLobbyTitle() {
 		return enableLobbyTitle;
 	}
 
-	public String getLobbyTitle() {
+	public static String getLobbyTitle() {
 		return lobbyTitle;
 	}
 
-	public String getLobbySubTitle() {
+	public static String getLobbySubTitle() {
 		return subtitleLobby;
 	}
 
-	public String getLobbyTitleTime() {
+	public static String getLobbyTitleTime() {
 		return lobbyTitleTime;
 	}
 
-	public List<Integer> getLobbyTitleStartMsgs() {
+	public static List<Integer> getLobbyTitleStartMsgs() {
 		return lobbyTitleStartMsgs;
 	}
 
-	public String getWonTitle() {
+	public static String getWonTitle() {
 		return wonTitle;
 	}
 
-	public String getWonSubTitle() {
+	public static String getWonSubTitle() {
 		return wonsubtitle;
 	}
 
-	public String getWonTitleTime() {
+	public static String getWonTitleTime() {
 		return wonTitleTime;
 	}
 
-	public String getYouWonTitle() {
+	public static String getYouWonTitle() {
 		return youwonTitle;
 	}
 
-	public String getYouWonSubTitle() {
+	public static String getYouWonSubTitle() {
 		return youwonsubtitle;
 	}
 
-	public String getYouWonTitleTime() {
+	public static String getYouWonTitleTime() {
 		return youwonTitleTime;
 	}
 
-	public boolean isSpectatorEnabled() {
+	public static boolean isSpectatorEnabled() {
 		return spectatorEnable;
 	}
 
-	public List<String> getSpectatorCmds() {
+	public static List<String> getSpectatorCmds() {
 		return spectatorCmds;
 	}
 
 	@Deprecated
-	public int getMinPlayers() {
+	public static int getMinPlayers() {
 		return minPlayers;
 	}
 
-	public boolean isChatEnabledinLobby() {
+	public static boolean isChatEnabledinLobby() {
 		return chatEnableinLobby;
 	}
 
-	public boolean isPlayerLevelAsTimeCounter() {
+	public static boolean isPlayerLevelAsTimeCounter() {
 		return playerLevelAsTimeCounter;
 	}
 
-	public List<Integer> getLobbyTimeMsgs() {
+	public static List<Integer> getLobbyTimeMsgs() {
 		return lobbyTimeMsgs;
 	}
 
-	public boolean isDamagePlayerFall() {
+	public static boolean isDamagePlayerFall() {
 		return damagePlayerFall;
 	}
 
-	public int getRespawnProtectTime() {
+	public static int getRespawnProtectTime() {
 		return respawnProtectTime;
 	}
 
-	public List<Integer> getGameEndBcs() {
+	public static List<Integer> getGameEndBcs() {
 		return gameEndBc;
 	}
 
-	public boolean isCancelRedstoneActivate() {
+	public static boolean isCancelRedstoneActivate() {
 		return cancelRedstoneActivating;
 	}
 
-	public boolean isCancelDoorUse() {
+	public static boolean isCancelDoorUse() {
 		return cancelDoorUse;
 	}
 
-	public int getGameFreezeTime() {
+	public static int getGameFreezeTime() {
 		return gameFreezeTime;
 	}
 
-	public boolean isEnableChatInGame() {
+	public static boolean isEnableChatInGame() {
 		return enableChatInGame;
 	}
 
-	public boolean isDeathMsgs() {
+	public static boolean isDeathMsgs() {
 		return deathMsgs;
 	}
 
-	public boolean isBossbarEnabled() {
+	public static boolean isBossbarEnabled() {
 		return bossbarEnable;
 	}
 
-	public boolean isActionbarEnabled() {
+	public static boolean isActionbarEnabled() {
 		return actionbarEnable;
 	}
 
-	public int getLobbyDelay() {
+	public static int getLobbyDelay() {
 		return lobbyDelay;
 	}
 
-	public int getGameTime() {
+	public static int getGameTime() {
 		return gameTime;
 	}
 
-	public boolean isSwitchGMForPlayers() {
+	public static boolean isSwitchGMForPlayers() {
 		return switchGMForPlayers;
 	}
 
-	public boolean isEnableChatAfterEnd() {
+	public static boolean isEnableChatAfterEnd() {
 		return enableChatAfterEnd;
 	}
 
-	public boolean isTabFormatEnabled() {
+	public static boolean isTabFormatEnabled() {
 		return tabFormatEnable;
 	}
 
-	public String getTabPrefix() {
+	public static String getTabPrefix() {
 		return tabPrefix;
 	}
 
-	public String getTabSuffix() {
+	public static String getTabSuffix() {
 		return tabSuffix;
 	}
 
-	public boolean isTabEnabled() {
+	public static boolean isTabEnabled() {
 		return tabEnable;
 	}
 
-	public List<String> getTabHeader() {
+	public static List<String> getTabHeader() {
 		return tabHeader;
 	}
 
-	public List<String> getTabFooter() {
+	public static List<String> getTabFooter() {
 		return tabFooter;
 	}
 
-	public boolean isScoreboardEnabled() {
+	public static boolean isScoreboardEnabled() {
 		return scoreboardEnable;
 	}
 
-	public String getSbTitle() {
+	public static String getSbTitle() {
 		return sbTitle;
 	}
 
-	public List<String> getSbContent() {
+	public static List<String> getSbContent() {
 		return sbContent;
 	}
 
-	public boolean isChatFormatEnabled() {
+	public static boolean isChatFormatEnabled() {
 		return enableChatFormat;
 	}
 
-	public String getChatFormat() {
+	public static String getChatFormat() {
 		return chatFormat;
 	}
 
-	public List<String> getAllowedCmds() {
+	public static List<String> getAllowedCmds() {
 		return allowedCmds;
 	}
 
-	public List<String> getCmdsForPlayerLeave() {
+	public static List<String> getCmdsForPlayerLeave() {
 		return cmdsForPlayerLeave;
 	}
 
-	public boolean isRestartServerEnabled() {
+	public static boolean isRestartServerEnabled() {
 		return restartServer;
 	}
 
-	public boolean isStopServerEnabled() {
+	public static boolean isStopServerEnabled() {
 		return stopServer;
 	}
 
-	public boolean isRejoinDelayEnabled() {
+	public static boolean isRejoinDelayEnabled() {
 		return rejoinDelayEnabled;
 	}
 
-	public int getRejoinDelayHour() {
+	public static int getRejoinDelayHour() {
 		return rejoinDelayHour;
 	}
 
-	public int getRejoinDelayMinute() {
+	public static int getRejoinDelayMinute() {
 		return rejoinDelayMinute;
 	}
 
-	public int getRejoinDelaySecond() {
+	public static int getRejoinDelaySecond() {
 		return rejoinDelaySecond;
 	}
 
-	public boolean isRewardEnabled() {
+	public static boolean isRewardEnabled() {
 		return rewardEnable;
 	}
 
-	public List<String> getKillBonuses() {
+	public static List<String> getKillBonuses() {
 		return killBonuses;
 	}
 
-	public int getKillBonusChance() {
+	public static int getKillBonusChance() {
 		return killBonusChance;
 	}
 
-	public int getBowKill() {
+	public static int getBowKill() {
 		return bowKill;
 	}
 
-	public int getAxeKill() {
+	public static int getAxeKill() {
 		return axeKill;
 	}
 
-	public int getAxeDeath() {
+	public static int getAxeDeath() {
 		return axeDeath;
 	}
 
-	public int getKnifeKill() {
+	public static int getKnifeKill() {
 		return knifeKill;
 	}
 
-	public int getExplosionKill() {
+	public static int getExplosionKill() {
 		return explosionKill;
 	}
 
-	public int getGrenadeKill() {
+	public static int getGrenadeKill() {
 		return grenadeKill;
 	}
 
-	public int getSuicide() {
+	public static int getSuicide() {
 		return suicide;
 	}
 
-	public boolean isHidePlayerNameTag() {
+	public static boolean isHidePlayerNameTag() {
 		return hidePlayerNameTag;
 	}
 }

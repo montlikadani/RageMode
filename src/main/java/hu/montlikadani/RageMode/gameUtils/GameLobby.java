@@ -8,15 +8,14 @@ import org.bukkit.configuration.file.FileConfiguration;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
 
-@Deprecated
-public class GetGameLobby {
+public class GameLobby {
 
 	private static FileConfiguration fi = RageMode.getInstance().getConfiguration().getArenasCfg();
 
 	/**
-	 * Gets the specified game lobby location.
+	 * Gets the given game lobby locations.
 	 * @param game Game
-	 * @return Lobby location
+	 * @return the lobby location
 	 */
 	public static Location getLobbyLocation(String game) {
 		Validate.notNull(game, "Game name can't be null!");
@@ -37,9 +36,9 @@ public class GetGameLobby {
 	}
 
 	/**
-	 * Get the specified game lobby time from file.
+	 * Get the given game lobby time from file.
 	 * @param game Game
-	 * @return time
+	 * @return the lobby time
 	 */
 	public static int getLobbyTime(String game) {
 		int time = 0;

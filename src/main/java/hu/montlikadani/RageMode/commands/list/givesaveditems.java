@@ -20,7 +20,7 @@ import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 public class givesaveditems {
 
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (!plugin.getConfiguration().getCV().isSavePlayerData()) {
+		if (!hu.montlikadani.ragemode.config.ConfigValues.isSavePlayerData()) {
 			sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.not-enabled"));
 			return false;
 		}

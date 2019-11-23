@@ -35,59 +35,42 @@ public class Placeholder extends PlaceholderExpansion {
 		if (rpp == null)
 			return "";
 
-		// Player kill stats
-		if (var.equals("kills"))
+		switch (var) {
+		case "kills":
 			return Integer.toString(rpp.getKills());
-
-		if (var.equals("axe_kills"))
+		case "axe_kills":
 			return Integer.toString(rpp.getAxeKills());
-
-		if (var.equals("direct_arrow_kills"))
+		case "direct_arrow_kills":
 			return Integer.toString(rpp.getDirectArrowKills());
-
-		if (var.equals("explosion_kills"))
+		case "explosion_kills":
 			return Integer.toString(rpp.getExplosionKills());
-
-		if (var.equals("knife_kills"))
+		case "knife_kills":
 			return Integer.toString(rpp.getKnifeKills());
-
-		// Player death stats
-		if (var.equals("deaths"))
+		case "deaths":
 			return Integer.toString(rpp.getDeaths());
-
-		if (var.equals("axe_deaths"))
+		case "axe_deaths":
 			return Integer.toString(rpp.getAxeDeaths());
-
-		if (var.equals("direct_arrow_deaths"))
+		case "direct_arrow_deaths":
 			return Integer.toString(rpp.getDirectArrowDeaths());
-
-		if (var.equals("explosion_deaths"))
+		case "explosion_deaths":
 			return Integer.toString(rpp.getExplosionDeaths());
-
-		if (var.equals("knife_deaths"))
+		case "knife_deaths":
 			return Integer.toString(rpp.getKnifeDeaths());
-
-		// Other stats
-		if (var.equals("current_streak"))
+		case "current_streak":
 			return Integer.toString(rpp.getCurrentStreak());
-
-		if (var.equals("longest_streak"))
+		case "longest_streak":
 			return Integer.toString(rpp.getLongestStreak());
-
-		if (var.equals("points"))
+		case "points":
 			return Integer.toString(rpp.getPoints());
-
-		if (var.equals("games"))
+		case "games":
 			return Integer.toString(rpp.getGames());
-
-		if (var.equals("wins"))
+		case "wins":
 			return Integer.toString(rpp.getWins());
-
-		if (var.equals("kd"))
+		case "kd":
 			return Double.toString(rpp.getKD());
-
-		if (var.equals("rank"))
-			return Integer.toString(rpp.getRank());
+		default:
+			break;
+		}
 
 		return "";
 	}

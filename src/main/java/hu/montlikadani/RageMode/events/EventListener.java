@@ -61,6 +61,7 @@ import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerKilledEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerPreRespawnEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerRespawnedEvent;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameLoader;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
@@ -92,7 +93,7 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		if (plugin.getConfiguration().getCV().isCheckForUpdates() && event.getPlayer().isOp()) {
+		if (ConfigValues.isCheckForUpdates() && event.getPlayer().isOp()) {
 			plugin.checkVersion("player");
 		}
 
@@ -104,7 +105,7 @@ public class EventListener implements Listener {
 		Player p = event.getPlayer();
 
 		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p), true);
-		GameUtils.kickSpectatorPlayer(p, GameUtils.getGameBySpectator(p));
+		GameUtils.kickSpectator(p, GameUtils.getGameBySpectator(p));
 		HoloHolder.deleteHoloObjectsOfPlayer(p);
 	}
 
@@ -113,7 +114,7 @@ public class EventListener implements Listener {
 		Player p = ev.getPlayer();
 
 		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p), true);
-		GameUtils.kickSpectatorPlayer(p, GameUtils.getGameBySpectator(p));
+		GameUtils.kickSpectator(p, GameUtils.getGameBySpectator(p));
 		HoloHolder.deleteHoloObjectsOfPlayer(p);
 	}
 
@@ -134,7 +135,7 @@ public class EventListener implements Listener {
 		String game = GameUtils.getGameByPlayer(p).getName();
 
 		if (GameUtils.getStatus(game) == GameStatus.WAITING) {
-			if (!plugin.getConfiguration().getCV().isChatEnabledinLobby()
+			if (!ConfigValues.isChatEnabledinLobby()
 					&& !p.hasPermission("ragemode.bypass.lobby.lockchat")) {
 				event.setCancelled(true);
 				p.sendMessage(RageMode.getLang().get("game.lobby.chat-is-disabled"));
@@ -143,15 +144,15 @@ public class EventListener implements Listener {
 		}
 
 		if (GameUtils.getStatus(game) == GameStatus.RUNNING) {
-			if (!plugin.getConfiguration().getCV().isEnableChatInGame()
+			if (!ConfigValues.isEnableChatInGame()
 					&& !p.hasPermission("ragemode.bypass.game.lockchat")) {
 				p.sendMessage(RageMode.getLang().get("game.chat-is-disabled"));
 				event.setCancelled(true);
 				return;
 			}
 
-			if (plugin.getConfiguration().getCV().isChatFormatEnabled()) {
-				String format = plugin.getConfiguration().getCV().getChatFormat();
+			if (ConfigValues.isChatFormatEnabled()) {
+				String format = ConfigValues.getChatFormat();
 				format = format.replace("%player%", p.getName());
 				format = format.replace("%player-displayname%", p.getDisplayName());
 				format = format.replace("%game%", game);
@@ -165,7 +166,7 @@ public class EventListener implements Listener {
 		}
 
 		if (GameUtils.getStatus(game) == GameStatus.GAMEFREEZE) {
-			if (!plugin.getConfiguration().getCV().isEnableChatAfterEnd()) {
+			if (!ConfigValues.isEnableChatAfterEnd()) {
 				p.sendMessage(RageMode.getLang().get("game.game-freeze.chat-is-disabled"));
 				event.setCancelled(true);
 			}
@@ -187,11 +188,10 @@ public class EventListener implements Listener {
 
 			String game = GameUtils.getGameByPlayer(shooter).getName();
 
-			if (GameUtils.getStatus(game) == GameStatus.GAMEFREEZE && waitingGames.containsKey(game)) {
-				if (waitingGames.get(game)) {
-					arrow.remove();
-					return;
-				}
+			if (GameUtils.getStatus(game) == GameStatus.GAMEFREEZE && waitingGames.containsKey(game)
+					&& waitingGames.get(game)) {
+				arrow.remove();
+				return;
 			}
 
 			if (GameUtils.getStatus(game) == GameStatus.RUNNING) {
@@ -242,11 +242,10 @@ public class EventListener implements Listener {
 				Player killer = (Player) event.getDamager();
 
 				if (GameUtils.isPlayerPlaying(killer)) {
-					if (waitingGames.containsKey(GameUtils.getGameByPlayer(killer).getName())) {
-						if (waitingGames.get(GameUtils.getGameByPlayer(killer).getName())) {
-							event.setCancelled(true);
-							return;
-						}
+					if (waitingGames.containsKey(GameUtils.getGameByPlayer(killer).getName())
+							&& waitingGames.get(GameUtils.getGameByPlayer(killer).getName())) {
+						event.setCancelled(true);
+						return;
 					}
 
 					ItemStack hand = NMS.getItemInHand(killer);
@@ -299,20 +298,17 @@ public class EventListener implements Listener {
 
 		// Hit player event
 		if (GameUtils.getStatus(victim) == GameStatus.RUNNING) {
-			if (event.getCause().equals(DamageCause.FALL) && !plugin.getConfiguration().getCV().isDamagePlayerFall()) {
+			if (event.getCause().equals(DamageCause.FALL) && !ConfigValues.isDamagePlayerFall()) {
 				event.setCancelled(true);
 				return;
 			}
 
-			if (waitingGames.containsKey(game)) {
-				if (waitingGames.get(game)) {
-					event.setCancelled(true);
-				}
+			if (waitingGames.containsKey(game) && waitingGames.get(game)) {
+				event.setCancelled(true);
 			}
 		} else if (GameUtils.getStatus(victim) == GameStatus.GAMEFREEZE) { // Prevent damage in game freeze
-			if (waitingGames.containsKey(game)) {
-				if (waitingGames.get(game))
-					event.setCancelled(true);
+			if (waitingGames.containsKey(game) && waitingGames.get(game)) {
+				event.setCancelled(true);
 			}
 		} else if (GameUtils.getStatus(victim) == GameStatus.WAITING) {
 			event.setCancelled(true); // Prevent player damage in lobby
@@ -330,10 +326,9 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())) {
-			if (waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
-				e.setCancelled(true);
-			}
+		if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())
+				&& waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
+			e.setCancelled(true);
 		}
 	}
 
@@ -350,7 +345,7 @@ public class EventListener implements Listener {
 
 			if ((deceased.getKiller() != null && GameUtils.isPlayerPlaying(deceased.getKiller()))
 					|| deceased.getKiller() == null) {
-				boolean doDeathBroadcast = plugin.getConfiguration().getCV().isDeathMsgs();
+				boolean doDeathBroadcast = ConfigValues.isDeathMsgs();
 
 				if (plugin.getConfiguration().getArenasCfg().isSet("arenas." + game + ".death-messages")) {
 					String gameBroadcast = plugin.getConfiguration().getArenasCfg().getString("arenas." + game + ".death-messages", "");
@@ -528,7 +523,7 @@ public class EventListener implements Listener {
 			e.setRespawnLocation(gsg.getRandomSpawn());
 		}
 
-		int time = plugin.getConfiguration().getCV().getRespawnProtectTime();
+		int time = ConfigValues.getRespawnProtectTime();
 		if (time > 0) {
 			p.setNoDamageTicks(time * 20);
 		}
@@ -562,7 +557,7 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onSignBreak(BlockBreakEvent event) {
-		if (event.isCancelled() || !plugin.getConfiguration().getCV().isSignsEnable()) return;
+		if (event.isCancelled() || !ConfigValues.isSignsEnable()) return;
 
 		org.bukkit.block.BlockState blockState = event.getBlock().getState();
 		if (blockState instanceof Sign && SignCreator.isSign(blockState.getLocation())) {
@@ -585,8 +580,8 @@ public class EventListener implements Listener {
 		String arg = event.getMessage().trim().toLowerCase();
 		List<String> cmds = null;
 
-		if (plugin.getConfiguration().getCV().isSpectatorEnabled() && GameUtils.isSpectatorPlaying(p)) {
-			cmds = plugin.getConfiguration().getCV().getSpectatorCmds();
+		if (ConfigValues.isSpectatorEnabled() && GameUtils.isSpectatorPlaying(p)) {
+			cmds = ConfigValues.getSpectatorCmds();
 			if (cmds != null && !cmds.isEmpty()) {
 				if (!cmds.contains(arg) && !p.hasPermission("ragemode.bypass.spectatorcommands")) {
 					p.sendMessage(RageMode.getLang().get("game.this-command-is-disabled-in-game"));
@@ -597,15 +592,14 @@ public class EventListener implements Listener {
 		}
 
 		if (GameUtils.isPlayerPlaying(p)) {
-			if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())) {
-				if (waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
-					p.sendMessage(RageMode.getLang().get("game.command-disabled-in-end-game"));
-					event.setCancelled(true);
-					return;
-				}
+			if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())
+					&& waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
+				p.sendMessage(RageMode.getLang().get("game.command-disabled-in-end-game"));
+				event.setCancelled(true);
+				return;
 			}
 
-			cmds = plugin.getConfiguration().getCV().getAllowedCmds();
+			cmds = ConfigValues.getAllowedCmds();
 			if (cmds != null && !cmds.isEmpty()) {
 				if (!cmds.contains(arg) && !p.hasPermission("ragemode.bypass.disabledcommands")) {
 					p.sendMessage(RageMode.getLang().get("game.this-command-is-disabled-in-game"));
@@ -642,9 +636,9 @@ public class EventListener implements Listener {
 		event.setHatching(false);
 
 		// check if player is in waiting game (game freeze)
-		if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())) {
-			if (waitingGames.get(GameUtils.getGameByPlayer(p).getName()))
-				return;
+		if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())
+				&& waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
+			return;
 		}
 
 		final Item grenade = p.getWorld().dropItem(event.getEgg().getLocation(), new ItemStack(Material.EGG));
@@ -674,14 +668,13 @@ public class EventListener implements Listener {
 				}
 
 				// Remove egg in 1 second of the game when a player dropped
-				if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())) {
-					if (waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
-						grenadeExplosionVictims.clear();
+				if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())
+						&& waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
+					grenadeExplosionVictims.clear();
 
-						grenade.remove();
-						cancel();
-						return;
-					}
+					grenade.remove();
+					cancel();
+					return;
 				}
 
 				Location loc = grenade.getLocation();
@@ -718,9 +711,9 @@ public class EventListener implements Listener {
 		if (GameUtils.isPlayerPlaying(p)) {
 			if (GameUtils.getStatus(p) == GameStatus.RUNNING) {
 				Player thrower = event.getPlayer();
-				if (waitingGames.containsKey(GameUtils.getGameByPlayer(thrower).getName())) {
-					if (waitingGames.get(GameUtils.getGameByPlayer(thrower).getName()))
-						return;
+				if (waitingGames.containsKey(GameUtils.getGameByPlayer(thrower).getName())
+						&& waitingGames.get(GameUtils.getGameByPlayer(thrower).getName())) {
+					return;
 				}
 
 				ItemStack hand = NMS.getItemInHand(thrower);
@@ -768,7 +761,7 @@ public class EventListener implements Listener {
 			}
 		}
 
-		if (plugin.getConfiguration().getCV().isSignsEnable() && event.getClickedBlock() != null
+		if (ConfigValues.isSignsEnable() && event.getClickedBlock() != null
 				&& event.getClickedBlock().getState() != null) {
 			org.bukkit.block.Block b = event.getClickedBlock();
 
@@ -838,7 +831,7 @@ public class EventListener implements Listener {
 			if (t == Material.FARMLAND) {
 				ev.setUseInteractedBlock(Event.Result.DENY);
 				ev.setCancelled(true);
-			} else if (RageMode.getInstance().getConfiguration().getCV().isCancelRedstoneActivate()
+			} else if (ConfigValues.isCancelRedstoneActivate()
 					&& GameUtils.getStatus(p) == GameStatus.RUNNING
 					|| GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
 				if (MaterialUtil.isWoodenPressurePlate(t)) {
@@ -852,7 +845,7 @@ public class EventListener implements Listener {
 					ev.setCancelled(true);
 				}
 			}
-		} else if (RageMode.getInstance().getConfiguration().getCV().isCancelRedstoneActivate()
+		} else if (ConfigValues.isCancelRedstoneActivate()
 				&& ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			if (GameUtils.getStatus(p) == GameStatus.RUNNING || GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
 				if (MaterialUtil.isTrapdoor(t) || MaterialUtil.isButton(t)) {
@@ -881,7 +874,7 @@ public class EventListener implements Listener {
 			}
 		}
 
-		if (RageMode.getInstance().getConfiguration().getCV().isCancelDoorUse()
+		if (ConfigValues.isCancelDoorUse()
 				&& ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			if (GameUtils.getStatus(p) == GameStatus.RUNNING || GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
 				if (MaterialUtil.isWoodenDoor(t)) {
@@ -928,7 +921,7 @@ public class EventListener implements Listener {
 	public void onSignChange(SignChangeEvent event) {
 		if (event.isCancelled() || event.getPlayer() == null || event.getBlock() == null) return;
 
-		if (plugin.getConfiguration().getCV().isSignsEnable()
+		if (ConfigValues.isSignsEnable()
 				&& event.getLine(0).contains("[rm]") || event.getLine(0).contains("[ragemode]")) {
 			if (!event.getPlayer().hasPermission("ragemode.admin.signs")) {
 				event.getPlayer().sendMessage(RageMode.getLang().get("no-permission-to-interact-sign"));
@@ -962,17 +955,15 @@ public class EventListener implements Listener {
 		String game = GameUtils.getGameByPlayer(p).getName();
 
 		if (GameUtils.getStatus(p) == GameStatus.RUNNING) {
-			if (waitingGames != null && waitingGames.containsKey(game)) {
-				if (waitingGames.get(game)) {
-					Location from = event.getFrom();
-					Location to = event.getTo();
-					double x = Math.floor(from.getX());
-					double z = Math.floor(from.getZ());
-					if (Math.floor(to.getX()) != x || Math.floor(to.getZ()) != z) {
-						x += .5;
-						z += .5;
-						p.teleport(new Location(from.getWorld(), x, from.getY(), z, from.getYaw(), from.getPitch()));
-					}
+			if (waitingGames.containsKey(game) && waitingGames.get(game)) {
+				Location from = event.getFrom();
+				Location to = event.getTo();
+				double x = Math.floor(from.getX());
+				double z = Math.floor(from.getZ());
+				if (Math.floor(to.getX()) != x || Math.floor(to.getZ()) != z) {
+					x += .5;
+					z += .5;
+					p.teleport(new Location(from.getWorld(), x, from.getY(), z, from.getYaw(), from.getPitch()));
 				}
 			}
 		}

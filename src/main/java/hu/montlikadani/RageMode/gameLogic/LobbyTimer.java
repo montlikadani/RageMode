@@ -7,6 +7,7 @@ import java.util.TimerTask;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.gameUtils.Titles;
@@ -50,14 +51,13 @@ public class LobbyTimer extends TimerTask {
 			return;
 		}
 
-		hu.montlikadani.ragemode.config.ConfigValues fc = RageMode.getInstance().getConfiguration().getCV();
 		if (game.getPlayers().size() < GetGames.getMinPlayers(game.getName())) {
 			GameUtils.setStatus(game.getName(), null);
 			cancel();
 			return;
 		}
 
-		List<Integer> values = fc.getLobbyTimeMsgs();
+		List<Integer> values = ConfigValues.getLobbyTimeMsgs();
 		for (int val : values) {
 			if (time == val) {
 				GameUtils.broadcastToGame(game.getName(),
@@ -69,9 +69,9 @@ public class LobbyTimer extends TimerTask {
 		for (PlayerManager pm : game.getPlayersFromList()) {
 			Player player = pm.getPlayer();
 
-			if (fc.isLobbyTitle()) {
-				String title = fc.getLobbyTitle();
-				String sTitle = fc.getLobbySubTitle();
+			if (ConfigValues.isLobbyTitle()) {
+				String title = ConfigValues.getLobbyTitle();
+				String sTitle = ConfigValues.getLobbySubTitle();
 
 				if (title != null && sTitle != null) {
 					title = title.replace("%time%", Integer.toString(time));
@@ -80,10 +80,10 @@ public class LobbyTimer extends TimerTask {
 					sTitle = sTitle.replace("%time%", Integer.toString(time));
 					sTitle = sTitle.replace("%game%", game.getName());
 
-					List<Integer> titleValues = fc.getLobbyTitleStartMsgs();
+					List<Integer> titleValues = ConfigValues.getLobbyTitleStartMsgs();
 					for (int val : titleValues) {
 						if (time == val) {
-							String[] split = fc.getLobbyTitleTime().split(", ");
+							String[] split = ConfigValues.getLobbyTitleTime().split(", ");
 							if (split.length == 3) {
 								Titles.sendTitle(player, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
 										Integer.parseInt(split[2]), title, sTitle);
@@ -97,7 +97,7 @@ public class LobbyTimer extends TimerTask {
 				}
 			}
 
-			if (fc.isPlayerLevelAsTimeCounter())
+			if (ConfigValues.isPlayerLevelAsTimeCounter())
 				player.setLevel(time);
 		}
 

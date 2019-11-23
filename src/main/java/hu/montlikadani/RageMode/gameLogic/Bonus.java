@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.ConfigValues;
 
 public class Bonus {
 
@@ -16,12 +16,11 @@ public class Bonus {
 			return;
 		}
 
-		if (ThreadLocalRandom.current().nextInt(0, 100) > RageMode.getInstance().getConfiguration().getCV()
-				.getKillBonusChance()) {
+		if (ThreadLocalRandom.current().nextInt(0, 100) > ConfigValues.getKillBonusChance()) {
 			return;
 		}
 
-		List<String> list = RageMode.getInstance().getConfiguration().getCV().getKillBonuses();
+		List<String> list = ConfigValues.getKillBonuses();
 		if (list == null) {
 			return;
 		}
@@ -55,12 +54,11 @@ public class Bonus {
 			return 0;
 		}
 
-		if (ThreadLocalRandom.current().nextInt(0, 100) > RageMode.getInstance().getConfiguration().getCV()
-				.getKillBonusChance()) {
+		if (ThreadLocalRandom.current().nextInt(0, 100) > ConfigValues.getKillBonusChance()) {
 			return 0;
 		}
 
-		List<String> list = RageMode.getInstance().getConfiguration().getCV().getKillBonuses();
+		List<String> list = ConfigValues.getKillBonuses();
 		if (list == null) {
 			return 0;
 		}

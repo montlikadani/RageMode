@@ -94,7 +94,7 @@ public class points {
 			break;
 		}
 
-		switch (RageMode.getInstance().getConfiguration().getCV().getDatabase()) {
+		switch (hu.montlikadani.ragemode.config.ConfigValues.getDatabase()) {
 		case "sql":
 		case "sqlite":
 			SQLStats.addPlayerStatistics(rpp, RageMode.getSQL());

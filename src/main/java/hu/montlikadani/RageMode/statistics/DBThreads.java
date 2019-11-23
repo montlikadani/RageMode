@@ -13,7 +13,7 @@ public class DBThreads implements Runnable {
 
 	@Override
 	public void run() {
-		switch (RageMode.getInstance().getConfiguration().getCV().getDatabaseType()) {
+		switch (hu.montlikadani.ragemode.config.ConfigValues.getDatabaseType()) {
 		case "mysql":
 			MySQLStats.addPlayerStatistics(pP, RageMode.getMySQL());
 			break;
@@ -22,6 +22,7 @@ public class DBThreads implements Runnable {
 			SQLStats.addPlayerStatistics(pP, RageMode.getSQL());
 			break;
 		default:
+			YAMLStats.createPlayersStats(pP);
 			break;
 		}
 	}

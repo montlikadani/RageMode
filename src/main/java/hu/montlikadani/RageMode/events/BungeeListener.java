@@ -28,7 +28,7 @@ public class BungeeListener implements Listener {
 		Player p = ev.getPlayer();
 
 		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p), true);
-		GameUtils.kickSpectatorPlayer(p, GameUtils.getGameBySpectator(p));
+		GameUtils.kickSpectator(p, GameUtils.getGameBySpectator(p));
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
@@ -36,6 +36,6 @@ public class BungeeListener implements Listener {
 		Player p = e.getPlayer();
 
 		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p), true);
-		GameUtils.kickSpectatorPlayer(p, GameUtils.getGameBySpectator(p));
+		GameUtils.kickSpectator(p, GameUtils.getGameBySpectator(p));
 	}
 }

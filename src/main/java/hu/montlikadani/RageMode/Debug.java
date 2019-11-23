@@ -4,6 +4,8 @@ import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 
+import hu.montlikadani.ragemode.config.ConfigValues;
+
 public class Debug {
 
 	public static void throwMsg() {
@@ -37,7 +39,7 @@ public class Debug {
 	 * @param p params
 	 */
 	public static void logConsole(Level lvl, String msg, Object... p) {
-		if (msg != null && !msg.isEmpty() && RageMode.getInstance().getConfiguration().getCV().isLogConsole())
+		if (msg != null && !msg.isEmpty() && ConfigValues.isLogConsole())
 			Bukkit.getLogger().log(lvl, "[RageMode] " + msg, p);
 	}
 

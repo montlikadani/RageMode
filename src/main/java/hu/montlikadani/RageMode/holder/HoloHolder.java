@@ -85,7 +85,7 @@ public class HoloHolder {
 		final UUID uuid = player.getUniqueId();
 		final Hologram dataHologram = hologram;
 
-		switch (RageMode.getInstance().getConfiguration().getCV().getDatabaseType()) {
+		switch (hu.montlikadani.ragemode.config.ConfigValues.getDatabaseType()) {
 		case "mysql":
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final PlayerPoints rpp;
@@ -142,7 +142,6 @@ public class HoloHolder {
 			if (pp != null) {
 				NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
 
-				hList = hList.replace("%rank%", Integer.toString(pp.getRank()));
 				hList = hList.replace("%points%", pp.getPoints() + "");
 				hList = hList.replace("%wins%", pp.getWins() + "");
 				hList = hList.replace("%games%", pp.getGames() + "");
@@ -150,7 +149,6 @@ public class HoloHolder {
 				hList = hList.replace("%kills%", pp.getKills() + "");
 				hList = hList.replace("%deaths%", pp.getDeaths() + "");
 			} else {
-				hList = hList.replace("%rank%", "");
 				hList = hList.replace("%points%", "0");
 				hList = hList.replace("%wins%", "0");
 				hList = hList.replace("%games%", "0");

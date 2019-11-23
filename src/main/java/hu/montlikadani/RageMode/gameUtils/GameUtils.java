@@ -14,12 +14,16 @@ import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import hu.montlikadani.ragemode.Debug;
+import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
@@ -27,6 +31,7 @@ import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStatusChangeEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.commands.RmCommand;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.events.EventListener;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
@@ -42,7 +47,6 @@ import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.statistics.DBThreads;
-import hu.montlikadani.ragemode.statistics.YAMLStats;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
@@ -98,7 +102,7 @@ public class GameUtils {
 				sendMessage(pl, RageMode.getLang().get("setup.addgame.special-chars"));
 			}
 			return false;
-		} else if (name.length() > 20) {
+		} else if (name.length() > 40) {
 			if (pl != null) {
 				sendMessage(pl, RageMode.getLang().get("setup.addgame.name-greater"));
 			}
@@ -382,7 +386,7 @@ public class GameUtils {
 		String name = game.getName();
 
 		if (getStatus(name) == GameStatus.RUNNING) {
-			if (conf.getCV().isSpectatorEnabled()) {
+			if (ConfigValues.isSpectatorEnabled()) {
 				if (!isPlayerPlaying(p)) {
 					if (game.addSpectatorPlayer(p, name)) {
 						p.teleport(getGameSpawn(name).getRandomSpawn());
@@ -415,7 +419,7 @@ public class GameUtils {
 				return;
 			}
 
-			if (conf.getCV().isRequireEmptyInv()) {
+			if (ConfigValues.isRequireEmptyInv()) {
 				for (ItemStack armor : inv.getArmorContents()) {
 					if (armor != null && !armor.getType().equals(Material.AIR)) {
 						p.sendMessage(RageMode.getLang().get("commands.join.empty-inventory.armor"));
@@ -432,7 +436,7 @@ public class GameUtils {
 			}
 
 			if (game.addPlayer(p)) {
-				if (!conf.getCV().isSavePlayerData()) {
+				if (!ConfigValues.isSavePlayerData()) {
 					// We still need some data saving
 					game.getPlayerManager(p).getStorePlayer().oldLocation = p.getLocation();
 					game.getPlayerManager(p).getStorePlayer().oldGameMode = p.getGameMode();
@@ -443,7 +447,7 @@ public class GameUtils {
 				}
 				clearPlayerTools(p);
 
-				p.teleport(GetGameLobby.getLobbyLocation(name));
+				p.teleport(GameLobby.getLobbyLocation(name));
 
 				runCommands(p, name, "join");
 				sendActionBarMessages(p, name, "join");
@@ -457,12 +461,12 @@ public class GameUtils {
 
 				broadcastToGame(name, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
 
-				String title = conf.getCV().getTitleJoinGame();
-				String subtitle = conf.getCV().getSubTitleJoinGame();
+				String title = ConfigValues.getTitleJoinGame();
+				String subtitle = ConfigValues.getSubTitleJoinGame();
 				title = title.replace("%game%", name);
 				subtitle = subtitle.replace("%game%", name);
 
-				String[] split = conf.getCV().getJoinTitleTime().split(", ");
+				String[] split = ConfigValues.getJoinTitleTime().split(", ");
 				Titles.sendTitle(p, (split.length > 1 ? Integer.parseInt(split[0]) : 20),
 						(split.length > 2 ? Integer.parseInt(split[1]) : 30),
 						(split.length > 3 ? Integer.parseInt(split[2]) : 20), title, subtitle);
@@ -485,7 +489,7 @@ public class GameUtils {
 			if (game.removePlayer(p) && run) {
 				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
 
-				List<String> list = RageMode.getInstance().getConfiguration().getCV().getCmdsForPlayerLeave();
+				List<String> list = ConfigValues.getCmdsForPlayerLeave();
 				if (list != null) {
 					for (String cmds : list) {
 						cmds = cmds.replace("%player%", p.getName());
@@ -503,7 +507,7 @@ public class GameUtils {
 	 * @param p Player to be kick
 	 * @param game the game where kick from
 	 */
-	public static void kickSpectatorPlayer(Player p, Game game) {
+	public static void kickSpectator(Player p, Game game) {
 		if (game != null) {
 			game.removeSpectatorPlayer(p);
 		}
@@ -554,13 +558,12 @@ public class GameUtils {
 	 * @param cmdType Command type, such as death, join or other
 	 */
 	public static void runCommands(Player p, String game, String cmdType) {
-		if (!RageMode.getInstance().getConfiguration().getCV().isRewardEnabled()) {
+		if (!ConfigValues.isRewardEnabled()) {
 			return;
 		}
 
 		List<String> list = RageMode.getInstance().getConfiguration().getRewardsCfg()
 				.getStringList("rewards.in-game.run-commands");
-
 		if (list == null) {
 			return;
 		}
@@ -613,23 +616,114 @@ public class GameUtils {
 		if (conf.getArenasCfg().isSet("arenas." + game + ".actionbar")) {
 			if (!conf.getArenasCfg().getBoolean("arenas." + game + ".actionbar"))
 				return;
-		} else if (!conf.getCV().isActionbarEnabled())
+		} else if (!ConfigValues.isActionbarEnabled())
 			return;
 
-		List<String> list = conf.getCV().getActionbarActions();
+		List<String> list = ConfigValues.getActionbarActions();
+		if (list == null) {
+			return;
+		}
 
-		if (list != null) {
-			for (String msg : list) {
-				if (msg.split(":").length < 2 && msg.split(":").length > 2) {
-					Debug.logConsole(Level.WARNING, "In the config file the actionbar messages the split length is equal to 2.");
+		for (String msg : list) {
+			if (msg.split(":").length < 2 && msg.split(":").length > 2) {
+				Debug.logConsole(Level.WARNING,
+						"In the config file the actionbar messages the split length is equal to 2.");
+				continue;
+			}
+
+			String action = msg.split(":")[0];
+			if (action.equals(type)) {
+				String message = msg.split(":")[1];
+				message = message.replace("%game%", game).replace("%player%", p.getName());
+				ActionBar.sendActionBar(p, Utils.colors(message));
+			}
+		}
+	}
+
+	/**
+	 * Send boss bar messages to all current playing players, when
+	 * doing something, such as joining, leave, starting or stopping game.
+	 * <p>This returns if the boosbar option is disabled in configurations.
+	 * @param game Game name
+	 * @param type Action type
+	 */
+	public static void sendBossBarMessages(String game, String type) {
+		for (PlayerManager pm : getGame(game).getPlayersFromList()) {
+			sendBossBarMessages(pm.getPlayer(), game, type);
+		}
+	}
+
+	/**
+	 * Send boss bar messages to the current playing player, when
+	 * doing something, such as joining, leave, starting or stopping game.
+	 * <p>This returns if the boosbar option is disabled in configurations.
+	 * @param p Player
+	 * @param game Game name
+	 * @param type Action type
+	 */
+	public static void sendBossBarMessages(final Player p, String game, String type) {
+		if (Version.isCurrentLower(Version.v1_9_R1)) {
+			Debug.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
+			return;
+		}
+
+		if (RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + game + ".bossbar")) {
+			if (!RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + game + ".bossbar"))
+				return;
+		} else if (!ConfigValues.isActionbarEnabled())
+			return;
+
+		List<String> list = ConfigValues.getBossbarActions();
+		if (list == null) {
+			return;
+		}
+
+		for (String msg : list) {
+			String[] split = msg.split(":");
+			if (split.length < 2) {
+				Debug.logConsole(Level.WARNING,
+						"In the config file the bossbar messages the split length should be 2 or 4.");
+				continue;
+			}
+
+			if (split[0].equals(type)) {
+				String message = split[1];
+				if (message == null) {
 					continue;
 				}
 
-				String action = msg.split(":")[0];
-				if (action.equals(type)) {
-					String message = msg.split(":")[1];
-					message = message.replace("%game%", game).replace("%player%", p.getName());
-					ActionBar.sendActionBar(p, Utils.colors(message));
+				message = message.replace("%game%", game).replace("%player%", p.getName());
+				message = Utils.colors(message);
+
+				final BossBar boss = Bukkit.createBossBar(message,
+						split.length > 2 ? BarColor.valueOf(split[2].toUpperCase()) : BarColor.BLUE,
+								split.length > 3 ? BarStyle.valueOf(split[3].toUpperCase()) : BarStyle.SOLID);
+
+				if (boss == null) {
+					continue;
+				}
+
+				if (boss.getPlayers().contains(p)) {
+					boss.removePlayer(p);
+				}
+				boss.addPlayer(p);
+
+				for (int i = 1; i <= 6; ++i) {
+					Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
+						@Override
+						public void run() {
+							if (!isPlayerPlaying(p)) {
+								boss.removePlayer(p);
+								return;
+							}
+
+							if (boss.getProgress() >= 0.2D) {
+								boss.setProgress(boss.getProgress() - 0.2D);
+							} else {
+								boss.removePlayer(p);
+							}
+						}
+					}, 20 * i);
 				}
 			}
 		}
@@ -693,17 +787,16 @@ public class GameUtils {
 	public static void stopGame(final Game game, boolean useFreeze) {
 		Validate.notNull(game, "Game can't be null!");
 
-		final String name = game.getName();
-
 		if (!game.isGameRunning()) {
 			return;
 		}
 
-		boolean winnervalid = false;
 		final List<PlayerManager> players = game.getPlayersFromList();
 
-		RMGameStopEvent gameStopEvent = new RMGameStopEvent(game, players);
-		Utils.callEvent(gameStopEvent);
+		Utils.callEvent(new RMGameStopEvent(game, players));
+
+		final String name = game.getName();
+		boolean winnervalid = false;
 
 		UUID winnerUUID = RageScores.calculateWinner(name, players);
 		if (winnerUUID != null && Bukkit.getPlayer(winnerUUID) != null) {
@@ -711,12 +804,11 @@ public class GameUtils {
 
 			Player winner = Bukkit.getPlayer(winnerUUID);
 
-			hu.montlikadani.ragemode.config.ConfigValues cv = RageMode.getInstance().getConfiguration().getCV();
-			String wonTitle = cv.getWonTitle();
-			String wonSubtitle = cv.getWonSubTitle();
+			String wonTitle = ConfigValues.getWonTitle();
+			String wonSubtitle = ConfigValues.getWonSubTitle();
 
-			String youWonTitle = cv.getYouWonTitle();
-			String youWonSubtitle = cv.getYouWonSubTitle();
+			String youWonTitle = ConfigValues.getYouWonTitle();
+			String youWonSubtitle = ConfigValues.getYouWonSubTitle();
 
 			wonTitle = wonTitle.replace("%winner%", winner.getName());
 			wonTitle = replaceVariables(wonTitle, winnerUUID);
@@ -731,15 +823,15 @@ public class GameUtils {
 				final Player p = pm.getPlayer();
 
 				if (p != winner) {
-					split = cv.getWonTitleTime().split(", ");
+					split = ConfigValues.getWonTitleTime().split(", ");
 					Titles.sendTitle(p, (split.length > 1 ? Integer.parseInt(split[0]) : 20),
 							(split.length > 2 ? Integer.parseInt(split[1]) : 30),
 							(split.length > 3 ? Integer.parseInt(split[2]) : 20), wonTitle, wonSubtitle);
 
-					if (cv.isSwitchGMForPlayers())
+					if (ConfigValues.isSwitchGMForPlayers())
 						p.setGameMode(GameMode.SPECTATOR);
 				} else {
-					split = cv.getYouWonTitleTime().split(", ");
+					split = ConfigValues.getYouWonTitleTime().split(", ");
 					Titles.sendTitle(p, (split.length > 1 ? Integer.parseInt(split[0]) : 20),
 							(split.length > 2 ? Integer.parseInt(split[1]) : 30),
 							(split.length > 3 ? Integer.parseInt(split[2]) : 20), youWonTitle, youWonSubtitle);
@@ -790,7 +882,7 @@ public class GameUtils {
 
 						finishStopping(game, winner, true);
 					}
-				}, RageMode.getInstance().getConfiguration().getCV().getGameFreezeTime() * 20);
+				}, ConfigValues.getGameFreezeTime() * 20);
 	}
 
 	private static void finishStopping(Game game, Player winner, boolean serverStop) {
@@ -800,29 +892,15 @@ public class GameUtils {
 
 		List<PlayerManager> players = game.getPlayersFromList();
 
+		// Lets try to load the stats if empty
+		if (RuntimePPManager.getRuntimePPList().isEmpty()) {
+			RuntimePPManager.loadPPListFromDatabase();
+		}
+
 		for (PlayerManager pm : players) {
 			final PlayerPoints pP = RageScores.getPlayerPoints(pm.getPlayer().getUniqueId());
 			if (pP == null) {
 				continue;
-			}
-
-			Thread th = null;
-			switch (RageMode.getInstance().getConfiguration().getCV().getDatabaseType()) {
-			case "mysql":
-			case "sql":
-			case "sqlite":
-				th = new Thread(new DBThreads(pP));
-				break;
-			default:
-				th = new Thread(YAMLStats.createPlayersStats(pP));
-				break;
-			}
-
-			th.start();
-
-			// Lets try to load the stats if empty
-			if (RuntimePPManager.getRuntimePPList().isEmpty()) {
-				RuntimePPManager.loadPPListFromDatabase();
 			}
 
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
@@ -831,32 +909,9 @@ public class GameUtils {
 				Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 						() -> HoloHolder.updateHolosForPlayer(pm.getPlayer()));
 			});
-		}
 
-		broadcastToGame(game.getName(), RageMode.getLang().get("game.stopped", "%game%", game.getName()));
-		game.setGameNotRunning();
-		runCommandsForAll(game.getName(), "stop");
-		SignCreator.updateAllSigns(game.getName());
-
-		List<Player> rewardPlayers = null;
-
-		for (PlayerManager pm : game.getPlayersFromList()) {
-			Player p = pm.getPlayer();
-			sendActionBarMessages(p, game.getName(), "stop");
-			RageScores.removePointsForPlayer(p.getUniqueId());
-			if (RageMode.getInstance().getConfiguration().getCV().isRewardEnabled()) {
-				if (rewardPlayers == null) {
-					rewardPlayers = new ArrayList<>();
-				}
-
-				rewardPlayers.add(p);
-			}
-
-			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
-			Utils.callEvent(gameLeaveEvent);
-			if (!gameLeaveEvent.isCancelled()) {
-				game.removePlayer(p);
-			}
+			Thread th = new Thread(new DBThreads(pP));
+			th.start();
 		}
 
 		for (Iterator<Entry<Player, PlayerManager>> it = game.getSpectatorPlayers().entrySet().iterator(); it
@@ -865,30 +920,50 @@ public class GameUtils {
 			game.removeSpectatorPlayer(pl);
 		}
 
-		if (RageMode.getInstance().getConfiguration().getCV().isRewardEnabled() && rewardPlayers != null) {
-			RewardManager reward = new RewardManager(game.getName());
+		String gName = game.getName();
 
-			for (Player p : rewardPlayers) {
-				if (winner != null && p == winner) {
-					reward.rewardForWinner(winner);
-				}
+		RewardManager reward = null;
+		for (PlayerManager pm : players) {
+			Player p = pm.getPlayer();
 
-				reward.rewardForPlayers(winner, p);
+			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
+			Utils.callEvent(gameLeaveEvent);
+			if (gameLeaveEvent.isCancelled()) {
+				continue; // We need this if the event was cancelled only in one player
 			}
 
-			rewardPlayers.clear();
+			runCommands(p, gName, "stop");
+			sendActionBarMessages(p, gName, "stop");
+			RageScores.removePointsForPlayer(p.getUniqueId());
+			if (game.removePlayer(p)) {
+				p.sendMessage(RageMode.getLang().get("game.stopped", "%game%", gName));
+
+				if (ConfigValues.isRewardEnabled()) {
+					if (reward == null) {
+						reward = new RewardManager(gName);
+					}
+
+					if (winner != null && p == winner) {
+						reward.rewardForWinner(winner);
+					}
+
+					reward.rewardForPlayers(winner, p);
+				}
+			}
 		}
 
-		setStatus(game.getName(), null);
+		game.setGameNotRunning();
+		setStatus(gName, null);
+		SignCreator.updateAllSigns(gName);
 
 		if (serverStop) {
-			if (RageMode.getInstance().getConfiguration().getCV().isRestartServerEnabled()) {
+			if (ConfigValues.isRestartServerEnabled()) {
 				if (RageMode.isSpigot()) {
 					Bukkit.spigot().restart();
 				} else {
 					Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "restart");
 				}
-			} else if (RageMode.getInstance().getConfiguration().getCV().isStopServerEnabled()) {
+			} else if (ConfigValues.isStopServerEnabled()) {
 				Bukkit.shutdown();
 			}
 		}

@@ -5,6 +5,7 @@ import org.bukkit.inventory.PlayerInventory;
 
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.StorePlayerStuffs;
 
@@ -98,9 +99,7 @@ public class PlayerManager {
 	 * @param spectator the player is spectator or not
 	 */
 	public void addBackTools(boolean spectator) {
-		Configuration conf = RageMode.getInstance().getConfiguration();
-
-		if (conf.getCV().isBungee()) {
+		if (ConfigValues.isBungee()) {
 			RageMode.getInstance().getBungeeUtils().connectToHub(player);
 			return;
 		}
@@ -110,7 +109,7 @@ public class PlayerManager {
 			sps.oldLocation = null;
 		}
 
-		if (spectator || conf.getCV().isSavePlayerData()) {
+		if (spectator || ConfigValues.isSavePlayerData()) {
 			if (sps.oldInventories != null) { // Give him his inventory back.
 				player.getInventory().setContents(sps.oldInventories);
 				sps.oldInventories = null;
@@ -131,7 +130,7 @@ public class PlayerManager {
 			player.setAllowFlight(sps.allowFly);
 			player.setFlying(sps.fly);
 		} else {
-			if (conf.getCV().isSavePlayerData()) {
+			if (ConfigValues.isSavePlayerData()) {
 				if (sps.oldHealth > 0d) { // Give him his health back.
 					player.setHealth(sps.oldHealth);
 					sps.oldHealth = 0d;
@@ -171,6 +170,7 @@ public class PlayerManager {
 					sps.oldVehicle = null;
 				}
 
+				Configuration conf = RageMode.getInstance().getConfiguration();
 				conf.getDatasCfg().set("datas." + player.getName(), null);
 				Configuration.saveFile(conf.getDatasCfg(), conf.getDatasFile());
 			}

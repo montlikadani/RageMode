@@ -19,7 +19,7 @@ public class Configuration {
 
 	private double configVersion = 1.4;
 
-	private ConfigValues cv;
+	@Deprecated private ConfigValues cv = new ConfigValues();
 
 	public Configuration(RageMode plugin) {
 		this.plugin = plugin;
@@ -41,10 +41,6 @@ public class Configuration {
 		if (datas_file == null) {
 			datas_file = new File(plugin.getFolder(), "datas.yml");
 		}
-
-		if (cv == null) {
-			cv = new ConfigValues();
-		}
 	}
 
 	public void loadConfig() {
@@ -57,7 +53,7 @@ public class Configuration {
 				config = createFile(config_file, "config.yml", false);
 			}
 
-			cv.loadValues(new FileConfig(config));
+			ConfigValues.loadValues(new FileConfig(config));
 
 			if (!config.isSet("config-version") || !config.get("config-version").equals(configVersion)) {
 				Debug.logConsole(Level.WARNING,
@@ -73,7 +69,7 @@ public class Configuration {
 				arenas = createFile(arenas_file, "arenas.yml", true);
 			}
 
-			if (cv.isRewardEnabled()) {
+			if (ConfigValues.isRewardEnabled()) {
 				if (rewards_file.exists()) {
 					rewards = YamlConfiguration.loadConfiguration(rewards_file);
 					loadFile(rewards, rewards_file);
@@ -82,7 +78,7 @@ public class Configuration {
 				}
 			}
 
-			if (cv.isSavePlayerData()) {
+			if (ConfigValues.isSavePlayerData()) {
 				if (datas_file.exists()) {
 					datas = YamlConfiguration.loadConfiguration(datas_file);
 					loadFile(datas, datas_file);
@@ -107,10 +103,11 @@ public class Configuration {
 		} else {
 			plugin.saveResource(name, false);
 		}
-		plugin.getLogger().log(Level.INFO, "The '{0}' file successfully created!", name);
+		plugin.getLogger().log(Level.INFO, "The {0} file successfully created!", name);
 		return YamlConfiguration.loadConfiguration(file);
 	}
 
+	@Deprecated
 	public ConfigValues getCV() {
 		return cv;
 	}

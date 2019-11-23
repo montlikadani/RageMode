@@ -84,7 +84,7 @@ signs:
 # Actionbar messages
 actionbar-messages:
   # Actionbar message when started the game and sends to player.
-  # This will be ignored, when the actionbar option is disabled,
+  # This will be ignored, when the actionbar option is disabled, or
   # this list is empty or not found.
   actions:
   #- "join:&cHello&a %player%&c in this game!"
@@ -92,18 +92,13 @@ actionbar-messages:
 
 # Bossbar messages
 bossbar-messages:
-  join:
-    # Bossbar message when started the game and sends to player.
-    # This be ignored, when empty or not found.
-    message: "&bWelcome&a %player%&b to the&c %game%&b game!"
-
-    # Bossbar style
-    # Styles: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarStyle.html
-    style: "SEGMENTED_6"
-
-    # Bossbar color
-    # Colors: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarColor.html
-    color: GREEN
+  # Bossbar message when started the game and sends to player.
+  # This will be ignored, when the bossbar option is disabled, or
+  # this list is empty or not found.
+  # Bossbar styles: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarStyle.html
+  # Bossbar colors: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarColor.html
+  actions:
+  - "start:&bWelcome&a %player%&b to the&c %game%&b game!:green:segmented_6"
 
 # Title texts
 titles:
@@ -149,129 +144,124 @@ spectator:
   - "/rm leave"
   - "/ragemode leave"
 
+# Lobby settings
+lobby:
+  # Should be enable chat in lobby?
+  # This ignores with ragemode.bypass.lobby.lockchat permission.
+  enable-chat-in-lobby: true
+
+  # Does count the player's level with the start time of the game in the lobby?
+  player-level-as-time-counter: false
+
+  # Time intervals when the lobby timer reaches, for example, 10 seconds, write it into the chat.
+  values-to-send-start-message: [30, 20, 10, 5, 4, 3, 2, 1]
+
 # Global settings for game.
 game:
-  # ---- Attention! The games spawn, lobby locations are not configured in this place! ----
-  global:
-    # Lobby settings
-    lobby:
-      # Sending lobby waiting message to start game in seconds.
-      time-to-send-message: 9
+  # If this false if player has fallen to ground then not damage.
+  damage-player-fall: false
 
-      # Should be enable chat in lobby?
-      # This ignores with ragemode.bypass.lobby.lockchat permission.
-      enable-chat-in-lobby: true
+  # Respawn protection when player dead and respawned.
+  # Counts in seconds.
+  # If the value 0, ignoring the protection.
+  respawn-protection: 3
 
-      # Does count the player's level with the start time of the game in the lobby?
-      player-level-as-time-counter: false
+  # Hide the players name tag who in game and playing?
+  # It makes the game harder, but the experience is better.
+  hide-players-name-tag: false
 
-      # Time intervals when the lobby timer reaches, for example, 10 seconds, write it into the chat.
-      values-to-send-start-message: [30, 20, 10, 5, 4, 3, 2, 1]
+  # Time intervals when the game timer reaches, for example, 60 seconds, write it into the chat.
+  values-to-send-game-end-broadcast: [60, 30, 20, 10, 5, 4, 3, 2, 1]
 
-    # If this false if player has fallen to ground then not damage.
-    damage-player-fall: false
+  # Cancel all redstone activating blocks, such as lever, comparator, pressure plate, etc.?
+  cancel-redstone-activating-blocks: true
 
-    # Respawn protection when player dead and respawned.
-    # Counts in seconds.
-    # If the value 0, ignoring the protection.
-    respawn-protection: 3
+  # Cancels the door opening/closing events in game.
+  cancel-door-use: false
 
-    # Hide the players name tag who in game and playing?
-    # It makes the game harder, but the experience is better.
-    hide-players-name-tag: false
+  # When the game is over, the players will freeze (if the game mode is not in spectator),
+  # then if the time expires, it will be automatically returned to the set location.
+  # This ignores the winner player.
+  # Counting in seconds!
+  game-freeze-time-at-end-game: 10
 
-    # Time intervals when the game timer reaches, for example, 60 seconds, write it into the chat.
-    values-to-send-game-end-broadcast: [60, 30, 20, 10, 5, 4, 3, 2, 1]
+  # Should be enable chat in the game?
+  # This ignores with ragemode.bypass.game.lockchat permission.
+  enable-chat-in-game: true
 
-    # Cancel all redstone activating blocks, such as lever, comparator, pressure plate, etc.?
-    cancel-redstone-activating-blocks: true
+  # Defaults values when in the setup not specify e.g bossbar.
+  defaults:
+    # Death messages
+    # This ignores, when the boolean is contains in the arenas file.
+    death-messages: true
 
-    # Cancels the door opening/closing events in game.
-    cancel-door-use: false
+    # Bossbar messages when a player killed someone.
+    # This ignores, when the boolean is contains in the arenas file.
+    bossbar: false
 
-    # When the game is over, the players will freeze (if the game mode is not in spectator),
-    # then if the time expires, it will be automatically returned to the set location.
-    # This ignores the winner player.
-    # Counting in seconds!
-    game-freeze-time-at-end-game: 10
+    # Actionbar messages when a player get points or killed someone.
+    # This ignores, when the boolean is contains in the arenas file.
+    actionbar: true
 
-    # Should be enable chat in the game?
-    # This ignores with ragemode.bypass.game.lockchat permission.
-    enable-chat-in-game: true
+    # Lobby delay to start the game in seconds.
+    lobby-delay: 30
 
-    # Defaults values when in the setup not specify e.g bossbar.
-    defaults:
-      # Death messages
-      # This ignores, when the boolean is contains in the arenas file.
-      death-messages: true
+    # Game time in minutes.
+    # This ignores, when the integer is contains in the arenas file.
+    gametime: 10
 
-      # Bossbar messages when a player killed someone.
-      # This ignores, when the boolean is contains in the arenas file.
-      bossbar: false
+  # Switch the game mode to spectator when the game is end?
+  # This will ignores the winner player.
+  switch-gamemode-to-spectator-at-end-of-game: true
 
-      # Actionbar messages when a player get points or killed someone.
-      # This ignores, when the boolean is contains in the arenas file.
-      actionbar: true
+  # Enables the chat after end of game.
+  enable-chat-after-end: true
 
-      # Lobby delay to start the game in seconds.
-      lobby-delay: 30
-
-      # Game time in minutes.
-      # This ignores, when the integer is contains in the arenas file.
-      gametime: 10
-
-    # Switch the game mode to spectator when the game is end?
-    # Ignores the winner player.
-    switch-gamemode-to-spectator-at-end-of-game: true
-
-    # Enables the chat after end of game.
-    enable-chat-after-end: true
-
-    # Tablist formatting.
-    tablist:
-      # Player prefix/suffix format to show example the player kills, deaths etc.
-      player-format:
-        enable: false
-        prefix: ""
-        suffix: "&e %kills%"
-
-      # Tablist header/footer formats.
-      list:
-        enable: false
-        header:
-        - "&cRage&bMode&e minigame stats"
-        - "&aYour kills/deaths:&e %kd%"
-        footer:
-        - "&6Points:&e %points%"
-
-    # Displays the score board on the right screen.
-    scoreboard:
-      enable: true
-      title: "&6RageMode"
-      content:
-      - ""
-      - "&7------"
-      - "&aPoints:&e %points%"
-      - ""
-      - "&5Wins:&e %wins%"
-      - "&7------"
-      - ""
-
-    # Chat format
-    chat-format:
+  # Tablist formatting.
+  tablist:
+    # Player prefix/suffix format to show example the player kills, deaths etc.
+    player-format:
       enable: false
-      format: "&e[%points%]&r %player%&7:&r %message%"
+      prefix: ""
+      suffix: "&e %kills%"
 
-    # In-game commands, to use a player the specified commands in-game.
-    allowed-commands:
-    - "/rm leave"
-    - "/ragemode leave"
-    - "/ragemode stop"
+    # Tablist header/footer formats.
+    list:
+      enable: false
+      header:
+      - "&cRage&bMode&e minigame stats"
+      - "&aYour kills/deaths:&e %kd%"
+      footer:
+      - "&6Points:&e %points%"
 
-    # Execute commands when the player left the game while playing. (Only console commands)
-    # # Use %player%, %player-ip% placeholder.
-    run-commands-for-player-left-while-playing:
-    #- "tell %player% &cWhy you left from the game while playing?"
+  # Displays the score board on the right screen.
+  scoreboard:
+    enable: true
+    title: "&6RageMode"
+    content:
+    - ""
+    - "&7------"
+    - "&aPoints:&e %points%"
+    - ""
+    - "&5Wins:&e %wins%"
+    - "&7------"
+    - ""
+
+  # Chat format
+  chat-format:
+    enable: false
+    format: "&e[%points%]&r %player%&7:&r %message%"
+
+  # In-game commands, to use a player the specified commands in-game.
+  allowed-commands:
+  - "/rm leave"
+  - "/ragemode leave"
+  - "/ragemode stopgame"
+
+  # Execute commands when the player left the game while playing. (Only console commands)
+  # # Use %player%, %player-ip% placeholder.
+  run-commands-for-player-left-while-playing:
+  #- "tell %player% &cWhy you left from the game while playing?"
 
 # Stop the server or restart at the end of the game?
 game-stop:
@@ -303,7 +293,7 @@ bonuses:
 
     # The list of bonuses
     # If you don't know how to modify this list, follow this:
-    # 
+    # https://github.com/montlikadani/RageMode/wiki/Using-bonuses
     list:
     - "effect:regeneration:20:2"
     - "effect:speed:30:1"

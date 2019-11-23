@@ -4,6 +4,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
@@ -40,11 +41,10 @@ public class join {
 			return;
 		}
 
-		hu.montlikadani.ragemode.config.ConfigValues cv = RageMode.getInstance().getConfiguration().getCV();
-		if (cv.isRejoinDelayEnabled() && !p.hasPermission("ragemode.bypass.rejoindelay")) {
-			int hour = cv.getRejoinDelayHour();
-			int minute = cv.getRejoinDelayMinute();
-			int second = cv.getRejoinDelaySecond();
+		if (ConfigValues.isRejoinDelayEnabled() && !p.hasPermission("ragemode.bypass.rejoindelay")) {
+			int hour = ConfigValues.getRejoinDelayHour();
+			int minute = ConfigValues.getRejoinDelayMinute();
+			int second = ConfigValues.getRejoinDelaySecond();
 
 			if (hour != 0 || minute != 0 || second != 0) {
 				if (ReJoinDelay.isValid(p)) {

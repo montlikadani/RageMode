@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
 import hu.montlikadani.ragemode.gameUtils.ScoreTeam;
@@ -50,19 +50,18 @@ public class GameTimer extends TimerTask {
 
 	public void loadModules() {
 		List<PlayerManager> listPlayers = game.getPlayersFromList();
-		Configuration conf = RageMode.getInstance().getConfiguration();
 
-		if (conf.getCV().isScoreboardEnabled()) {
+		if (ConfigValues.isScoreboardEnabled()) {
 			gameBoard = new ScoreBoard(listPlayers);
 			gameBoard.addToList(game.getName());
 		}
 
-		if (conf.getCV().isTabEnabled()) {
+		if (ConfigValues.isTabEnabled()) {
 			gameTab = new TabTitles(listPlayers);
 			gameTab.addToList(game.getName());
 		}
 
-		if (conf.getCV().isTabFormatEnabled()) {
+		if (ConfigValues.isTabFormatEnabled()) {
 			scoreTeam = new ScoreTeam(listPlayers);
 			scoreTeam.addToList(game.getName());
 		}
@@ -90,10 +89,9 @@ public class GameTimer extends TimerTask {
 			}
 
 			String tFormat = Utils.getFormattedTime(time);
-			Configuration conf = RageMode.getInstance().getConfiguration();
 
 			// Broadcast time message should be in this place, before counting
-			List<Integer> values = conf.getCV().getGameEndBcs();
+			List<Integer> values = ConfigValues.getGameEndBcs();
 			if (values != null) {
 				for (int val : values) {
 					if (time == val) {
@@ -105,8 +103,8 @@ public class GameTimer extends TimerTask {
 			}
 
 			if (gameTab != null) {
-				List<String> tabHeader = conf.getCV().getTabHeader();
-				List<String> tabFooter = conf.getCV().getTabFooter();
+				List<String> tabHeader = ConfigValues.getTabHeader();
+				List<String> tabFooter = ConfigValues.getTabFooter();
 
 				String he = "";
 				String fo = "";
@@ -139,20 +137,20 @@ public class GameTimer extends TimerTask {
 			}
 
 			if (scoreTeam != null) {
-				String prefix = conf.getCV().getTabPrefix();
-				String suffix = conf.getCV().getTabSuffix();
+				String prefix = ConfigValues.getTabPrefix();
+				String suffix = ConfigValues.getTabSuffix();
 
 				for (Player pl : scoreTeam.getPlayers()) {
 					prefix = Utils.setPlaceholders(prefix, pl);
 					suffix = Utils.setPlaceholders(suffix, pl);
-				}
 
-				scoreTeam.setTeam(prefix, suffix);
+					scoreTeam.setTeam(pl, prefix, suffix);
+				}
 			}
 
 			if (gameBoard != null) {
-				String boardTitle = conf.getCV().getSbTitle();
-				List<String> rows = conf.getCV().getSbContent();
+				String boardTitle = ConfigValues.getSbTitle();
+				List<String> rows = ConfigValues.getSbContent();
 				for (Player pl : gameBoard.getPlayers()) {
 					if (!boardTitle.isEmpty()) {
 						gameBoard.setTitle(Utils.colors(boardTitle));

@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.event.HandlerList;
@@ -21,6 +22,7 @@ import com.google.common.base.StandardSystemProperty;
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
 import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.commands.RmTabCompleter;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.Language;
 import hu.montlikadani.ragemode.database.MySQLConnect;
@@ -38,6 +40,7 @@ import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.metrics.Metrics;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
+import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.signs.SignConfiguration;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.signs.SignScheduler;
@@ -100,7 +103,7 @@ public class RageMode extends JavaPlugin {
 			conf.loadConfig();
 
 			lang = new Language(this);
-			lang.loadLanguage(conf.getCV().getLang());
+			lang.loadLanguage(ConfigValues.getLang());
 
 			if (getManager().isPluginEnabled("HolographicDisplays")) {
 				hologram = true;
@@ -117,19 +120,19 @@ public class RageMode extends JavaPlugin {
 			if (getManager().isPluginEnabled("PlaceholderAPI"))
 				new Placeholder().register();
 
-			if (conf.getCV().isBungee()) {
+			if (ConfigValues.isBungee()) {
 				bungee = new BungeeUtils(this);
 				getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 			}
 
-			if (conf.getCV().isCheckForUpdates()) {
+			if (ConfigValues.isCheckForUpdates()) {
 				Debug.logConsole(checkVersion("console"));
 			}
 
 			registerListeners();
 			registerCommands();
 
-			switch (conf.getCV().getDatabaseType()) {
+			switch (ConfigValues.getDatabaseType()) {
 			case "mysql":
 				connectMySQL();
 				break;
@@ -144,7 +147,7 @@ public class RageMode extends JavaPlugin {
 
 			RuntimePPManager.loadPPListFromDatabase();
 
-			if (conf.getCV().isSignsEnable()) {
+			if (ConfigValues.isSignsEnable()) {
 				sign = new SignScheduler(this);
 				getManager().registerEvents(sign, this);
 
@@ -160,12 +163,12 @@ public class RageMode extends JavaPlugin {
 						Game g = new Game(game);
 						games.add(g);
 
-						if (conf.getCV().isBungee())
+						if (ConfigValues.isBungee())
 							getManager().registerEvents(new BungeeListener(game), this);
 
 						spawns.add(new GameSpawn(g));
 
-						if (conf.getCV().isSignsEnable())
+						if (ConfigValues.isSignsEnable())
 							SignCreator.updateAllSigns(game);
 
 						// Loads the game locker
@@ -188,7 +191,7 @@ public class RageMode extends JavaPlugin {
 
 					metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
 						int totalPlayers = 0;
-						switch (conf.getCV().getDatabaseType()) {
+						switch (ConfigValues.getDatabaseType()) {
 						case "mysql":
 							totalPlayers = MySQLStats.getAllPlayerStatistics().size();
 							break;
@@ -206,7 +209,7 @@ public class RageMode extends JavaPlugin {
 						return String.valueOf(totalPlayers);
 					}));
 
-					metrics.addCustomChart(new Metrics.SimplePie("statistic_type", conf.getCV()::getDatabaseType));
+					metrics.addCustomChart(new Metrics.SimplePie("statistic_type", ConfigValues::getDatabaseType));
 
 					Debug.logConsole("Metrics enabled.");
 				}
@@ -243,17 +246,17 @@ public class RageMode extends JavaPlugin {
 			return;
 		}
 
-		String host = conf.getCV().getHost();
-		String port = conf.getCV().getPort();
-		String database = conf.getCV().getDatabase();
-		String username = conf.getCV().getUsername();
-		String password = conf.getCV().getPassword();
-		String characterEnc = conf.getCV().getEncoding().isEmpty() ? "UTF-8" : conf.getCV().getEncoding();
-		String prefix = conf.getCV().getTablePrefix().isEmpty() ? "rm_" : conf.getCV().getTablePrefix();
-		boolean serverCertificate = conf.getCV().isCertificate();
-		boolean useUnicode = conf.getCV().isUnicode();
-		boolean autoReconnect = conf.getCV().isAutoReconnect();
-		boolean useSSL = conf.getCV().isUseSSL();
+		String host = ConfigValues.getHost();
+		String port = ConfigValues.getPort();
+		String database = ConfigValues.getDatabase();
+		String username = ConfigValues.getUsername();
+		String password = ConfigValues.getPassword();
+		String characterEnc = ConfigValues.getEncoding().isEmpty() ? "UTF-8" : ConfigValues.getEncoding();
+		String prefix = ConfigValues.getTablePrefix().isEmpty() ? "rm_" : ConfigValues.getTablePrefix();
+		boolean serverCertificate = ConfigValues.isCertificate();
+		boolean useUnicode = ConfigValues.isUnicode();
+		boolean autoReconnect = ConfigValues.isAutoReconnect();
+		boolean useSSL = ConfigValues.isUseSSL();
 
 		mySQLConnect = new MySQLConnect(host, port, database, username, password, serverCertificate, useUnicode,
 				characterEnc, autoReconnect, useSSL, prefix);
@@ -281,7 +284,7 @@ public class RageMode extends JavaPlugin {
 			return;
 		}
 
-		File sqlFile = new File(getFolder(), conf.getCV().getSqlFileName() + ".db");
+		File sqlFile = new File(getFolder(), ConfigValues.getSqlFileName() + ".db");
 		if (!sqlFile.exists()) {
 			try {
 				sqlFile.createNewFile();
@@ -290,7 +293,7 @@ public class RageMode extends JavaPlugin {
 			}
 		}
 
-		sqlConnect = new SQLConnect(sqlFile, conf.getCV().getSqlTablePrefix());
+		sqlConnect = new SQLConnect(sqlFile, ConfigValues.getSqlTablePrefix());
 		if (sqlConnect == null) {
 			return;
 		}
@@ -307,7 +310,7 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void loadDatabases() {
-		switch (conf.getCV().getDatabaseType()) {
+		switch (ConfigValues.getDatabaseType()) {
 		case "mysql":
 			if (mySQLConnect == null || !mySQLConnect.isConnected()) {
 				connectMySQL();
@@ -347,11 +350,6 @@ public class RageMode extends JavaPlugin {
 	public synchronized boolean reload() {
 		HandlerList.unregisterAll(this);
 
-		if (signTask != null) {
-			signTask.cancel();
-			signTask = null;
-		}
-
 		for (String game : GetGames.getGameNames()) {
 			if (game != null && GameUtils.getGame(game) != null && GameUtils.getGame(game).isGameRunning()) {
 				GameUtils.stopGame(GameUtils.getGame(game), false);
@@ -359,11 +357,16 @@ public class RageMode extends JavaPlugin {
 			}
 		}
 
+		if (signTask != null) {
+			signTask.cancel();
+			signTask = null;
+		}
+
 		games.clear();
 		spawns.clear();
 
 		conf.loadConfig();
-		lang.loadLanguage(conf.getCV().getLang());
+		lang.loadLanguage(ConfigValues.getLang());
 
 		if (conf.getArenasCfg().contains("arenas")) {
 			for (String game : GetGames.getGameNames()) {
@@ -371,7 +374,7 @@ public class RageMode extends JavaPlugin {
 					Game g = new Game(game);
 					games.add(g);
 
-					if (conf.getCV().isBungee())
+					if (ConfigValues.isBungee())
 						getManager().registerEvents(new BungeeListener(game), this);
 
 					spawns.add(new GameSpawn(g));
@@ -381,7 +384,7 @@ public class RageMode extends JavaPlugin {
 			}
 		}
 
-		if (conf.getCV().isSignsEnable()) {
+		if (ConfigValues.isSignsEnable()) {
 			getManager().registerEvents(sign, this);
 			SignConfiguration.initSignConfiguration();
 
@@ -417,6 +420,23 @@ public class RageMode extends JavaPlugin {
 			dataFolder.mkdir();
 
 		return dataFolder;
+	}
+
+	/**
+	 * Gets the given player statistics from database.
+	 * @param uuid Player uuid
+	 * @return {@link PlayerPoints}
+	 */
+	public static PlayerPoints getPPFromDatabase(UUID uuid) {
+		switch (ConfigValues.getDatabaseType()) {
+		case "sql":
+		case "sqlite":
+			return SQLStats.getPlayerStatsFromData(uuid);
+		case "mysql":
+			return MySQLStats.getPlayerStatsFromData(uuid);
+		default:
+			return YAMLStats.getPlayerStatsFromData(uuid);
+		}
 	}
 
 	/**

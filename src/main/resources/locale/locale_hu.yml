@@ -78,7 +78,6 @@ commands:
     changed: "&2A minimum játékosok a(z)&e %game%&2 játékhoz megváltoztatva&e %value%&2 értékre."
 
 hologram-list:
-- "&6Rank:&a %rank%"
 - "&9Pontszám:&a %points%"
 - "&eNyereségek:&a %wins%"
 - "&3Játszott játékok:&a %games%"
@@ -98,7 +97,7 @@ setup:
     success-added: "&2A játék &3%game%&2 sikeresen hozzáadva!"
     already-exists: "&cEz a játék &e%game%&c már létezik."
     special-chars: "&cEz a név tartalmaz speciális karaktert a ragemode map-hoz."
-    name-greater: "&cEz a név túl hosszú a ragemode map-hoz&7 (< 20)."
+    name-greater: "&cEz a név túl hosszú a ragemode map-hoz&7 (< 40)."
     bad-name: "&cEz a ragemode map név tartalmaz parancs neveket."
   at-least-two: "&cA értéknek legalább 2-nek kell lennie."
   spawn-set-success: "&2A spawn&e %number%&3 %game%&2 játékhoz sikeresen beállítva!"
@@ -119,9 +118,8 @@ statistic-list:
 - "&cHalálok:&2 %deaths%"
 - "&cKd:&2 %kd%"
 - "&cJátszott játékok:&2 %games%"
-- "&cNyereségek:&2 %games%"
+- "&cNyereségek:&2 %wins%"
 - "&cPontok:&2 %points%"
-- "&cRank:&2 %rank%"
 
 game:
   lobby:

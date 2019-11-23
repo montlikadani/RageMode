@@ -74,7 +74,7 @@ public class addgame {
 			}
 		}
 
-		if (plugin.getConfiguration().getCV().isBungee())
+		if (hu.montlikadani.ragemode.config.ConfigValues.isBungee())
 			plugin.getServer().getPluginManager().registerEvents(new BungeeListener(game), plugin);
 
 		Game g = new Game(game);

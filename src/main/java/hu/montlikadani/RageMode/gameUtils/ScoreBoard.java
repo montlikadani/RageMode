@@ -64,13 +64,14 @@ public class ScoreBoard implements IObjectives {
 	public boolean addToList(String gameName, boolean forceReplace) {
 		if (!allScoreBoards.containsKey(gameName)) {
 			allScoreBoards.put(gameName, this);
-			return true;
 		} else if (forceReplace) {
 			allScoreBoards.remove(gameName);
 			allScoreBoards.put(gameName, this);
-			return true;
-		} else
+		} else {
 			return false;
+		}
+
+		return true;
 	}
 
 	/**

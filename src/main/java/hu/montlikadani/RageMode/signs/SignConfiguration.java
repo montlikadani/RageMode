@@ -15,9 +15,10 @@ public class SignConfiguration {
 	private static File yamlSignsFile;
 	private static FileConfiguration signConfig;
 
-	public static void initSignConfiguration() {
-		if (inited)
-			return;
+	public static FileConfiguration initSignConfiguration() {
+		if (inited) {
+			return null;
+		}
 
 		File file = new File(RageMode.getInstance().getFolder(), "signs.yml");
 		FileConfiguration config = null;
@@ -43,6 +44,8 @@ public class SignConfiguration {
 		signConfig = config;
 		Configuration.saveFile(config, file);
 		inited = true;
+
+		return signConfig;
 	}
 
 	public static File getFile() {

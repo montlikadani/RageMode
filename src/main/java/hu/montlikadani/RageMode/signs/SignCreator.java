@@ -11,7 +11,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.Debug;
-import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
@@ -29,11 +29,15 @@ public class SignCreator {
 			fileConf = SignConfiguration.getConf();
 		}
 
+		if (fileConf == null) {
+			fileConf = SignConfiguration.initSignConfiguration();
+		}
+
 		List<String> list = fileConf.getStringList("signs");
 		if (list == null || list.isEmpty())
 			return false;
 
-		signPlaceholder = new SignPlaceholder(RageMode.getInstance().getConfiguration().getCV().getSignsList());
+		signPlaceholder = new SignPlaceholder(ConfigValues.getSignsList());
 
 		int totalSigns = 0;
 
@@ -67,12 +71,14 @@ public class SignCreator {
 
 	public synchronized static boolean createNewSign(Sign sign, String game) {
 		List<String> signs = fileConf.getStringList("signs");
+
 		String index = locationSignToString(sign.getLocation(), game);
 		SignData data = new SignData(sign.getLocation(), game, signPlaceholder);
-
 		signs.add(index);
+
 		fileConf.set("signs", signs);
 		signData.add(data);
+
 		Configuration.saveFile(fileConf, SignConfiguration.getFile());
 		return true;
 	}
@@ -118,7 +124,6 @@ public class SignCreator {
 
 	/**
 	 * Updates all JoinSigns for the given game which are properly configured.
-	 * 
 	 * @param gameName The name of the game for which the signs should be updated.
 	 * @return True if at least one sign was updated successfully for the given game.
 	 */
@@ -126,21 +131,30 @@ public class SignCreator {
 		Validate.notNull(gameName, "Game name can't be null!");
 		Validate.notEmpty(gameName, "Game name can't be empty!");
 
-		if (RageMode.getInstance().getConfiguration().getCV().isSignsEnable()) {
-			List<String> signs = fileConf.getStringList("signs");
-			if (signs != null) {
-				for (String signString : signs) {
-					String game = getGameFromString(signString);
-					if (game != null && game.contains(gameName)) {
-						Location signLocation = stringToLocationSign(signString);
-						if (signLocation != null && signLocation.getBlock().getState() instanceof Sign) {
-							signData.forEach(data -> data.updateSign());
-							return true;
-						}
-					}
+		if (!ConfigValues.isSignsEnable()) {
+			return false;
+		}
+
+		List<String> signs = fileConf.getStringList("signs");
+		if (signs == null) {
+			return false;
+		}
+
+		for (String signString : signs) {
+			String game = getGameFromString(signString);
+			if (game == null) {
+				continue;
+			}
+
+			if (game.equalsIgnoreCase(gameName)) {
+				Location signLocation = stringToLocationSign(signString);
+				if (signLocation != null && signLocation.getBlock().getState() instanceof Sign) {
+					signData.forEach(data -> data.updateSign());
+					return true;
 				}
 			}
 		}
+
 		return false;
 	}
 
@@ -151,19 +165,26 @@ public class SignCreator {
 	 */
 	public static boolean isSign(Location loc) {
 		List<String> signs = fileConf.getStringList("signs");
-		if (signs != null) {
-			for (String signString : signs) {
-				String game = getGameFromString(signString);
-				for (String gameName : GetGames.getGameNames()) {
-					if (game.equalsIgnoreCase(gameName)) {
-						Location signLocation = stringToLocationSign(signString);
-						if (signLocation != null && signLocation.getBlock().getState() instanceof Sign
-								&& signLocation.equals(loc))
-							return true;
-					}
+		if (signs == null) {
+			return false;
+		}
+
+		for (String signString : signs) {
+			String game = getGameFromString(signString);
+			if (game == null) {
+				continue;
+			}
+
+			for (String gameName : GetGames.getGameNames()) {
+				if (game.equalsIgnoreCase(gameName)) {
+					Location signLocation = stringToLocationSign(signString);
+					if (signLocation != null && signLocation.getBlock().getState() instanceof Sign
+							&& signLocation.equals(loc))
+						return true;
 				}
 			}
 		}
+
 		return false;
 	}
 
@@ -173,15 +194,23 @@ public class SignCreator {
 	 */
 	public static String getGameFromString() {
 		List<String> signs = fileConf.getStringList("signs");
-		if (signs != null) {
-			for (String signString : signs) {
-				String game = getGameFromString(signString);
-				for (String gameName : GetGames.getGameNames()) {
-					if (game.contains(gameName))
-						return game;
+		if (signs == null) {
+			return "";
+		}
+
+		for (String signString : signs) {
+			String game = getGameFromString(signString);
+			if (game == null) {
+				continue;
+			}
+
+			for (String gameName : GetGames.getGameNames()) {
+				if (gameName.equalsIgnoreCase(game)) {
+					return game;
 				}
 			}
 		}
+
 		return "";
 	}
 

@@ -135,7 +135,7 @@ public class Language {
 		l.getL("commands.maxplayers.changed", "&2The maxplayers for&e %game%&2 has been changed to&e %value%&2.");
 		l.getL("commands.minplayers.changed", "&2The minplayers for&e %game%&2 has been changed to&e %value%&2.");
 
-		List<String> holoList = Arrays.asList("&6Rank:&a %rank%", "&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
+		List<String> holoList = Arrays.asList("&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
 				"&5KD:&a %kd%", "&4Kills:&a %kills%", "&7Deaths:&a %deaths%");
 		l.getL("hologram-list", holoList);
 
@@ -160,7 +160,7 @@ public class Language {
 		List<String> statList = Arrays.asList("&e--------&2 %player%&e --------", "", "&6Knife kills/deaths:&a %knife-kills%&7/&6%knife-deaths%",
 				"&6Explosion kills/deaths:&a %explosion-kills%&7/&6%explosion-deaths%", "&6Axe kills/deaths:&a %axe-kills%&7/&6%axe-deaths%",
 				"&6Direct arrow kills/deaths:&a %direct-arrow-kills%&7/%direct-arrow-deaths%", "", "&cKills:&2 %kills%",
-				"&cDeaths:&2 %deaths%", "&cKd:&2 %kd%", "&cGames:&2 %games%", "&cWins:&2 %games%", "&cPoints:&2 %points%", "&cRank:&2 %rank%");
+				"&cDeaths:&2 %deaths%", "&cKd:&2 %kd%", "&cGames:&2 %games%", "&cWins:&2 %wins%", "&cPoints:&2 %points%");
 		l.getL("statistic-list", statList);
 
 		l.getL("game.lobby.start-message", "&9This round will start in&e %time%&9 seconds.");

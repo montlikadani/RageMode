@@ -18,8 +18,9 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameJoinAttemptEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorJoinToGameEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorLeaveGameEvent;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.gameUtils.GetGameLobby;
+import hu.montlikadani.ragemode.gameUtils.GameLobby;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
 import hu.montlikadani.ragemode.gameUtils.ScoreTeam;
@@ -86,7 +87,7 @@ public class Game {
 		if (event.isCancelled())
 			return false;
 
-		int time = GetGameLobby.getLobbyTime(name);
+		int time = GameLobby.getLobbyTime(name);
 		PlayerManager pm = new PlayerManager(player, name);
 
 		if (players.size() < GetGames.getMaxPlayers(name)) {
@@ -155,7 +156,7 @@ public class Game {
 		PlayerManager pm = new PlayerManager(player, game);
 		specPlayer.put(player, pm);
 
-		if (!RageMode.getInstance().getConfiguration().getCV().isBungee()) {
+		if (!ConfigValues.isBungee()) {
 			pm.storePlayerTools(true);
 			Utils.clearPlayerInventory(player);
 		}
@@ -166,14 +167,14 @@ public class Game {
 	}
 
 	public boolean removeSpectatorPlayer(Player player) {
-		if (!RageMode.getInstance().getConfiguration().getCV().isSpectatorEnabled())
+		if (!ConfigValues.isSpectatorEnabled())
 			return false;
 
 		if (!isSpectator(player)) {
 			return false;
 		}
 
-		if (!RageMode.getInstance().getConfiguration().getCV().isBungee()) {
+		if (!ConfigValues.isBungee()) {
 			Utils.clearPlayerInventory(player);
 			getSpectatorPlayerManager(player).addBackTools(true);
 		}
@@ -351,68 +352,6 @@ public class Game {
 			return false;
 
 		return true;
-	}
-
-	/**
-	 * Gets the list of players who's playing in the given game.
-	 * @return The list of players
-	 */
-	public List<Player> getPlayersInGame() {
-		return getPlayersInGame("");
-	}
-
-	/**
-	 * Gets the list of players who's playing in the given game.
-	 * @param game Game name
-	 * @return The list of players
-	 */
-	public List<Player> getPlayersInGame(String game) {
-		if (game == null || game.isEmpty()) {
-			game = name;
-		}
-
-		List<Player> list = new ArrayList<>();
-
-		if (players != null) {
-			for (Entry<Player, PlayerManager> players : players.entrySet()) {
-				if (players.getValue().getGameName().equalsIgnoreCase(game)) {
-					list.add(players.getKey());
-				}
-			}
-		}
-
-		return list;
-	}
-
-	/**
-	 * Gets the list of spectator players who's playing in the given game.
-	 * @return The list of spectator players
-	 */
-	public List<Player> getSpectatorPlayersInGame() {
-		return getSpectatorPlayersInGame("");
-	}
-
-	/**
-	 * Gets the list of spectator players who's playing in the given game.
-	 * @param game Game name
-	 * @return The list of spectator players
-	 */
-	public List<Player> getSpectatorPlayersInGame(String game) {
-		if (game == null || game.isEmpty()) {
-			game = name;
-		}
-
-		List<Player> list = new ArrayList<>();
-
-		if (players != null) {
-			for (Entry<Player, PlayerManager> players : specPlayer.entrySet()) {
-				if (players.getValue().getGameName().equalsIgnoreCase(game)) {
-					list.add(players.getKey());
-				}
-			}
-		}
-
-		return list;
 	}
 
 	/**

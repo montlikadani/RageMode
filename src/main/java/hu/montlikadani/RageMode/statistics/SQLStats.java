@@ -17,7 +17,6 @@ import hu.montlikadani.ragemode.database.RMConnection;
 import hu.montlikadani.ragemode.database.SQLConnect;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
-import hu.montlikadani.ragemode.scores.RageScores;
 
 public class SQLStats {
 
@@ -36,6 +35,20 @@ public class SQLStats {
 
 		points.clear();
 
+		int kills = 0;
+		int axeKills = 0;
+		int directArrowKills = 0;
+		int explosionKills = 0;
+		int knifeKills = 0;
+
+		int deaths = 0;
+		int axeDeaths = 0;
+		int directArrowDeaths = 0;
+		int explosionDeaths = 0;
+		int knifeDeaths = 0;
+
+		double kd = 0d;
+
 		int currentWins = 0;
 		int currentScore = 0;
 		int currentGames = 0;
@@ -47,6 +60,20 @@ public class SQLStats {
 			statement = conn.createStatement();
 			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
+				kills = rs.getInt("kills");
+				axeKills = rs.getInt("axe_kills");
+				directArrowKills = rs.getInt("direct_arrow_kills");
+				explosionKills = rs.getInt("explosion_kills");
+				knifeKills = rs.getInt("knife_kills");
+
+				deaths = rs.getInt("deaths");
+				axeDeaths = rs.getInt("axe_deaths");
+				directArrowDeaths = rs.getInt("direct_arrow_deaths");
+				explosionDeaths = rs.getInt("explosion_deaths");
+				knifeDeaths = rs.getInt("knife_deaths");
+
+				kd = rs.getDouble("kd");
+
 				currentWins = rs.getInt("wins");
 				currentGames = rs.getInt("games");
 				currentScore = rs.getInt("score");
@@ -56,8 +83,20 @@ public class SQLStats {
 				PlayerPoints rPP = RuntimePPManager.getPPForPlayer(uuid);
 				if (rPP == null) {
 					rPP = new PlayerPoints(uuid);
-					RageScores.getPlayerPointsMap().put(uuid, rPP);
 				}
+
+				rPP.setAxeDeaths(axeDeaths);
+				rPP.setAxeKills(axeKills);
+				rPP.setDeaths(deaths);
+				rPP.setDirectArrowDeaths(directArrowDeaths);
+				rPP.setDirectArrowKills(directArrowKills);
+				rPP.setExplosionDeaths(explosionDeaths);
+				rPP.setExplosionKills(explosionKills);
+				rPP.setKills(kills);
+				rPP.setKnifeDeaths(knifeDeaths);
+				rPP.setKnifeKills(knifeKills);
+
+				rPP.setKD(kd);
 
 				rPP.setWins(currentWins);
 				rPP.setPoints(currentScore);
@@ -111,9 +150,6 @@ public class SQLStats {
 		if (!sqlConnect.isValid())
 			return;
 
-		RMConnection conn = sqlConnect.getConnection();
-
-		Statement statement = null;
 		String query = "SELECT * FROM `" + sqlConnect.getPrefix() + "stats_players` WHERE uuid LIKE `"
 				+ playerPoints.getUUID() + "`;";
 
@@ -133,6 +169,8 @@ public class SQLStats {
 		int oldScore = 0;
 		int oldGames = 0;
 
+		RMConnection conn = sqlConnect.getConnection();
+		Statement statement = null;
 		try {
 			statement = conn.createStatement();
 			ResultSet rs = conn.executeQuery(statement, query);
@@ -157,12 +195,13 @@ public class SQLStats {
 		} catch (SQLException e) {
 			Debug.logConsole(Bukkit.getPlayer(playerPoints.getUUID()).getName()
 					+ " has no statistics yet! Creating one special row for him...");
-		}
-		if (statement != null) {
-			try {
-				statement.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 

@@ -33,7 +33,7 @@ rewards:
     players:
       cash: 2.0
       commands:
-      - "console: tell %player% &2We waiting you to the next game!"
+      - "tell %player% &2We waiting you to the next game!"
 
       #messages:
       #- "&eYour reward:&7 %reward%"

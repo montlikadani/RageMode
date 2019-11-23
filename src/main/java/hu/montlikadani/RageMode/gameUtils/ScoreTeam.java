@@ -43,13 +43,14 @@ public class ScoreTeam implements IObjectives {
 	public boolean addToList(String gameName, boolean forceReplace) {
 		if (!allTeams.containsKey(gameName)) {
 			allTeams.put(gameName, this);
-			return true;
 		} else if (forceReplace) {
 			allTeams.remove(gameName);
 			allTeams.put(gameName, this);
-			return true;
-		} else
+		} else {
 			return false;
+		}
+
+		return true;
 	}
 
 	/**

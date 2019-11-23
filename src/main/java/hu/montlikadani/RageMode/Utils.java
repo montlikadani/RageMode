@@ -16,6 +16,7 @@ import org.bukkit.Color;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.API.event.BaseEvent;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
@@ -109,13 +110,13 @@ public class Utils {
 		PlayerPoints pp = null;
 		java.util.UUID uuid = player.getUniqueId();
 		if (fromDatabase) {
-			pp = RuntimePPManager.getPPFromDatabase(uuid);
+			pp = RageMode.getPPFromDatabase(uuid);
 		} else {
-			if (RageScores.getPlayerPoints(uuid) == null) {
-				pp = RuntimePPManager.getPPForPlayer(uuid);
-			} else {
-				pp = RageScores.getPlayerPoints(uuid);
-			}
+			pp = RuntimePPManager.getPPForPlayer(uuid);
+		}
+
+		if (GameUtils.isPlayerPlaying(player)) {
+			pp = RageScores.getPlayerPoints(uuid);
 		}
 
 		if (s.contains("%kills%")) {
@@ -183,14 +184,14 @@ public class Utils {
 		if (s.contains("%points%"))
 			s = s.replace("%points%", pp == null ? "0" : Integer.toString(pp.getPoints()));
 
-		if (s.contains("%games%"))
-			s = s.replace("%games%", pp == null ? "0" : Integer.toString(pp.getGames()));
+		PlayerPoints plp = RageMode.getPPFromDatabase(uuid);
+		if (s.contains("%games%")) {
+			s = s.replace("%games%", plp == null ? "0" : Integer.toString(plp.getGames()));
+		}
 
-		if (s.contains("%wins%"))
-			s = s.replace("%wins%", pp == null ? "0" : Integer.toString(pp.getWins()));
-
-		if (s.contains("%rank%"))
-			s = s.replace("%rank%", pp == null ? "0" : Integer.toString(pp.getRank()));
+		if (s.contains("%wins%")) {
+			s = s.replace("%wins%", plp == null ? "0" : Integer.toString(plp.getWins()));
+		}
 
 		return colors(s);
 	}

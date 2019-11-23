@@ -78,7 +78,6 @@ commands:
     changed: "&2The minplayers for&e %game%&2 has been changed to&e %value%&2."
 
 hologram-list:
-- "&6Rank:&a %rank%"
 - "&9Score:&a %points%"
 - "&eWins:&a %wins%"
 - "&3Games:&a %games%"
@@ -98,7 +97,7 @@ setup:
     success-added: "&2The game &3%game%&2 was added successfully!"
     already-exists: "&cThis &e%game%&c game already exists."
     special-chars: "&cThe name of the ragemode map contains special characters."
-    name-greater: "&cThe name of the ragemode map is too long&7 (< 20)."
+    name-greater: "&cThe name of the ragemode map is too long&7 (< 40)."
     bad-name: "&cThe name of the ragemode map is contains the command name."
   at-least-two: "&cThe value must be at least two."
   spawn-set-success: "&2Spawn&e %number%&2 for the game&3 %game%&2 was set successfully!"
@@ -119,9 +118,8 @@ statistic-list:
 - "&cDeaths:&2 %deaths%"
 - "&cKd:&2 %kd%"
 - "&cGames:&2 %games%"
-- "&cWins:&2 %games%"
+- "&cWins:&2 %wins%"
 - "&cPoints:&2 %points%"
-- "&cRank:&2 %rank%"
 
 game:
   lobby:

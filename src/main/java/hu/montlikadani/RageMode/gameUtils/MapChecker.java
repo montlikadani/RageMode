@@ -48,24 +48,26 @@ public class MapChecker {
 
 	private void checkBasics() {
 		String path = "arenas." + gameName;
-		if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet(path + ".maxplayers") ||
-				!RageMode.getInstance().getConfiguration().getArenasCfg().isSet(path + ".world")) {
+		if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet(path + ".maxplayers")
+				|| !RageMode.getInstance().getConfiguration().getArenasCfg().isSet(path + ".world")) {
 			message = RageMode.getLang().get("game.name-or-maxplayers-not-set");
 			isValid = false;
-		} else {
-			if (RageMode.getInstance().getConfiguration().getArenasCfg().contains(path + ".world") &&
-					!GetGames.getWorld(gameName).isEmpty()) {
-				maxPlayers = GetGames.getMaxPlayers(gameName);
-				if (maxPlayers != -32500000)
-					isValid = true;
-				else {
-					message = RageMode.getLang().get("game.maxplayers-not-set", "%game%", gameName);
-					isValid = false;
-				}
-			} else {
-				message = RageMode.getLang().get("game.worldname-not-set");
-				isValid = false;
-			}
+			return;
+		}
+
+		if (!RageMode.getInstance().getConfiguration().getArenasCfg().contains(path + ".world")
+				|| GetGames.getWorld(gameName).isEmpty()) {
+			message = RageMode.getLang().get("game.worldname-not-set");
+			isValid = false;
+			return;
+		}
+
+		maxPlayers = GetGames.getMaxPlayers(gameName);
+		if (maxPlayers != -32500000)
+			isValid = true;
+		else {
+			message = RageMode.getLang().get("game.maxplayers-not-set", "%game%", gameName);
+			isValid = false;
 		}
 	}
 
@@ -75,67 +77,69 @@ public class MapChecker {
 		if (!aFile.isSet("arenas." + gameName + ".lobby")) {
 			message = RageMode.getLang().get("setup.lobby.not-set", "%game%", gameName);
 			isValid = false;
-		} else {
-			String thisPath = "arenas." + gameName + ".lobby";
-			if (aFile.isSet(thisPath + ".x") && aFile.isSet(thisPath + ".y")
-					&& aFile.isSet(thisPath + ".z")
-					&& aFile.isSet(thisPath + ".yaw") && aFile.isSet(thisPath + ".pitch")) {
-				if (aFile.contains(thisPath + ".world") && !GetGames.getWorld(gameName).isEmpty()) {
-					if (Utils.isDouble(aFile.getString(thisPath + ".x")) && Utils.isDouble(aFile.getString(thisPath + ".y"))
-							&& Utils.isDouble(aFile.getString(thisPath + ".z"))
-							&& Utils.isDouble(aFile.getString(thisPath + ".yaw"))
-							&& Utils.isDouble(aFile.getString(thisPath + ".pitch")))
-						isValid = true;
-					else {
-						message = RageMode.getLang().get("setup.lobby.coords-not-set");
-						isValid = false;
-						return;
-					}
-				} else {
-					message = RageMode.getLang().get("setup.lobby.worldname-not-set");
-					isValid = false;
-				}
-			} else {
-				message = RageMode.getLang().get("setup.lobby.not-set-properly");
+			return;
+		}
+
+		String thisPath = "arenas." + gameName + ".lobby";
+		if (aFile.isSet(thisPath + ".x") && aFile.isSet(thisPath + ".y") && aFile.isSet(thisPath + ".z")
+				&& aFile.isSet(thisPath + ".yaw") && aFile.isSet(thisPath + ".pitch")) {
+			if (!aFile.contains(thisPath + ".world") || GetGames.getWorld(gameName).isEmpty()) {
+				message = RageMode.getLang().get("setup.lobby.worldname-not-set");
 				isValid = false;
+				return;
 			}
+
+			if (Utils.isDouble(aFile.getString(thisPath + ".x")) && Utils.isDouble(aFile.getString(thisPath + ".y"))
+					&& Utils.isDouble(aFile.getString(thisPath + ".z"))
+					&& Utils.isDouble(aFile.getString(thisPath + ".yaw"))
+					&& Utils.isDouble(aFile.getString(thisPath + ".pitch")))
+				isValid = true;
+			else {
+				message = RageMode.getLang().get("setup.lobby.coords-not-set");
+				isValid = false;
+				return;
+			}
+		} else {
+			message = RageMode.getLang().get("setup.lobby.not-set-properly");
+			isValid = false;
 		}
 	}
 
 	private void checkSpawns() {
 		FileConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
 		String path = "arenas." + gameName + ".spawns";
-		if (aFile.isSet(path)) {
-			Set<String> spawnNames = aFile.getConfigurationSection(path).getKeys(false);
-			if (spawnNames.size() >= maxPlayers) {
-				for (String s : spawnNames) {
-					World world = null;
-					try {
-						world = org.bukkit.Bukkit.getWorld(aFile.getString(path + "." + s + ".world"));
-					} catch (Exception e) {
-						isValid = false;
-						world = null;
-					}
-					if (world != null
-							&& Utils.isDouble(aFile.getString(path + "." + s + ".x"))
-							&& Utils.isDouble(aFile.getString(path + "." + s + ".y"))
-							&& Utils.isDouble(aFile.getString(path + "." + s + ".z"))
-							&& Utils.isDouble(aFile.getString(path + "." + s + ".yaw"))
-							&& Utils.isDouble(aFile.getString(path + "." + s + ".pitch")))
-						isValid = true;
-					else {
-						message = RageMode.getLang().get("game.spawns-not-set-properly");
-						isValid = false;
-						break;
-					}
-				}
-			} else {
-				message = RageMode.getLang().get("game.too-few-spawns");
-				isValid = false;
-			}
-		} else {
+		if (!aFile.isSet(path)) {
 			message = RageMode.getLang().get("game.no-spawns-configured", "%game%", gameName);
 			isValid = false;
+			return;
+		}
+
+		Set<String> spawnNames = aFile.getConfigurationSection(path).getKeys(false);
+		if (spawnNames.size() <= maxPlayers) {
+			message = RageMode.getLang().get("game.too-few-spawns");
+			isValid = false;
+			return;
+		}
+
+		for (String s : spawnNames) {
+			World world = null;
+			try {
+				world = org.bukkit.Bukkit.getWorld(aFile.getString(path + "." + s + ".world"));
+			} catch (Exception e) {
+				isValid = false;
+				world = null;
+			}
+			if (world != null && Utils.isDouble(aFile.getString(path + "." + s + ".x"))
+					&& Utils.isDouble(aFile.getString(path + "." + s + ".y"))
+					&& Utils.isDouble(aFile.getString(path + "." + s + ".z"))
+					&& Utils.isDouble(aFile.getString(path + "." + s + ".yaw"))
+					&& Utils.isDouble(aFile.getString(path + "." + s + ".pitch")))
+				isValid = true;
+			else {
+				message = RageMode.getLang().get("game.spawns-not-set-properly");
+				isValid = false;
+				break;
+			}
 		}
 	}
 
@@ -151,15 +155,17 @@ public class MapChecker {
 		Validate.notNull(gameName, "Game name cannot be null!");
 		Validate.notNull(world, "World cannot be null!");
 
+		FileConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
 		String spawnsPath = "arenas." + gameName + ".spawns";
-		Set<String> allSpawns = RageMode.getInstance().getConfiguration().getArenasCfg().getConfigurationSection(spawnsPath).getKeys(false);
+
+		Set<String> allSpawns = aFile.getConfigurationSection(spawnsPath).getKeys(false);
 		for (String spawn : allSpawns) {
-			String worldName = RageMode.getInstance().getConfiguration().getArenasCfg().getString(spawnsPath + "." + spawn + ".world");
-			if (worldName.trim().equals(world.getName().trim()))
+			if (aFile.getString(spawnsPath + "." + spawn + ".world").trim().equals(world.getName().trim())) {
 				return true;
+			}
 		}
 
-		String worldName = GetGameLobby.getLobbyLocation(gameName).getWorld().getName();
+		String worldName = GameLobby.getLobbyLocation(gameName).getWorld().getName();
 		if (worldName.trim().equals(world.getName().trim()))
 			return true;
 

@@ -3,8 +3,8 @@ package hu.montlikadani.ragemode.signs;
 import java.util.ArrayList;
 import java.util.List;
 
-import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
@@ -37,19 +37,15 @@ public class SignPlaceholder {
 			if (line.contains("%running%")) {
 				if (GameUtils.getStatus(game) == GameStatus.WAITING) {
 					if (GameUtils.getGame(game).getPlayers().size() == GetGames.getMaxPlayers(game))
-						line = line.replace("%running%",
-								RageMode.getInstance().getConfiguration().getCV().getSignGameFull());
+						line = line.replace("%running%", ConfigValues.getSignGameFull());
 					else
-						line = line.replace("%running%",
-								RageMode.getInstance().getConfiguration().getCV().getSignGameWaiting());
+						line = line.replace("%running%", ConfigValues.getSignGameWaiting());
 				}
 
 				line = line.replace("%running%",
-						GameUtils.getGame(game).isGameRunning()
-								? RageMode.getInstance().getConfiguration().getCV().getSignGameRunning()
-								: GameUtils.getStatus(game) == GameStatus.NOTREADY
-										? RageMode.getInstance().getConfiguration().getCV().getSignGameLocked()
-										: RageMode.getInstance().getConfiguration().getCV().getSignGameWaiting());
+						GameUtils.getGame(game).isGameRunning() ? ConfigValues.getSignGameRunning()
+								: GameUtils.getStatus(game) == GameStatus.NOTREADY ? ConfigValues.getSignGameLocked()
+										: ConfigValues.getSignGameWaiting());
 			}
 
 			line = Utils.colors(line);

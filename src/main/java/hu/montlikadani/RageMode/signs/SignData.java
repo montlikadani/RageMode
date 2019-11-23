@@ -13,7 +13,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.material.Directional;
 
 import hu.montlikadani.ragemode.MinecraftVersion.Version;
-import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
@@ -72,32 +72,33 @@ public class SignData {
 
 		if (location.getWorld().getChunkAt(location).isLoaded()) {
 			Block b = location.getBlock();
-			if (b.getState() instanceof Sign) {
-				Sign sign = (Sign) b.getState();
-				if (placeholder != null && game != null && GameUtils.isGameWithNameExists(game)) {
-					List<String> lines = placeholder.parsePlaceholder(game);
-					if (placeholder.getLines().size() > 4 || placeholder.getLines().size() < 4) {
-						Bukkit.getLogger().log(Level.INFO, "In the configuration the signs lines is equal to 4.");
-						return;
-					}
+			if (!(b.getState() instanceof Sign)) {
+				return;
+			}
 
-					for (int i = 0; i < 4; i++) {
-						sign.setLine(i, lines.get(i));
-
-						if (RageMode.getInstance().getConfiguration().getCV().isSignBackground()
-								&& MaterialUtil.isWallSign(sign.getType())) {
-							chooseFromType();
-						}
-					}
-				} else {
-					String[] errorLines = { "\u00a74ERROR:", "\u00a76Game", "\u00a76with that name", "\u00a7cnot found!" };
-					for (int i = 0; i < 4; i++) {
-						sign.setLine(i, editLine(errorLines[i], i));
-					}
+			Sign sign = (Sign) b.getState();
+			if (placeholder != null && game != null && GameUtils.isGameWithNameExists(game)) {
+				List<String> lines = placeholder.parsePlaceholder(game);
+				if (placeholder.getLines().size() > 4 || placeholder.getLines().size() < 4) {
+					Bukkit.getLogger().log(Level.INFO, "In the configuration the signs lines is equal to 4.");
+					return;
 				}
 
-				sign.update();
+				for (int i = 0; i < 4; i++) {
+					sign.setLine(i, lines.get(i));
+
+					if (ConfigValues.isSignBackground() && MaterialUtil.isWallSign(sign.getType())) {
+						chooseFromType();
+					}
+				}
+			} else {
+				String[] errorLines = { "\u00a74ERROR:", "\u00a76Game", "\u00a76with that name", "\u00a7cnot found!" };
+				for (int i = 0; i < 4; i++) {
+					sign.setLine(i, editLine(errorLines[i], i));
+				}
 			}
+
+			sign.update();
 		}
 	}
 
@@ -159,7 +160,7 @@ public class SignData {
 	}
 
 	private void chooseFromType() {
-		String type = RageMode.getInstance().getConfiguration().getCV().getSignBackground();
+		String type = ConfigValues.getSignBackground();
 
 		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
 			if (GameUtils.getStatus(game) == GameStatus.WAITING) {

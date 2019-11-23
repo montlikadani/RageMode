@@ -29,32 +29,18 @@ public class FileConfig {
 		return c.getStringList(path);
 	}
 
-	public List<String> get(String path, List<String> list) {
-		return get(path, list, false);
-	}
-
-	public List<Integer> get(String path, ArrayList<Integer> list) {
-		return get(path, list, false);
-	}
-
 	public String get(String path, String def) {
 		return c.getString(path, def);
 	}
 
-	public List<String> get(String path, List<String> list, boolean set) {
-		if (set) {
-			c.addDefault(path, list);
-			c.set(path, c.get(path));
-		}
-		return c.getStringList(path);
+	@SuppressWarnings("unchecked")
+	public List<String> get(String path, List<String> list) {
+		return (List<String>) c.getList(path, list);
 	}
 
-	public List<Integer> get(String path, ArrayList<Integer> list, boolean set) {
-		if (set) {
-			c.addDefault(path, list);
-			c.set(path, c.get(path));
-		}
-		return c.getIntegerList(path);
+	@SuppressWarnings("unchecked")
+	public List<Integer> get(String path, ArrayList<Integer> list) {
+		return (List<Integer>) c.getList(path, list);
 	}
 
 	public int get(String path, int def) {

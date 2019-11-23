@@ -21,7 +21,7 @@ public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 	private int longestStreak = 0;
 	private int wins = 0;
 	private int games = 0;
-	private int rank = 0;
+	@Deprecated private int rank = 0;
 
 	private double kd = 0d;
 
@@ -191,10 +191,12 @@ public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 		return kd;
 	}
 
+	@Deprecated
 	public void setRank(int rank) {
 		this.rank = rank;
 	}
 
+	@Deprecated
 	public int getRank() {
 		return rank;
 	}
