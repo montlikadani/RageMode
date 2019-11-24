@@ -111,7 +111,7 @@ public class YAMLStats {
 		if (!inited) return;
 
 		UUID uuid = points.getUUID();
-		String path = "data." + uuid + ".";
+		String path = "data." + uuid.toString() + ".";
 
 		if (statsConf.isConfigurationSection("data")
 				&& statsConf.getConfigurationSection("data").getKeys(false).contains(uuid.toString())) {
@@ -190,6 +190,26 @@ public class YAMLStats {
 	}
 
 	/**
+	 * Add points to the given player database.
+	 * @param points the amount of points
+	 * @param uuid player uuid
+	 */
+	public static void addPoints(int points, UUID uuid) {
+		if (!inited) {
+			return;
+		}
+
+		String path = "data." + uuid.toString() + ".";
+
+		if (statsConf.isConfigurationSection("data")
+				&& statsConf.getConfigurationSection("data").getKeys(false).contains(uuid.toString())) {
+			statsConf.set(path + "score", points);
+		}
+
+		Configuration.saveFile(statsConf, yamlStatsFile);
+	}
+
+	/**
 	 * Gets the given uuid of player statistic
 	 * @param uuid Player uuid
 	 * @return returns a PlayerPoints object containing the GLOBAL statistics of a player
@@ -257,7 +277,7 @@ public class YAMLStats {
 	 * @return {@link PlayerPoints}
 	 */
 	public static PlayerPoints getPlayerStatsFromData(UUID uuid) {
-		if (!statsConf.contains("data." + uuid)) {
+		if (!statsConf.contains("data." + uuid.toString())) {
 			return null;
 		}
 

@@ -31,8 +31,12 @@ public class RMConnection {
 	}
 
 	public boolean isValid() {
+		return isValid(2);
+	}
+
+	public boolean isValid(int timeout) {
 		try {
-			return conn != null && conn.isValid(2);
+			return conn != null && conn.isValid(timeout);
 		} catch (SQLException e) {
 			Debug.logConsole(e.getMessage());
 		}

@@ -62,7 +62,7 @@ public class RmCommand implements CommandExecutor {
 				} else {
 					msg += "&7-&6 /rm stats <player>&a - Showing statistic of a target player.\n";
 
-					msg += "&7-&6 /rm resetstats <player>&a - Reset the player's stat.\n";
+					msg += "&7-&6 /rm resetplayerstats <player>&a - Reset the player's stat.\n";
 
 					msg += "&7-&6 /rm listplayers <game>&a - Lists all currently playing players.\n";
 				}
@@ -161,7 +161,7 @@ public class RmCommand implements CommandExecutor {
 						msg += "&7-&6 /rm latestart <timeInSeconds>&a - Increases the current lobby waiting time.\n";
 
 					if (hasPerm(sender, "ragemode.admin.resetstats"))
-						msg += "&7-&6 /rm resetstats [player]&a - Reset the player's stat.\n";
+						msg += "&7-&6 /rm resetplayerstats [player]&a - Reset the player's stat.\n";
 
 					if (hasPerm(sender, "ragemode.admin.stopgame"))
 						msg += "&7-&6 /rm stop <gameName>&a - Stops the specified game.\n";

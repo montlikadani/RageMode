@@ -129,102 +129,110 @@ public class RewardManager {
 	private void getItems(String path, Player p) {
 		for (String num : conf.getConfigurationSection("rewards.end-game." + path + ".items").getKeys(false)) {
 			String type = conf.getString("rewards.end-game." + path + ".items." + num + ".type");
-			if (type != null) {
-				try {
-					Material mat = Material.valueOf(type.toUpperCase());
-					if (mat == null) {
-						Debug.logConsole(Level.WARNING, "Unknown item name: " + type);
-						Debug.logConsole("Find and double check item names using this page:");
-						Debug.logConsole("https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html");
-						continue;
-					}
+			if (type == null) {
+				continue;
+			}
 
-					if (mat.equals(Material.AIR)) {
-						Debug.logConsole("AIR is not supported.");
-						continue;
-					}
+			try {
+				Material mat = Material.valueOf(type.toUpperCase());
+				if (mat == null) {
+					Debug.logConsole(Level.WARNING, "Unknown item name: " + type);
+					Debug.logConsole("Find and double check item names using this page:");
+					Debug.logConsole("https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html");
+					continue;
+				}
 
-					ItemStack itemStack = new ItemStack(mat);
-					itemStack.setAmount(conf.getInt("rewards.end-game." + path + ".items." + num + ".amount", 1));
+				if (mat.equals(Material.AIR)) {
+					Debug.logConsole("AIR is not supported.");
+					continue;
+				}
 
-					if (conf.contains("rewards.end-game." + path + ".items." + num + ".durability"))
-						NMS.setDurability(itemStack, (short) conf.getDouble("rewards.end-game." + path + ".items." + num + ".durability"));
+				ItemStack itemStack = new ItemStack(mat);
+				itemStack.setAmount(conf.getInt("rewards.end-game." + path + ".items." + num + ".amount", 1));
 
-					if (conf.getBoolean("rewards.end-game." + path + ".items." + num + ".meta")) {
-						ItemMeta itemMeta = itemStack.getItemMeta();
-						String name = conf.getString("rewards.end-game." + path + ".items." + num + ".name", "");
-						if (!name.isEmpty())
-							itemMeta.setDisplayName(name.replaceAll("&", "\u00a7"));
+				if (conf.contains("rewards.end-game." + path + ".items." + num + ".durability"))
+					NMS.setDurability(itemStack,
+							(short) conf.getDouble("rewards.end-game." + path + ".items." + num + ".durability"));
 
-						List<String> loreList = conf.getStringList("rewards.end-game." + path + ".items." + num + ".lore");
-						if (loreList != null && !loreList.isEmpty())
-							itemMeta.setLore(Utils.colorList(loreList));
+				if (conf.getBoolean("rewards.end-game." + path + ".items." + num + ".meta")) {
+					ItemMeta itemMeta = itemStack.getItemMeta();
+					String name = conf.getString("rewards.end-game." + path + ".items." + num + ".name", "");
+					if (!name.isEmpty())
+						itemMeta.setDisplayName(name.replaceAll("&", "\u00a7"));
 
-						if (type.startsWith("LEATHER_")) {
-							String color = conf.getString("rewards.end-game." + path + ".items." + num + ".color", "");
-							if (!color.isEmpty() && itemMeta instanceof LeatherArmorMeta) {
-								((LeatherArmorMeta) itemMeta).setColor(Utils.getColorFromString(color));
-							}
+					List<String> loreList = conf.getStringList("rewards.end-game." + path + ".items." + num + ".lore");
+					if (loreList != null && !loreList.isEmpty())
+						itemMeta.setLore(Utils.colorList(loreList));
+
+					if (type.startsWith("LEATHER_")) {
+						String color = conf.getString("rewards.end-game." + path + ".items." + num + ".color", "");
+						if (!color.isEmpty() && itemMeta instanceof LeatherArmorMeta) {
+							((LeatherArmorMeta) itemMeta).setColor(Utils.getColorFromString(color));
 						}
+					}
 
-						String bannerColor = conf.getString("rewards.end-game." + path + ".items." + num + ".banner.color", "");
-						String bannerType = conf.getString("rewards.end-game." + path + ".items." + num + ".banner.type", "");
-						if (!bannerColor.isEmpty() && !bannerType.isEmpty()) {
-							if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
-								if (mat.equals(Material.valueOf("BANNER"))) {
-									if (itemMeta instanceof BannerMeta) {
-										List<Pattern> patterns = new ArrayList<>();
-										patterns.add(new Pattern(DyeColor.valueOf(bannerColor), PatternType.valueOf(bannerType)));
-
-										((BannerMeta) itemMeta).setBaseColor(DyeColor.valueOf(bannerColor));
-										((BannerMeta) itemMeta).setPatterns(patterns);
-									}
-								}
-							} else if (type.endsWith("_BANNER")) {
+					String bannerColor = conf.getString("rewards.end-game." + path + ".items." + num + ".banner.color",
+							"");
+					String bannerType = conf.getString("rewards.end-game." + path + ".items." + num + ".banner.type",
+							"");
+					if (!bannerColor.isEmpty() && !bannerType.isEmpty()) {
+						if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
+							if (mat.equals(Material.valueOf("BANNER"))) {
 								if (itemMeta instanceof BannerMeta) {
 									List<Pattern> patterns = new ArrayList<>();
-									patterns.add(new Pattern(DyeColor.valueOf(bannerColor), PatternType.valueOf(bannerType)));
+									patterns.add(new Pattern(DyeColor.valueOf(bannerColor),
+											PatternType.valueOf(bannerType)));
 
-									((Banner) itemStack).setBaseColor(DyeColor.valueOf(bannerColor));
+									((BannerMeta) itemMeta).setBaseColor(DyeColor.valueOf(bannerColor));
 									((BannerMeta) itemMeta).setPatterns(patterns);
 								}
 							}
-						}
+						} else if (type.endsWith("_BANNER")) {
+							if (itemMeta instanceof BannerMeta) {
+								List<Pattern> patterns = new ArrayList<>();
+								patterns.add(
+										new Pattern(DyeColor.valueOf(bannerColor), PatternType.valueOf(bannerType)));
 
-						itemStack.setItemMeta(itemMeta);
-
-						List<String> enchantList = conf.getStringList("rewards.end-game." + path + ".items." + num + ".enchants");
-						if (enchantList != null) {
-							for (String enchant : enchantList) {
-								String[] split = enchant.split(":");
-								try {
-									if (itemStack.getItemMeta() instanceof EnchantmentStorageMeta) {
-										EnchantmentStorageMeta enchMeta = (EnchantmentStorageMeta) itemStack
-												.getItemMeta();
-										enchMeta.addStoredEnchant(NMS.getEnchant(split[0]),
-												(split.length > 2 ? Integer.parseInt(split[1]) : 1), true);
-										itemStack.setItemMeta(enchMeta);
-									} else
-										itemStack.addUnsafeEnchantment(NMS.getEnchant(split[0]),
-												Integer.parseInt(split[1]));
-								} catch (IllegalArgumentException b) {
-									Debug.logConsole(Level.WARNING, "Bad enchantment name: " + split[0]);
-									continue;
-								}
+								((Banner) itemStack).setBaseColor(DyeColor.valueOf(bannerColor));
+								((BannerMeta) itemMeta).setPatterns(patterns);
 							}
 						}
 					}
-					try {
-						if (conf.contains("rewards.end-game." + path + ".items." + num + ".slot"))
-							p.getInventory().setItem(conf.getInt("rewards.end-game." + path + ".items." + num + ".slot"), itemStack);
-						else
-							p.getInventory().addItem(itemStack);
-					} catch (IllegalArgumentException i) {
-						Debug.logConsole(Level.WARNING, "Slot is not between 0 and 8 inclusive.");
+
+					itemStack.setItemMeta(itemMeta);
+
+					List<String> enchantList = conf
+							.getStringList("rewards.end-game." + path + ".items." + num + ".enchants");
+					if (enchantList != null) {
+						for (String enchant : enchantList) {
+							String[] split = enchant.split(":");
+							try {
+								if (itemStack.getItemMeta() instanceof EnchantmentStorageMeta) {
+									EnchantmentStorageMeta enchMeta = (EnchantmentStorageMeta) itemStack.getItemMeta();
+									enchMeta.addStoredEnchant(NMS.getEnchant(split[0]),
+											(split.length > 2 ? Integer.parseInt(split[1]) : 1), true);
+									itemStack.setItemMeta(enchMeta);
+								} else
+									itemStack.addUnsafeEnchantment(NMS.getEnchant(split[0]),
+											Integer.parseInt(split[1]));
+							} catch (IllegalArgumentException b) {
+								Debug.logConsole(Level.WARNING, "Bad enchantment name: " + split[0]);
+								continue;
+							}
+						}
 					}
-				} catch (Exception e) {
-					Debug.logConsole(Level.WARNING, "Problem occured with your item: " + e.getMessage());
 				}
+				try {
+					if (conf.contains("rewards.end-game." + path + ".items." + num + ".slot"))
+						p.getInventory().setItem(conf.getInt("rewards.end-game." + path + ".items." + num + ".slot"),
+								itemStack);
+					else
+						p.getInventory().addItem(itemStack);
+				} catch (IllegalArgumentException i) {
+					Debug.logConsole(Level.WARNING, "Slot is not between 0 and 8 inclusive.");
+				}
+			} catch (Exception e) {
+				Debug.logConsole(Level.WARNING, "Problem occured with your item: " + e.getMessage());
 			}
 		}
 	}

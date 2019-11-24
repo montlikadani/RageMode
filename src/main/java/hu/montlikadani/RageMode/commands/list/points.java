@@ -1,7 +1,5 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import java.io.IOException;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -94,23 +92,18 @@ public class points {
 			break;
 		}
 
+		java.util.UUID uuid = rpp.getUUID();
+
 		switch (hu.montlikadani.ragemode.config.ConfigValues.getDatabase()) {
 		case "sql":
 		case "sqlite":
-			SQLStats.addPlayerStatistics(rpp, RageMode.getSQL());
+			SQLStats.addPoints(amount, uuid);
 			break;
 		case "mysql":
-			MySQLStats.addPlayerStatistics(rpp, RageMode.getMySQL());
+			MySQLStats.addPoints(amount, uuid);
 			break;
 		default:
-			if (YAMLStats.getFile() != null && YAMLStats.getFile().exists()) {
-				YAMLStats.getConf().set("data." + target.getUniqueId() + ".score", rpp.getPoints());
-				try {
-					YAMLStats.getConf().save(YAMLStats.getFile());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+			YAMLStats.addPoints(amount, uuid);
 			break;
 		}
 

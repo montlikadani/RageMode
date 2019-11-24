@@ -43,8 +43,8 @@ commands:
     game-is-running: "&cThis game is currently running, please stop it firstly."
     successfully-toggled: "&2This game&7 %game%&2 successfully toggled %status%&2."
     status:
-      on: "&aON"
-      off: "&cOFF"
+      ready: "&aON"
+      not-ready: "&cOFF"
   join:
     game-locked: "&cThis game is locked, so you can not join."
     empty-inventory:
@@ -152,7 +152,6 @@ game:
   maxplayers-not-set: "&cThe maxplayers value for&e %game%&c is not set properly."
   worldname-not-set: "&4The world key can't be empty! Ask an Admin to check the config.yml."
   does-not-exist: "&cThe game you wish to join wasn't found."
-  no-enough-points: "&cThere are not enough points to pay for your suicide."
   command-disabled-in-end-game: "&cAll commands are disabled at the end of the game. Endure!!"
   this-command-is-disabled-in-game: "&cThis command is currently disabled."
   full: "&cThis Game is already full."

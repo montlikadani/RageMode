@@ -63,12 +63,13 @@ public class MapChecker {
 		}
 
 		maxPlayers = GetGames.getMaxPlayers(gameName);
-		if (maxPlayers != -32500000)
-			isValid = true;
-		else {
+		if (maxPlayers < 0) {
 			message = RageMode.getLang().get("game.maxplayers-not-set", "%game%", gameName);
 			isValid = false;
+			return;
 		}
+
+		isValid = true;
 	}
 
 	private void checkLobby() {

@@ -139,7 +139,7 @@ titles:
 spectator:
   enable: true
 
-  # Which spectator commands will be allowed  to use in-game?
+  # Which spectator commands will be allowed to use in-game?
   allowed-spectator-commands:
   - "/rm leave"
   - "/ragemode leave"
@@ -289,7 +289,7 @@ bonuses:
   # When a player kills someone
   kill-bonuses:
     # The chance to give bonus to the killer
-    chance: 75
+    chance: 10
 
     # The list of bonuses
     # If you don't know how to modify this list, follow this:

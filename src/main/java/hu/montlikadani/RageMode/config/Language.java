@@ -110,8 +110,8 @@ public class Language {
 		l.getL("commands.signupdate.usage", "&cUsage:&7 '/rm signupdate <gameName>'&c.");
 		l.getL("commands.togglegame.game-is-running", "&cThis game is currently running, please stop it firstly.");
 		l.getL("commands.togglegame.successfully-toggled", "&2This game&7 %game%&2 successfully toggled %status%&2.");
-		l.getL("commands.togglegame.status.on", "&aON");
-		l.getL("commands.togglegame.status.off", "&cOFF");
+		l.getL("commands.togglegame.status.ready", "&aON");
+		l.getL("commands.togglegame.status.not-ready", "&cOFF");
 		l.getL("commands.join.game-locked", "&cThis game is locked, so you can not join.");
 		l.getL("commands.join.empty-inventory.armor", "&cYou must empty your armor inventory to join the game.");
 		l.getL("commands.join.empty-inventory.contents", "&cYou must empty your inventory contents to join the game.");
@@ -190,7 +190,7 @@ public class Language {
 		l.getL("game.maxplayers-not-set", "&cThe maxplayers value for&e %game%&c is not set properly.");
 		l.getL("game.worldname-not-set", "&4The world key can't be empty! Ask an Admin to check the config.yml.");
 		l.getL("game.does-not-exist", "&cThe game you wish to join wasn't found.");
-		l.getL("game.no-enough-points", "&cThere are not enough points to pay for your suicide.");
+		//l.getL("game.no-enough-points", "&cThere are not enough points to pay for your suicide.");
 		l.getL("game.command-disabled-in-end-game", "&cAll commands are disabled at the end of the game. Endure!!");
 		l.getL("game.this-command-is-disabled-in-game", "&cThis command is currently disabled.");
 		l.getL("game.full", "&cThis Game is already full.");

@@ -40,7 +40,7 @@ public class Debug {
 	 */
 	public static void logConsole(Level lvl, String msg, Object... p) {
 		if (msg != null && !msg.isEmpty() && ConfigValues.isLogConsole())
-			Bukkit.getLogger().log(lvl, "[RageMode] " + msg, p);
+			Bukkit.getLogger().log(lvl == null ? Level.INFO : lvl, "[RageMode] " + msg, p);
 	}
 
 	/**

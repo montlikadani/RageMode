@@ -88,7 +88,7 @@ public class SignData {
 					sign.setLine(i, lines.get(i));
 
 					if (ConfigValues.isSignBackground() && MaterialUtil.isWallSign(sign.getType())) {
-						chooseFromType();
+						changeBlockBackground();
 					}
 				}
 			} else {
@@ -159,7 +159,7 @@ public class SignData {
 		return text;
 	}
 
-	private void chooseFromType() {
+	private void changeBlockBackground() {
 		String type = ConfigValues.getSignBackground();
 
 		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {

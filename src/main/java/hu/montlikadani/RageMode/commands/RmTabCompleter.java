@@ -22,7 +22,7 @@ public class RmTabCompleter implements TabCompleter {
 		if (cmd.getName().equalsIgnoreCase("ragemode") || cmd.getName().equalsIgnoreCase("rm")) {
 			List<String> completionList = new ArrayList<>();
 			List<String> cmds = new ArrayList<>();
-			String partOfCommand = "";
+			String partOfCommand = null;
 
 			if (args.length < 2) {
 				getDefaultCmds(sender).forEach(cmds::add);
@@ -60,6 +60,11 @@ public class RmTabCompleter implements TabCompleter {
 					cmds.add("all");
 					partOfCommand = args[2];
 				}
+			}
+
+			// Completes the player names
+			if (cmds.isEmpty() || partOfCommand == null) {
+				return null;
 			}
 
 			StringUtil.copyPartialMatches(partOfCommand, cmds, completionList);

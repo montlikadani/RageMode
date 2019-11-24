@@ -450,6 +450,7 @@ public class GameUtils {
 				p.teleport(GameLobby.getLobbyLocation(name));
 
 				runCommands(p, name, "join");
+				sendBossBarMessages(p, name, "join");
 				sendActionBarMessages(p, name, "join");
 				setStatus(name, GameStatus.WAITING, false);
 
@@ -933,6 +934,7 @@ public class GameUtils {
 			}
 
 			runCommands(p, gName, "stop");
+			sendBossBarMessages(p, gName, "stop");
 			sendActionBarMessages(p, gName, "stop");
 			RageScores.removePointsForPlayer(p.getUniqueId());
 			if (game.removePlayer(p)) {

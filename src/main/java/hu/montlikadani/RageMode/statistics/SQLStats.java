@@ -22,7 +22,8 @@ public class SQLStats {
 
 	private static List<PlayerPoints> points = new ArrayList<>();
 
-	public static void loadPlayerStatistics(SQLConnect sqlConnect) {
+	public static void loadPlayerStatistics() {
+		SQLConnect sqlConnect = RageMode.getSQL();
 		if (!sqlConnect.isConnected()) {
 			return;
 		}
@@ -132,21 +133,13 @@ public class SQLStats {
 	}
 
 	/**
-	 * See {@link #addPlayerStatistics(PlayerPoints, SQLConnect)}
-	 * @param playerPoints {@link PlayerPoints}
-	 */
-	public static void addPlayerStatistics(PlayerPoints playerPoints) {
-		addPlayerStatistics(playerPoints, RageMode.getSQL());
-	}
-
-	/**
 	 * Adds the statistics from the given PlayerPoints instance to the database
-	 * connection from the given SQLConnect instance.
+	 * connection from the SQLConnect instance.
 	 * 
 	 * @param playerPoints The PlayerPoints instance from which the statistics should be gotten.
-	 * @param sqlConnect The SQLConnect instance which holds the Connection for the database.
 	 */
-	public static void addPlayerStatistics(PlayerPoints playerPoints, SQLConnect sqlConnect) {
+	public static void addPlayerStatistics(PlayerPoints playerPoints) {
+		SQLConnect sqlConnect = RageMode.getSQL();
 		if (!sqlConnect.isValid())
 			return;
 
@@ -263,6 +256,63 @@ public class SQLStats {
 	}
 
 	/**
+	 * Add points to the given player database.
+	 * @param points the amount of points
+	 * @param uuid player uuid
+	 */
+	public static void addPoints(int points, UUID uuid) {
+		SQLConnect sql = RageMode.getSQL();
+		if (!sql.isValid())
+			return;
+
+		int oldPoints = 0;
+		String query = "SELECT * FROM `" + sql.getPrefix() + "stats_players` WHERE uuid LIKE `" + uuid + "`;";
+		RMConnection conn = sql.getConnection();
+		Statement statement = null;
+		try {
+			statement = conn.createStatement();
+			ResultSet rs = conn.executeQuery(statement, query);
+			while (rs.next()) {
+				oldPoints = rs.getInt("score");
+			}
+			rs.close();
+		} catch (SQLException e) {
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		PreparedStatement prestt = null;
+		try {
+			prestt = conn.prepareStatement(
+					"REPLACE INTO `" + sql.getPrefix() + "stats_players` (name, uuid, score) VALUES (?, ?, ?);");
+			if (prestt == null) {
+				return;
+			}
+
+			prestt.setString(1, Bukkit.getPlayer(uuid).getName());
+			prestt.setString(2, uuid.toString());
+			prestt.setInt(14, oldPoints + points);
+			prestt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (prestt != null) {
+				try {
+					prestt.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	/**
 	 * Returns an PlayerPoints instance with the statistics from the database
 	 * connection for the given Player.
 	 * 
@@ -364,7 +414,7 @@ public class SQLStats {
 		RMConnection conn = connect.getConnection();
 
 		Statement statement = null;
-		String query = "SELECT * FROM `" + connect.getPrefix() + "stats_players`;";
+		String query = "SELECT * FROM `" + connect.getPrefix() + "stats_players` WHERE uuid LIKE `" + uuid + "`;";
 
 		int currentKills = 0;
 		int currentAxeKills = 0;
@@ -387,41 +437,39 @@ public class SQLStats {
 			statement = conn.createStatement();
 			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
-				if (rs.getString("uuid").equals(uuid.toString())) {
-					currentKills = rs.getInt("kills");
-					currentAxeKills = rs.getInt("axe_kills");
-					currentDirectArrowKills = rs.getInt("direct_arrow_kills");
-					currentExplosionKills = rs.getInt("explosion_kills");
-					currentKnifeKills = rs.getInt("knife_kills");
+				currentKills = rs.getInt("kills");
+				currentAxeKills = rs.getInt("axe_kills");
+				currentDirectArrowKills = rs.getInt("direct_arrow_kills");
+				currentExplosionKills = rs.getInt("explosion_kills");
+				currentKnifeKills = rs.getInt("knife_kills");
 
-					currentDeaths = rs.getInt("deaths");
-					currentAxeDeaths = rs.getInt("axe_deaths");
-					currentDirectArrowDeaths = rs.getInt("direct_arrow_deaths");
-					currentExplosionDeaths = rs.getInt("explosion_deaths");
-					currentKnifeDeaths = rs.getInt("knife_deaths");
+				currentDeaths = rs.getInt("deaths");
+				currentAxeDeaths = rs.getInt("axe_deaths");
+				currentDirectArrowDeaths = rs.getInt("direct_arrow_deaths");
+				currentExplosionDeaths = rs.getInt("explosion_deaths");
+				currentKnifeDeaths = rs.getInt("knife_deaths");
 
-					currentWins = rs.getInt("wins");
-					currentScore = rs.getInt("score");
-					currentGames = rs.getInt("games");
-					currentKD = rs.getDouble("kd");
+				currentWins = rs.getInt("wins");
+				currentScore = rs.getInt("score");
+				currentGames = rs.getInt("games");
+				currentKD = rs.getDouble("kd");
 
-					pp.setKills(currentKills);
-					pp.setAxeKills(currentAxeKills);
-					pp.setDirectArrowKills(currentDirectArrowKills);
-					pp.setExplosionKills(currentExplosionKills);
-					pp.setKnifeKills(currentKnifeKills);
+				pp.setKills(currentKills);
+				pp.setAxeKills(currentAxeKills);
+				pp.setDirectArrowKills(currentDirectArrowKills);
+				pp.setExplosionKills(currentExplosionKills);
+				pp.setKnifeKills(currentKnifeKills);
 
-					pp.setDeaths(currentDeaths);
-					pp.setAxeDeaths(currentAxeDeaths);
-					pp.setDirectArrowDeaths(currentDirectArrowDeaths);
-					pp.setExplosionDeaths(currentExplosionDeaths);
-					pp.setKnifeDeaths(currentKnifeDeaths);
+				pp.setDeaths(currentDeaths);
+				pp.setAxeDeaths(currentAxeDeaths);
+				pp.setDirectArrowDeaths(currentDirectArrowDeaths);
+				pp.setExplosionDeaths(currentExplosionDeaths);
+				pp.setKnifeDeaths(currentKnifeDeaths);
 
-					pp.setWins(currentWins);
-					pp.setPoints(currentScore);
-					pp.setGames(currentGames);
-					pp.setKD(currentKD);
-				}
+				pp.setWins(currentWins);
+				pp.setPoints(currentScore);
+				pp.setGames(currentGames);
+				pp.setKD(currentKD);
 			}
 
 			rs.close();

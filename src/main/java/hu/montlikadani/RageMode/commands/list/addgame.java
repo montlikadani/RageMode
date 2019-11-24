@@ -85,7 +85,7 @@ public class addgame {
 		Utils.callEvent(new RMGameCreateEvent(g, x, m));
 
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".maxplayers", x);
-		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".minplayers", x);
+		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".minplayers", m);
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".world", p.getWorld().getName());
 		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 

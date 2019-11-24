@@ -43,8 +43,8 @@ commands:
     game-is-running: "&cEz a játék jelenleg fut, kérlek állítsd le előbb."
     successfully-toggled: "&2Ez a játék&7 %game%&2 sikeresen átváltva %status%&2-ra/re."
     status:
-      on: "&aBE"
-      off: "&cKI"
+      ready: "&aBE"
+      not-ready: "&cKI"
   join:
     game-locked: "&cEz a játék lezárt, így nem csatlakozhatsz."
     empty-inventory:
@@ -152,7 +152,6 @@ game:
   maxplayers-not-set: "&cA max. játékosok értéke&e %game%&c nincs beállítva megfelelően."
   worldname-not-set: "&4A világ kulcs nem lehet üres! Kérdezz meg egy Admin-t, hogy nézze meg a config-ot."
   does-not-exist: "&cA csatlakozni kívánt játék nem található."
-  no-enough-points: "&cNincs elég pontod, hogy kifizesd az öngyilkosságod."
   command-disabled-in-end-game: "&cMinden parancs letiltva a játék végénél. Tarts ki!!"
   this-command-is-disabled-in-game: "&cEz a parancs jelenleg letiltva."
   full: "&cEz a játék már teli van."

@@ -131,14 +131,6 @@ public class TabTitles implements IObjectives {
 	}
 
 	/**
-	 * Returns the HashMap with all the TabTitle elements.
-	 * @return {@link #allTabLists}
-	 */
-	public HashMap<String, TabTitles> getTabLists() {
-		return allTabLists;
-	}
-
-	/**
 	 * Returns the players who added to the list.
 	 * @return List player
 	 */

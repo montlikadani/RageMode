@@ -29,7 +29,8 @@ public class DBConnector {
 			try {
 				conn = new RMConnection(DriverManager.getConnection(url, username, password));
 			} catch (SQLException e) {
-				Debug.logConsole(java.util.logging.Level.WARNING, "Could not connect to the database: " + e.getMessage());
+				Debug.logConsole(java.util.logging.Level.WARNING,
+						"Could not connect to the database: " + e.getMessage());
 			}
 		}
 
@@ -37,7 +38,11 @@ public class DBConnector {
 	}
 
 	public boolean isValid() {
-		return conn != null && getConnection().isValid();
+		return isValid(2);
+	}
+
+	public boolean isValid(int timeout) {
+		return conn != null && getConnection().isValid(timeout);
 	}
 
 	public boolean isConnected() {

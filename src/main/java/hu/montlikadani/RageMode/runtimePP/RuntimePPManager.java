@@ -72,16 +72,12 @@ public class RuntimePPManager {
 	public synchronized static void updatePlayerEntry(PlayerPoints pp) {
 		if (RuntimePPList == null || RuntimePPList.isEmpty()) {
 			Debug.logConsole(Level.WARNING, "The database does not loaded correctly when this plugin started.");
-			Debug.logConsole("Restart your server, or if this not helps, contact the developer.");
+			Debug.logConsole("Reload the plugin, or if this not helps, contact the developer.");
 			return;
 		}
 
 		PlayerPoints oldPP = getPPForPlayer(pp.getUUID());
 		if (oldPP == null) {
-			int i = 0;
-			while (RuntimePPList.get(i).getPoints() < pp.getPoints())
-				i++;
-
 			PlayerPoints newPP = new PlayerPoints(pp.getUUID());
 			newPP.setAxeDeaths(pp.getAxeDeaths());
 			newPP.setAxeKills(pp.getAxeKills());
@@ -109,7 +105,7 @@ public class RuntimePPManager {
 
 			newPP.setGames(1);
 
-			RuntimePPList.add(i + 1, newPP);
+			RuntimePPList.add(newPP);
 		} else {
 			int i = 0;
 

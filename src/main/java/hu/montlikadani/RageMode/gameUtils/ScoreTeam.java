@@ -99,14 +99,6 @@ public class ScoreTeam implements IObjectives {
 	}
 
 	/**
-	 * Returns the HashMap with all the ScoreTeam elements.
-	 * @return {@link #allTeams}
-	 */
-	public HashMap<String, ScoreTeam> getTeams() {
-		return allTeams;
-	}
-
-	/**
 	 * Returns the stored players who added to the list.
 	 * @return An unmodifiable list of players
 	 */

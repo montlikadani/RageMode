@@ -81,19 +81,19 @@ public class RageMode extends JavaPlugin {
 				return;
 			}
 
-			try {
-				Class.forName("org.spigotmc.SpigotConfig");
-				isSpigot = true;
-			} catch (ClassNotFoundException c) {
-				isSpigot = false;
-			}
-
 			mcVersion = new MinecraftVersion();
 
 			if (Version.isCurrentLower(Version.v1_8_R1)) {
 				getLogger().log(Level.SEVERE, "[RageMode] This version is not supported by this plugin! Please use larger 1.8+");
 				getManager().disablePlugin(this);
 				return;
+			}
+
+			try {
+				Class.forName("org.spigotmc.SpigotConfig");
+				isSpigot = true;
+			} catch (ClassNotFoundException c) {
+				isSpigot = false;
 			}
 
 			if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
@@ -111,9 +111,8 @@ public class RageMode extends JavaPlugin {
 			} else
 				hologram = false;
 
-			if (getManager().isPluginEnabled("Vault")) {
+			if (getManager().isPluginEnabled("Vault") && initEconomy()) {
 				vault = true;
-				initEconomy();
 			} else
 				vault = false;
 
@@ -268,7 +267,7 @@ public class RageMode extends JavaPlugin {
 			return;
 		}
 
-		MySQLStats.loadPlayerStatistics(mySQLConnect);
+		MySQLStats.loadPlayerStatistics();
 
 		if (mySQLConnect.isConnected()) {
 			Debug.logConsole("Successfully connected to MySQL!");
@@ -302,7 +301,7 @@ public class RageMode extends JavaPlugin {
 			return;
 		}
 
-		SQLStats.loadPlayerStatistics(sqlConnect);
+		SQLStats.loadPlayerStatistics();
 
 		if (sqlConnect.isConnected()) {
 			Debug.logConsole("Successfully connected to SQL!");
@@ -315,7 +314,7 @@ public class RageMode extends JavaPlugin {
 			if (mySQLConnect == null || !mySQLConnect.isConnected()) {
 				connectMySQL();
 			} else {
-				MySQLStats.loadPlayerStatistics(mySQLConnect);
+				MySQLStats.loadPlayerStatistics();
 			}
 
 			break;
@@ -324,7 +323,7 @@ public class RageMode extends JavaPlugin {
 			if (sqlConnect == null || !sqlConnect.isConnected()) {
 				connectSQL();
 			} else {
-				SQLStats.loadPlayerStatistics(sqlConnect);
+				SQLStats.loadPlayerStatistics();
 			}
 
 			break;
@@ -337,14 +336,13 @@ public class RageMode extends JavaPlugin {
 		RuntimePPManager.loadPPListFromDatabase();
 	}
 
-	private void initEconomy() {
+	private boolean initEconomy() {
 		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
 		if (rsp == null)
-			return;
+			return false;
 
 		econ = rsp.getProvider();
-		if (econ == null)
-			return;
+		return econ != null;
 	}
 
 	public synchronized boolean reload() {
