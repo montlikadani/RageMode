@@ -68,9 +68,7 @@ public class Bonus {
 				continue;
 			}
 
-			b = b.replace("points", "");
-
-			String[] split = b.split(":");
+			String[] split = b.split("points:");
 
 			if (split.length > 1) {
 				int amount = Integer.parseInt(split[1]);

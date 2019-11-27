@@ -19,7 +19,6 @@ import hu.montlikadani.ragemode.API.event.RMGameJoinAttemptEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorJoinToGameEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorLeaveGameEvent;
 import hu.montlikadani.ragemode.config.ConfigValues;
-import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GameLobby;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
@@ -158,8 +157,8 @@ public class Game {
 
 		if (!ConfigValues.isBungee()) {
 			pm.storePlayerTools(true);
-			Utils.clearPlayerInventory(player);
 		}
+		Utils.clearPlayerInventory(player);
 
 		Utils.callEvent(new SpectatorJoinToGameEvent(this, player));
 
@@ -174,13 +173,10 @@ public class Game {
 			return false;
 		}
 
-		if (!ConfigValues.isBungee()) {
-			Utils.clearPlayerInventory(player);
-			getSpectatorPlayerManager(player).addBackTools(true);
-		}
+		Utils.clearPlayerInventory(player);
+		getSpectatorPlayerManager(player).addBackTools(true);
 
-		Utils.callEvent(
-				new SpectatorLeaveGameEvent(GameUtils.getGame(specPlayer.get(player).getGameName()), player));
+		Utils.callEvent(new SpectatorLeaveGameEvent(this, player));
 
 		specPlayer.remove(player);
 		return true;
@@ -193,9 +189,6 @@ public class Game {
 		}
 
 		Utils.clearPlayerInventory(player);
-		if (!player.getActivePotionEffects().isEmpty()) {
-			player.getActivePotionEffects().forEach(e -> player.removePotionEffect(e.getType()));
-		}
 		getPlayerManager(player).addBackTools();
 
 		removePlayerSynced(player);
@@ -379,11 +372,11 @@ public class Game {
 	 * @param name Player name
 	 * @return Player
 	 */
-	public Player getSpecatorPlayer(String name) {
+	public Player getSpectatorPlayer(String name) {
 		Validate.notNull(name, "Name can't be null!");
 		Validate.notEmpty(name, "Name can't be empty!");
 
-		if (players != null) {
+		if (specPlayer != null) {
 			for (Entry<Player, PlayerManager> specs : specPlayer.entrySet()) {
 				if (specs.getKey().getName().equalsIgnoreCase(name)) {
 					return specs.getKey();
@@ -417,7 +410,7 @@ public class Game {
 	public List<PlayerManager> getSpectatorPlayersFromList() {
 		List<PlayerManager> list = new ArrayList<>();
 
-		if (players != null) {
+		if (specPlayer != null) {
 			for (Entry<Player, PlayerManager> players : specPlayer.entrySet()) {
 				list.add(players.getValue());
 			}
@@ -434,7 +427,7 @@ public class Game {
 	public PlayerManager getSpectatorPlayerManager(Player p) {
 		Validate.notNull(p, "Player can't be null!");
 
-		if (players != null) {
+		if (specPlayer != null) {
 			for (Entry<Player, PlayerManager> players : specPlayer.entrySet()) {
 				if (players.getKey().equals(p)) {
 					return players.getValue();

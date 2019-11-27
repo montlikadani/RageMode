@@ -10,7 +10,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Banner;
 import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.banner.PatternType;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -40,7 +39,6 @@ public class RewardManager {
 		List<String> cmds = conf.getStringList("rewards.end-game.winner.commands");
 		List<String> msgs = conf.getStringList("rewards.end-game.winner.messages");
 		double cash = conf.getDouble("rewards.end-game.winner.cash");
-		ConfigurationSection item = conf.getConfigurationSection("rewards.end-game.winner.items");
 
 		if (cmds != null) {
 			for (String path : cmds) {
@@ -71,8 +69,7 @@ public class RewardManager {
 		if (cash > 0D && RageMode.getInstance().isVaultEnabled())
 			RageMode.getInstance().getEconomy().depositPlayer(winner, cash);
 
-		if (item != null && conf.isConfigurationSection("rewards.end-game.winner.items"))
-			getItems("winner", winner);
+		getItems("winner", winner);
 	}
 
 	public void rewardForPlayers(Player winner, Player pls) {
@@ -82,7 +79,6 @@ public class RewardManager {
 		List<String> cmds = conf.getStringList("rewards.end-game.players.commands");
 		List<String> msgs = conf.getStringList("rewards.end-game.players.messages");
 		double cash = conf.getDouble("rewards.end-game.players.cash", 0D);
-		ConfigurationSection item = conf.getConfigurationSection("rewards.end-game.players.items");
 
 		if (cmds != null) {
 			for (String path : cmds) {
@@ -110,8 +106,7 @@ public class RewardManager {
 		if (cash > 0D && RageMode.getInstance().isVaultEnabled())
 			RageMode.getInstance().getEconomy().depositPlayer(pls, cash);
 
-		if (item != null && conf.isConfigurationSection("rewards.end-game.players.items"))
-			getItems("players", pls);
+		getItems("players", pls);
 	}
 
 	private String replacePlaceholders(String path, Player p, boolean winner) {
@@ -127,6 +122,11 @@ public class RewardManager {
 
 	@SuppressWarnings("deprecation")
 	private void getItems(String path, Player p) {
+		if (conf.getConfigurationSection("rewards.end-game." + path + ".items") == null
+				|| !conf.isConfigurationSection("rewards.end-game." + path + ".items")) {
+			return;
+		}
+
 		for (String num : conf.getConfigurationSection("rewards.end-game." + path + ".items").getKeys(false)) {
 			String type = conf.getString("rewards.end-game." + path + ".items." + num + ".type");
 			if (type == null) {

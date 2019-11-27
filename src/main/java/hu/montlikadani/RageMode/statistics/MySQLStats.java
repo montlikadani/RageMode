@@ -266,7 +266,7 @@ public class MySQLStats {
 		try {
 			statement = conn.createStatement();
 			ResultSet rs = conn.executeQuery(statement, query);
-			while (rs.next()) {
+			if (rs.next()) {
 				oldPoints = rs.getInt("score");
 			}
 			rs.close();
@@ -283,8 +283,8 @@ public class MySQLStats {
 
 		PreparedStatement prestt = null;
 		try {
-			prestt = conn.prepareStatement("REPLACE INTO `" + mysql.getPrefix()
-					+ "stats_players` (name, uuid, score) VALUES (?, ?, ?);");
+			prestt = conn.prepareStatement(
+					"REPLACE INTO `" + mysql.getPrefix() + "stats_players` (name, uuid, score) VALUES (?, ?, ?);");
 			if (prestt == null) {
 				return;
 			}

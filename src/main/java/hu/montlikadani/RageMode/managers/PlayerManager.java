@@ -99,6 +99,10 @@ public class PlayerManager {
 	 * @param spectator the player is spectator or not
 	 */
 	public void addBackTools(boolean spectator) {
+		if (!player.getActivePotionEffects().isEmpty()) {
+			player.getActivePotionEffects().forEach(e -> player.removePotionEffect(e.getType()));
+		}
+
 		if (ConfigValues.isBungee()) {
 			RageMode.getInstance().getBungeeUtils().connectToHub(player);
 			return;

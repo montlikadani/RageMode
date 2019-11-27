@@ -272,7 +272,7 @@ public class SQLStats {
 		try {
 			statement = conn.createStatement();
 			ResultSet rs = conn.executeQuery(statement, query);
-			while (rs.next()) {
+			if (rs.next()) {
 				oldPoints = rs.getInt("score");
 			}
 			rs.close();

@@ -69,7 +69,7 @@ public class HoloHolder {
 			HoloHolder.holos.add(l);
 		}
 
-		Bukkit.getOnlinePlayers().forEach(player -> showAllHolosToPlayer(player));
+		Bukkit.getOnlinePlayers().forEach(HoloHolder::showAllHolosToPlayer);
 	}
 
 	public static void displayHoloToPlayer(Player player, Location loc) {

@@ -98,19 +98,17 @@ public class GameUtils {
 	 */
 	public static boolean checkName(Player pl, String name) {
 		if (!name.matches("^[a-zA-Z0-9\\_\\-]+$")) {
-			if (pl != null) {
-				sendMessage(pl, RageMode.getLang().get("setup.addgame.special-chars"));
-			}
+			sendMessage(pl, RageMode.getLang().get("setup.addgame.special-chars"));
 			return false;
-		} else if (name.length() > 40) {
-			if (pl != null) {
-				sendMessage(pl, RageMode.getLang().get("setup.addgame.name-greater"));
-			}
+		}
+
+		if (name.length() > 40) {
+			sendMessage(pl, RageMode.getLang().get("setup.addgame.name-greater"));
 			return false;
-		} else if (reservedNames.contains(name)) { // hehe
-			if (pl != null) {
-				sendMessage(pl, RageMode.getLang().get("setup.addgame.bad-name"));
-			}
+		}
+
+		if (reservedNames.contains(name)) { // hehe
+			sendMessage(pl, RageMode.getLang().get("setup.addgame.bad-name"));
 			return false;
 		}
 
@@ -588,16 +586,16 @@ public class GameUtils {
 			}
 
 			String type = cmd.split(":")[0];
-			if (type.equals(cmdType)) {
+			if (type.equalsIgnoreCase(cmdType)) {
 				String consoleOrPlayer = cmd.split(":")[1];
 
 				cmd = cmd.split(":")[2].replace("%world%", p.getWorld().getName()).replace("%game%", game)
 						.replace("%player%", p.getName());
 				cmd = Utils.colors(cmd);
 
-				if (consoleOrPlayer.equals("console"))
+				if (consoleOrPlayer.equalsIgnoreCase("console"))
 					Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
-				else if (consoleOrPlayer.equals("player"))
+				else if (consoleOrPlayer.equalsIgnoreCase("player"))
 					p.performCommand(cmd);
 			}
 		}
@@ -633,7 +631,7 @@ public class GameUtils {
 			}
 
 			String action = msg.split(":")[0];
-			if (action.equals(type)) {
+			if (action.equalsIgnoreCase(type)) {
 				String message = msg.split(":")[1];
 				message = message.replace("%game%", game).replace("%player%", p.getName());
 				ActionBar.sendActionBar(p, Utils.colors(message));
@@ -687,7 +685,7 @@ public class GameUtils {
 				continue;
 			}
 
-			if (split[0].equals(type)) {
+			if (split[0].equalsIgnoreCase(type)) {
 				String message = split[1];
 				if (message == null) {
 					continue;
@@ -704,12 +702,17 @@ public class GameUtils {
 					continue;
 				}
 
+				int second = 6;
+				if (split.length > 4 && Utils.isInt(split[4])) {
+					second = Integer.parseInt(split[4]);
+				}
+
 				if (boss.getPlayers().contains(p)) {
 					boss.removePlayer(p);
 				}
 				boss.addPlayer(p);
 
-				for (int i = 1; i <= 6; ++i) {
+				for (int i = 1; i <= second; ++i) {
 					Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
 						@Override
 						public void run() {
@@ -836,10 +839,6 @@ public class GameUtils {
 					Titles.sendTitle(p, (split.length > 1 ? Integer.parseInt(split[0]) : 20),
 							(split.length > 2 ? Integer.parseInt(split[1]) : 30),
 							(split.length > 3 ? Integer.parseInt(split[2]) : 20), youWonTitle, youWonSubtitle);
-				}
-
-				if (!p.getActivePotionEffects().isEmpty()) {
-					p.getActivePotionEffects().forEach(e -> p.removePotionEffect(e.getType()));
 				}
 
 				game.removePlayerSynced(p);
