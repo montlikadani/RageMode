@@ -167,7 +167,7 @@ public class SQLStats {
 		try {
 			statement = conn.createStatement();
 			ResultSet rs = conn.executeQuery(statement, query);
-			while (rs.next()) {
+			if (rs.next()) {
 				oldKills = rs.getInt("kills");
 				oldAxeKills = rs.getInt("axe_kills");
 				oldDirectArrowKills = rs.getInt("direct_arrow_kills");
@@ -436,7 +436,7 @@ public class SQLStats {
 		try {
 			statement = conn.createStatement();
 			ResultSet rs = conn.executeQuery(statement, query);
-			while (rs.next()) {
+			if (rs.next()) {
 				currentKills = rs.getInt("kills");
 				currentAxeKills = rs.getInt("axe_kills");
 				currentDirectArrowKills = rs.getInt("direct_arrow_kills");

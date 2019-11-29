@@ -720,25 +720,21 @@ public class GameUtils {
 				if (boss.getPlayers().contains(p)) {
 					boss.removePlayer(p);
 				}
+
+				boss.setProgress(1d);
 				boss.addPlayer(p);
+				boss.setVisible(true);
 
-				for (int i = 1; i <= second; ++i) {
-					Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
-						@Override
-						public void run() {
-							if (!isPlayerPlaying(p)) {
-								boss.removePlayer(p);
-								return;
-							}
+				Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), new Runnable() {
+					@Override
+					public void run() {
+						boss.setVisible(false);
 
-							if (boss.getProgress() >= 0.2D) {
-								boss.setProgress(boss.getProgress() - 0.2D);
-							} else {
-								boss.removePlayer(p);
-							}
+						if (boss.getPlayers().contains(p)) {
+							boss.removePlayer(p);
 						}
-					}, 20 * i);
-				}
+					}
+				}, second * 20L);
 			}
 		}
 	}
