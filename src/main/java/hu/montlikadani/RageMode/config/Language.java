@@ -125,7 +125,6 @@ public class Language {
 		l.getL("commands.removespawn.no-more-spawn", "&cNo more spawn to delete, because you removed all spawns...");
 		l.getL("commands.givesaveditems.not-enabled", "&cThis option is not enabled in the configuration file.");
 		l.getL("commands.givesaveditems.player-not-found-in-data-file", "&cThis player&7 %player%&c not found in the data file.");
-		l.getL("commands.givesaveditems.no-player-saved-inventory", "&cThere are no player found in the data file that have been saved their inventory.");
 		l.getL("commands.givesaveditems.player-is-in-game", "&cThis player&7 %player%&c is in game.");
 		l.getL("commands.latestart.player-not-in-lobby", "&cYou are not in the lobby to increase the time.");
 		l.getL("commands.latestart.time-can-not-less", "&cTime should not be less than 1.");

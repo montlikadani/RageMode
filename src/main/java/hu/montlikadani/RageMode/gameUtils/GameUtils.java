@@ -115,6 +115,16 @@ public class GameUtils {
 		return true;
 	}
 
+	private static List<String> reservedNames = buildReservedNameList();
+
+	private static List<String> buildReservedNameList() {
+		List<String> reservedNames = new ArrayList<>();
+		for (Entry<String, String> cmds : RmCommand.arg.entrySet()) {
+			reservedNames.add(cmds.getKey());
+		}
+
+		return reservedNames;
+	}
 
 	/**
 	 * Checks whatever the specified game is exists or no.
@@ -754,17 +764,6 @@ public class GameUtils {
 		if (spawn.getSpawnLocations().size() > 0) {
 			p.teleport(spawn.getRandomSpawn());
 		}
-	}
-
-	private static List<String> reservedNames = buildReservedNameList();
-
-	private static List<String> buildReservedNameList() {
-		List<String> reservedNames = new ArrayList<>();
-		for (Entry<String, String> cmds : RmCommand.arg.entrySet()) {
-			reservedNames.add(cmds.getKey());
-		}
-
-		return reservedNames;
 	}
 
 	/**

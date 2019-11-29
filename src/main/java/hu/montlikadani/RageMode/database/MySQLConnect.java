@@ -22,7 +22,11 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 	public void createStatsTable() {
 		if (isConnected()) {
 			String query = "CREATE TABLE IF NOT EXISTS `" + getPrefix()
-					+ "stats_players` (`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY , name VARCHAR(255) , uuid VARCHAR(255) , kills INT(11) , axe_kills INT(11) , direct_arrow_kills INT(11) , explosion_kills INT(11) , knife_kills INT(11) , deaths INT(11) , axe_deaths INT(11) , direct_arrow_deaths INT(11) , explosion_deaths INT(11) , knife_deaths INT(11) , wins INT(11) , score INT(11) , games INT(11) , kd DOUBLE, UNIQUE(uuid));";
+					+ "stats_players` (`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY , `name` VARCHAR(255) , `uuid` VARCHAR(255) , "
+					+ "`kills` INTEGER , `axe_kills` INTEGER , `direct_arrow_kills` INTEGER , `explosion_kills` INTEGER , "
+					+ "`knife_kills` INTEGER , `deaths` INTEGER , `axe_deaths` INTEGER , `direct_arrow_deaths` INTEGER , "
+					+ "`explosion_deaths` INTEGER , `knife_deaths` INTEGER , `wins` INTEGER , `score` INTEGER , `games` INTEGER , "
+					+ "`kd` DOUBLE, UNIQUE(uuid));";
 			createTable(query);
 		}
 	}

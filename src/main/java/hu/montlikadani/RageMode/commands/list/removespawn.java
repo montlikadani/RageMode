@@ -1,13 +1,10 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import java.util.logging.Level;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
@@ -69,26 +66,17 @@ public class removespawn {
 			return false;
 		}
 
-		Location loc = null;
-		for (String spawnName : aFile.getConfigurationSection(path + ".spawns").getKeys(false)) {
-			String sPath = path + ".spawns." + spawnName + ".";
+		String sPath = path + ".spawns." + i + ".";
+		String world = aFile.getString(sPath + "world");
+		double spawnX = aFile.getDouble(sPath + "x");
+		double spawnY = aFile.getDouble(sPath + "y");
+		double spawnZ = aFile.getDouble(sPath + "z");
+		double spawnYaw = aFile.getDouble(sPath + "yaw");
+		double spawnPitch = aFile.getDouble(sPath + "pitch");
 
-			String world = aFile.getString(sPath + "world");
-			double spawnX = aFile.getDouble(sPath + "x");
-			double spawnY = aFile.getDouble(sPath + "y");
-			double spawnZ = aFile.getDouble(sPath + "z");
-			double spawnYaw = aFile.getDouble(sPath + "yaw");
-			double spawnPitch = aFile.getDouble(sPath + "pitch");
-
-			loc = new Location(Bukkit.getWorld(world), spawnX, spawnY, spawnZ);
-			loc.setYaw((float) spawnYaw);
-			loc.setPitch((float) spawnPitch);
-		}
-
-		if (loc == null) {
-			Debug.logConsole(Level.WARNING, "Something went wrong with locations. Try again.");
-			return false;
-		}
+		Location loc = new Location(Bukkit.getWorld(world), spawnX, spawnY, spawnZ);
+		loc.setYaw((float) spawnYaw);
+		loc.setPitch((float) spawnPitch);
 
 		if (GameUtils.getGameSpawn(name) != null) {
 			GameUtils.getGameSpawn(name).removeSpawn(loc);
@@ -98,7 +86,6 @@ public class removespawn {
 		Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
 		sendMessage(sender, RageMode.getLang().get("commands.removespawn.remove-success", "%number%", i, "%game%", name));
-
 		return true;
 	}
 }
