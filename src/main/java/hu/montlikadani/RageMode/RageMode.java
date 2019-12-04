@@ -146,16 +146,6 @@ public class RageMode extends JavaPlugin {
 
 			RuntimePPManager.loadPPListFromDatabase();
 
-			if (ConfigValues.isSignsEnable()) {
-				sign = new SignScheduler(this);
-				getManager().registerEvents(sign, this);
-
-				SignConfiguration.initSignConfiguration();
-				SignCreator.loadSigns();
-
-				signTask = getServer().getScheduler().runTaskLater(this, sign, 40L);
-			}
-
 			if (conf.getArenasCfg().contains("arenas")) {
 				for (String game : GetGames.getGameNames()) {
 					if (game != null) {
@@ -167,9 +157,6 @@ public class RageMode extends JavaPlugin {
 
 						spawns.add(new GameSpawn(g));
 
-						if (ConfigValues.isSignsEnable())
-							SignCreator.updateAllSigns(game);
-
 						// Loads the game locker
 						if (conf.getArenasCfg().getBoolean("arenas." + game + ".lock", false)) {
 							GameUtils.setStatus(game, GameStatus.NOTREADY);
@@ -179,6 +166,16 @@ public class RageMode extends JavaPlugin {
 						Debug.logConsole("Loaded {0} game!", game);
 					}
 				}
+			}
+
+			if (ConfigValues.isSignsEnable()) {
+				sign = new SignScheduler(this);
+				getManager().registerEvents(sign, this);
+
+				SignConfiguration.initSignConfiguration();
+				SignCreator.loadSigns();
+
+				signTask = getServer().getScheduler().runTaskLater(this, sign, 40L);
 			}
 
 			// Metrics has changed the JsonObject and causing the break, so disable under 1.8.5
@@ -376,22 +373,21 @@ public class RageMode extends JavaPlugin {
 						getManager().registerEvents(new BungeeListener(game), this);
 
 					spawns.add(new GameSpawn(g));
-
-					SignCreator.updateAllSigns(game);
 				}
 			}
 		}
 
 		if (ConfigValues.isSignsEnable()) {
 			getManager().registerEvents(sign, this);
+
 			SignConfiguration.initSignConfiguration();
+			SignCreator.loadSigns();
 
 			signTask = getServer().getScheduler().runTaskLater(this, sign, 40L);
 		}
 
 		registerListeners();
 		loadDatabases();
-		SignCreator.loadSigns();
 
 		if (hologram)
 			HoloHolder.initHoloHolder();

@@ -28,8 +28,12 @@ public class SignPlaceholder {
 			if (line.contains("%game%"))
 				line = line.replace("%game%", game);
 
-			if (line.contains("%current-players%"))
-				line = line.replace("%current-players%", Integer.toString(GameUtils.getGame(game).getPlayers().size()));
+			if (line.contains("%current-players%")) {
+				line = line.replace("%current-players%", GameUtils.getStatus(game) == GameStatus.RUNNING
+						|| GameUtils.getStatus(game) == GameStatus.WAITING && GameUtils.getGame(game).isGameRunning()
+								? Integer.toString(GameUtils.getGame(game).getPlayers().size())
+								: "0");
+			}
 
 			if (line.contains("%max-players%"))
 				line = line.replace("%max-players%", Integer.toString(GetGames.getMaxPlayers(game)));
@@ -43,7 +47,8 @@ public class SignPlaceholder {
 				}
 
 				line = line.replace("%running%",
-						GameUtils.getGame(game).isGameRunning() ? ConfigValues.getSignGameRunning()
+						GameUtils.getStatus(game) == GameStatus.RUNNING && GameUtils.getGame(game).isGameRunning()
+								? ConfigValues.getSignGameRunning()
 								: GameUtils.getStatus(game) == GameStatus.NOTREADY ? ConfigValues.getSignGameLocked()
 										: ConfigValues.getSignGameWaiting());
 			}

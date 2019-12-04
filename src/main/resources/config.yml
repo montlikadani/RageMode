@@ -86,6 +86,7 @@ actionbar-messages:
   # Actionbar message when started the game and sends to player.
   # This will be ignored, when the actionbar option is disabled, or
   # this list is empty or not found.
+  # Actionbar usage found on https://github.com/montlikadani/RageMode/wiki/Actionbar-&-Bossbar-actions
   actions:
   #- "join:&cHello&a %player%&c in this game!"
   - "start:&aGame has started!&2 We wish you a good game!"
@@ -95,10 +96,9 @@ bossbar-messages:
   # Bossbar message when started the game and sends to player.
   # This will be ignored, when the bossbar option is disabled, or
   # this list is empty or not found.
-  # Bossbar styles: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarStyle.html
-  # Bossbar colors: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarColor.html
+  # Bossbar usage found on https://github.com/montlikadani/RageMode/wiki/Actionbar-&-Bossbar-actions
   actions:
-  - "start:&bWelcome&a %player%&b to the&c %game%&b game!:green:segmented_6"
+  - "start:&bWelcome&a %player%&b to the&c %game%&b game!:green:segmented_6:8"
 
 # Title texts
 titles:
@@ -213,6 +213,9 @@ game:
   # Switch the game mode to spectator when the game is end?
   # This will ignores the winner player.
   switch-gamemode-to-spectator-at-end-of-game: true
+
+  # Disable all commands execution on game freeze?
+  disable-all-commands-in-game-freeze: false
 
   # Enables the chat after end of game.
   enable-chat-after-end: true

@@ -72,6 +72,7 @@ public class ConfigValues {
 	private static boolean bossbarEnable;
 	private static boolean actionbarEnable;
 	private static boolean switchGMForPlayers;
+	private static boolean disableAllCommandsInGameFreeze;
 	private static boolean enableChatAfterEnd;
 	private static boolean tabFormatEnable;
 	private static boolean tabEnable;
@@ -200,6 +201,7 @@ public class ConfigValues {
 		lobbyDelay = f.get("game.defaults.lobby-delay", 30);
 		gameTime = f.get("game.defaults.gametime", 10);
 		switchGMForPlayers = f.get("game.switch-gamemode-to-spectator-at-end-of-game", true);
+		disableAllCommandsInGameFreeze = f.get("game.disable-all-commands-in-game-freeze", false);
 		enableChatAfterEnd = f.get("game.enable-chat-after-end", true);
 		tabFormatEnable = f.get("game.tablist.player-format.enable", false);
 		tabPrefix = f.get("game.tablist.player-format.prefix", "");
@@ -515,6 +517,10 @@ public class ConfigValues {
 
 	public static boolean isSwitchGMForPlayers() {
 		return switchGMForPlayers;
+	}
+
+	public static boolean isCommandsDisabledInEndGame() {
+		return disableAllCommandsInGameFreeze;
 	}
 
 	public static boolean isEnableChatAfterEnd() {

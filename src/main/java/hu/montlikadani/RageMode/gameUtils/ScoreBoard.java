@@ -34,12 +34,17 @@ public class ScoreBoard implements IObjectives {
 	public ScoreBoard(List<PlayerManager> players) {
 		players.forEach(pm -> this.players.add(pm.getPlayer()));
 
+		Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
+		Objective objective = scoreboard.getObjective("ragescores");
+		if (objective != null) {
+			objective.unregister();
+		}
+
+		objective = scoreboard.registerNewObjective("ragescores", "dummy");
+
 		for (Player loopPlayer : this.players) {
-			Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
-			scoreboard.clearSlot(DisplaySlot.SIDEBAR);
 			removeScoreBoard(loopPlayer, false);
 
-			Objective objective = scoreboard.registerNewObjective("ragescores", "dummy");
 			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 			scoreboards.put(loopPlayer, new ScoreBoardHolder(loopPlayer, scoreboard, objective));
 		}

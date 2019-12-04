@@ -186,8 +186,7 @@ public class GameTimer extends TimerTask {
 
 			if (time == 0) {
 				cancel();
-				RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-						() -> GameUtils.stopGame(game.getName()));
+				GameUtils.stopGame(game.getName());
 			}
 
 			time--;

@@ -58,9 +58,8 @@ public class SignCreator {
 			SignData data = new SignData(loc, game, signPlaceholder);
 
 			signData.add(data);
+			totalSigns++;
 		}
-
-		totalSigns += list.size();
 
 		if (totalSigns > 0) {
 			Debug.logConsole("Loaded {0} sign{1}.", totalSigns, (totalSigns > 1 ? "s" : ""));
@@ -110,7 +109,7 @@ public class SignCreator {
 	 * @return True if a sign is found on the set location.
 	 */
 	public static boolean updateSign(Location loc) {
-		if (signData == null || signData.isEmpty())
+		if (signData == null)
 			return false;
 
 		for (SignData data : signData) {
@@ -119,6 +118,7 @@ public class SignCreator {
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -176,7 +176,7 @@ public class SignCreator {
 			}
 
 			for (String gameName : GetGames.getGameNames()) {
-				if (game.equalsIgnoreCase(gameName)) {
+				if (gameName.equalsIgnoreCase(game)) {
 					Location signLocation = stringToLocationSign(signString);
 					if (signLocation != null && signLocation.getBlock().getState() instanceof Sign
 							&& signLocation.equals(loc))
@@ -186,32 +186,6 @@ public class SignCreator {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Checks whether the sign is properly configured to get the game from the file.
-	 * @return Game name if found in the list.
-	 */
-	public static String getGameFromString() {
-		List<String> signs = fileConf.getStringList("signs");
-		if (signs == null) {
-			return "";
-		}
-
-		for (String signString : signs) {
-			String game = getGameFromString(signString);
-			if (game == null) {
-				continue;
-			}
-
-			for (String gameName : GetGames.getGameNames()) {
-				if (gameName.equalsIgnoreCase(game)) {
-					return game;
-				}
-			}
-		}
-
-		return "";
 	}
 
 	/**

@@ -77,6 +77,7 @@ import hu.montlikadani.ragemode.items.RageKnife;
 import hu.montlikadani.ragemode.libs.Sounds;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
+import hu.montlikadani.ragemode.signs.SignData;
 import hu.montlikadani.ragemode.utils.MaterialUtil;
 
 public class EventListener implements Listener {
@@ -236,50 +237,52 @@ public class EventListener implements Listener {
 			return;
 		}
 
+		// Prevent player damage in lobby
+		if (GameUtils.getStatus(victim) == GameStatus.WAITING)
+			event.setCancelled(true);
+
+		if (event.getDamager() instanceof Player) {
+			Player damager = (Player) event.getDamager();
+
+			if (waitingGames.containsKey(GameUtils.getGameByPlayer(damager).getName())
+					&& waitingGames.get(GameUtils.getGameByPlayer(damager).getName())) {
+				event.setCancelled(true);
+				return;
+			}
+		}
+
+		victim.removeMetadata("killedWith", plugin);
+
+		String tool = "";
+
 		if (GameUtils.getStatus(victim) == GameStatus.RUNNING) {
-			// RageKnife hit event
 			if (event.getDamager() instanceof Player) {
-				Player killer = (Player) event.getDamager();
+				Player damager = (Player) event.getDamager();
 
-				if (GameUtils.isPlayerPlaying(killer)) {
-					if (waitingGames.containsKey(GameUtils.getGameByPlayer(killer).getName())
-							&& waitingGames.get(GameUtils.getGameByPlayer(killer).getName())) {
-						event.setCancelled(true);
-						return;
-					}
-
-					ItemStack hand = NMS.getItemInHand(killer);
+				if (GameUtils.isPlayerPlaying(damager)) {
+					ItemStack hand = NMS.getItemInHand(damager);
 					ItemMeta meta = hand.getItemMeta();
-					if (meta != null && meta.getDisplayName() != null) {
-						if (meta.getDisplayName().equals(RageKnife.getName())) {
-							event.setDamage(25);
-
-							victim.removeMetadata("killedWith", plugin);
-							victim.setMetadata("killedWith", new FixedMetadataValue(plugin, "knife"));
-						}
+					if (meta != null && meta.getDisplayName() != null
+							&& meta.getDisplayName().equals(RageKnife.getName())) {
+						event.setDamage(25);
+						tool = "knife";
 					}
 				}
 			} else if (event.getDamager() instanceof org.bukkit.entity.Egg) {
 				event.setDamage(2.20d);
-
-				victim.removeMetadata("killedWith", plugin);
-				victim.setMetadata("killedWith", new FixedMetadataValue(plugin, "grenade"));
+				tool = "grenade";
 			} else if (event.getDamager() instanceof Snowball) {
 				event.setDamage(25d);
-
-				victim.removeMetadata("killedWith", plugin);
-				victim.setMetadata("killedWith", new FixedMetadataValue(plugin, "snowball"));
+				tool = "snowball";
 			} else if (event.getDamager() instanceof Arrow) {
 				event.setDamage(3.35d);
+				tool = "arrow";
+			}
 
-				victim.removeMetadata("killedWith", plugin);
-				victim.setMetadata("killedWith", new FixedMetadataValue(plugin, "arrow"));
+			if (!tool.isEmpty()) {
+				victim.setMetadata("killedWith", new FixedMetadataValue(plugin, tool));
 			}
 		}
-
-		// Prevent player damage in lobby
-		if (GameUtils.getStatus(victim) == GameStatus.WAITING)
-			event.setCancelled(true);
 	}
 
 	@EventHandler
@@ -592,7 +595,8 @@ public class EventListener implements Listener {
 		}
 
 		if (GameUtils.isPlayerPlaying(p)) {
-			if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())
+			if (ConfigValues.isCommandsDisabledInEndGame()
+					&& waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())
 					&& waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
 				p.sendMessage(RageMode.getLang().get("game.command-disabled-in-end-game"));
 				event.setCancelled(true);
@@ -765,20 +769,29 @@ public class EventListener implements Listener {
 				&& event.getClickedBlock().getState() != null) {
 			org.bukkit.block.Block b = event.getClickedBlock();
 
-			if (b.getState() instanceof Sign && event.getAction() == Action.RIGHT_CLICK_BLOCK
-					&& SignCreator.isSign(b.getLocation())) {
+			if (b.getState() instanceof Sign && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 				if (!p.hasPermission("ragemode.join.sign")) {
 					p.sendMessage(RageMode.getLang().get("no-permission"));
 					return;
 				}
 
-				String game = SignCreator.getGameFromString();
-				if (!GameUtils.isGameWithNameExists(game)) {
+				if (!SignCreator.isSign(b.getLocation())) {
 					p.sendMessage(RageMode.getLang().get("game.does-not-exist"));
 					return;
 				}
 
-				GameUtils.joinPlayer(p, GameUtils.getGame(game));
+				for (SignData data : SignCreator.getSignData()) {
+					if (data.getLocation().equals(b.getLocation())) {
+						String name = data.getGame();
+						if (name == null || !GameUtils.isGameWithNameExists(name)) {
+							p.sendMessage(RageMode.getLang().get("game.does-not-exist"));
+							break;
+						}
+
+						GameUtils.joinPlayer(p, GameUtils.getGame(name));
+						break;
+					}
+				}
 			}
 		}
 	}

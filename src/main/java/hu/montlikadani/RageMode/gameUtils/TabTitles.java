@@ -18,7 +18,7 @@ import hu.montlikadani.ragemode.managers.PlayerManager;
 public class TabTitles implements IObjectives {
 
 	public static HashMap<String, TabTitles> allTabLists = new HashMap<>();
-	private List<Player> player = new ArrayList<>();
+	private List<Player> players = new ArrayList<>();
 
 	/**
 	 * Creates a new instance of TabList, which manages the Tablist for
@@ -26,7 +26,7 @@ public class TabTitles implements IObjectives {
 	 * @param players The list of {@link PlayerManager}
 	 */
 	public TabTitles(List<PlayerManager> players) {
-		players.forEach(pm -> this.player.add(pm.getPlayer()));
+		players.forEach(pm -> this.players.add(pm.getPlayer()));
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class TabTitles implements IObjectives {
 	 * @param footer TabList footer
 	 */
 	public void sendTabTitle(String header, String footer) {
-		for (Player player : this.player) {
+		for (Player player : this.players) {
 			sendTabTitle(player, header, footer);
 		}
 	}
@@ -111,7 +111,7 @@ public class TabTitles implements IObjectives {
 	 */
 	@Override
 	public void remove() {
-		this.player.forEach(this::remove);
+		this.players.forEach(this::remove);
 	}
 
 	/**
@@ -122,7 +122,7 @@ public class TabTitles implements IObjectives {
 	public void remove(Player player) {
 		sendTabTitle(player, null, null);
 
-		for (Iterator<Player> it = this.player.iterator(); it.hasNext();) {
+		for (Iterator<Player> it = this.players.iterator(); it.hasNext();) {
 			if (it.next().equals(player)) {
 				it.remove();
 				break;
@@ -135,6 +135,6 @@ public class TabTitles implements IObjectives {
 	 * @return List player
 	 */
 	public List<Player> getPlayers() {
-		return Collections.unmodifiableList(player);
+		return Collections.unmodifiableList(players);
 	}
 }

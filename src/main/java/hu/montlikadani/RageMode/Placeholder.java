@@ -35,7 +35,7 @@ public class Placeholder extends PlaceholderExpansion {
 		if (rpp == null)
 			return "";
 
-		switch (var) {
+		switch (var.toLowerCase()) {
 		case "kills":
 			return Integer.toString(rpp.getKills());
 		case "axe_kills":

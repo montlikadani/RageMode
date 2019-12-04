@@ -140,6 +140,7 @@ public class RuntimePPManager {
 					newPP.setGames(oldPP.getGames() + 1);
 
 					RuntimePPList.set(i, newPP);
+					break;
 				}
 
 				i++;

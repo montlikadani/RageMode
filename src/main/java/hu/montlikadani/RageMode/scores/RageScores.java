@@ -150,6 +150,8 @@ public class RageScores {
 			totalPoints = addPoints(killer, grenadePoints, true);
 			addPoints(victim, 0, false);
 
+			killerPoints = getPlayerPoints(killerUUID);
+
 			killer.sendMessage(RageMode.getLang().get("game.message.grenade-kill", "%victim%", victim.getName(),
 					"%points%", "+" + grenadePoints));
 
@@ -162,11 +164,14 @@ public class RageScores {
 			break;
 		}
 
+		if (killerPoints == null) {
+			return;
+		}
+
 		// KillStreak
-		PlayerPoints currentPoints = getPlayerPoints(killerUUID);
-		int currentStreak = currentPoints.getCurrentStreak();
+		int currentStreak = killerPoints.getCurrentStreak();
 		if (currentStreak == 3 || currentStreak % 5 == 0) {
-			currentPoints.addPoints(currentStreak * 10);
+			killerPoints.addPoints(currentStreak * 10);
 
 			killer.sendMessage(RageMode.getLang().get("game.message.streak", "%number%", currentStreak, "%points%",
 					"+" + Integer.toString(currentStreak * 10)));

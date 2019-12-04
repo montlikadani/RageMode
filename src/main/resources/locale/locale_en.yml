@@ -63,7 +63,6 @@ commands:
   givesaveditems:
     not-enabled: "&cThis option is not enabled in the configuration file."
     player-not-found-in-data-file: "&cThis player&7 %player%&c not found in the data file."
-    no-player-saved-inventory: "&cThere are no player found in the data file that have been saved their inventory."
     player-is-in-game: "&cThis player&7 %player%&c is in game."
   latestart:
     player-not-in-lobby: "&cYou are not in the lobby to increase the time."

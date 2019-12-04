@@ -63,7 +63,6 @@ commands:
   givesaveditems:
     not-enabled: "&cEz az opció nincs engedélyezve a konfigurációs fájlban."
     player-not-found-in-data-file: "&cEz a játékos&7 %player%&c nem található az adat fájlban."
-    no-player-saved-inventory: "&cNincs egy játékos sem az adat fájlban, akinek el van mentve az eszköztára."
     player-is-in-game: "&cEz a játékos&7 %player%&c játékban."
   latestart:
     player-not-in-lobby: "&cNem vagy a lobbyban, hogy növeld az időt."
