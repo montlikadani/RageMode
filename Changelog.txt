@@ -1,3 +1,43 @@
+# v1.5.0
+- Added maxplayers sub-command
+- Fixed issue when setting the points to player
+- Fixed issue when removing a game, throws an exception.
+- Fixed issue when the sub-commands not worked on first use in game.
+- Spectator player inventories now saving
+- Player inventory items will not lost if the game is full
+- Fixed issue when the lobby timer will stopped when a new player joined.
+- Fixed some database loading issues at startup
+- Some performance updates
+- Removed static methods for games
+- Fixed issue when some inventory types are not exists in oldest versions
+- Added rejoin delay option, to delay the next join to the game
+- Added more API events and renamed.
+- Added option to listplayers command to list spectator players in game
+- Some performance updates for getting random locations
+- Optimized explosion arrow hit event
+- Fixed issue when the spectator not works
+- Removed show-nametag and added hide-nametag, to hide the name tags for players, to make game more difficulty
+- Optimized the database connect when the database is offline, so the plugin tries to connect. (Speed up)
+- Improved the game running handles
+- Added event to cancel entity interact in game
+- Added command to set the minimum players for that game
+- Kicking random players from game for vip player joining should work now
+- Fixed game timer not counted to 0 sec, so it stopped the game at 1 sec
+- Players now will gets rewards after the game
+- Some fixes related to stopping & reloading the games
+- Added game bonuses, to add bonuses to the players in game
+- Fully recoded the config handling, due to loading issues
+- Recoded the bossbar messages
+- Fixed some issues with updating the signs
+- All players data will loading at plugin startup
+- Toggled game message should work
+- Now the player names can be completed to the commands when using TAB key
+- Improved database updating/loading
+- Added option to disable all commands in game freeze
+- Added sign background color when the game status is ready or not
+- Fixed issue when checking maximum players when trying to join a game but prevented it because there wasn't enough spawn but it was equal.
+- All inventory opening in game are disabled, only allowed the players inventory to open
+
 # v1.4.0.000 
 - Fixed NPE when tried to get the holos list from file
 - Rewards now should work on game stop
