@@ -851,8 +851,11 @@ public class GameUtils {
 							(split.length > 2 ? Integer.parseInt(split[1]) : 30),
 							(split.length > 3 ? Integer.parseInt(split[2]) : 20), wonTitle, wonSubtitle);
 
-					if (ConfigValues.isSwitchGMForPlayers())
-						p.setGameMode(GameMode.SPECTATOR);
+					if (ConfigValues.isSwitchGMForPlayers()) {
+						// Why?
+						Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
+								() -> p.setGameMode(GameMode.SPECTATOR));
+					}
 				} else {
 					split = ConfigValues.getYouWonTitleTime().split(", ");
 					Titles.sendTitle(p, (split.length > 1 ? Integer.parseInt(split[0]) : 20),

@@ -3,7 +3,6 @@ package hu.montlikadani.ragemode.gameLogic;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -193,7 +192,7 @@ public class Game {
 		getPlayerManager(player).addBackTools();
 
 		removePlayerSynced(player);
-		removePlayerFromList(player);
+		players.remove(player);
 
 		if (!player.isCustomNameVisible()) {
 			player.setCustomNameVisible(true);
@@ -214,15 +213,6 @@ public class Game {
 
 		if (ScoreTeam.allTeams.containsKey(name))
 			ScoreTeam.allTeams.get(name).remove(player);
-	}
-
-	private void removePlayerFromList(Player player) {
-		for (Iterator<Entry<Player, PlayerManager>> it = players.entrySet().iterator(); it.hasNext();) {
-			if (it.next().getKey().equals(player)) {
-				it.remove();
-				break;
-			}
-		}
 	}
 
 	/**
