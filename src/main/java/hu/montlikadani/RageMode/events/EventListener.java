@@ -577,9 +577,6 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void disableCommand(PlayerCommandPreprocessEvent event) {
 		Player p = event.getPlayer();
-
-		if (event.getMessage() == null) return;
-
 		String arg = event.getMessage().trim().toLowerCase();
 		List<String> cmds = null;
 
@@ -799,24 +796,9 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void onInventoryOpen(InventoryOpenEvent e) {
 		if (GameUtils.isPlayerPlaying((Player) e.getPlayer())) {
-			InventoryType type = e.getInventory().getType();
-
-			if (type == InventoryType.ENCHANTING
-					|| type == InventoryType.CRAFTING
-					|| type == InventoryType.ANVIL
-					|| type == InventoryType.CHEST
-					|| type == InventoryType.ENDER_CHEST
-					|| type == InventoryType.BREWING
-					|| type == InventoryType.FURNACE
-					|| type == InventoryType.WORKBENCH
-					|| type == InventoryType.DROPPER
-					|| type == InventoryType.HOPPER
-					|| type == InventoryType.BEACON
-					|| (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && type == InventoryType.STONECUTTER
-					|| type == InventoryType.BLAST_FURNACE
-					|| type == InventoryType.MERCHANT)
-					|| (Version.isCurrentEqualOrHigher(Version.v1_11_R1) && type == InventoryType.SHULKER_BOX))
+			if (e.getInventory().getType() != InventoryType.PLAYER) {
 				e.setCancelled(true);
+			}
 		}
 	}
 

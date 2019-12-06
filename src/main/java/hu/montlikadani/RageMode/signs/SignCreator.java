@@ -70,12 +70,12 @@ public class SignCreator {
 
 	public synchronized static boolean createNewSign(Sign sign, String game) {
 		List<String> signs = fileConf.getStringList("signs");
-
 		String index = locationSignToString(sign.getLocation(), game);
 		SignData data = new SignData(sign.getLocation(), game, signPlaceholder);
-		signs.add(index);
 
+		signs.add(index);
 		fileConf.set("signs", signs);
+
 		signData.add(data);
 
 		Configuration.saveFile(fileConf, SignConfiguration.getFile());
@@ -83,7 +83,7 @@ public class SignCreator {
 	}
 
 	public synchronized static boolean removeSign(Sign sign) {
-		if (signData == null || signData.isEmpty())
+		if (signData.isEmpty())
 			return false;
 
 		List<String> signs = fileConf.getStringList("signs");
@@ -109,9 +109,6 @@ public class SignCreator {
 	 * @return True if a sign is found on the set location.
 	 */
 	public static boolean updateSign(Location loc) {
-		if (signData == null)
-			return false;
-
 		for (SignData data : signData) {
 			if (data.getLocation().equals(loc)) {
 				data.updateSign();

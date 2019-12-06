@@ -140,6 +140,10 @@ public class GetGames {
 		int i = 0;
 		int imax = getConfigGamesCount();
 		String[] games = getGameNames();
+		if (games == null) {
+			return false;
+		}
+
 		while (i < imax) {
 			if (games[i].equalsIgnoreCase(game))
 				return true;

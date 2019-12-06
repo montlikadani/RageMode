@@ -173,11 +173,23 @@ public class GameUtils {
 	 * @param uuid UUID
 	 * @return Game if player is in game.
 	 */
+	@Deprecated
 	public static Game getGameByPlayer(String uuid) {
 		Validate.notNull(uuid, "Player UUID can not be null!");
 		Validate.notEmpty(uuid, "Player UUID can't be empty!");
 
 		return getGameByPlayer(Bukkit.getPlayer(UUID.fromString(uuid)));
+	}
+
+	/**
+	 * Get the game by player uuid.
+	 * @param uuid UUID
+	 * @return Game if player is in game.
+	 */
+	public static Game getGameByPlayer(UUID uuid) {
+		Validate.notNull(uuid, "Player UUID can not be null!");
+
+		return getGameByPlayer(Bukkit.getPlayer(uuid));
 	}
 
 	/**
@@ -202,11 +214,23 @@ public class GameUtils {
 	 * @param uuid UUID
 	 * @return Game if player is in game.
 	 */
+	@Deprecated
 	public static Game getGameBySpectator(String uuid) {
 		Validate.notNull(uuid, "Player UUID can not be null!");
 		Validate.notEmpty(uuid, "Player UUID can't be empty!");
 
 		return getGameBySpectator(Bukkit.getPlayer(UUID.fromString(uuid)));
+	}
+
+	/**
+	 * Get the game by player uuid.
+	 * @param uuid UUID
+	 * @return Game if player is in game.
+	 */
+	public static Game getGameBySpectator(UUID uuid) {
+		Validate.notNull(uuid, "Player UUID can not be null!");
+
+		return getGameBySpectator(Bukkit.getPlayer(uuid));
 	}
 
 	/**

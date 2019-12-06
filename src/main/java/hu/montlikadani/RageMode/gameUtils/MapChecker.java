@@ -117,7 +117,7 @@ public class MapChecker {
 		}
 
 		Set<String> spawnNames = aFile.getConfigurationSection(path).getKeys(false);
-		if (spawnNames.size() <= maxPlayers) {
+		if (spawnNames.size() < maxPlayers) {
 			message = RageMode.getLang().get("game.too-few-spawns");
 			isValid = false;
 			return;

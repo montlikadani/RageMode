@@ -87,15 +87,17 @@ public class Game {
 			return false;
 
 		int time = GameLobby.getLobbyTime(name);
+		int maxPlayers = GetGames.getMaxPlayers(name);
+		int minPlayers = GetGames.getMinPlayers(name);
 		PlayerManager pm = new PlayerManager(player, name);
 
-		if (players.size() < GetGames.getMaxPlayers(name)) {
+		if (players.size() < maxPlayers) {
 			players.put(player, pm);
 
 			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
 
-			if (GetGames.getMinPlayers(name) > 1) {
-				if (players.size() == GetGames.getMinPlayers(name) && lobbyTimer == null) {
+			if (minPlayers > 1) {
+				if (players.size() == minPlayers && lobbyTimer == null) {
 					lobbyTimer = new LobbyTimer(this, time);
 					lobbyTimer.loadTimer();
 				}
@@ -115,8 +117,7 @@ public class Game {
 			Player playerToKick;
 
 			do {
-				int kickposition = GetGames.getMaxPlayers(name) < 2 ? 0
-						: ThreadLocalRandom.current().nextInt(GetGames.getMaxPlayers(name) - 1);
+				int kickposition = maxPlayers < 2 ? 0 : ThreadLocalRandom.current().nextInt(maxPlayers - 1);
 				playerToKick = getPlayersFromList().get(kickposition).getPlayer();
 				isVIP = playerToKick.hasPermission("ragemode.vip");
 			} while (isVIP);
@@ -131,8 +132,8 @@ public class Game {
 
 			players.put(player, pm);
 
-			if (GetGames.getMinPlayers(name) > 1) {
-				if (players.size() == GetGames.getMinPlayers(name) && lobbyTimer == null) {
+			if (minPlayers > 1) {
+				if (players.size() == minPlayers && lobbyTimer == null) {
 					lobbyTimer = new LobbyTimer(this, time);
 					lobbyTimer.loadTimer();
 				}
