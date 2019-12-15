@@ -289,16 +289,11 @@ public class RageScores {
 		int highestPoints = 0;
 		for (PlayerManager pm : players) {
 			UUID uuid = pm.getPlayer().getUniqueId();
-			if (uuid == null) {
-				continue;
-			}
 
-			if (playerpoints.containsKey(uuid)) {
-				if (getPlayerPoints(uuid).getPoints() > highestPoints) {
-					highest = uuid;
-					highestPoints = getPlayerPoints(uuid).getPoints();
-					resultPlayer = uuid;
-				}
+			if (playerpoints.containsKey(uuid) && getPlayerPoints(uuid).getPoints() > highestPoints) {
+				highest = uuid;
+				highestPoints = getPlayerPoints(uuid).getPoints();
+				resultPlayer = uuid;
 			}
 		}
 

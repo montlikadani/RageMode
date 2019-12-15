@@ -27,8 +27,12 @@ public class RmCommand implements CommandExecutor {
 
 		String path = "hu.montlikadani.ragemode.commands.list";
 		List<Class<?>> classes = Utils.getClasses(path);
-		for (int i = 0; i < classes.size(); i++) {
-			String className = classes.get(i).getName().toLowerCase();
+		for (Class<?> cl : classes) {
+			if (cl == null) {
+				continue;
+			}
+
+			String className = cl.getName().toLowerCase();
 			arg.put(className.replace(path + ".", ""), className);
 		}
 	}
