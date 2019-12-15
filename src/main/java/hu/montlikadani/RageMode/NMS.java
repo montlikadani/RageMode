@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 
-import hu.montlikadani.ragemode.MinecraftVersion.Version;
+import hu.montlikadani.ragemode.ServerVersion.Version;
 
 @SuppressWarnings("deprecation")
 public class NMS {

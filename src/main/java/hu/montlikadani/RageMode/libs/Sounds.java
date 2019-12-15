@@ -1,5 +1,7 @@
 package hu.montlikadani.ragemode.libs;
 
+import org.apache.commons.lang.Validate;
+
 /**
  * Sounds enum class to play sounds in 1.8 and higher versions
  */
@@ -961,7 +963,29 @@ public enum Sounds {
 	UI_TOAST_IN("UI_TOAST_IN"),
 	UI_TOAST_OUT("UI_TOAST_OUT"),
 	WEATHER_RAIN("AMBIENCE_RAIN", "WEATHER_RAIN"),
-	WEATHER_RAIN_ABOVE("WEATHER_RAIN_ABOVE");
+	WEATHER_RAIN_ABOVE("WEATHER_RAIN_ABOVE"),
+
+	// 1.15
+	BLOCK_BEEHIVE_DRIP("BLOCK_BEEHIVE_DRIP"),
+	BLOCK_BEEHIVE_ENTER("BLOCK_BEEHIVE_ENTER"),
+	BLOCK_BEEHIVE_EXIT("BLOCK_BEEHIVE_EXIT"),
+	BLOCK_BEEHIVE_SHEAR("BLOCK_BEEHIVE_SHEAR"),
+	BLOCK_BEEHIVE_WORK("BLOCK_BEEHIVE_WORK"),
+	BLOCK_HONEY_BLOCK_BREAK("BLOCK_HONEY_BLOCK_BREAK"),
+	BLOCK_HONEY_BLOCK_FALL("BLOCK_HONEY_BLOCK_FALL"),
+	BLOCK_HONEY_BLOCK_HIT("BLOCK_HONEY_BLOCK_HIT"),
+	BLOCK_HONEY_BLOCK_PLACE("BLOCK_HONEY_BLOCK_PLACE"),
+	BLOCK_HONEY_BLOCK_SLIDE("BLOCK_HONEY_BLOCK_SLIDE"),
+	BLOCK_HONEY_BLOCK_STEP("BLOCK_HONEY_BLOCK_STEP"),
+	ENTITY_BEE_DEATH("ENTITY_BEE_DEATH"),
+	ENTITY_BEE_HURT("ENTITY_BEE_HURT"),
+	ENTITY_BEE_LOOP("ENTITY_BEE_LOOP"),
+	ENTITY_BEE_LOOP_AGGRESSIVE("ENTITY_BEE_LOOP_AGGRESSIVE"),
+	ENTITY_BEE_POLLINATE("ENTITY_BEE_POLLINATE"),
+	ENTITY_BEE_STING("ENTITY_BEE_STING"),
+	ENTITY_IRON_GOLEM_DAMAGE("ENTITY_IRON_GOLEM_DAMAGE"),
+	ENTITY_IRON_GOLEM_REPAIR("ENTITY_IRON_GOLEM_REPAIR"),
+	ITEM_HONEY_BOTTLE_DRINK("ITEM_HONEY_BOTTLE_DRINK");
 
 	private String[] name;
 	private Sound sound = null;
@@ -971,9 +995,8 @@ public enum Sounds {
 	}
 
 	public void playSound(Player player, float volume, float pitch) {
-		if (player == null) {
-			throw new NullPointerException("Player could not be null");
-		}
+		Validate.notNull(player, "Player can't be null!");
+
 		if (sound != null)
 			player.playSound(player.getLocation(), sound, volume, pitch);
 		else {
@@ -981,7 +1004,7 @@ public enum Sounds {
 				try {
 					sound = Sound.valueOf(name);
 					player.playSound(player.getLocation(), sound, volume, pitch);
-					return;
+					break;
 				} catch (IllegalArgumentException il) {
 				}
 			}
@@ -989,9 +1012,8 @@ public enum Sounds {
 	}
 
 	public void playSound(Location location, float volume, float pitch) {
-		if (location == null) {
-			throw new NullPointerException("Location could not be null");
-		}
+		Validate.notNull(location, "Location can't be null!");
+
 		if (sound != null)
 			location.getWorld().playSound(location, sound, volume, pitch);
 		else {
@@ -999,7 +1021,7 @@ public enum Sounds {
 				try {
 					sound = Sound.valueOf(name);
 					location.getWorld().playSound(location, sound, volume, pitch);
-					return;
+					break;
 				} catch (IllegalArgumentException il) {
 				}
 			}

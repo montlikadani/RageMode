@@ -11,7 +11,6 @@ import java.util.List;
 public class ConfigValues {
 
 	private static String lang;
-	@Deprecated private static String statistics; // remove in the next update
 	private static String databaseType;
 	private static String hubName;
 	private static String username;
@@ -84,7 +83,6 @@ public class ConfigValues {
 	private static boolean rejoinDelayEnabled;
 
 	private static int signsUpdateTime;
-	@Deprecated private static int minPlayers; // remove in the next update
 	private static int gameFreezeTime;
 	private static int lobbyDelay;
 	private static int gameTime;
@@ -117,11 +115,7 @@ public class ConfigValues {
 
 	public static void loadValues(FileConfig f) {
 		lang = f.get("language", "en");
-		if (f.getOriginal("statistic") != null) {
-			statistics = f.getOriginal("statistics");
-		} else {
-			databaseType = f.get("databaseType", "yaml");
-		}
+		databaseType = f.get("databaseType", "yaml");
 		checkForUpdates = f.get("check-for-updates", true);
 		logConsole = f.get("log-console", true);
 		savePlayerData = f.get("save-player-datas-to-file", false);
@@ -181,7 +175,6 @@ public class ConfigValues {
 		youwonTitleTime = f.get("titles.you-won.time", "20, 80, 20");
 		spectatorEnable = f.get("spectator.enable", true);
 		spectatorCmds = f.get("spectator.allowed-spectator-commands", Arrays.asList("/rm leave", "/ragemode leave"));
-		minPlayers = f.get("game.global.lobby.min-players-to-start-lobby-timer", 2);
 		chatEnableinLobby = f.get("lobby.enable-chat-in-lobby", true);
 		playerLevelAsTimeCounter = f.get("lobby.player-level-as-time-counter", false);
 		lobbyTimeMsgs = f.get("lobby.values-to-send-start-message",
@@ -240,11 +233,6 @@ public class ConfigValues {
 
 	public static String getLang() {
 		return lang;
-	}
-
-	@Deprecated
-	public static String getStatistics() {
-		return statistics;
 	}
 
 	public static String getDatabaseType() {
@@ -448,11 +436,6 @@ public class ConfigValues {
 
 	public static List<String> getSpectatorCmds() {
 		return spectatorCmds;
-	}
-
-	@Deprecated
-	public static int getMinPlayers() {
-		return minPlayers;
 	}
 
 	public static boolean isChatEnabledinLobby() {

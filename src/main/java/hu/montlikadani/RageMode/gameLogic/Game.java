@@ -31,8 +31,6 @@ public class Game {
 
 	private Map<Player, PlayerManager> players = new HashMap<>();
 	private Map<Player, PlayerManager> specPlayer = new HashMap<>();
-	@Deprecated
-	private Map<String, Boolean> runningGame = new HashMap<>();
 
 	private boolean running = false;
 	private LobbyTimer lobbyTimer;
@@ -243,65 +241,6 @@ public class Game {
 	public boolean setGameNotRunning() {
 		if (running) {
 			running = false;
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Checks whatever the game is running or not.
-	 * @param game Game
-	 * @return true if the game is exist and running.
-	 */
-	@Deprecated
-	public boolean isGameRunning(String game) {
-		Validate.notNull(game, "Game name can't be null!");
-		Validate.notEmpty(game, "Game name can't be empty!");
-
-		if (GetGames.isGameExistent(game) && runningGame.get(game) != null && runningGame.get(game)) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Sets the game running.
-	 * @param game Game
-	 * @return true if game exist and the game not running
-	 */
-	@Deprecated
-	public boolean setGameRunning(String game) {
-		Validate.notNull(game, "Game name can't be null!");
-		Validate.notEmpty(game, "Game name can't be empty!");
-
-		if (!GetGames.isGameExistent(game))
-			return false;
-
-		if (runningGame.get(game) != null && runningGame.get(game)) {
-			return false;
-		}
-
-		runningGame.put(game, true);
-		return true;
-	}
-
-	/**
-	 * Sets the game not running
-	 * @param game Game
-	 * @return true if game exist and the game is running
-	 */
-	@Deprecated
-	public boolean setGameNotRunning(String game) {
-		Validate.notNull(game, "Game name can't be null!");
-		Validate.notEmpty(game, "Game name can't be empty!");
-
-		if (!GetGames.isGameExistent(game))
-			return false;
-
-		if (runningGame.get(game) != null && runningGame.get(game)) {
-			runningGame.remove(game);
 			return true;
 		}
 

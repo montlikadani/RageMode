@@ -12,7 +12,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.material.Directional;
 
-import hu.montlikadani.ragemode.MinecraftVersion.Version;
+import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;

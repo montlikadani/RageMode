@@ -53,7 +53,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import hu.montlikadani.ragemode.MinecraftVersion.Version;
+import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;

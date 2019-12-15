@@ -15,7 +15,7 @@ public class Debug {
 
 	/**
 	 * Logging to console to write debug messages
-	 * <p>Using the <b>Level.INFO</b> level by default
+	 * @see #logConsole(String, Object...)
 	 * @param msg Error message
 	 */
 	public static void logConsole(String msg) {
@@ -24,7 +24,7 @@ public class Debug {
 
 	/**
 	 * Logging to console to write debug messages
-	 * <p>Using the <b>Level.INFO</b> level by default
+	 * @see #logConsole(Level, String, Object...)
 	 * @param msg Error message
 	 * @param p params
 	 */

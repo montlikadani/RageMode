@@ -33,7 +33,9 @@ public class RuntimePPManager {
 
 	/**
 	 * Get the points database for the given player uuid.
+	 * @deprecated converting string to uuid is too long time
 	 * @param sUUID Player uuid
+	 * @see #getPPForPlayer(UUID)
 	 * @return {@link PlayerPoints}
 	 */
 	@Deprecated
@@ -44,7 +46,7 @@ public class RuntimePPManager {
 	/**
 	 * Get the points database for the given player uuid.
 	 * @param sUUID Player uuid
-	 * @return {@link PlayerPoints}
+	 * @return {@link PlayerPoints} the player current stats
 	 */
 	public static PlayerPoints getPPForPlayer(UUID UUID) {
 		if (RuntimePPList == null) {

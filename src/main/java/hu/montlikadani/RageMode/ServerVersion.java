@@ -2,9 +2,9 @@ package hu.montlikadani.ragemode;
 
 import org.bukkit.Bukkit;
 
-public class MinecraftVersion {
+public class ServerVersion {
 
-	public MinecraftVersion() {
+	public ServerVersion() {
 	}
 
 	public Version getVersion() {
@@ -24,7 +24,9 @@ public class MinecraftVersion {
 		v1_13_R2,
 		v1_14_R1,
 		v1_14_R2,
-		v1_15_R1;
+		v1_15_R1,
+		v1_15_R2,
+		v1_16_R1;
 
 		private Integer value;
 		private String shortVersion;

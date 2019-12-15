@@ -11,7 +11,7 @@ import java.util.List;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.Debug;
-import hu.montlikadani.ragemode.MinecraftVersion.Version;
+import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 

@@ -19,7 +19,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.base.StandardSystemProperty;
 
-import hu.montlikadani.ragemode.MinecraftVersion.Version;
+import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.commands.RmTabCompleter;
 import hu.montlikadani.ragemode.config.ConfigValues;
@@ -57,7 +57,7 @@ public class RageMode extends JavaPlugin {
 	private static Language lang = null;
 	private static MySQLConnect mySQLConnect = null;
 	private static SQLConnect sqlConnect = null;
-	private static MinecraftVersion mcVersion = null;
+	private static ServerVersion serverVersion = null;
 
 	private Economy econ = null;
 
@@ -81,7 +81,7 @@ public class RageMode extends JavaPlugin {
 				return;
 			}
 
-			mcVersion = new MinecraftVersion();
+			serverVersion = new ServerVersion();
 
 			if (Version.isCurrentLower(Version.v1_8_R1)) {
 				getLogger().log(Level.SEVERE, "[RageMode] This version is not supported by this plugin! Please use larger 1.8+");
@@ -183,7 +183,7 @@ public class RageMode extends JavaPlugin {
 				Metrics metrics = new Metrics(this);
 				if (metrics.isEnabled()) {
 					metrics.addCustomChart(
-							new Metrics.SimplePie("games_amount", () -> String.valueOf(GetGames.getConfigGamesCount())));
+							new Metrics.SimplePie("games_amount", () -> String.valueOf(games.size())));
 
 					metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
 						int totalPlayers = 0;
@@ -345,9 +345,9 @@ public class RageMode extends JavaPlugin {
 	public synchronized boolean reload() {
 		HandlerList.unregisterAll(this);
 
-		for (String game : GetGames.getGameNames()) {
-			if (game != null && GameUtils.getGame(game) != null && GameUtils.getGame(game).isGameRunning()) {
-				GameUtils.stopGame(GameUtils.getGame(game), false);
+		for (Game game : games) {
+			if (game != null && game.isGameRunning()) {
+				GameUtils.stopGame(game, false);
 				GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
 			}
 		}
@@ -435,6 +435,7 @@ public class RageMode extends JavaPlugin {
 
 	/**
 	 * Removes a game from the list.
+	 * @see #removeGame(String)
 	 * @param game Game
 	 */
 	public void removeGame(Game game) {
@@ -456,6 +457,7 @@ public class RageMode extends JavaPlugin {
 
 	/**
 	 * Removes the given game all spawns.
+	 * @see #removeSpawn(String)
 	 * @param game Game
 	 */
 	public void removeSpawn(Game game) {
@@ -507,11 +509,11 @@ public class RageMode extends JavaPlugin {
 	}
 
 	/**
-	 * Gets the {@link MinecraftVersion} class
-	 * @return MinecraftVersion class
+	 * Gets the {@link ServerVersion} class
+	 * @return ServerVersion class
 	 */
-	public static MinecraftVersion getMCVersion() {
-		return mcVersion;
+	public static ServerVersion getServerVersion() {
+		return serverVersion;
 	}
 
 	public static boolean isSpigot() {

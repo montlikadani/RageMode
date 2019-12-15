@@ -19,8 +19,6 @@ public class Configuration {
 
 	private double configVersion = 1.5;
 
-	@Deprecated private ConfigValues cv = new ConfigValues();
-
 	public Configuration(RageMode plugin) {
 		this.plugin = plugin;
 	}
@@ -105,11 +103,6 @@ public class Configuration {
 		}
 		plugin.getLogger().log(Level.INFO, "The {0} file successfully created!", name);
 		return YamlConfiguration.loadConfiguration(file);
-	}
-
-	@Deprecated
-	public ConfigValues getCV() {
-		return cv;
 	}
 
 	public FileConfiguration getCfg() {

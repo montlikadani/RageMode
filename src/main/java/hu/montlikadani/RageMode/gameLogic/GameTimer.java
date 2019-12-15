@@ -92,13 +92,11 @@ public class GameTimer extends TimerTask {
 
 			// Broadcast time message should be in this place, before counting
 			List<Integer> values = ConfigValues.getGameEndBcs();
-			if (values != null) {
-				for (int val : values) {
-					if (time == val) {
-						GameUtils.broadcastToGame(game.getName(),
-								RageMode.getLang().get("game.broadcast.game-end", "%time%", tFormat));
-						break;
-					}
+			for (int val : values) {
+				if (time == val) {
+					GameUtils.broadcastToGame(game.getName(),
+							RageMode.getLang().get("game.broadcast.game-end", "%time%", tFormat));
+					break;
 				}
 			}
 

@@ -23,7 +23,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import hu.montlikadani.ragemode.Debug;
-import hu.montlikadani.ragemode.MinecraftVersion.Version;
+import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
@@ -58,6 +58,7 @@ public class GameUtils {
 
 	/**
 	 * Broadcast a message to the currently playing players for that given game.
+	 * @see #broadcastToGame(Game, String)
 	 * @param name Game Name
 	 * @param message Misc
 	 */
@@ -137,6 +138,7 @@ public class GameUtils {
 
 	/**
 	 * Get the game spawn by game.
+	 * @see #getGameSpawn(String)
 	 * @param game {@link Game}
 	 * @return {@link GameSpawn}
 	 */
@@ -170,7 +172,9 @@ public class GameUtils {
 
 	/**
 	 * Get the game by player uuid.
+	 * @deprecated converting string to uuid is too long time
 	 * @param uuid UUID
+	 * @see #getGameByPlayer(UUID)
 	 * @return Game if player is in game.
 	 */
 	@Deprecated
@@ -183,6 +187,7 @@ public class GameUtils {
 
 	/**
 	 * Get the game by player uuid.
+	 * @see #getGameByPlayer(Player)
 	 * @param uuid UUID
 	 * @return Game if player is in game.
 	 */
@@ -211,7 +216,9 @@ public class GameUtils {
 
 	/**
 	 * Get the game by player uuid.
+	 * @deprecated converting string to uuid is too long time
 	 * @param uuid UUID
+	 * @see #getGameBySpectator(UUID)
 	 * @return Game if player is in game.
 	 */
 	@Deprecated
@@ -224,6 +231,7 @@ public class GameUtils {
 
 	/**
 	 * Get the game by player uuid.
+	 * @see #getGameBySpectator(Player)
 	 * @param uuid UUID
 	 * @return Game if player is in game.
 	 */
@@ -287,8 +295,7 @@ public class GameUtils {
 	}
 
 	/**
-	 * Get the {@link Bonus} instance
-	 * <p>If the instance of the class not exist, will create new.
+	 * Gets the Bonus
 	 * @return {@link Bonus}
 	 */
 	public static Bonus getBonus() {
@@ -418,22 +425,26 @@ public class GameUtils {
 		String name = game.getName();
 
 		if (getStatus(name) == GameStatus.RUNNING) {
-			if (ConfigValues.isSpectatorEnabled()) {
-				if (!isPlayerPlaying(p)) {
-					if (game.addSpectatorPlayer(p, name)) {
-						p.teleport(getGameSpawn(name).getRandomSpawn());
-
-						p.setAllowFlight(true);
-						p.setFlying(true);
-						p.setGameMode(GameMode.SPECTATOR);
-
-						if (conf.getCfg().contains("items.leavegameitem"))
-							inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getItem());
-					}
-				} else
-					p.sendMessage(RageMode.getLang().get("game.player-not-switch-spectate"));
-			} else
+			if (!ConfigValues.isSpectatorEnabled()) {
 				p.sendMessage(RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
+				return;
+			}
+
+			if (isPlayerPlaying(p)) {
+				p.sendMessage(RageMode.getLang().get("game.player-not-switch-spectate"));
+				return;
+			}
+
+			if (game.addSpectatorPlayer(p, name)) {
+				p.teleport(getGameSpawn(name).getRandomSpawn());
+
+				p.setAllowFlight(true);
+				p.setFlying(true);
+				p.setGameMode(GameMode.SPECTATOR);
+
+				if (conf.getCfg().contains("items.leavegameitem"))
+					inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getItem());
+			}
 		} else {
 			if (getStatus(name) == GameStatus.NOTREADY) {
 				p.sendMessage(RageMode.getLang().get("commands.join.game-locked"));
@@ -572,8 +583,9 @@ public class GameUtils {
 	}
 
 	/**
-	 * Run commands in game, when the player doing something in game
+	 * Run commands for all players in game, when a player doing something in game
 	 * such as it died, joining, starting or stopping game.
+	 * @see #runCommands(Player, String, String)
 	 * @param game Game name
 	 * @param cmdType Command type, such as death, join or other
 	 */
@@ -676,7 +688,7 @@ public class GameUtils {
 	/**
 	 * Send boss bar messages to all current playing players, when
 	 * doing something, such as joining, leave, starting or stopping game.
-	 * <p>This returns if the boosbar option is disabled in configurations.
+	 * @see #sendBossBarMessages(Player, String, String)
 	 * @param game Game name
 	 * @param type Action type
 	 */
@@ -765,7 +777,7 @@ public class GameUtils {
 
 	/**
 	 * Teleports all players to a random spawn location.
-	 * This will return if there are no spawn added to list.
+	 * @see #teleportPlayerToGameSpawn(Player, GameSpawn)
 	 * @param spawn {@link GameSpawn}
 	 */
 	public static void teleportPlayersToGameSpawns(GameSpawn spawn) {
@@ -788,10 +800,7 @@ public class GameUtils {
 
 	/**
 	 * Stops the specified game if running.
-	 * This calculates the players who has the highest points and announcing
-	 * to a title message. If there are no winner player valid, players
-	 * will be removed from the game with some rewards.
-	 * This will saves the player statistic to the database and finally stopping the game.
+	 * @see #stopGame(Game, boolean)
 	 * @param game name
 	 */
 	public static void stopGame(String name) {
@@ -1055,6 +1064,7 @@ public class GameUtils {
 
 	/**
 	 * Gets the given game current set GameStatus by player.
+	 * @see #getStatus(String)
 	 * @param p Player
 	 * @return {@link GameStatus} if the player is in game
 	 */
@@ -1077,6 +1087,7 @@ public class GameUtils {
 	/**
 	 * Sets the game status to new status. If the status param is null
 	 * will set to stopped status.
+	 * @see #setStatus(String, GameStatus, boolean)
 	 * @param game the game name to set
 	 * @param status the new status to be set for the game
 	 */

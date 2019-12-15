@@ -254,7 +254,7 @@ public class Utils {
 	 */
 	public static Object getAsIChatBaseComponent(String name) throws Exception {
 		Class<?> iChatBaseComponent = getNMSClass("IChatBaseComponent");
-		if (getClassVersion().equals("v1_8_R1") || getClassVersion().equals("v1_8_R2")) {
+		if (ServerVersion.Version.isCurrentEqualOrLower(ServerVersion.Version.v1_8_R2)) {
 			Class<?> chatSerializer = getNMSClass("ChatSerializer");
 			Method m = chatSerializer.getMethod("a", String.class);
 			Object t = iChatBaseComponent.cast(m.invoke(chatSerializer, "{\"text\":\"" + name + "\"}"));
@@ -299,7 +299,7 @@ public class Utils {
 	/**
 	 * Adds to use color codes in the string.
 	 * @param s String
-	 * @return colored textt
+	 * @return colored text
 	 */
 	public static String colors(String s) {
 		return ChatColor.translateAlternateColorCodes('&', s);

@@ -19,7 +19,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 import hu.montlikadani.ragemode.Debug;
-import hu.montlikadani.ragemode.MinecraftVersion.Version;
+import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
@@ -69,7 +69,7 @@ public class RewardManager {
 		if (cash > 0D && RageMode.getInstance().isVaultEnabled())
 			RageMode.getInstance().getEconomy().depositPlayer(winner, cash);
 
-		getItems("winner", winner);
+		addItems("winner", winner);
 	}
 
 	public void rewardForPlayers(Player winner, Player pls) {
@@ -106,7 +106,7 @@ public class RewardManager {
 		if (cash > 0D && RageMode.getInstance().isVaultEnabled())
 			RageMode.getInstance().getEconomy().depositPlayer(pls, cash);
 
-		getItems("players", pls);
+		addItems("players", pls);
 	}
 
 	private String replacePlaceholders(String path, Player p, boolean winner) {
@@ -121,7 +121,7 @@ public class RewardManager {
 	}
 
 	@SuppressWarnings("deprecation")
-	private void getItems(String path, Player p) {
+	private void addItems(String path, Player p) {
 		if (conf.getConfigurationSection("rewards.end-game." + path + ".items") == null
 				|| !conf.isConfigurationSection("rewards.end-game." + path + ".items")) {
 			return;
