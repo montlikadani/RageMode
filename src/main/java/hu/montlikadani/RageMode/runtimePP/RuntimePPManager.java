@@ -45,10 +45,10 @@ public class RuntimePPManager {
 
 	/**
 	 * Get the points database for the given player uuid.
-	 * @param sUUID Player uuid
+	 * @param uuid Player uuid
 	 * @return {@link PlayerPoints} the player current stats
 	 */
-	public static PlayerPoints getPPForPlayer(UUID UUID) {
+	public static PlayerPoints getPPForPlayer(UUID uuid) {
 		if (RuntimePPList == null) {
 			RuntimePPList = new ArrayList<>();
 			return null;
@@ -57,7 +57,7 @@ public class RuntimePPManager {
 		int i = 0;
 		int imax = RuntimePPList.size();
 		while (i < imax) {
-			if (RuntimePPList.get(i).getUUID().equals(UUID)) {
+			if (RuntimePPList.get(i).getUUID().equals(uuid)) {
 				return RuntimePPList.get(i);
 			}
 

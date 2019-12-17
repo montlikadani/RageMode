@@ -60,7 +60,7 @@ public class LobbyTimer extends TimerTask {
 		List<Integer> values = ConfigValues.getLobbyTimeMsgs();
 		for (int val : values) {
 			if (time == val) {
-				GameUtils.broadcastToGame(game.getName(),
+				GameUtils.broadcastToGame(game,
 						RageMode.getLang().get("game.lobby.start-message", "%time%", Integer.toString(time)));
 				break;
 			}

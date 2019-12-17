@@ -66,7 +66,7 @@ public class GameLoader {
 			return true;
 		}
 
-		GameUtils.broadcastToGame(game.getName(), RageMode.getLang().get("game.not-set-up"));
+		GameUtils.broadcastToGame(game, RageMode.getLang().get("game.not-set-up"));
 
 		for (Iterator<PlayerManager> it = game.getPlayersFromList().iterator(); it.hasNext();) {
 			game.removePlayer(it.next().getPlayer());

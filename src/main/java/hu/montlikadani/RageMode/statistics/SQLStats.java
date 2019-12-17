@@ -328,7 +328,7 @@ public class SQLStats {
 	 * Returns an PlayerPoints instance with the statistics from the database
 	 * connection for the given Player.
 	 * 
-	 * @param playerUUID The Player instance for which the statistic should be gotten.
+	 * @param uuid The Player instance for which the statistic should be gotten.
 	 * @return the {@link PlayerPoints} class which contains the player stats.
 	 */
 	public static PlayerPoints getPlayerStatistics(UUID uuid) {

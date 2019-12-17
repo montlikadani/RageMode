@@ -197,7 +197,7 @@ public class RageScores {
 	/**
 	 * Gets the given player points
 	 * @deprecated converting string to uuid is too long time
-	 * @param playerUUID UUID of player
+	 * @param uuid UUID of player
 	 * @see #getPlayerPoints(UUID)
 	 * @return {@link PlayerPoints}
 	 */

@@ -348,6 +348,8 @@ items:
     slot: 9
   grenade:
     name: "&7Grenade"
+    # The name of the egg hologram appears when the player throws it
+    #custom-name: "&8Grenade"
     lore:
     - "&7Right click, throws a grenade and boom!"
     slot: 5

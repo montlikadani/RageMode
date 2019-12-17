@@ -69,15 +69,10 @@ public class GameTimer extends TimerTask {
 
 	@Override
 	public void run() {
-		// Cancel the task if the instance is null, due to server restart
-		if (RageMode.getInstance() == null) {
-			cancel();
-			return;
-		}
-
 		try { // Stop the game if something wrong or missing
 			if (!game.isGameRunning()) {
-				GameUtils.setStatus(game.getName(), null);
+				// TODO: fix IllegalPluginAccessException when calling new event
+				//GameUtils.setStatus(game.getName(), null);
 				cancel();
 				return;
 			}
@@ -91,10 +86,9 @@ public class GameTimer extends TimerTask {
 			String tFormat = Utils.getFormattedTime(time);
 
 			// Broadcast time message should be in this place, before counting
-			List<Integer> values = ConfigValues.getGameEndBcs();
-			for (int val : values) {
+			for (int val : ConfigValues.getGameEndBcs()) {
 				if (time == val) {
-					GameUtils.broadcastToGame(game.getName(),
+					GameUtils.broadcastToGame(game,
 							RageMode.getLang().get("game.broadcast.game-end", "%time%", tFormat));
 					break;
 				}

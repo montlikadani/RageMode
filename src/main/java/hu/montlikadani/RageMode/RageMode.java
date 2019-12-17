@@ -222,7 +222,14 @@ public class RageMode extends JavaPlugin {
 
 		GameUtils.stopAllGames();
 
-		getServer().getScheduler().cancelTasks(instance);
+		// Temporary fix for throwing an exception when stopping games
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		getServer().getScheduler().cancelTasks(this);
 		HandlerList.unregisterAll(this);
 		sign = null;
 		instance = null;

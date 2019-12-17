@@ -60,7 +60,7 @@ public class GameUtils {
 	 * Broadcast a message to the currently playing players for that given game.
 	 * @see #broadcastToGame(Game, String)
 	 * @param name Game Name
-	 * @param message Misc
+	 * @param message The message
 	 */
 	public static void broadcastToGame(String name, String message) {
 		broadcastToGame(getGame(name), message);
@@ -69,7 +69,7 @@ public class GameUtils {
 	/**
 	 * Broadcast a message to the currently playing players for that given game.
 	 * @param game Game
-	 * @param message Misc
+	 * @param message The message
 	 */
 	public static void broadcastToGame(Game game, String message) {
 		Validate.notNull(game, "Game can't be null!");
@@ -503,7 +503,7 @@ public class GameUtils {
 				if (conf.getCfg().contains("items.force-start") && p.hasPermission("ragemode.admin.item.forcestart"))
 					inv.setItem(conf.getCfg().getInt("items.force-start.slot"), ForceStarter.getItem());
 
-				broadcastToGame(name, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
+				broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
 
 				String title = ConfigValues.getTitleJoinGame();
 				String subtitle = ConfigValues.getSubTitleJoinGame();
@@ -801,7 +801,7 @@ public class GameUtils {
 	/**
 	 * Stops the specified game if running.
 	 * @see #stopGame(Game, boolean)
-	 * @param game name
+	 * @param name Game name
 	 */
 	public static void stopGame(String name) {
 		stopGame(getGame(name), true);
@@ -877,7 +877,7 @@ public class GameUtils {
 		}
 
 		if (!winnervalid) {
-			broadcastToGame(name, RageMode.getLang().get("game.no-won"));
+			broadcastToGame(game, RageMode.getLang().get("game.no-won"));
 
 			for (final PlayerManager pm : players) {
 				// Why?
@@ -1018,12 +1018,13 @@ public class GameUtils {
 			if (name != null) {
 				Game g = getGame(name);
 				if (g != null) {
+					List<PlayerManager> pList = g.getPlayersFromList();
 					if (g.isGameRunning()) {
 						Debug.logConsole("Stopping " + name + " ...");
 
-						RageScores.calculateWinner(name, g.getPlayersFromList());
+						RageScores.calculateWinner(name, pList);
 
-						for (PlayerManager players : g.getPlayersFromList()) {
+						for (PlayerManager players : pList) {
 							Player p = players.getPlayer();
 
 							p.removeMetadata("killedWith", RageMode.getInstance());
@@ -1031,17 +1032,16 @@ public class GameUtils {
 							RageScores.removePointsForPlayer(p.getUniqueId());
 						}
 
-						for (Iterator<Entry<Player, PlayerManager>> it = g.getSpectatorPlayers().entrySet().iterator(); it
-								.hasNext();) {
-							Player pl = it.next().getKey();
-							g.removeSpectatorPlayer(pl);
+						for (Iterator<Entry<Player, PlayerManager>> it = g.getSpectatorPlayers().entrySet()
+								.iterator(); it.hasNext();) {
+							g.removeSpectatorPlayer(it.next().getKey());
 						}
 
 						g.setGameNotRunning();
 
 						Debug.logConsole(name + " has been stopped.");
 					} else if (getStatus(name) == GameStatus.WAITING) {
-						g.getPlayersFromList().forEach(pl -> g.removePlayer(pl.getPlayer()));
+						pList.forEach(pl -> g.removePlayer(pl.getPlayer()));
 					}
 				}
 			}

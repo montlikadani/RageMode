@@ -72,6 +72,7 @@ import hu.montlikadani.ragemode.gameUtils.MapChecker;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.items.CombatAxe;
 import hu.montlikadani.ragemode.items.ForceStarter;
+import hu.montlikadani.ragemode.items.Grenade;
 import hu.montlikadani.ragemode.items.LeaveGame;
 import hu.montlikadani.ragemode.items.RageKnife;
 import hu.montlikadani.ragemode.libs.Sounds;
@@ -350,15 +351,15 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		String game = GameUtils.getGameByPlayer(deceased).getName();
+		Game game = GameUtils.getGameByPlayer(deceased);
 
 		if ((deceased.getKiller() != null && GameUtils.isPlayerPlaying(deceased.getKiller()))
 				|| deceased.getKiller() == null) {
 			boolean doDeathBroadcast = ConfigValues.isDeathMsgs();
 
-			if (plugin.getConfiguration().getArenasCfg().isSet("arenas." + game + ".death-messages")) {
+			if (plugin.getConfiguration().getArenasCfg().isSet("arenas." + game.getName() + ".death-messages")) {
 				String gameBroadcast = plugin.getConfiguration().getArenasCfg()
-						.getString("arenas." + game + ".death-messages", "");
+						.getString("arenas." + game.getName() + ".death-messages", "");
 				if (!gameBroadcast.isEmpty()) {
 					if (gameBroadcast.equals("true") || gameBroadcast.equals("false"))
 						doDeathBroadcast = Boolean.parseBoolean(gameBroadcast);
@@ -386,7 +387,7 @@ public class EventListener implements Listener {
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "ragebow");
 					}
 
-					killed = new RMPlayerKilledEvent(GameUtils.getGame(game), deceased,
+					killed = new RMPlayerKilledEvent(game, deceased,
 							deceased.getKiller() != null ? deceased.getKiller() : null, "arrow");
 					break;
 				case "snowball":
@@ -404,7 +405,7 @@ public class EventListener implements Listener {
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "combataxe");
 					}
 
-					killed = new RMPlayerKilledEvent(GameUtils.getGame(game), deceased,
+					killed = new RMPlayerKilledEvent(game, deceased,
 							deceased.getKiller() != null ? deceased.getKiller() : null, "snowball");
 					break;
 				case "explosion":
@@ -433,7 +434,7 @@ public class EventListener implements Listener {
 						deceased.sendMessage(RageMode.getLang().get("game.unknown-killer"));
 					}
 
-					killed = new RMPlayerKilledEvent(GameUtils.getGame(game), deceased,
+					killed = new RMPlayerKilledEvent(game, deceased,
 							deceased.getKiller() != null ? deceased.getKiller() : null, "explosion");
 					break;
 				case "grenade":
@@ -451,7 +452,7 @@ public class EventListener implements Listener {
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "grenade");
 					}
 
-					killed = new RMPlayerKilledEvent(GameUtils.getGame(game), deceased,
+					killed = new RMPlayerKilledEvent(game, deceased,
 							deceased.getKiller() != null ? deceased.getKiller() : null, "grenade");
 					break;
 				case "knife":
@@ -469,7 +470,7 @@ public class EventListener implements Listener {
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "rageknife");
 					}
 
-					killed = new RMPlayerKilledEvent(GameUtils.getGame(game), deceased,
+					killed = new RMPlayerKilledEvent(game, deceased,
 							deceased.getKiller() != null ? deceased.getKiller() : null, "knife");
 					break;
 				default:
@@ -490,7 +491,7 @@ public class EventListener implements Listener {
 			event.setKeepInventory(true);
 			event.getDrops().clear();
 
-			GameUtils.runCommands(deceased, game, "death");
+			GameUtils.runCommands(deceased, game.getName(), "death");
 			if (deceased.getKiller() != null) {
 				GameUtils.getBonus().addKillBonus(deceased.getKiller());
 			}
@@ -655,6 +656,12 @@ public class EventListener implements Listener {
 
 		// Cancel egg pick up
 		grenade.setPickupDelay(41);
+
+		// make custom name
+		if (!Grenade.getCustomName().isEmpty()) {
+			grenade.setCustomName(Grenade.getCustomName());
+			grenade.setCustomNameVisible(true);
+		}
 
 		grenade.setVelocity(p.getEyeLocation().getDirection());
 		// move egg from land location to simulate bounce
@@ -954,10 +961,10 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		String game = GameUtils.getGameByPlayer(p).getName();
+		Game game = GameUtils.getGameByPlayer(p);
 
 		if (GameUtils.getStatus(p) == GameStatus.RUNNING) {
-			if (waitingGames.containsKey(game) && waitingGames.get(game)) {
+			if (waitingGames.containsKey(game.getName()) && waitingGames.get(game.getName())) {
 				Location from = event.getFrom();
 				Location to = event.getTo();
 				double x = Math.floor(from.getX());

@@ -1,15 +1,13 @@
 package hu.montlikadani.ragemode.libs;
 
 import org.apache.commons.lang.Validate;
-
-/**
- * Sounds enum class to play sounds in 1.8 and higher versions
- */
-
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
+/**
+ * Sounds enum class to play sounds in 1.8 and higher versions
+ */
 public enum Sounds {
 	AMBIENCE_CAVE("AMBIENCE_CAVE", "AMBIENT_CAVE"),
 	AMBIENCE_RAIN("AMBIENCE_RAIN", "WEATHER_RAIN"),
@@ -994,6 +992,24 @@ public enum Sounds {
 		this.name = name;
 	}
 
+	public String[] getNames() {
+		return name;
+	}
+
+	public Sounds getByName(String name) {
+		for (Sounds s : Sounds.values()) {
+			if (s.name().equals(name)) {
+				return s;
+			}
+		}
+
+		return null;
+	}
+
+	public void playSound(Player player) {
+		playSound(player, 1f, 1f);
+	}
+
 	public void playSound(Player player, float volume, float pitch) {
 		Validate.notNull(player, "Player can't be null!");
 
@@ -1011,6 +1027,10 @@ public enum Sounds {
 		}
 	}
 
+	public void playSound(Location location) {
+		playSound(location, 1f, 1f);
+	}
+
 	public void playSound(Location location, float volume, float pitch) {
 		Validate.notNull(location, "Location can't be null!");
 
@@ -1024,6 +1044,44 @@ public enum Sounds {
 					break;
 				} catch (IllegalArgumentException il) {
 				}
+			}
+		}
+	}
+
+	public static void playSound(Sounds sound, Player player) {
+		playSound(sound, player, 1f, 1f);
+	}
+
+	public static void playSound(Sounds sound, Player player, float volume, float pitch) {
+		Validate.notNull(player, "Player can't be null!");
+
+		for (Sounds s : Sounds.values()) {
+			if (s == null) {
+				continue;
+			}
+
+			if (s.equals(sound)) {
+				player.playSound(player.getLocation(), Sound.valueOf(s.name()), volume, pitch);
+				break;
+			}
+		}
+	}
+
+	public static void playSound(Sounds sound, Location location) {
+		playSound(sound, location, 1f, 1f);
+	}
+
+	public static void playSound(Sounds sound, Location location, float volume, float pitch) {
+		Validate.notNull(location, "Location can't be null!");
+
+		for (Sounds s : Sounds.values()) {
+			if (s == null) {
+				continue;
+			}
+
+			if (s.equals(sound)) {
+				location.getWorld().playSound(location, Sound.valueOf(s.name()), volume, pitch);
+				break;
 			}
 		}
 	}

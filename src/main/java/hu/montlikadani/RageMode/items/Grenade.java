@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.items;
 
 import java.util.List;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -26,6 +27,11 @@ public class Grenade {
 
 	public static String getName() {
 		String iname = RageMode.getInstance().getConfiguration().getCfg().getString("items.grenade.name", "");
-		return !iname.isEmpty() ? Utils.colors(iname) : org.bukkit.ChatColor.DARK_GRAY + "Grenade";
+		return !iname.isEmpty() ? Utils.colors(iname) : ChatColor.DARK_GRAY + "Grenade";
+	}
+
+	public static String getCustomName() {
+		String name = RageMode.getInstance().getConfiguration().getCfg().getString("items.grenade.custom-name", "");
+		return Utils.colors(name);
 	}
 }
