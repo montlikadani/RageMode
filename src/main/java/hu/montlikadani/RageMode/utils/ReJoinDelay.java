@@ -78,15 +78,7 @@ public class ReJoinDelay {
 	}
 
 	public static Long getTimeByPlayer(Player p) {
-		if (playerTimes.containsKey(p)) {
-			for (Map.Entry<Player, Long> m : playerTimes.entrySet()) {
-				if (m.getKey().equals(p)) {
-					return m.getValue();
-				}
-			}
-		}
-
-		return null;
+		return playerTimes.containsKey(p) ? playerTimes.get(p) : null;
 	}
 
 	public static Map<Player, Long> getPlayerTimes() {

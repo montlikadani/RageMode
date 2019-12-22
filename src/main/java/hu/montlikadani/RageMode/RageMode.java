@@ -38,6 +38,7 @@ import hu.montlikadani.ragemode.gameUtils.BungeeUtils;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.holder.HoloHolder;
+import hu.montlikadani.ragemode.managers.BossbarManager;
 import hu.montlikadani.ragemode.metrics.Metrics;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
@@ -54,6 +55,7 @@ public class RageMode extends JavaPlugin {
 	private Configuration conf = null;
 	private SignScheduler sign = null;
 	private BungeeUtils bungee = null;
+	private BossbarManager bossManager = null;
 	private static Language lang = null;
 	private static MySQLConnect mySQLConnect = null;
 	private static SQLConnect sqlConnect = null;
@@ -178,6 +180,8 @@ public class RageMode extends JavaPlugin {
 				signTask = getServer().getScheduler().runTaskLater(this, sign, 40L);
 			}
 
+			bossManager = new BossbarManager(this);
+
 			// Metrics has changed the JsonObject and causing the break, so disable under 1.8.5
 			if (Version.isCurrentEqualOrHigher(Version.v1_8_R3)) {
 				Metrics metrics = new Metrics(this);
@@ -221,13 +225,6 @@ public class RageMode extends JavaPlugin {
 		if (instance == null) return;
 
 		GameUtils.stopAllGames();
-
-		// Temporary fix for throwing an exception when stopping games
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 
 		getServer().getScheduler().cancelTasks(this);
 		HandlerList.unregisterAll(this);
@@ -545,6 +542,10 @@ public class RageMode extends JavaPlugin {
 
 	public SignScheduler getSignScheduler() {
 		return sign;
+	}
+
+	public BossbarManager getBossbarManager() {
+		return bossManager;
 	}
 
 	public List<Game> getGames() {

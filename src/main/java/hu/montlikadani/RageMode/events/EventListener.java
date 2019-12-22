@@ -63,11 +63,9 @@ import hu.montlikadani.ragemode.API.event.RMPlayerPreRespawnEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerRespawnedEvent;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
-import hu.montlikadani.ragemode.gameLogic.GameLoader;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.gameUtils.MapChecker;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.items.CombatAxe;
@@ -106,7 +104,7 @@ public class EventListener implements Listener {
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		Player p = event.getPlayer();
 
-		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p), true);
+		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p));
 		GameUtils.kickSpectator(p, GameUtils.getGameBySpectator(p));
 		HoloHolder.deleteHoloObjectsOfPlayer(p);
 	}
@@ -115,7 +113,7 @@ public class EventListener implements Listener {
 	public void onPlayerKick(PlayerKickEvent ev) {
 		Player p = ev.getPlayer();
 
-		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p), true);
+		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p));
 		GameUtils.kickSpectator(p, GameUtils.getGameBySpectator(p));
 		HoloHolder.deleteHoloObjectsOfPlayer(p);
 	}
@@ -735,11 +733,10 @@ public class EventListener implements Listener {
 
 				ItemStack hand = NMS.getItemInHand(thrower);
 				ItemMeta meta = hand.getItemMeta();
-				if (meta != null && meta.getDisplayName() != null) {
-					if (meta.getDisplayName().equals(CombatAxe.getName())) {
-						thrower.launchProjectile(Snowball.class);
-						NMS.setItemInHand(thrower, null);
-					}
+				if (meta != null && meta.getDisplayName() != null
+						&& meta.getDisplayName().equals(CombatAxe.getName())) {
+					thrower.launchProjectile(Snowball.class);
+					NMS.setItemInHand(thrower, null);
 				}
 			}
 
@@ -750,18 +747,12 @@ public class EventListener implements Listener {
 					ItemMeta meta = hand.getItemMeta();
 					if (meta != null && meta.getDisplayName() != null) {
 						Game game = GameUtils.getGameByPlayer(p);
-						String name = game.getName();
 
 						if (p.hasPermission("ragemode.admin.item.forcestart")
 								&& meta.getDisplayName().equals(ForceStarter.getName())) {
-							if (GameUtils.getGame(name).getLobbyTimer() != null) {
-								GameUtils.getGame(name).getLobbyTimer().cancel();
-								p.setLevel(0); // Set level counter back to 0
-							}
-
-							p.sendMessage(RageMode.getLang().get("commands.forcestart.game-start", "%game%", name));
-							RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(
-									RageMode.getInstance(), () -> new GameLoader(GameUtils.getGame(name)));
+							GameUtils.forceStart(game);
+							p.sendMessage(
+									RageMode.getLang().get("commands.forcestart.game-start", "%game%", game.getName()));
 						}
 
 						if (meta.getDisplayName().equals(LeaveGame.getName())) {
@@ -778,32 +769,29 @@ public class EventListener implements Listener {
 			}
 		}
 
-		if (ConfigValues.isSignsEnable() && event.getClickedBlock() != null
-				&& event.getClickedBlock().getState() != null) {
-			org.bukkit.block.Block b = event.getClickedBlock();
+		org.bukkit.block.Block b = event.getClickedBlock();
+		if (ConfigValues.isSignsEnable() && b != null && b.getState() != null && b.getState() instanceof Sign
+				&& event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			if (!p.hasPermission("ragemode.join.sign")) {
+				p.sendMessage(RageMode.getLang().get("no-permission"));
+				return;
+			}
 
-			if (b.getState() instanceof Sign && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-				if (!p.hasPermission("ragemode.join.sign")) {
-					p.sendMessage(RageMode.getLang().get("no-permission"));
-					return;
-				}
+			if (!SignCreator.isSign(b.getLocation())) {
+				p.sendMessage(RageMode.getLang().get("game.does-not-exist"));
+				return;
+			}
 
-				if (!SignCreator.isSign(b.getLocation())) {
-					p.sendMessage(RageMode.getLang().get("game.does-not-exist"));
-					return;
-				}
-
-				for (SignData data : SignCreator.getSignData()) {
-					if (data.getLocation().equals(b.getLocation())) {
-						String name = data.getGame();
-						if (name == null || !GameUtils.isGameWithNameExists(name)) {
-							p.sendMessage(RageMode.getLang().get("game.does-not-exist"));
-							break;
-						}
-
-						GameUtils.joinPlayer(p, GameUtils.getGame(name));
+			for (SignData data : SignCreator.getSignData()) {
+				if (data.getLocation().equals(b.getLocation())) {
+					String name = data.getGame();
+					if (name == null || !GameUtils.isGameWithNameExists(name)) {
+						p.sendMessage(RageMode.getLang().get("game.does-not-exist"));
 						break;
 					}
+
+					GameUtils.joinPlayer(p, GameUtils.getGame(name));
+					break;
 				}
 			}
 		}
@@ -944,12 +932,14 @@ public class EventListener implements Listener {
 				return;
 			}
 
-			for (String game : GetGames.getGameNames()) {
-				if (game.equalsIgnoreCase(l1))
-					SignCreator.createNewSign((Sign) event.getBlock().getState(), game);
-
-				SignCreator.updateSign(((Sign) event.getBlock().getState()).getLocation());
+			for (Game game : plugin.getGames()) {
+				if (game.getName().equalsIgnoreCase(l1)) {
+					SignCreator.createNewSign((Sign) event.getBlock().getState(), game.getName());
+					break;
+				}
 			}
+
+			SignCreator.updateSign(((Sign) event.getBlock().getState()).getLocation());
 		}
 	}
 

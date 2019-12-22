@@ -122,8 +122,7 @@ public class RewardManager {
 
 	@SuppressWarnings("deprecation")
 	private void addItems(String path, Player p) {
-		if (conf.getConfigurationSection("rewards.end-game." + path + ".items") == null
-				|| !conf.isConfigurationSection("rewards.end-game." + path + ".items")) {
+		if (!conf.contains("rewards.end-game." + path + ".items")) {
 			return;
 		}
 

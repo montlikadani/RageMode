@@ -96,7 +96,6 @@ public class Language {
 		l.getL("commands.forcestart.game-start", "&aStarting the&e %game%&a game...");
 		l.getL("commands.forcestart.not-enough-players", "&cNot enough player to run this game!");
 		l.getL("commands.forcestart.game-not-exist", "&cThis game not exists. Please add correctly name.");
-		l.getL("commands.forcestart.player-not-in-game", "&cYou are not in-game lobby to start!");
 		l.getL("commands.holostats.no-holo-found", "&cThere is no hologram saved.");
 		l.getL("commands.stats.player-not-null", "&cThe player couldn't be null!");
 		l.getL("commands.stats.player-not-found", "&cThis player not found.");

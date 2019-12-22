@@ -23,7 +23,6 @@ commands:
   forcestart:
     game-start: "&e%game%&a játék indítása..."
     not-enough-players: "&cNincs elég játékos, hogy futtassa ezt a játékot!"
-    player-not-in-game: "&cNem vagy a játék lobbyban, hogy elkezdődjön!"
   holostats:
     no-holo-found: "&cNincs hologram elmentve."
   stats:

@@ -20,11 +20,11 @@ public class GameLoader {
 
 	public GameLoader(Game game) {
 		this.game = game;
+	}
 
-		game.cancelLobbyTimer();
-
+	public boolean startGame() {
 		if (!checkTeleport()) {
-			return; // stop starting the game if the game not set up correctly
+			return false; // stop starting the game if the game not set up correctly
 		}
 
 		Utils.callEvent(new RMGameStartEvent(game, game.getPlayersFromList()));
@@ -57,6 +57,8 @@ public class GameLoader {
 			GameUtils.sendBossBarMessages(p, name, "start");
 			GameUtils.sendActionBarMessages(p, name, "start");
 		}
+
+		return true;
 	}
 
 	private boolean checkTeleport() {

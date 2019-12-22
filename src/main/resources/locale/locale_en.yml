@@ -23,7 +23,6 @@ commands:
   forcestart:
     game-start: "&aStarting the&e %game%&a game..."
     not-enough-players: "&cNot enough player to run this game!"
-    player-not-in-game: "&cYou are not in-game lobby to start!"
   holostats:
     no-holo-found: "&cThere is no hologram saved."
   stats:

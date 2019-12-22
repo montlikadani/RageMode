@@ -29,28 +29,39 @@ public class SignPlaceholder {
 				line = line.replace("%game%", game);
 
 			if (line.contains("%current-players%")) {
-				line = line.replace("%current-players%", GameUtils.getStatus(game) == GameStatus.RUNNING
-						|| GameUtils.getStatus(game) == GameStatus.WAITING && GameUtils.getGame(game).isGameRunning()
-								? Integer.toString(GameUtils.getGame(game).getPlayers().size())
-								: "0");
+				line = line.replace("%current-players%",
+						GameUtils.getStatus(game) == GameStatus.RUNNING
+								|| GameUtils.getStatus(game) == GameStatus.WAITING
+										? Integer.toString(GameUtils.getGame(game).getPlayers().size())
+										: "0");
 			}
 
 			if (line.contains("%max-players%"))
 				line = line.replace("%max-players%", Integer.toString(GetGames.getMaxPlayers(game)));
 
 			if (line.contains("%running%")) {
-				if (GameUtils.getStatus(game) == GameStatus.WAITING) {
+				switch (GameUtils.getStatus(game)) {
+				case WAITING:
 					if (GameUtils.getGame(game).getPlayers().size() == GetGames.getMaxPlayers(game))
 						line = line.replace("%running%", ConfigValues.getSignGameFull());
 					else
 						line = line.replace("%running%", ConfigValues.getSignGameWaiting());
+					break;
+				case RUNNING:
+					if (GameUtils.getGame(game).isGameRunning()) {
+						line = line.replace("%running%", ConfigValues.getSignGameRunning());
+					}
+					break;
+				case NOTREADY:
+					line = line.replace("%running%", ConfigValues.getSignGameLocked());
+					break;
+				case READY:
+				case STOPPED:
+					line = line.replace("%running%", ConfigValues.getSignGameWaiting());
+					break;
+				default:
+					break;
 				}
-
-				line = line.replace("%running%",
-						GameUtils.getStatus(game) == GameStatus.RUNNING && GameUtils.getGame(game).isGameRunning()
-								? ConfigValues.getSignGameRunning()
-								: GameUtils.getStatus(game) == GameStatus.NOTREADY ? ConfigValues.getSignGameLocked()
-										: ConfigValues.getSignGameWaiting());
 			}
 
 			line = Utils.colors(line);

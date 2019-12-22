@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.signs;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -31,11 +30,10 @@ public class SignScheduler implements Runnable, Listener {
 	@EventHandler
 	public void onEvent(SignsUpdateEvent event) {
 		if (!event.isCancelled()) {
-			Iterator<SignData> list = event.getSigns().iterator();
-			while (list.hasNext()) {
-				SignData sign = list.next();
-				if (sign != null)
+			for (SignData sign : event.getSigns()) {
+				if (sign != null) {
 					sign.updateSign();
+				}
 			}
 		}
 	}

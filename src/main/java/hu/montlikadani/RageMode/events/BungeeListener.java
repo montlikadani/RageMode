@@ -27,7 +27,7 @@ public class BungeeListener implements Listener {
 	public void onQuit(PlayerQuitEvent ev) {
 		Player p = ev.getPlayer();
 
-		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p), true);
+		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p));
 		GameUtils.kickSpectator(p, GameUtils.getGameBySpectator(p));
 	}
 
@@ -35,7 +35,7 @@ public class BungeeListener implements Listener {
 	public void onKick(PlayerKickEvent e) {
 		Player p = e.getPlayer();
 
-		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p), true);
+		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p));
 		GameUtils.kickSpectator(p, GameUtils.getGameBySpectator(p));
 	}
 }

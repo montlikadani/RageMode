@@ -1048,11 +1048,11 @@ public enum Sounds {
 		}
 	}
 
-	public static void playSound(Sounds sound, Player player) {
-		playSound(sound, player, 1f, 1f);
+	public static void playSound(Player player, Sounds sound) {
+		playSound(player, sound, 1f, 1f);
 	}
 
-	public static void playSound(Sounds sound, Player player, float volume, float pitch) {
+	public static void playSound(Player player, Sounds sound, float volume, float pitch) {
 		Validate.notNull(player, "Player can't be null!");
 
 		for (Sounds s : Sounds.values()) {
@@ -1067,11 +1067,11 @@ public enum Sounds {
 		}
 	}
 
-	public static void playSound(Sounds sound, Location location) {
-		playSound(sound, location, 1f, 1f);
+	public static void playSound(Location location, Sounds sound) {
+		playSound(location, sound, 1f, 1f);
 	}
 
-	public static void playSound(Sounds sound, Location location, float volume, float pitch) {
+	public static void playSound(Location location, Sounds sound, float volume, float pitch) {
 		Validate.notNull(location, "Location can't be null!");
 
 		for (Sounds s : Sounds.values()) {

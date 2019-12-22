@@ -69,9 +69,11 @@ public class SignData {
 
 	protected void updateSign() {
 		Location location = getLocation();
+		synchronized (location) {
+			if (!location.getWorld().getChunkAt(location).isLoaded()) {
+				return;
+			}
 
-		// TODO: Remove chunk "checker" logic, due to server crash
-		if (location.getWorld().getChunkAt(location).isLoaded()) {
 			Block b = location.getBlock();
 			if (!(b.getState() instanceof Sign)) {
 				return;
@@ -145,22 +147,14 @@ public class SignData {
 					updateBackground(Material.YELLOW_TERRACOTTA);
 			}
 
-			if (GameUtils.getStatus(game) == GameStatus.WAITING) {
-				if (GameUtils.getGame(game).getPlayers().size() == GetGames.getMaxPlayers(game)) {
-					if (type.equals("wool"))
-						updateBackground(Material.BLUE_WOOL);
-					else if (type.equals("glass"))
-						updateBackground(Material.BLUE_STAINED_GLASS);
-					else if (type.equals("terracotta") || type.equals("clay"))
-						updateBackground(Material.BLUE_TERRACOTTA);
-				} else {
-					if (type.equals("wool"))
-						updateBackground(Material.LIME_WOOL);
-					else if (type.equals("glass"))
-						updateBackground(Material.LIME_STAINED_GLASS);
-					else if (type.equals("terracotta") || type.equals("clay"))
-						updateBackground(Material.LIME_TERRACOTTA);
-				}
+			if (GameUtils.getStatus(game) == GameStatus.WAITING
+					&& GameUtils.getGame(game).getPlayers().size() == GetGames.getMaxPlayers(game)) {
+				if (type.equals("wool"))
+					updateBackground(Material.BLUE_WOOL);
+				else if (type.equals("glass"))
+					updateBackground(Material.BLUE_STAINED_GLASS);
+				else if (type.equals("terracotta") || type.equals("clay"))
+					updateBackground(Material.BLUE_TERRACOTTA);
 			}
 
 			if (GameUtils.getStatus(game) == GameStatus.RUNNING && GameUtils.getGame(game).isGameRunning()) {
@@ -188,22 +182,14 @@ public class SignData {
 					updateBackground(Material.getMaterial("STAINED_CLAY"), 4);
 			}
 
-			if (GameUtils.getStatus(game) == GameStatus.WAITING) {
-				if (GameUtils.getGame(game).getPlayers().size() == GetGames.getMaxPlayers(game)) {
-					if (type.equals("wool"))
-						updateBackground(Material.getMaterial("WOOL"), 11);
-					else if (type.equals("glass"))
-						updateBackground(Material.getMaterial("STAINED_GLASS"), 11);
-					else if (type.equals("terracotta") || type.equals("clay"))
-						updateBackground(Material.getMaterial("STAINED_CLAY"), 11);
-				} else {
-					if (type.equals("wool"))
-						updateBackground(Material.getMaterial("WOOL"), 5);
-					else if (type.equals("glass"))
-						updateBackground(Material.getMaterial("STAINED_GLASS"), 5);
-					else if (type.equals("terracotta") || type.equals("clay"))
-						updateBackground(Material.getMaterial("STAINED_CLAY"), 5);
-				}
+			if (GameUtils.getStatus(game) == GameStatus.WAITING
+					&& GameUtils.getGame(game).getPlayers().size() == GetGames.getMaxPlayers(game)) {
+				if (type.equals("wool"))
+					updateBackground(Material.getMaterial("WOOL"), 11);
+				else if (type.equals("glass"))
+					updateBackground(Material.getMaterial("STAINED_GLASS"), 11);
+				else if (type.equals("terracotta") || type.equals("clay"))
+					updateBackground(Material.getMaterial("STAINED_CLAY"), 11);
 			}
 
 			if (GameUtils.getStatus(game) == GameStatus.RUNNING && GameUtils.getGame(game).isGameRunning()) {

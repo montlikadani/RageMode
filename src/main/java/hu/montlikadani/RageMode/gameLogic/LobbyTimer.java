@@ -46,7 +46,10 @@ public class LobbyTimer extends TimerTask {
 
 	@Override
 	public void run() {
+		List<PlayerManager> list = game.getPlayersFromList();
 		if (game.isGameRunning()) {
+			// Set level counter back to 0
+			list.forEach(p -> p.getPlayer().setLevel(0));
 			cancel();
 			return;
 		}
@@ -61,12 +64,12 @@ public class LobbyTimer extends TimerTask {
 		for (int val : values) {
 			if (time == val) {
 				GameUtils.broadcastToGame(game,
-						RageMode.getLang().get("game.lobby.start-message", "%time%", Integer.toString(time)));
+						RageMode.getLang().get("game.lobby.start-message", "%time%", time));
 				break;
 			}
 		}
 
-		for (PlayerManager pm : game.getPlayersFromList()) {
+		for (PlayerManager pm : list) {
 			Player player = pm.getPlayer();
 
 			if (ConfigValues.isLobbyTitle()) {
@@ -97,15 +100,17 @@ public class LobbyTimer extends TimerTask {
 				}
 			}
 
-			if (ConfigValues.isPlayerLevelAsTimeCounter())
+			if (ConfigValues.isPlayerLevelAsTimeCounter()) {
 				player.setLevel(time);
+			}
 		}
 
 		if (time == 0) {
 			cancel();
+			list.forEach(pl -> pl.getPlayer().setLevel(0));
 
-			RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-					() -> new GameLoader(game));
+			GameLoader loder = new GameLoader(game);
+			loder.startGame();
 		}
 
 		time--;

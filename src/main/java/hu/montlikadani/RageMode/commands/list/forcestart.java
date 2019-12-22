@@ -4,7 +4,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.GameLoader;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
@@ -35,11 +34,6 @@ public class forcestart {
 			return false;
 		}
 
-		if (GameUtils.isPlayerPlaying(p)) {
-			sendMessage(p, RageMode.getLang().get("commands.forcestart.player-not-in-game"));
-			return false;
-		}
-
 		if (GameUtils.getGame(game).isGameRunning()) {
 			sendMessage(p, RageMode.getLang().get("game.running"));
 			return false;
@@ -50,14 +44,8 @@ public class forcestart {
 			return false;
 		}
 
-		if (GameUtils.getGame(game).getLobbyTimer() != null) {
-			GameUtils.getGame(game).getLobbyTimer().cancel();
-			p.setLevel(0); // Set level counter back to 0
-		}
-
+		GameUtils.forceStart(GameUtils.getGame(game));
 		sendMessage(p, RageMode.getLang().get("commands.forcestart.game-start", "%game%", game));
-		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-				() -> new GameLoader(GameUtils.getGame(game)));
 		return true;
 	}
 }

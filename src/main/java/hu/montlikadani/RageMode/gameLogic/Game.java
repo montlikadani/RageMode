@@ -86,6 +86,10 @@ public class Game {
 		int time = GameLobby.getLobbyTime(name);
 		int maxPlayers = GetGames.getMaxPlayers(name);
 		int minPlayers = GetGames.getMinPlayers(name);
+		if (minPlayers < 1) {
+			minPlayers = 2;
+		}
+
 		PlayerManager pm = new PlayerManager(player, name);
 
 		if (players.size() < maxPlayers) {
@@ -93,16 +97,9 @@ public class Game {
 
 			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
 
-			if (minPlayers > 1) {
-				if (players.size() == minPlayers && lobbyTimer == null) {
-					lobbyTimer = new LobbyTimer(this, time);
-					lobbyTimer.loadTimer();
-				}
-			} else {
-				if (players.size() == 2 && lobbyTimer == null) {
-					lobbyTimer = new LobbyTimer(this, time);
-					lobbyTimer.loadTimer();
-				}
+			if (players.size() == minPlayers) {
+				lobbyTimer = new LobbyTimer(this, time);
+				lobbyTimer.loadTimer();
 			}
 
 			return true;
@@ -129,16 +126,9 @@ public class Game {
 
 			players.put(player, pm);
 
-			if (minPlayers > 1) {
-				if (players.size() == minPlayers && lobbyTimer == null) {
-					lobbyTimer = new LobbyTimer(this, time);
-					lobbyTimer.loadTimer();
-				}
-			} else {
-				if (players.size() == 2 && lobbyTimer == null) {
-					lobbyTimer = new LobbyTimer(this, time);
-					lobbyTimer.loadTimer();
-				}
+			if (players.size() == minPlayers) {
+				lobbyTimer = new LobbyTimer(this, time);
+				lobbyTimer.loadTimer();
 			}
 
 			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
@@ -392,14 +382,11 @@ public class Game {
 	}
 
 	/**
-	 * Cancels the lobby timer and nulls the class to create new instance
-	 * for this class. This prevents that bug when the player re-join to the
-	 * game, then lobby timer does not start.
+	 * Cancels the lobby timer.
 	 */
 	public void cancelLobbyTimer() {
 		if (lobbyTimer != null) {
 			lobbyTimer.cancel();
-			lobbyTimer = null;
 		}
 	}
 }
