@@ -138,7 +138,7 @@ public class SQLStats {
 	 * 
 	 * @param playerPoints The PlayerPoints instance from which the statistics should be gotten.
 	 */
-	public static void addPlayerStatistics(PlayerPoints playerPoints) {
+	public synchronized static void addPlayerStatistics(PlayerPoints playerPoints) {
 		SQLConnect sqlConnect = RageMode.getSQL();
 		if (!sqlConnect.isValid())
 			return;
@@ -260,7 +260,7 @@ public class SQLStats {
 	 * @param points the amount of points
 	 * @param uuid player uuid
 	 */
-	public static void addPoints(int points, UUID uuid) {
+	public synchronized static void addPoints(int points, UUID uuid) {
 		SQLConnect sql = RageMode.getSQL();
 		if (!sql.isValid())
 			return;
@@ -345,7 +345,7 @@ public class SQLStats {
 	 * Retrieves the list of PlayerPoints.
 	 * @return A List of all PlayerPoints objects which are stored in the SQL database.
 	 */
-	public static List<PlayerPoints> getAllPlayerStatistics() {
+	public synchronized static List<PlayerPoints> getAllPlayerStatistics() {
 		SQLConnect connect = RageMode.getSQL();
 		if (!connect.isValid())
 			return Collections.emptyList();
@@ -398,7 +398,7 @@ public class SQLStats {
 	 * @param uuid Player uuid
 	 * @return {@link PlayerPoints}
 	 */
-	public static PlayerPoints getPlayerStatsFromData(UUID uuid) {
+	public synchronized static PlayerPoints getPlayerStatsFromData(UUID uuid) {
 		SQLConnect connect = RageMode.getSQL();
 		if (!connect.isValid())
 			return null;
@@ -503,7 +503,7 @@ public class SQLStats {
 	 * @param uuid UUID of player
 	 * @return true if the player found in database
 	 */
-	public static boolean resetPlayerStatistic(UUID uuid) {
+	public synchronized static boolean resetPlayerStatistic(UUID uuid) {
 		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
 		if (rpp == null)
 			return false;

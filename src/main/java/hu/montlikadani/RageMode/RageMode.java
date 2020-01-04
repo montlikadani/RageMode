@@ -56,14 +56,14 @@ public class RageMode extends JavaPlugin {
 	private SignScheduler sign = null;
 	private BungeeUtils bungee = null;
 	private BossbarManager bossManager = null;
+
+	private static RageMode instance = null;
 	private static Language lang = null;
 	private static MySQLConnect mySQLConnect = null;
 	private static SQLConnect sqlConnect = null;
 	private static ServerVersion serverVersion = null;
 
 	private Economy econ = null;
-
-	private static RageMode instance = null;
 	private BukkitTask signTask;
 
 	private boolean hologram = false;
@@ -150,23 +150,25 @@ public class RageMode extends JavaPlugin {
 
 			if (conf.getArenasCfg().contains("arenas")) {
 				for (String game : GetGames.getGameNames()) {
-					if (game != null) {
-						Game g = new Game(game);
-						games.add(g);
-
-						if (ConfigValues.isBungee())
-							getManager().registerEvents(new BungeeListener(game), this);
-
-						spawns.add(new GameSpawn(g));
-
-						// Loads the game locker
-						if (conf.getArenasCfg().getBoolean("arenas." + game + ".lock", false)) {
-							GameUtils.setStatus(game, GameStatus.NOTREADY);
-						} else
-							GameUtils.setStatus(game, GameStatus.READY);
-
-						Debug.logConsole("Loaded {0} game!", game);
+					if (game == null) {
+						continue;
 					}
+
+					Game g = new Game(game);
+					games.add(g);
+
+					if (ConfigValues.isBungee())
+						getManager().registerEvents(new BungeeListener(game), this);
+
+					spawns.add(new GameSpawn(g));
+
+					// Loads the game locker
+					if (conf.getArenasCfg().getBoolean("arenas." + game + ".lock", false)) {
+						GameUtils.setStatus(game, GameStatus.NOTREADY);
+					} else
+						GameUtils.setStatus(game, GameStatus.READY);
+
+					Debug.logConsole("Loaded {0} game!", game);
 				}
 			}
 
@@ -186,8 +188,7 @@ public class RageMode extends JavaPlugin {
 			if (Version.isCurrentEqualOrHigher(Version.v1_8_R3)) {
 				Metrics metrics = new Metrics(this);
 				if (metrics.isEnabled()) {
-					metrics.addCustomChart(
-							new Metrics.SimplePie("games_amount", () -> String.valueOf(games.size())));
+					metrics.addCustomChart(new Metrics.SingleLineChart("amount_of_games", () -> games.size()));
 
 					metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
 						int totalPlayers = 0;
@@ -228,7 +229,6 @@ public class RageMode extends JavaPlugin {
 
 		getServer().getScheduler().cancelTasks(this);
 		HandlerList.unregisterAll(this);
-		sign = null;
 		instance = null;
 	}
 
@@ -369,15 +369,17 @@ public class RageMode extends JavaPlugin {
 
 		if (conf.getArenasCfg().contains("arenas")) {
 			for (String game : GetGames.getGameNames()) {
-				if (game != null) {
-					Game g = new Game(game);
-					games.add(g);
-
-					if (ConfigValues.isBungee())
-						getManager().registerEvents(new BungeeListener(game), this);
-
-					spawns.add(new GameSpawn(g));
+				if (game == null) {
+					continue;
 				}
+
+				Game g = new Game(game);
+				games.add(g);
+
+				if (ConfigValues.isBungee())
+					getManager().registerEvents(new BungeeListener(game), this);
+
+				spawns.add(new GameSpawn(g));
 			}
 		}
 
@@ -581,10 +583,9 @@ public class RageMode extends JavaPlugin {
 		String msg = "";
 		String[] nVersion;
 		String[] cVersion;
-		String lineWithVersion;
+		String lineWithVersion = "";
 		try {
 			URL githubUrl = new URL("https://raw.githubusercontent.com/montlikadani/RageMode/master/src/main/resources/plugin.yml");
-			lineWithVersion = "";
 			BufferedReader br = new BufferedReader(new InputStreamReader(githubUrl.openStream()));
 			String s;
 			while ((s = br.readLine()) != null) {
@@ -596,10 +597,12 @@ public class RageMode extends JavaPlugin {
 			}
 
 			String versionString = lineWithVersion.split(": ")[1];
-			nVersion = versionString.split("\\.");
+			nVersion = versionString.replaceAll("[^0-9.]", "").split("\\.");
 			double newestVersionNumber = Double.parseDouble(nVersion[0] + "." + nVersion[1]);
-			cVersion = getDescription().getVersion().split("\\.");
+
+			cVersion = getDescription().getVersion().replaceAll("[^0-9.]", "").split("\\.");
 			double currentVersionNumber = Double.parseDouble(cVersion[0] + "." + cVersion[1]);
+
 			if (newestVersionNumber > currentVersionNumber) {
 				if (sender.equals("player")) {
 					msg = "&8&m&l--------------------------------------------------\n"

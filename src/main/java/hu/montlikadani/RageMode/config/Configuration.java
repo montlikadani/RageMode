@@ -24,20 +24,21 @@ public class Configuration {
 	}
 
 	private void loadFiles() {
+		File folder = plugin.getFolder();
 		if (config_file == null) {
-			config_file = new File(plugin.getFolder(), "config.yml");
+			config_file = new File(folder, "config.yml");
 		}
 
 		if (arenas_file == null) {
-			arenas_file = new File(plugin.getFolder(), "arenas.yml");
+			arenas_file = new File(folder, "arenas.yml");
 		}
 
 		if (rewards_file == null) {
-			rewards_file = new File(plugin.getFolder(), "rewards.yml");
+			rewards_file = new File(folder, "rewards.yml");
 		}
 
 		if (datas_file == null) {
-			datas_file = new File(plugin.getFolder(), "datas.yml");
+			datas_file = new File(folder, "datas.yml");
 		}
 	}
 

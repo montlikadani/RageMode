@@ -44,7 +44,11 @@ public class SignCreator {
 		for (String one : list) {
 			String[] splited = one.split(",");
 			String world = splited[0];
-			if (world != null && Bukkit.getWorld(world) == null) {
+			if (world == null) {
+				continue;
+			}
+
+			if (Bukkit.getWorld(world) == null) {
 				Debug.logConsole(Level.WARNING, "World {0} not found to load this sign.", world);
 				continue;
 			}

@@ -1,7 +1,6 @@
 package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,18 +44,18 @@ public class Game {
 
 	/**
 	 * Get the players who added to the list.
-	 * @return Unmodifiable map
+	 * @return Modifiable map, {@link #players}
 	 */
 	public Map<Player, PlayerManager> getPlayers() {
-		return Collections.unmodifiableMap(players);
+		return players;
 	}
 
 	/**
 	 * Gets the spectator players who added to the list.
-	 * @return Unmodifiable map
+	 * @return Modifiable map, {@link #specPlayer}
 	 */
 	public Map<Player, PlayerManager> getSpectatorPlayers() {
-		return Collections.unmodifiableMap(specPlayer);
+		return specPlayer;
 	}
 
 	private boolean isSpectator(Player p) {
@@ -347,15 +346,7 @@ public class Game {
 	public PlayerManager getSpectatorPlayerManager(Player p) {
 		Validate.notNull(p, "Player can't be null!");
 
-		if (specPlayer != null) {
-			for (Entry<Player, PlayerManager> players : specPlayer.entrySet()) {
-				if (players.getKey().equals(p)) {
-					return players.getValue();
-				}
-			}
-		}
-
-		return null;
+		return specPlayer != null ? specPlayer.get(p) : null;
 	}
 
 	/**
@@ -366,15 +357,7 @@ public class Game {
 	public PlayerManager getPlayerManager(Player p) {
 		Validate.notNull(p, "Player can't be null!");
 
-		if (players != null) {
-			for (Entry<Player, PlayerManager> players : players.entrySet()) {
-				if (players.getKey().equals(p)) {
-					return players.getValue();
-				}
-			}
-		}
-
-		return null;
+		return players != null ? players.get(p) : null;
 	}
 
 	public LobbyTimer getLobbyTimer() {

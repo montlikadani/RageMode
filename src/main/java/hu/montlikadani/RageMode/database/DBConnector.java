@@ -26,11 +26,13 @@ public class DBConnector {
 
 	public RMConnection getConnection() {
 		if (conn == null) {
-			try {
-				conn = new RMConnection(DriverManager.getConnection(url, username, password));
-			} catch (SQLException e) {
-				Debug.logConsole(java.util.logging.Level.WARNING,
-						"Could not connect to the database: " + e.getMessage());
+			synchronized (this) {
+				try {
+					conn = new RMConnection(DriverManager.getConnection(url, username, password));
+				} catch (SQLException e) {
+					Debug.logConsole(java.util.logging.Level.WARNING,
+							"Could not connect to the database: " + e.getMessage());
+				}
 			}
 		}
 

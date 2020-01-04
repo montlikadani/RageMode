@@ -57,7 +57,7 @@ public class ConfigValues {
 	private static boolean unicode;
 	private static boolean certificate;
 	private static boolean signsEnable;
-	private static boolean signBackground;
+	@Deprecated private static boolean signBackground;
 	private static boolean enableLobbyTitle;
 	private static boolean spectatorEnable;
 	private static boolean chatEnableinLobby;
@@ -343,6 +343,7 @@ public class ConfigValues {
 		return signsList;
 	}
 
+	@Deprecated
 	public static boolean isSignBackground() {
 		return signBackground;
 	}

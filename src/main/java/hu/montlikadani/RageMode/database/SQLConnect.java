@@ -59,9 +59,8 @@ public class SQLConnect extends DBConnector implements DBMethods {
 			return false;
 		}
 
-		String query = "DELETE FROM " + table + ";";
 		try {
-			getConnection().executeUpdate(query);
+			getConnection().executeUpdate( "DELETE FROM " + table + ";");
 			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -76,9 +75,8 @@ public class SQLConnect extends DBConnector implements DBMethods {
 		Validate.notEmpty(table, "The table name can't be empty!");
 
 		if (isConnected()) {
-			String query = "DROP TABLE IF EXISTS `" + table + "`;";
 			try {
-				getConnection().executeUpdate(query);
+				getConnection().executeUpdate("DROP TABLE IF EXISTS `" + table + "`;");
 				return true;
 			} catch (SQLException e) {
 				e.printStackTrace();

@@ -109,11 +109,7 @@ public class Utils {
 	public static String setPlaceholders(String s, Player player, boolean fromDatabase) {
 		PlayerPoints pp = null;
 		java.util.UUID uuid = player.getUniqueId();
-		if (fromDatabase) {
-			pp = RageMode.getPPFromDatabase(uuid);
-		} else {
-			pp = RuntimePPManager.getPPForPlayer(uuid);
-		}
+		pp = fromDatabase ? RageMode.getPPFromDatabase(uuid) : RuntimePPManager.getPPForPlayer(uuid);
 
 		if (GameUtils.isPlayerPlaying(player)) {
 			pp = RageScores.getPlayerPoints(uuid);
@@ -230,10 +226,10 @@ public class Utils {
 	 * @throws Exception if something wrong
 	 */
 	public static void sendPacket(Player player, Object packet) throws Exception {
-		Object handle = player.getClass().getMethod("getHandle", new Class[0]).invoke(player, new Object[0]);
+		Object handle = player.getClass().getMethod("getHandle").invoke(player);
 		Object playerConnection = handle.getClass().getField("playerConnection").get(handle);
 		playerConnection.getClass().getMethod("sendPacket", new Class[] { getNMSClass("Packet") })
-			.invoke(playerConnection, new Object[] { packet });
+				.invoke(playerConnection, new Object[] { packet });
 	}
 
 	/**

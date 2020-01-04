@@ -132,7 +132,7 @@ public class MySQLStats {
 	 * 
 	 * @param playerPoints The PlayerPoints instance from which the statistics should be gotten.
 	 */
-	public static void addPlayerStatistics(PlayerPoints playerPoints) {
+	public synchronized static void addPlayerStatistics(PlayerPoints playerPoints) {
 		MySQLConnect mySQL = RageMode.getMySQL();
 		if (!mySQL.isValid())
 			return;
@@ -254,7 +254,7 @@ public class MySQLStats {
 	 * @param points the amount of points
 	 * @param uuid player uuid
 	 */
-	public static void addPoints(int points, UUID uuid) {
+	public synchronized static void addPoints(int points, UUID uuid) {
 		MySQLConnect mysql = RageMode.getMySQL();
 		if (!mysql.isValid())
 			return;
@@ -339,7 +339,7 @@ public class MySQLStats {
 	 * Retrieves the list of PlayerPoints.
 	 * @return A List of all PlayerPoints objects which are stored in the MySQL database.
 	 */
-	public static List<PlayerPoints> getAllPlayerStatistics() {
+	public synchronized static List<PlayerPoints> getAllPlayerStatistics() {
 		MySQLConnect connect = RageMode.getMySQL();
 		if (!connect.isValid())
 			return Collections.emptyList();
@@ -392,7 +392,7 @@ public class MySQLStats {
 	 * @param uuid Player uuid
 	 * @return {@link PlayerPoints}
 	 */
-	public static PlayerPoints getPlayerStatsFromData(UUID uuid) {
+	public synchronized static PlayerPoints getPlayerStatsFromData(UUID uuid) {
 		MySQLConnect connect = RageMode.getMySQL();
 		if (!connect.isValid())
 			return null;
@@ -497,7 +497,7 @@ public class MySQLStats {
 	 * @param uuid UUID of player
 	 * @return true if the player found in database
 	 */
-	public static boolean resetPlayerStatistic(UUID uuid) {
+	public synchronized static boolean resetPlayerStatistic(UUID uuid) {
 		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
 		if (rpp == null)
 			return false;

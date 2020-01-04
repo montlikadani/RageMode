@@ -59,7 +59,7 @@ public class BossbarManager {
 	}
 
 	public void showBossbar(Player p) {
-		showBossbar(p, 0);
+		showBossbar(p, 4);
 	}
 
 	public void showBossbar(final Player p, int secAfterRemove) {
@@ -80,6 +80,7 @@ public class BossbarManager {
 
 		for (int i = 1; i <= secAfterRemove; ++i) {
 			if (!GameUtils.isPlayerPlaying(p)) {
+				removeBossbar(p);
 				break;
 			}
 

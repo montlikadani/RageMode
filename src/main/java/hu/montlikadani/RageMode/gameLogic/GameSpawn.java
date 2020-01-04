@@ -74,6 +74,7 @@ public class GameSpawn {
 		for (Iterator<Location> it = spawnLocations.iterator(); it.hasNext();) {
 			if (it.next().equals(loc)) {
 				it.remove();
+				break;
 			}
 		}
 	}

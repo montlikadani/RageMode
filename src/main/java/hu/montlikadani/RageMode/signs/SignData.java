@@ -67,6 +67,7 @@ public class SignData {
 		return placeholder;
 	}
 
+	@SuppressWarnings("deprecation")
 	protected void updateSign() {
 		Location location = getLocation();
 		synchronized (location) {
@@ -91,7 +92,8 @@ public class SignData {
 					sign.setLine(i, lines.get(i));
 				}
 
-				if (ConfigValues.isSignBackground() && MaterialUtil.isWallSign(sign.getType())) {
+				if ((ConfigValues.isSignBackground() || !ConfigValues.getSignBackground().equalsIgnoreCase("none"))
+						&& MaterialUtil.isWallSign(sign.getType())) {
 					changeBlockBackground();
 				}
 			} else {

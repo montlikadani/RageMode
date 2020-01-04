@@ -879,20 +879,19 @@ public class GameUtils {
 			}
 		}
 
-		if (!EventListener.waitingGames.containsKey(name))
-			EventListener.waitingGames.put(name, true);
-		else {
-			EventListener.waitingGames.remove(name);
-			EventListener.waitingGames.put(name, true);
-		}
-
-		setStatus(name, GameStatus.GAMEFREEZE);
-
 		final Player winner = winnerUUID != null ? Bukkit.getPlayer(winnerUUID) : null;
 		if (!useFreeze) {
 			finishStopping(game, winner, false);
 			return;
 		}
+
+		if (EventListener.waitingGames.containsKey(name)) {
+			EventListener.waitingGames.remove(name);
+		}
+
+		EventListener.waitingGames.put(name, true);
+
+		setStatus(name, GameStatus.GAMEFREEZE);
 
 		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 				new Runnable() {

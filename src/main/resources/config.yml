@@ -77,9 +77,8 @@ signs:
 
   # Defines a background of the sign.
   background:
-    enable: false
-    # Possible types: glass, wool, terracotta (clay)
-    type: glass
+    # Possible types: glass, wool, terracotta (clay), none
+    type: none
 
 # Actionbar messages
 actionbar-messages:

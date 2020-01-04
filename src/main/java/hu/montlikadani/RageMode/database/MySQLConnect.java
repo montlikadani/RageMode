@@ -61,9 +61,8 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 			return false;
 		}
 
-		String query = "DELETE FROM " + table + ";";
 		try {
-			getConnection().executeUpdate(query);
+			getConnection().executeUpdate("DELETE FROM " + table + ";");
 			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -77,9 +76,8 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 		Validate.notEmpty(table, "The table name can't be empty!");
 
 		if (isConnected()) {
-			String query = "DROP TABLE IF EXISTS `" + table + "`;";
 			try {
-				getConnection().executeUpdate(query);
+				getConnection().executeUpdate("DROP TABLE IF EXISTS `" + table + "`;");
 				return true;
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -118,8 +116,7 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 
 		if (isConnected()) {
 			try {
-				String query = "SELECT `" + collumn + "` FROM `" + table + "`;";
-				getConnection().executeQuery(getConnection().createStatement(), query);
+				getConnection().executeQuery(getConnection().createStatement(), "SELECT `" + collumn + "` FROM `" + table + "`;");
 				return true;
 			} catch (SQLException e) {
 				Debug.logConsole("Column {0} with table {1} not a collumn or does not exists.", collumn, table);

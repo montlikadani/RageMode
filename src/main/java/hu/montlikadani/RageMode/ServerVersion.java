@@ -1,7 +1,5 @@
 package hu.montlikadani.ragemode;
 
-import org.bukkit.Bukkit;
-
 public class ServerVersion {
 
 	public ServerVersion() {
@@ -26,7 +24,8 @@ public class ServerVersion {
 		v1_14_R2,
 		v1_15_R1,
 		v1_15_R2,
-		v1_16_R1;
+		v1_16_R1,
+		v1_16_R2;
 
 		private Integer value;
 		private String shortVersion;
@@ -49,7 +48,7 @@ public class ServerVersion {
 			if (current != null)
 				return current;
 
-			String[] v = Bukkit.getServer().getClass().getPackage().getName().split("\\.");
+			String[] v = org.bukkit.Bukkit.getServer().getClass().getPackage().getName().split("\\.");
 			String vv = v[v.length - 1];
 			for (Version one : values()) {
 				if (one.name().equalsIgnoreCase(vv)) {
