@@ -62,6 +62,7 @@ public class ConfigValues {
 	private static boolean spectatorEnable;
 	private static boolean chatEnableinLobby;
 	private static boolean playerLevelAsTimeCounter;
+	private static boolean playersCanJoinRandomToRunningGames;
 	private static boolean damagePlayerFall;
 	private static boolean hidePlayerNameTag;
 	private static boolean cancelRedstoneActivating;
@@ -179,6 +180,7 @@ public class ConfigValues {
 		playerLevelAsTimeCounter = f.get("lobby.player-level-as-time-counter", false);
 		lobbyTimeMsgs = f.get("lobby.values-to-send-start-message",
 				new ArrayList<Integer>(Arrays.asList(30, 20, 10, 5, 4, 3, 2, 1)));
+		playersCanJoinRandomToRunningGames = f.get("players-can-join-random-to-running-games", true);
 		damagePlayerFall = f.get("game.damage-player-fall", false);
 		respawnProtectTime = f.get("game.respawn-protection", 3);
 		hidePlayerNameTag = f.get("game.hide-players-name-tag", false);
@@ -445,6 +447,10 @@ public class ConfigValues {
 
 	public static boolean isPlayerLevelAsTimeCounter() {
 		return playerLevelAsTimeCounter;
+	}
+
+	public static boolean isPlayersCanJoinRandomToRunningGames() {
+		return playersCanJoinRandomToRunningGames;
 	}
 
 	public static List<Integer> getLobbyTimeMsgs() {

@@ -11,6 +11,7 @@ invalid-game: "&e%game%&4 nem egy érvényes RageMode Map."
 player-non-existent: "&cEz a játékos nem létezik."
 not-played-yet: "&cEz a játékos&7 %player%&c nem játszot ezen a szerveren még."
 bad-ragemode-name: "&cA játék név nem tartalmazhat speciális karaktert, ragemode parancsot vagy nem lehet 20-nál nagyobb."
+no-games: "&cNincs egy elérhető játék sem."
 
 commands:
   listgames:
@@ -49,6 +50,9 @@ commands:
     empty-inventory:
       armor: "&cÜrítsd ki a felszerelés eszköztárad, hogy tudj csatlakozni a játékhoz."
       contents: "&cÜrítsd ki az eszköztárad, hogy tudj csatlakozni a játékhoz."
+    rejoin-delay: "&cNem tudsz újracsatlakozni a játékhoz. Várj&e %delay%&c."
+  joinrandom:
+    cantjoin: "&cNem tudsz csatlakozni a játékhoz, mert már fut."
     rejoin-delay: "&cNem tudsz újracsatlakozni a játékhoz. Várj&e %delay%&c."
   points:
     player-not-found: "&cA játékos név nem lehet null!"

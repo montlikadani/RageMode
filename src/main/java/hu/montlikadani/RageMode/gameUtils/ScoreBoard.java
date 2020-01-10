@@ -140,9 +140,7 @@ public class ScoreBoard implements IObjectives {
 	 */
 	@Override
 	public void remove() {
-		for (Player player : this.players) {
-			removeScoreBoard(player, false);
-		}
+		this.players.forEach(pl -> removeScoreBoard(pl, false));
 	}
 
 	/**

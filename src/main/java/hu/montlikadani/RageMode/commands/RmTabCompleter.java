@@ -25,6 +25,8 @@ public class RmTabCompleter implements TabCompleter {
 			String partOfCommand = null;
 
 			if (args.length < 2) {
+				getCmds(sender).forEach(cmds::add);
+
 				getDefaultCmds(sender).forEach(cmds::add);
 
 				getAdminCmds(sender).forEach(cmds::add);
@@ -78,12 +80,23 @@ public class RmTabCompleter implements TabCompleter {
 	private List<String> getDefaultCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
 		for (String cmds : Arrays.asList("join", "leave", "listgames", "stats", "spectate", "listplayers")) {
-			if (sender instanceof Player && !hasPerm(sender, "ragemode.help.playercommands")
-					|| !hasPerm(sender, "ragemode." + cmds))
-				continue;
-
-			c.add(cmds);
+			if (sender instanceof Player && hasPerm(sender, "ragemode.help.playercommands")
+					|| hasPerm(sender, "ragemode." + cmds)) {
+				c.add(cmds);
+			}
 		}
+
+		return c;
+	}
+
+	private List<String> getCmds(CommandSender sender) {
+		List<String> c = new ArrayList<>();
+		for (String cmds : Arrays.asList("joinrandom")) {
+			if (sender instanceof Player && hasPerm(sender, "ragemode." + cmds)) {
+				c.add(cmds);
+			}
+		}
+
 		return c;
 	}
 
@@ -92,22 +105,22 @@ public class RmTabCompleter implements TabCompleter {
 		for (String cmds : Arrays.asList("addgame", "addspawn", "setlobby", "reload", "holostats", "removegame",
 				"resetplayerstats", "forcestart", "kick", "stopgame", "signupdate", "togglegame", "points", "givesaveditems",
 				"removespawn", "latestart", "maxplayers", "minplayers")) {
-			if (sender instanceof Player && !hasPerm(sender, "ragemode.admin." + cmds))
-				continue;
-
-			c.add(cmds);
+			if (sender instanceof Player && hasPerm(sender, "ragemode.admin." + cmds)) {
+				c.add(cmds);
+			}
 		}
+
 		return c;
 	}
 
 	private List<String> getSomeCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
 		for (String cmds : Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay")) {
-			if (sender instanceof Player && !hasPerm(sender, "ragemode.admin.set" + cmds))
-				continue;
-
-			c.add(cmds);
+			if (sender instanceof Player && hasPerm(sender, "ragemode.admin.set" + cmds)) {
+				c.add(cmds);
+			}
 		}
+
 		return c;
 	}
 

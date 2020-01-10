@@ -13,7 +13,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameUtils.MapChecker;
 
 public class GameSpawn {
 
@@ -28,10 +27,7 @@ public class GameSpawn {
 	}
 
 	private void loadSpawns() {
-		if (!new MapChecker(game.getName()).isValid()) {
-			isGameReady = false;
-			return;
-		}
+		removeAllSpawn();
 
 		FileConfiguration aCfg = RageMode.getInstance().getConfiguration().getArenasCfg();
 		String path = "arenas." + game.getName() + ".spawns";
@@ -50,8 +46,6 @@ public class GameSpawn {
 
 			addSpawn(location);
 		}
-
-		isGameReady = true;
 	}
 
 	/**
@@ -61,7 +55,9 @@ public class GameSpawn {
 	public void addSpawn(Location loc) {
 		Validate.notNull(loc, "Location can't be null!");
 
-		spawnLocations.add(loc);
+		if (spawnLocations.add(loc)) {
+			isGameReady = true;
+		}
 	}
 
 	/**

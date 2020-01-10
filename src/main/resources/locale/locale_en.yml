@@ -11,6 +11,7 @@ invalid-game: "&e%game%&4 is not a valid RageMode Map."
 player-non-existent: "&cThat player doesn't even exist."
 not-played-yet: "&cThat player&7 %player%&c hasn't played on this server yet."
 bad-ragemode-name: "&cThe game name may contains special characters, ragemode commands, or the the name greater than 20."
+no-games: "&cThere are no games available."
 
 commands:
   listgames:
@@ -49,6 +50,9 @@ commands:
     empty-inventory:
       armor: "&cYou must empty your armor inventory to join the game."
       contents: "&cYou must empty your inventory contents to join the game."
+    rejoin-delay: "&cYou can't rejoin to the game. Wait&e %delay%&c."
+  joinrandom:
+    cantjoin: "&cYou can't join to the game, because its running."
     rejoin-delay: "&cYou can't rejoin to the game. Wait&e %delay%&c."
   points:
     player-not-found: "&cThe player name can not be null!"

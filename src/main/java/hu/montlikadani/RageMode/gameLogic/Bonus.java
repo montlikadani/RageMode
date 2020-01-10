@@ -8,6 +8,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.libs.Sounds;
 
 public class Bonus {
 
@@ -21,31 +22,33 @@ public class Bonus {
 		}
 
 		List<String> list = ConfigValues.getKillBonuses();
-		if (list == null) {
-			return;
-		}
-
 		for (String b : list) {
-			if (!b.startsWith("effect:")) {
-				continue;
+			if (b.startsWith("effect:")) {
+				b = b.replace("effect:", "");
+
+				String[] split = b.split(":");
+
+				PotionEffectType effect = null;
+				if (split.length > 1) {
+					effect = PotionEffectType.getByName(split[0].toUpperCase());
+				}
+
+				if (effect == null) {
+					continue;
+				}
+
+				PotionEffect pe = new PotionEffect(effect, (split.length > 2 ? Integer.parseInt(split[1]) : 5) * 20,
+						(split.length > 3 ? Integer.parseInt(split[2]) : 1));
+				player.addPotionEffect(pe);
+			} else if (b.startsWith("sound:")) {
+				b = b.replace("sound:", "");
+
+				String[] split = b.split(":");
+
+				Sounds.playSound(player, Sounds.valueOf(split[0].toUpperCase()),
+						(split.length > 2 ? Float.parseFloat(split[1]) : 1f),
+						(split.length > 3 ? Float.parseFloat(split[2]) : 1f));
 			}
-
-			b = b.replace("effect:", "");
-
-			String[] split = b.split(":");
-
-			PotionEffectType effect = null;
-			if (split.length > 1) {
-				effect = PotionEffectType.getByName(split[0].toUpperCase());
-			}
-
-			if (effect == null) {
-				continue;
-			}
-
-			PotionEffect pe = new PotionEffect(effect, (split.length > 2 ? Integer.parseInt(split[1]) : 5) * 20,
-					(split.length > 3 ? Integer.parseInt(split[2]) : 1));
-			player.addPotionEffect(pe);
 		}
 	}
 
@@ -59,10 +62,6 @@ public class Bonus {
 		}
 
 		List<String> list = ConfigValues.getKillBonuses();
-		if (list == null) {
-			return 0;
-		}
-
 		for (String b : list) {
 			if (!b.startsWith("points:")) {
 				continue;

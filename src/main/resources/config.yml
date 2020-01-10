@@ -155,6 +155,9 @@ lobby:
   # Time intervals when the lobby timer reaches, for example, 10 seconds, write it into the chat.
   values-to-send-start-message: [30, 20, 10, 5, 4, 3, 2, 1]
 
+# Does the player can join to running games when types /rm joinrandom command to spectate?
+players-can-join-random-to-running-games: true
+
 # Global settings for game.
 game:
   # If this false if player has fallen to ground then not damage.

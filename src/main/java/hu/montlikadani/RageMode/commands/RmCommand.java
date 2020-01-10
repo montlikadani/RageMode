@@ -52,6 +52,10 @@ public class RmCommand implements CommandExecutor {
 					if (hasPerm(sender, "ragemode.help.playercommands") || hasPerm(sender, "ragemode.join"))
 						msg += "&7-&6 /rm join <gameName>&a - Join to the specified game.\n";
 
+					if (hasPerm(sender, "ragemode.joinrandom")) {
+						msg += "&7-&6 /rm joinrandom&a - Joins to a random game.\n";
+					}
+
 					if (hasPerm(sender, "ragemode.help.playercommands") || hasPerm(sender, "ragemode.leave"))
 						msg += "&7-&6 /rm leave&a - Leave from the current game.\n";
 

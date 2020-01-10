@@ -172,8 +172,9 @@ public class RageMode extends JavaPlugin {
 				}
 			}
 
+			sign = new SignScheduler(this);
+
 			if (ConfigValues.isSignsEnable()) {
-				sign = new SignScheduler(this);
 				getManager().registerEvents(sign, this);
 
 				SignConfiguration.initSignConfiguration();
@@ -188,7 +189,7 @@ public class RageMode extends JavaPlugin {
 			if (Version.isCurrentEqualOrHigher(Version.v1_8_R3)) {
 				Metrics metrics = new Metrics(this);
 				if (metrics.isEnabled()) {
-					metrics.addCustomChart(new Metrics.SingleLineChart("amount_of_games", () -> games.size()));
+					metrics.addCustomChart(new Metrics.SingleLineChart("amount_of_games", games::size));
 
 					metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
 						int totalPlayers = 0;

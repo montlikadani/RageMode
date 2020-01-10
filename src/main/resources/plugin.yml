@@ -53,6 +53,9 @@ permissions:
       ragemode.admin.points: true
       ragemode.admin.givesaveditems: true
       ragemode.admin.latestart: true
+  ragemode.joinrandom:
+    description: Gives access to the /rm joinrandom command.
+    default: false
   ragemode.vip:
     description: Gives access to the VIP functions.
     default: false

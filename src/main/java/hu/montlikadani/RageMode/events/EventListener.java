@@ -29,6 +29,7 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -808,6 +809,14 @@ public class EventListener implements Listener {
 	public void onEntityInteract(PlayerInteractEntityEvent e) {
 		if (GameUtils.isPlayerPlaying(e.getPlayer())) {
 			e.setCancelled(true);
+		}
+	}
+
+	// To prevent removing paintings
+	@EventHandler
+	public void onHanging(HangingBreakByEntityEvent ev) {
+		if (ev.getRemover() instanceof Player && GameUtils.isPlayerPlaying((Player) ev.getRemover())) {
+			ev.setCancelled(true);
 		}
 	}
 

@@ -161,9 +161,11 @@ public class GameUtils {
 		Validate.notEmpty(name, "Game name can't be empty!");
 
 		for (GameSpawn gsg : RageMode.getInstance().getSpawns()) {
-			if (gsg.getGame().getName().equalsIgnoreCase(name))
+			if (gsg.getGame().getName().equalsIgnoreCase(name)) {
 				return gsg;
+			}
 		}
+
 		return null;
 	}
 
@@ -841,12 +843,11 @@ public class GameUtils {
 			wonSubtitle = replaceVariables(wonSubtitle, winnerUUID);
 			youWonSubtitle = replaceVariables(youWonSubtitle, winnerUUID);
 
-			String[] split = null;
 			for (PlayerManager pm : players) {
 				final Player p = pm.getPlayer();
 
 				if (p != winner) {
-					split = ConfigValues.getWonTitleTime().split(", ");
+					String[] split = ConfigValues.getWonTitleTime().split(", ");
 					Titles.sendTitle(p, (split.length > 1 ? Integer.parseInt(split[0]) : 20),
 							(split.length > 2 ? Integer.parseInt(split[1]) : 30),
 							(split.length > 3 ? Integer.parseInt(split[2]) : 20), wonTitle, wonSubtitle);
@@ -857,7 +858,7 @@ public class GameUtils {
 								() -> p.setGameMode(GameMode.SPECTATOR));
 					}
 				} else {
-					split = ConfigValues.getYouWonTitleTime().split(", ");
+					String[] split = ConfigValues.getYouWonTitleTime().split(", ");
 					Titles.sendTitle(p, (split.length > 1 ? Integer.parseInt(split[0]) : 20),
 							(split.length > 2 ? Integer.parseInt(split[1]) : 30),
 							(split.length > 3 ? Integer.parseInt(split[2]) : 20), youWonTitle, youWonSubtitle);
@@ -920,10 +921,17 @@ public class GameUtils {
 			RuntimePPManager.loadPPListFromDatabase();
 		}
 
+		for (Iterator<Entry<Player, PlayerManager>> it = game.getSpectatorPlayers().entrySet().iterator(); it
+				.hasNext();) {
+			Player pl = it.next().getKey();
+			game.removeSpectatorPlayer(pl);
+		}
+
 		List<PlayerManager> players = game.getPlayersFromList();
 
 		for (PlayerManager pm : players) {
-			final PlayerPoints pP = RageScores.getPlayerPoints(pm.getPlayer().getUniqueId());
+			final Player p = pm.getPlayer();
+			final PlayerPoints pP = RageScores.getPlayerPoints(p.getUniqueId());
 			if (pP == null) {
 				continue;
 			}
@@ -932,22 +940,11 @@ public class GameUtils {
 				RuntimePPManager.updatePlayerEntry(pP);
 
 				Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-						() -> HoloHolder.updateHolosForPlayer(pm.getPlayer()));
+						() -> HoloHolder.updateHolosForPlayer(p));
 			});
 
 			Thread th = new Thread(new DBThreads(pP));
 			th.start();
-		}
-
-		for (Iterator<Entry<Player, PlayerManager>> it = game.getSpectatorPlayers().entrySet().iterator(); it
-				.hasNext();) {
-			Player pl = it.next().getKey();
-			game.removeSpectatorPlayer(pl);
-		}
-
-		RewardManager reward = null;
-		for (PlayerManager pm : players) {
-			Player p = pm.getPlayer();
 
 			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
 			Utils.callEvent(gameLeaveEvent);
@@ -963,10 +960,7 @@ public class GameUtils {
 				sendMessage(p, RageMode.getLang().get("game.stopped", "%game%", gName));
 
 				if (ConfigValues.isRewardEnabled()) {
-					if (reward == null) {
-						reward = new RewardManager(gName);
-					}
-
+					RewardManager reward = new RewardManager(gName);
 					if (winner != null && p == winner) {
 						reward.rewardForWinner(winner);
 					}

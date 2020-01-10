@@ -87,6 +87,7 @@ public class Language {
 		l.getL("player-non-existent", "&cThat player doesn't even exist.");
 		l.getL("not-played-yet", "&cThat player&7 %player%&c hasn't played on this server yet.");
 		l.getL("bad-ragemode-name", "&cThe game name may contains special characters, ragemode commands, or the the name greater than 20.");
+		l.getL("no-games", "&cThere are no games available.");
 
 		l.getL("commands.listgames.listing-games", "&6Listing all available ragemode games... There are&a %games%&6 available.");
 		l.getL("commands.listgames.no-games-available", "&cThere are currently no RageMode maps on this server.");
@@ -115,6 +116,8 @@ public class Language {
 		l.getL("commands.join.empty-inventory.armor", "&cYou must empty your armor inventory to join the game.");
 		l.getL("commands.join.empty-inventory.contents", "&cYou must empty your inventory contents to join the game.");
 		l.getL("commands.join.rejoin-delay", "&cYou can't rejoin to the game. Wait&e %delay%&c.");
+		l.getL("commands.joinrandom.cantjoin", "&cYou can't join to the game, because its running.");
+		l.getL("commands.joinrandom.rejoin-delay", "&cYou can't rejoin to the game. Wait&e %delay%&c.");
 		l.getL("commands.points.player-not-found", "&cThe player name can not be null!");
 		l.getL("commands.points.amount-not-less", "&cThe number must be greater than 0.");
 		l.getL("commands.points.changed", "&2The player points has been changed:&e %amount%&2, new:&e %new%");
@@ -245,11 +248,14 @@ public class Language {
 
 		if (variables.length > 0) {
 			for (int i = 0; i < variables.length; i++) {
-				if (variables.length >= i + 2)
+				if (variables.length >= i + 2) {
 					msg = msg.replace(String.valueOf(variables[i]), String.valueOf(variables[i + 1]));
+				}
+
 				i++;
 			}
 		}
+
 		return msg;
 	}
 
@@ -261,13 +267,13 @@ public class Language {
 			return Collections.emptyList();
 
 		List<String> ls = null;
-		if (yc.contains(key) && yc.isList(key))
-			ls = Utils.colorList(yc.getStringList(key));
-		else {
+		if (!yc.contains(key) || !yc.isList(key)) {
 			ls = Arrays.asList(missing);
 			Debug.sendMessage("[RageMode]&c Can't read language file for:&7 " + key);
 			return ls;
 		}
+
+		ls = Utils.colorList(yc.getStringList(key));
 
 		if (variables.length > 0) {
 			for (int i = 0; i < ls.size(); i++) {
@@ -291,6 +297,7 @@ public class Language {
 		while (match.find()) {
 			msg = msg.replace(match.group(0), "\n");
 		}
+
 		return msg;
 	}
 
