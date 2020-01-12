@@ -40,8 +40,9 @@ public class YAMLStats {
 		yamlStatsFile = file;
 
 		if (!file.exists()) {
-			if (!file.getParentFile().exists())
+			if (!file.getParentFile().exists()) {
 				file.getParentFile().mkdirs();
+			}
 
 			try {
 				file.createNewFile();
@@ -49,13 +50,14 @@ public class YAMLStats {
 				e.printStackTrace();
 				Debug.throwMsg();
 			}
+		}
 
-			config = new YamlConfiguration();
+		config = YamlConfiguration.loadConfiguration(file);
+		if (!config.contains("data")) {
 			config.createSection("data");
+		}
 
-			Configuration.saveFile(config, file);
-		} else
-			config = YamlConfiguration.loadConfiguration(file);
+		Configuration.saveFile(config, file);
 
 		statsConf = config;
 		Configuration.saveFile(config, file);

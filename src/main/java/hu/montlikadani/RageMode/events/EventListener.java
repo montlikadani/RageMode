@@ -837,8 +837,7 @@ public class EventListener implements Listener {
 			if (t == Material.FARMLAND) {
 				ev.setUseInteractedBlock(Event.Result.DENY);
 				ev.setCancelled(true);
-			} else if (ConfigValues.isCancelRedstoneActivate()
-					&& GameUtils.getStatus(p) == GameStatus.RUNNING
+			} else if (ConfigValues.isCancelRedstoneActivate() && GameUtils.getStatus(p) == GameStatus.RUNNING
 					|| GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
 				if (MaterialUtil.isWoodenPressurePlate(t)) {
 					ev.setUseInteractedBlock(Event.Result.DENY);
@@ -851,8 +850,7 @@ public class EventListener implements Listener {
 					ev.setCancelled(true);
 				}
 			}
-		} else if (ConfigValues.isCancelRedstoneActivate()
-				&& ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
+		} else if (ConfigValues.isCancelRedstoneActivate() && ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			if (GameUtils.getStatus(p) == GameStatus.RUNNING || GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
 				if (MaterialUtil.isTrapdoor(t) || MaterialUtil.isButton(t)) {
 					ev.setUseInteractedBlock(Event.Result.DENY);
@@ -880,8 +878,7 @@ public class EventListener implements Listener {
 			}
 		}
 
-		if (ConfigValues.isCancelDoorUse()
-				&& ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
+		if (ConfigValues.isCancelDoorUse() && ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			if (GameUtils.getStatus(p) == GameStatus.RUNNING || GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
 				if (MaterialUtil.isWoodenDoor(t)) {
 					ev.setUseInteractedBlock(Event.Result.DENY);

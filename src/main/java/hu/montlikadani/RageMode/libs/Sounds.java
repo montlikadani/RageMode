@@ -997,7 +997,7 @@ public enum Sounds {
 	}
 
 	public Sounds getByName(String name) {
-		for (Sounds s : Sounds.values()) {
+		for (Sounds s : values()) {
 			if (s.name().equals(name)) {
 				return s;
 			}
@@ -1048,23 +1048,22 @@ public enum Sounds {
 		}
 	}
 
+	public static void playSound(Player player, String name) {
+		playSound(player, valueOf(name), 1f, 1f);
+	}
+
 	public static void playSound(Player player, Sounds sound) {
 		playSound(player, sound, 1f, 1f);
+	}
+
+	public static void playSound(Player player, String name, float volume, float pitch) {
+		playSound(player, valueOf(name), volume, pitch);
 	}
 
 	public static void playSound(Player player, Sounds sound, float volume, float pitch) {
 		Validate.notNull(player, "Player can't be null!");
 
-		for (Sounds s : Sounds.values()) {
-			if (s == null) {
-				continue;
-			}
-
-			if (s.equals(sound)) {
-				player.playSound(player.getLocation(), Sound.valueOf(s.name()), volume, pitch);
-				break;
-			}
-		}
+		playSound(player.getLocation(), sound, volume, pitch);
 	}
 
 	public static void playSound(Location location, Sounds sound) {
@@ -1074,7 +1073,7 @@ public enum Sounds {
 	public static void playSound(Location location, Sounds sound, float volume, float pitch) {
 		Validate.notNull(location, "Location can't be null!");
 
-		for (Sounds s : Sounds.values()) {
+		for (Sounds s : values()) {
 			if (s == null) {
 				continue;
 			}

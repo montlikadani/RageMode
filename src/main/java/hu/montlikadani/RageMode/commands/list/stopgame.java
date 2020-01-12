@@ -26,8 +26,12 @@ public class stopgame {
 
 		if (args.length >= 2) {
 			String game = args[1];
-			Game g = GameUtils.getGame(game);
+			if (!GameUtils.isGameWithNameExists(game)) {
+				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", game));
+				return false;
+			}
 
+			Game g = GameUtils.getGame(game);
 			if (!g.isGameRunning()) {
 				sendMessage(sender, RageMode.getLang().get("game.not-running"));
 				return false;

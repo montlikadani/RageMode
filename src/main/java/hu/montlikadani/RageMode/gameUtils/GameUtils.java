@@ -382,7 +382,6 @@ public class GameUtils {
 			if (!p.getActivePotionEffects().isEmpty())
 				data.set(path + "potion-effects", p.getActivePotionEffects());
 
-			// Using the gamemode name to prevent InvalidConfiguration error
 			data.set(path + "game-mode", p.getGameMode().name());
 
 			if (!p.getDisplayName().equals(p.getDisplayName()))
