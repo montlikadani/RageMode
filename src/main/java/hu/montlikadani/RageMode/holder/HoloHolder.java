@@ -23,9 +23,9 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
-import hu.montlikadani.ragemode.statistics.MySQLStats;
-import hu.montlikadani.ragemode.statistics.SQLStats;
-import hu.montlikadani.ragemode.statistics.YAMLStats;
+import hu.montlikadani.ragemode.storage.MySQLDB;
+import hu.montlikadani.ragemode.storage.SQLDB;
+import hu.montlikadani.ragemode.storage.YAMLDB;
 
 public class HoloHolder {
 
@@ -90,7 +90,7 @@ public class HoloHolder {
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final PlayerPoints rpp;
 				if (RuntimePPManager.getPPForPlayer(uuid) == null)
-					rpp = MySQLStats.getPlayerStatistics(uuid);
+					rpp = MySQLDB.getPlayerStatistics(uuid);
 				else
 					rpp = RuntimePPManager.getPPForPlayer(uuid);
 
@@ -105,7 +105,7 @@ public class HoloHolder {
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final PlayerPoints rpp;
 				if (RuntimePPManager.getPPForPlayer(uuid) == null)
-					rpp = YAMLStats.getPlayerStatistics(uuid);
+					rpp = YAMLDB.getPlayerStatistics(uuid);
 				else
 					rpp = RuntimePPManager.getPPForPlayer(uuid);
 
@@ -121,7 +121,7 @@ public class HoloHolder {
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final PlayerPoints rpp;
 				if (RuntimePPManager.getPPForPlayer(uuid) == null)
-					rpp = SQLStats.getPlayerStatistics(uuid);
+					rpp = SQLDB.getPlayerStatistics(uuid);
 				else
 					rpp = RuntimePPManager.getPPForPlayer(uuid);
 

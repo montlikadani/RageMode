@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.statistics;
+package hu.montlikadani.ragemode.storage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,18 +7,23 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.database.MySQLConnect;
 import hu.montlikadani.ragemode.database.RMConnection;
+import hu.montlikadani.ragemode.database.SQLConnect;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
-public class MySQLStats {
+public class MySQLDB {
 
 	private static List<PlayerPoints> points = new ArrayList<>();
 
@@ -107,6 +112,7 @@ public class MySQLStats {
 
 				totalPlayers++;
 			}
+
 			rs.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -122,8 +128,9 @@ public class MySQLStats {
 			// Do not close the connection to prevent loading issues
 		}
 
-		if (totalPlayers > 0)
+		if (totalPlayers > 0) {
 			Debug.logConsole("Loaded {0} player{1} stats database.", totalPlayers, (totalPlayers > 1 ? "s" : ""));
+		}
 	}
 
 	/**
@@ -134,8 +141,9 @@ public class MySQLStats {
 	 */
 	public synchronized static void addPlayerStatistics(PlayerPoints playerPoints) {
 		MySQLConnect mySQL = RageMode.getMySQL();
-		if (!mySQL.isValid())
+		if (!mySQL.isValid()) {
 			return;
+		}
 
 		String query = "SELECT * FROM `" + mySQL.getPrefix() + "stats_players` WHERE uuid LIKE `"
 				+ playerPoints.getUUID() + "`;";
@@ -178,6 +186,7 @@ public class MySQLStats {
 				oldScore = rs.getInt("score");
 				oldGames = rs.getInt("games");
 			}
+
 			rs.close();
 		} catch (SQLException e) {
 			Debug.logConsole(Bukkit.getPlayer(playerPoints.getUUID()).getName()
@@ -256,8 +265,9 @@ public class MySQLStats {
 	 */
 	public synchronized static void addPoints(int points, UUID uuid) {
 		MySQLConnect mysql = RageMode.getMySQL();
-		if (!mysql.isValid())
+		if (!mysql.isValid()) {
 			return;
+		}
 
 		int oldPoints = 0;
 		String query = "SELECT * FROM `" + mysql.getPrefix() + "stats_players` WHERE uuid LIKE `" + uuid + "`;";
@@ -269,6 +279,7 @@ public class MySQLStats {
 			if (rs.next()) {
 				oldPoints = rs.getInt("score");
 			}
+
 			rs.close();
 		} catch (SQLException e) {
 		} finally {
@@ -341,8 +352,9 @@ public class MySQLStats {
 	 */
 	public synchronized static List<PlayerPoints> getAllPlayerStatistics() {
 		MySQLConnect connect = RageMode.getMySQL();
-		if (!connect.isValid())
+		if (!connect.isValid()) {
 			return Collections.emptyList();
+		}
 
 		List<PlayerPoints> allRPPs = new ArrayList<>();
 
@@ -358,6 +370,7 @@ public class MySQLStats {
 					allRPPs.add(getPlayerStatistics(uuid));
 				}
 			}
+
 			rs.close();
 		} catch (SQLException e) {
 		} finally {
@@ -394,8 +407,9 @@ public class MySQLStats {
 	 */
 	public synchronized static PlayerPoints getPlayerStatsFromData(UUID uuid) {
 		MySQLConnect connect = RageMode.getMySQL();
-		if (!connect.isValid())
+		if (!connect.isValid()) {
 			return null;
+		}
 
 		PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid);
 		if (pp == null) {
@@ -499,8 +513,9 @@ public class MySQLStats {
 	 */
 	public synchronized static boolean resetPlayerStatistic(UUID uuid) {
 		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
-		if (rpp == null)
+		if (rpp == null) {
 			return false;
+		}
 
 		rpp.setKills(0);
 		rpp.setAxeKills(0);
@@ -554,5 +569,82 @@ public class MySQLStats {
 		}
 
 		return true;
+	}
+
+	public static void loadJoinDelay() {
+		if (!ConfigValues.isRememberRejoinDelay()) {
+			return;
+		}
+
+		SQLConnect connect = RageMode.getSQL();
+		if (!connect.isConnected()) {
+			return;
+		}
+
+		String query = "SELECT * FROM `" + connect.getPrefix() + "players`;";
+		RMConnection conn = connect.getConnection();
+		Statement statement = null;
+		try {
+			statement = conn.createStatement();
+			ResultSet rs = conn.executeQuery(statement, query);
+			while (rs.next()) {
+				Player p = Bukkit.getPlayer(UUID.fromString(rs.getString("uuid")));
+				if (p != null) {
+					ReJoinDelay.setTime(p, rs.getLong("time"));
+				}
+
+				int id = rs.getInt("id");
+				String s = "DELETE FROM `" + connect.getPrefix() + "players` WHERE id = ?;";
+				try (PreparedStatement ps = conn.prepareStatement(s)) {
+					ps.setInt(1, id);
+					ps.executeUpdate();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+
+			rs.close();
+		} catch (SQLException e) {
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	public static void saveJoinDelay() {
+		MySQLConnect connect = RageMode.getMySQL();
+		if (!connect.isConnected()) {
+			return;
+		}
+
+		PreparedStatement prestt = null;
+		try {
+			prestt = connect.getConnection()
+					.prepareStatement("REPLACE INTO `" + connect.getPrefix() + "players` (uuid, time) VALUES (?, ?);");
+			if (prestt == null) {
+				return;
+			}
+
+			for (Map.Entry<Player, Long> m : ReJoinDelay.getPlayerTimes().entrySet()) {
+				prestt.setString(1, m.getKey().getUniqueId().toString());
+				prestt.setLong(2, m.getValue());
+				prestt.executeUpdate();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (prestt != null) {
+				try {
+					prestt.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }

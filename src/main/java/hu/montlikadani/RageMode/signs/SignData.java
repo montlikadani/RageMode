@@ -71,6 +71,7 @@ public class SignData {
 	protected void updateSign() {
 		Location location = getLocation();
 		synchronized (location) {
+			// TODO: Remove or change that to fix server crash on startup
 			if (!location.getWorld().getChunkAt(location).isLoaded()) {
 				return;
 			}

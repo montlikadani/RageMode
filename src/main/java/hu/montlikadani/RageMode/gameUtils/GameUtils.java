@@ -43,7 +43,7 @@ import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
-import hu.montlikadani.ragemode.statistics.DBThreads;
+import hu.montlikadani.ragemode.storage.DBThreads;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 

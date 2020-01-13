@@ -14,18 +14,32 @@ public class SQLConnect extends DBConnector implements DBMethods {
 		super("jdbc:sqlite:" + file, null, null, prefix);
 
 		createStatsTable();
+		createPlayersTable();
 	}
 
 	public void createStatsTable() {
-		if (isConnected()) {
-			String query = "CREATE TABLE IF NOT EXISTS `" + getPrefix() + "stats_players` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, "
-					+ "`name` VARCHAR(255) , `uuid` VARCHAR(255) , `kills` INTEGER , "
-					+ "`axe_kills` INTEGER , `direct_arrow_kills` INTEGER , `explosion_kills` INTEGER , "
-					+ "`knife_kills` INTEGER , `deaths` INTEGER , `axe_deaths` INTEGER , `direct_arrow_deaths` INTEGER , "
-					+ "`explosion_deaths` INTEGER , `knife_deaths` INTEGER , `wins` INTEGER , `score` INTEGER , `games` INTEGER , "
-					+ "`kd` DOUBLE, UNIQUE(uuid));";
-			createTable(query);
+		if (!isConnected()) {
+			return;
 		}
+
+		String query = "CREATE TABLE IF NOT EXISTS `" + getPrefix()
+				+ "stats_players` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, "
+				+ "`name` VARCHAR(255) , `uuid` VARCHAR(255) , `kills` INTEGER , "
+				+ "`axe_kills` INTEGER , `direct_arrow_kills` INTEGER , `explosion_kills` INTEGER , "
+				+ "`knife_kills` INTEGER , `deaths` INTEGER , `axe_deaths` INTEGER , `direct_arrow_deaths` INTEGER , "
+				+ "`explosion_deaths` INTEGER , `knife_deaths` INTEGER , `wins` INTEGER , `score` INTEGER , `games` INTEGER , "
+				+ "`kd` DOUBLE, UNIQUE(uuid));";
+		createTable(query);
+	}
+
+	public void createPlayersTable() {
+		if (!isConnected()) {
+			return;
+		}
+
+		String query = "CREATE TABLE IF NOT EXISTS `" + getPrefix() + "players` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, "
+				+ "`uuid` VARCHAR(255) , `time` LONG, UNIQUE(uuid));";
+		createTable(query);
 	}
 
 	@Override

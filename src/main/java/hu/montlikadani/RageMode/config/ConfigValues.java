@@ -82,6 +82,7 @@ public class ConfigValues {
 	private static boolean stopServer;
 	private static boolean rewardEnable;
 	private static boolean rejoinDelayEnabled;
+	private static boolean rememberRejoinDelay;
 
 	private static int signsUpdateTime;
 	private static int gameFreezeTime;
@@ -217,6 +218,7 @@ public class ConfigValues {
 		restartServer = f.get("game.game-stop.restart-server", false);
 		stopServer = f.get("game.game-stop.stop-server", false);
 		rejoinDelayEnabled = f.get("rejoin-delay.enabled", false);
+		rememberRejoinDelay = f.get("rejoin-delay.remember-to-database", true);
 		rejoinDelayHour = f.get("rejoin-delay.times.hour", 0);
 		rejoinDelayMinute = f.get("rejoin-delay.times.minute", 0);
 		rejoinDelaySecond = f.get("rejoin-delay.times.second", 30);
@@ -579,6 +581,10 @@ public class ConfigValues {
 
 	public static boolean isRejoinDelayEnabled() {
 		return rejoinDelayEnabled;
+	}
+
+	public static boolean isRememberRejoinDelay() {
+		return rememberRejoinDelay;
 	}
 
 	public static int getRejoinDelayHour() {

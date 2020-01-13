@@ -1,6 +1,7 @@
 package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Timer;
 
 import org.bukkit.entity.Player;
@@ -27,7 +28,8 @@ public class GameLoader {
 			return false; // stop starting the game if the game not set up correctly
 		}
 
-		Utils.callEvent(new RMGameStartEvent(game, game.getPlayersFromList()));
+		List<PlayerManager> l = game.getPlayersFromList();
+		Utils.callEvent(new RMGameStartEvent(game, l));
 
 		String name = game.getName();
 
@@ -39,14 +41,12 @@ public class GameLoader {
 				: GetGames.getGameTime(name);
 
 		GameTimer gameTimer = new GameTimer(game, time * 60);
-		gameTimer.loadModules();
-
 		Timer t = new Timer();
 		t.scheduleAtFixedRate(gameTimer, 0, 60 * 20L);
 
 		SignCreator.updateAllSigns(name);
 
-		for (PlayerManager pm : game.getPlayersFromList()) {
+		for (PlayerManager pm : l) {
 			Player p = pm.getPlayer();
 
 			GameUtils.addGameItems(p, true);

@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.statistics;
+package hu.montlikadani.ragemode.storage;
 
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 
@@ -14,14 +14,14 @@ public class DBThreads implements Runnable {
 	public void run() {
 		switch (hu.montlikadani.ragemode.config.ConfigValues.getDatabaseType()) {
 		case "mysql":
-			MySQLStats.addPlayerStatistics(pP);
+			MySQLDB.addPlayerStatistics(pP);
 			break;
 		case "sqlite":
 		case "sql":
-			SQLStats.addPlayerStatistics(pP);
+			SQLDB.addPlayerStatistics(pP);
 			break;
 		default:
-			YAMLStats.createPlayersStats(pP);
+			YAMLDB.createPlayersStats(pP);
 			break;
 		}
 	}

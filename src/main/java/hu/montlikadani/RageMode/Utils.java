@@ -71,6 +71,11 @@ public class Utils {
 	 * @param event BaseEvent
 	 */
 	public static void callEvent(BaseEvent event) {
+		/*
+		 * TODO: try to fix this
+		 * hu.montlikadani.ragemode.Utils.lambda$0(Utils.java:81)
+		 * hu.montlikadani.ragemode.Utils$$Lambda$2585.0000000000000000.run(Unknown Source)
+		 */
 		if (!event.isAsynchronous()) {
 			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 					() -> Bukkit.getPluginManager().callEvent(event));

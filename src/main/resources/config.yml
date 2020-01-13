@@ -278,6 +278,10 @@ game-stop:
 rejoin-delay:
   enabled: false
 
+  # Save the currently running delays to the database.
+  # The loaded delays will be removed when this setting is enabled and when the server starting.
+  remember-to-database: true
+
   # Times for delays.
   times:
     hour: 0

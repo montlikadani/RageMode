@@ -12,7 +12,6 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
 
 import hu.montlikadani.ragemode.holder.ScoreBoardHolder;
 import hu.montlikadani.ragemode.managers.PlayerManager;
@@ -20,8 +19,8 @@ import hu.montlikadani.ragemode.managers.PlayerManager;
 public class ScoreBoard implements IObjectives {
 
 	public static HashMap<String, ScoreBoard> allScoreBoards = new HashMap<>();
+
 	private List<Player> players = new ArrayList<>();
-	private ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
 	private HashMap<Player, ScoreBoardHolder> scoreboards = new HashMap<>();
 
 	/**
@@ -34,21 +33,19 @@ public class ScoreBoard implements IObjectives {
 	public ScoreBoard(List<PlayerManager> players) {
 		players.forEach(pm -> this.players.add(pm.getPlayer()));
 
-		synchronized (scoreboardManager) {
-			Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
-			Objective objective = scoreboard.getObjective("ragescores");
-			if (objective != null) {
-				objective.unregister();
-			}
+		Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+		Objective objective = scoreboard.getObjective("ragescores");
+		if (objective != null) {
+			objective.unregister();
+		}
 
-			objective = scoreboard.registerNewObjective("ragescores", "dummy");
+		objective = scoreboard.registerNewObjective("ragescores", "dummy");
 
-			for (Player loopPlayer : this.players) {
-				removeScoreBoard(loopPlayer, false);
+		for (Player loopPlayer : this.players) {
+			removeScoreBoard(loopPlayer, false);
 
-				objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-				scoreboards.put(loopPlayer, new ScoreBoardHolder(loopPlayer, scoreboard, objective));
-			}
+			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+			scoreboards.put(loopPlayer, new ScoreBoardHolder(loopPlayer, scoreboard, objective));
 		}
 	}
 

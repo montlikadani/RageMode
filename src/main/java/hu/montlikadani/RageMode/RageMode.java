@@ -45,9 +45,9 @@ import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.signs.SignConfiguration;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.signs.SignScheduler;
-import hu.montlikadani.ragemode.statistics.MySQLStats;
-import hu.montlikadani.ragemode.statistics.SQLStats;
-import hu.montlikadani.ragemode.statistics.YAMLStats;
+import hu.montlikadani.ragemode.storage.MySQLDB;
+import hu.montlikadani.ragemode.storage.SQLDB;
+import hu.montlikadani.ragemode.storage.YAMLDB;
 import net.milkbowl.vault.economy.Economy;
 
 public class RageMode extends JavaPlugin {
@@ -142,7 +142,7 @@ public class RageMode extends JavaPlugin {
 				connectSQL();
 				break;
 			default:
-				initYamlStatistics();
+				initYamlDatabase();
 				break;
 			}
 
@@ -195,14 +195,14 @@ public class RageMode extends JavaPlugin {
 						int totalPlayers = 0;
 						switch (ConfigValues.getDatabaseType()) {
 						case "mysql":
-							totalPlayers = MySQLStats.getAllPlayerStatistics().size();
+							totalPlayers = MySQLDB.getAllPlayerStatistics().size();
 							break;
 						case "sql":
 						case "sqlite":
-							totalPlayers = SQLStats.getAllPlayerStatistics().size();
+							totalPlayers = SQLDB.getAllPlayerStatistics().size();
 							break;
 						case "yaml":
-							totalPlayers = YAMLStats.getAllPlayerStatistics().size();
+							totalPlayers = YAMLDB.getAllPlayerStatistics().size();
 							break;
 						default:
 							break;
@@ -227,15 +227,38 @@ public class RageMode extends JavaPlugin {
 		if (instance == null) return;
 
 		GameUtils.stopAllGames();
+		saveDatabase();
 
 		getServer().getScheduler().cancelTasks(this);
 		HandlerList.unregisterAll(this);
 		instance = null;
 	}
 
-	private void initYamlStatistics() {
-		YAMLStats.initS();
-		YAMLStats.loadPlayerStatistics();
+	private void initYamlDatabase() {
+		YAMLDB.initFile();
+		YAMLDB.loadPlayerStatistics();
+		YAMLDB.loadJoinDelay();
+	}
+
+	private void saveDatabase() {
+		if (!ConfigValues.isRememberRejoinDelay()) {
+			return;
+		}
+
+		switch (ConfigValues.getDatabaseType()) {
+		case "yaml":
+			YAMLDB.saveJoinDelay();
+			break;
+		case "sql":
+		case "sqlite":
+			SQLDB.saveJoinDelay();
+			break;
+		case "mysql":
+			MySQLDB.saveJoinDelay();
+			break;
+		default:
+			break;
+		}
 	}
 
 	private void connectMySQL() {
@@ -269,7 +292,7 @@ public class RageMode extends JavaPlugin {
 			return;
 		}
 
-		MySQLStats.loadPlayerStatistics();
+		MySQLDB.loadPlayerStatistics();
 
 		if (mySQLConnect.isConnected()) {
 			Debug.logConsole("Successfully connected to MySQL!");
@@ -303,7 +326,8 @@ public class RageMode extends JavaPlugin {
 			return;
 		}
 
-		SQLStats.loadPlayerStatistics();
+		SQLDB.loadPlayerStatistics();
+		SQLDB.loadJoinDelay();
 
 		if (sqlConnect.isConnected()) {
 			Debug.logConsole("Successfully connected to SQL!");
@@ -316,7 +340,7 @@ public class RageMode extends JavaPlugin {
 			if (mySQLConnect == null || !mySQLConnect.isConnected()) {
 				connectMySQL();
 			} else {
-				MySQLStats.loadPlayerStatistics();
+				MySQLDB.loadPlayerStatistics();
 			}
 
 			break;
@@ -325,13 +349,13 @@ public class RageMode extends JavaPlugin {
 			if (sqlConnect == null || !sqlConnect.isConnected()) {
 				connectSQL();
 			} else {
-				SQLStats.loadPlayerStatistics();
+				SQLDB.loadPlayerStatistics();
 			}
 
 			break;
 		default:
-			YAMLStats.initS();
-			YAMLStats.loadPlayerStatistics();
+			YAMLDB.initFile();
+			YAMLDB.loadPlayerStatistics();
 			break;
 		}
 
@@ -432,11 +456,11 @@ public class RageMode extends JavaPlugin {
 		switch (ConfigValues.getDatabaseType()) {
 		case "sql":
 		case "sqlite":
-			return SQLStats.getPlayerStatsFromData(uuid);
+			return SQLDB.getPlayerStatsFromData(uuid);
 		case "mysql":
-			return MySQLStats.getPlayerStatsFromData(uuid);
+			return MySQLDB.getPlayerStatsFromData(uuid);
 		default:
-			return YAMLStats.getPlayerStatsFromData(uuid);
+			return YAMLDB.getPlayerStatsFromData(uuid);
 		}
 	}
 

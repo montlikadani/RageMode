@@ -1,33 +1,35 @@
-package hu.montlikadani.ragemode.statistics;
+package hu.montlikadani.ragemode.storage;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
-public class YAMLStats {
+public class YAMLDB {
 
 	private static List<PlayerPoints> points = new ArrayList<>();
 	private static boolean inited = false;
 	private static File yamlStatsFile;
 	private static YamlConfiguration statsConf;
 
-	protected static boolean working = false;
-
-	public static void initS() {
+	public static void initFile() {
 		if (inited) {
 			statsConf = YamlConfiguration.loadConfiguration(yamlStatsFile);
 			return;
@@ -57,19 +59,19 @@ public class YAMLStats {
 			config.createSection("data");
 		}
 
-		Configuration.saveFile(config, file);
-
 		statsConf = config;
 		Configuration.saveFile(config, file);
 	}
 
 	public static void loadPlayerStatistics() {
-		if (!inited)
+		if (!inited) {
 			return;
+		}
 
 		ConfigurationSection section = statsConf.getConfigurationSection("data");
-		if (section == null)
+		if (section == null) {
 			return;
+		}
 
 		points.clear();
 
@@ -105,12 +107,15 @@ public class YAMLStats {
 			totalPlayers++;
 		}
 
-		if (totalPlayers > 0)
+		if (totalPlayers > 0) {
 			Debug.logConsole("Loaded {0} player{1} database.", totalPlayers, (totalPlayers > 1 ? "s" : ""));
+		}
 	}
 
 	public static void addPlayerStatistics(PlayerPoints points) {
-		if (!inited) return;
+		if (!inited) {
+			return;
+		}
 
 		UUID uuid = points.getUUID();
 		String path = "data." + uuid.toString() + ".";
@@ -147,19 +152,14 @@ public class YAMLStats {
 			statsConf.set(path + "explosion_deaths", (explosionDeaths + points.getExplosionDeaths()));
 			statsConf.set(path + "knife_deaths", (knifeDeaths + points.getKnifeDeaths()));
 
-			if (points.isWinner())
-				statsConf.set(path + "wins", (wins + 1));
-			else
-				statsConf.set(path + "wins", wins);
+			statsConf.set(path + "wins", points.isWinner() ? (wins + 1) : wins);
 
 			statsConf.set(path + "score", (points.getPoints() + score));
 			statsConf.set(path + "games", (games + 1));
-			if ((deaths + points.getDeaths()) != 0)
-				statsConf.set(path + "KD",
-						((double) ((kills + points.getKills())) / ((double) (deaths + points.getDeaths()))));
-			else
-				statsConf.set(path + "KD", 1.0d);
-
+			statsConf.set(path + "KD",
+					(deaths + points.getDeaths()) != 0
+							? ((double) ((kills + points.getKills())) / ((double) (deaths + points.getDeaths())))
+							: 1.0d);
 		} else {
 			statsConf.set(path + "name", Bukkit.getPlayer(uuid).getName());
 
@@ -175,17 +175,12 @@ public class YAMLStats {
 			statsConf.set(path + "explosion_deaths", points.getExplosionDeaths());
 			statsConf.set(path + "knife_deaths", points.getKnifeDeaths());
 
-			if (points.isWinner())
-				statsConf.set(path + "wins", 1);
-			else
-				statsConf.set(path + "wins", 0);
+			statsConf.set(path + "wins", points.isWinner() ? 1 : 0);
 
 			statsConf.set(path + "score", points.getPoints());
 			statsConf.set(path + "games", 1);
-			if (points.getDeaths() != 0)
-				statsConf.set(path + "KD", ((double) points.getKills()) / ((double) points.getDeaths()));
-			else
-				statsConf.set(path + "KD", 1.0d);
+			statsConf.set(path + "KD",
+					points.getDeaths() != 0 ? ((double) points.getKills()) / ((double) points.getDeaths()) : 1.0d);
 		}
 
 		Configuration.saveFile(statsConf, yamlStatsFile);
@@ -229,8 +224,9 @@ public class YAMLStats {
 	public static PlayerPoints getPlayerStatistics(UUID uuid) {
 		Validate.notNull(uuid, "Player UUID can't be null!");
 
-		if (!inited)
+		if (!inited) {
 			return null;
+		}
 
 		for (PlayerPoints rpp : points) {
 			if (rpp.getUUID().equals(uuid)) {
@@ -246,8 +242,9 @@ public class YAMLStats {
 	 * @return returns a List of all PlayerPoints that are stored
 	 */
 	public static List<PlayerPoints> getAllPlayerStatistics() {
-		if (!inited)
+		if (!inited) {
 			return Collections.emptyList();
+		}
 
 		List<PlayerPoints> allRPPs = new ArrayList<>();
 
@@ -256,6 +253,7 @@ public class YAMLStats {
 				allRPPs.add(getPlayerStatistics(UUID));
 			}
 		}
+
 		return allRPPs;
 	}
 
@@ -346,8 +344,9 @@ public class YAMLStats {
 	 * @return true if the class inited and player found in database
 	 */
 	public static boolean resetPlayerStatistic(UUID uuid) {
-		if (!inited)
+		if (!inited) {
 			return false;
+		}
 
 		if (statsConf.getConfigurationSection("data").getKeys(false).contains(uuid.toString())) {
 			String path = "data." + uuid + ".";
@@ -381,6 +380,74 @@ public class YAMLStats {
 		return true;
 	}
 
+	public static void loadJoinDelay() {
+		if (!ConfigValues.isRememberRejoinDelay()) {
+			return;
+		}
+
+		File f = new File(RageMode.getInstance().getFolder(), "joinDelays.yml");
+		if (!f.exists()) {
+			try {
+				f.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		YamlConfiguration config = YamlConfiguration.loadConfiguration(f);
+		if (!config.contains("players")) {
+			config.createSection("players");
+		}
+
+		ConfigurationSection section = config.getConfigurationSection("players");
+		if (section.getKeys(false).isEmpty()) {
+			return;
+		}
+
+		for (String o : section.getKeys(false)) {
+			Player p = Bukkit.getPlayer(UUID.fromString(o));
+			if (p != null && ReJoinDelay.getPlayerTimes().containsKey(p)) {
+				ReJoinDelay.setTime(p, section.getLong(o));
+			}
+		}
+
+		config.set("players", null);
+		try {
+			config.save(f);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void saveJoinDelay() {
+		File f = new File(RageMode.getInstance().getFolder(), "joinDelays.yml");
+		if (!f.exists()) {
+			try {
+				f.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		YamlConfiguration config = YamlConfiguration.loadConfiguration(f);
+		if (!config.contains("players")) {
+			config.createSection("players");
+		} else {
+			config.set("players", null);
+		}
+
+		ConfigurationSection section = config.getConfigurationSection("players");
+		for (Map.Entry<Player, Long> m : ReJoinDelay.getPlayerTimes().entrySet()) {
+			section.set(m.getKey().getName(), m.getValue());
+		}
+
+		try {
+			config.save(f);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static File getFile() {
 		return yamlStatsFile;
 	}
@@ -388,6 +455,8 @@ public class YAMLStats {
 	public static YamlConfiguration getConf() {
 		return statsConf;
 	}
+
+	protected static boolean working = false;
 
 	private static class AddToPlayersStats implements Runnable {
 		private PlayerPoints uuids = null;
@@ -407,6 +476,7 @@ public class YAMLStats {
 					Debug.throwMsg();
 				}
 			}
+
 			working = true;
 			addPlayerStatistics(uuids);
 			working = false;

@@ -8,9 +8,9 @@ import java.util.logging.Level;
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
-import hu.montlikadani.ragemode.statistics.MySQLStats;
-import hu.montlikadani.ragemode.statistics.SQLStats;
-import hu.montlikadani.ragemode.statistics.YAMLStats;
+import hu.montlikadani.ragemode.storage.MySQLDB;
+import hu.montlikadani.ragemode.storage.SQLDB;
+import hu.montlikadani.ragemode.storage.YAMLDB;
 
 public class RuntimePPManager {
 
@@ -20,13 +20,13 @@ public class RuntimePPManager {
 		switch (ConfigValues.getDatabaseType()) {
 		case "sql":
 		case "sqlite":
-			RuntimePPList.addAll(SQLStats.getAllPlayerStatistics());
+			RuntimePPList.addAll(SQLDB.getAllPlayerStatistics());
 			break;
 		case "mysql":
-			RuntimePPList.addAll(MySQLStats.getAllPlayerStatistics());
+			RuntimePPList.addAll(MySQLDB.getAllPlayerStatistics());
 			break;
 		default:
-			RuntimePPList.addAll(YAMLStats.getAllPlayerStatistics());
+			RuntimePPList.addAll(YAMLDB.getAllPlayerStatistics());
 			break;
 		}
 	}

@@ -8,9 +8,9 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
-import hu.montlikadani.ragemode.statistics.MySQLStats;
-import hu.montlikadani.ragemode.statistics.SQLStats;
-import hu.montlikadani.ragemode.statistics.YAMLStats;
+import hu.montlikadani.ragemode.storage.MySQLDB;
+import hu.montlikadani.ragemode.storage.SQLDB;
+import hu.montlikadani.ragemode.storage.YAMLDB;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
@@ -97,13 +97,13 @@ public class points {
 		switch (hu.montlikadani.ragemode.config.ConfigValues.getDatabase()) {
 		case "sql":
 		case "sqlite":
-			SQLStats.addPoints(amount, uuid);
+			SQLDB.addPoints(amount, uuid);
 			break;
 		case "mysql":
-			MySQLStats.addPoints(amount, uuid);
+			MySQLDB.addPoints(amount, uuid);
 			break;
 		default:
-			YAMLStats.addPoints(amount, uuid);
+			YAMLDB.addPoints(amount, uuid);
 			break;
 		}
 

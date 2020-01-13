@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.statistics;
+package hu.montlikadani.ragemode.storage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,18 +7,22 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.database.RMConnection;
 import hu.montlikadani.ragemode.database.SQLConnect;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
-public class SQLStats {
+public class SQLDB {
 
 	private static List<PlayerPoints> points = new ArrayList<>();
 
@@ -104,9 +108,9 @@ public class SQLStats {
 				rPP.setGames(currentGames);
 
 				points.add(rPP);
-
 				totalPlayers++;
 			}
+
 			rs.close();
 		} catch (SQLException e) {
 			try {
@@ -128,8 +132,9 @@ public class SQLStats {
 			// Do not close the connection to prevent loading issues
 		}
 
-		if (totalPlayers > 0)
+		if (totalPlayers > 0) {
 			Debug.logConsole("Loaded {0} player{1} stats database.", totalPlayers, (totalPlayers > 1 ? "s" : ""));
+		}
 	}
 
 	/**
@@ -140,8 +145,9 @@ public class SQLStats {
 	 */
 	public synchronized static void addPlayerStatistics(PlayerPoints playerPoints) {
 		SQLConnect sqlConnect = RageMode.getSQL();
-		if (!sqlConnect.isValid())
+		if (!sqlConnect.isValid()) {
 			return;
+		}
 
 		String query = "SELECT * FROM `" + sqlConnect.getPrefix() + "stats_players` WHERE uuid LIKE `"
 				+ playerPoints.getUUID() + "`;";
@@ -184,6 +190,7 @@ public class SQLStats {
 				oldScore = rs.getInt("score");
 				oldGames = rs.getInt("games");
 			}
+
 			rs.close();
 		} catch (SQLException e) {
 			Debug.logConsole(Bukkit.getPlayer(playerPoints.getUUID()).getName()
@@ -262,8 +269,9 @@ public class SQLStats {
 	 */
 	public synchronized static void addPoints(int points, UUID uuid) {
 		SQLConnect sql = RageMode.getSQL();
-		if (!sql.isValid())
+		if (!sql.isValid()) {
 			return;
+		}
 
 		int oldPoints = 0;
 		String query = "SELECT * FROM `" + sql.getPrefix() + "stats_players` WHERE uuid LIKE `" + uuid + "`;";
@@ -275,6 +283,7 @@ public class SQLStats {
 			if (rs.next()) {
 				oldPoints = rs.getInt("score");
 			}
+
 			rs.close();
 		} catch (SQLException e) {
 		} finally {
@@ -347,8 +356,9 @@ public class SQLStats {
 	 */
 	public synchronized static List<PlayerPoints> getAllPlayerStatistics() {
 		SQLConnect connect = RageMode.getSQL();
-		if (!connect.isValid())
+		if (!connect.isValid()) {
 			return Collections.emptyList();
+		}
 
 		List<PlayerPoints> allRPPs = new ArrayList<>();
 
@@ -400,8 +410,9 @@ public class SQLStats {
 	 */
 	public synchronized static PlayerPoints getPlayerStatsFromData(UUID uuid) {
 		SQLConnect connect = RageMode.getSQL();
-		if (!connect.isValid())
+		if (!connect.isValid()) {
 			return null;
+		}
 
 		PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid);
 		if (pp == null) {
@@ -505,8 +516,9 @@ public class SQLStats {
 	 */
 	public synchronized static boolean resetPlayerStatistic(UUID uuid) {
 		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
-		if (rpp == null)
+		if (rpp == null) {
 			return false;
+		}
 
 		rpp.setKills(0);
 		rpp.setAxeKills(0);
@@ -560,5 +572,82 @@ public class SQLStats {
 		}
 
 		return true;
+	}
+
+	public static void loadJoinDelay() {
+		if (!ConfigValues.isRememberRejoinDelay()) {
+			return;
+		}
+
+		SQLConnect connect = RageMode.getSQL();
+		if (!connect.isConnected()) {
+			return;
+		}
+
+		String query = "SELECT * FROM `" + connect.getPrefix() + "players`;";
+		RMConnection conn = connect.getConnection();
+		Statement statement = null;
+		try {
+			statement = conn.createStatement();
+			ResultSet rs = conn.executeQuery(statement, query);
+			while (rs.next()) {
+				Player p = Bukkit.getPlayer(UUID.fromString(rs.getString("uuid")));
+				if (p != null) {
+					ReJoinDelay.setTime(p, rs.getLong("time"));
+				}
+
+				int id = rs.getInt("id");
+				String s = "DELETE FROM `" + connect.getPrefix() + "players` WHERE id = ?;";
+				try (PreparedStatement ps = conn.prepareStatement(s)) {
+					ps.setInt(1, id);
+					ps.executeUpdate();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+
+			rs.close();
+		} catch (SQLException e) {
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	public static void saveJoinDelay() {
+		SQLConnect connect = RageMode.getSQL();
+		if (!connect.isConnected()) {
+			return;
+		}
+
+		PreparedStatement prestt = null;
+		try {
+			prestt = connect.getConnection()
+					.prepareStatement("REPLACE INTO `" + connect.getPrefix() + "players` (uuid, time) VALUES (?, ?);");
+			if (prestt == null) {
+				return;
+			}
+
+			for (Map.Entry<Player, Long> m : ReJoinDelay.getPlayerTimes().entrySet()) {
+				prestt.setString(1, m.getKey().getUniqueId().toString());
+				prestt.setLong(2, m.getValue());
+				prestt.executeUpdate();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (prestt != null) {
+				try {
+					prestt.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }

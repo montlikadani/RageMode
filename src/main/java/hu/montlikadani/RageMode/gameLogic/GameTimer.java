@@ -1,24 +1,23 @@
 package hu.montlikadani.ragemode.gameLogic;
 
-import java.util.List;
 import java.util.TimerTask;
-
-import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
 import hu.montlikadani.ragemode.gameUtils.ScoreTeam;
 import hu.montlikadani.ragemode.gameUtils.TabTitles;
-import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class GameTimer extends TimerTask {
 
-	private TabTitles gameTab = null;
-	private ScoreBoard gameBoard = null;
-	private ScoreTeam scoreTeam = null;
+	@Deprecated private TabTitles gameTab = null;
+	@Deprecated private ScoreBoard gameBoard = null;
+	@Deprecated private ScoreTeam scoreTeam = null;
+
+	private ActionMessengers ac = null;
 
 	private Game game;
 	private int time;
@@ -36,35 +35,31 @@ public class GameTimer extends TimerTask {
 		return time;
 	}
 
+	/**
+	 * Moved to {@link ActionMessengers}
+	 * @return {@link TabTitles}
+	 */
+	@Deprecated
 	public TabTitles getTabTitles() {
 		return gameTab;
 	}
 
+	/**
+	 * Moved to {@link ActionMessengers}
+	 * @return {@link ScoreBoard}
+	 */
+	@Deprecated
 	public ScoreBoard getScoreboard() {
 		return gameBoard;
 	}
 
+	/**
+	 * Moved to {@link ActionMessengers}
+	 * @return {@link ScoreTeam}
+	 */
+	@Deprecated
 	public ScoreTeam getScoreTeam() {
 		return scoreTeam;
-	}
-
-	public void loadModules() {
-		List<PlayerManager> listPlayers = game.getPlayersFromList();
-
-		if (ConfigValues.isScoreboardEnabled()) {
-			gameBoard = new ScoreBoard(listPlayers);
-			gameBoard.addToList(game.getName());
-		}
-
-		if (ConfigValues.isTabEnabled()) {
-			gameTab = new TabTitles(listPlayers);
-			gameTab.addToList(game.getName());
-		}
-
-		if (ConfigValues.isTabFormatEnabled()) {
-			scoreTeam = new ScoreTeam(listPlayers);
-			scoreTeam.addToList(game.getName());
-		}
 	}
 
 	@Override
@@ -94,87 +89,13 @@ public class GameTimer extends TimerTask {
 				}
 			}
 
-			if (gameTab != null) {
-				List<String> tabHeader = ConfigValues.getTabHeader();
-				List<String> tabFooter = ConfigValues.getTabFooter();
-
-				String he = "";
-				String fo = "";
-				int s = 0;
-				for (String line : tabHeader) {
-					s++;
-					if (s > 1)
-						he = he + "\n\u00a7r";
-
-					he = he + line;
-				}
-				s = 0;
-				for (String line : tabFooter) {
-					s++;
-					if (s > 1)
-						fo = fo + "\n\u00a7r";
-
-					fo = fo + line;
-				}
-
-				for (Player pl : gameTab.getPlayers()) {
-					he = Utils.setPlaceholders(he, pl);
-					fo = Utils.setPlaceholders(fo, pl);
-				}
-
-				he = he.replace("%game-time%", tFormat);
-				fo = fo.replace("%game-time%", tFormat);
-
-				gameTab.sendTabTitle(he, fo);
+			if (ac == null) {
+				ac = new ActionMessengers(game, game.getPlayersFromList());
 			}
 
-			if (scoreTeam != null) {
-				String prefix = ConfigValues.getTabPrefix();
-				String suffix = ConfigValues.getTabSuffix();
-
-				for (Player pl : scoreTeam.getPlayers()) {
-					prefix = Utils.setPlaceholders(prefix, pl);
-					suffix = Utils.setPlaceholders(suffix, pl);
-
-					scoreTeam.setTeam(pl, prefix, suffix);
-				}
-			}
-
-			if (gameBoard != null) {
-				String boardTitle = ConfigValues.getSbTitle();
-				List<String> rows = ConfigValues.getSbContent();
-				for (Player pl : gameBoard.getPlayers()) {
-					if (!boardTitle.isEmpty()) {
-						gameBoard.setTitle(Utils.colors(boardTitle));
-					}
-
-					// should fix duplicated lines
-					org.bukkit.scoreboard.Scoreboard sb = gameBoard.getScoreboards().get(pl).getScoreboard();
-					for (String entry : sb.getEntries()) {
-						sb.resetScores(entry);
-					}
-
-					if (rows != null && !rows.isEmpty()) {
-						int rowMax = rows.size();
-
-						for (String row : rows) {
-							if (row.trim().isEmpty()) {
-								for (int i = 0; i <= rowMax; i++) {
-									row = row + " ";
-								}
-							}
-
-							row = Utils.setPlaceholders(row, pl);
-							row = row.replace("%game-time%", tFormat);
-
-							gameBoard.setLine(row, rowMax);
-							rowMax--;
-
-							gameBoard.setScoreBoard(pl);
-						}
-					}
-				}
-			}
+			ac.setScoreboard();
+			ac.setTabList();
+			ac.setTeam();
 
 			if (time == 0) {
 				cancel();
