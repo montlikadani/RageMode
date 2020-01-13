@@ -406,7 +406,7 @@ public class YAMLDB {
 
 		for (String o : section.getKeys(false)) {
 			Player p = Bukkit.getPlayer(UUID.fromString(o));
-			if (p != null && ReJoinDelay.getPlayerTimes().containsKey(p)) {
+			if (p != null) {
 				ReJoinDelay.setTime(p, section.getLong(o));
 			}
 		}
