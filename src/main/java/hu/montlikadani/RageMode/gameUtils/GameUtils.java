@@ -20,7 +20,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.eclipse.jdt.annotation.Nullable;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.ServerVersion.Version;
@@ -95,7 +94,7 @@ public class GameUtils {
 	 * <br>- the name is too long
 	 * <br>- in the name contains a ragemode command
 	 */
-	public static boolean checkName(@Nullable Player pl, String name) {
+	public static boolean checkName(Player pl, String name) {
 		if (!name.matches("^[a-zA-Z0-9\\_\\-]+$")) {
 			sendMessage(pl, RageMode.getLang().get("setup.addgame.special-chars"));
 			return false;
@@ -920,7 +919,7 @@ public class GameUtils {
 				}, ConfigValues.getGameFreezeTime() * 20);
 	}
 
-	private static void finishStopping(Game game, @Nullable Player winner, boolean serverStop) {
+	private static void finishStopping(Game game, Player winner, boolean serverStop) {
 		if (!game.isGameRunning()) {
 			return;
 		}
@@ -1086,7 +1085,7 @@ public class GameUtils {
 	 * @param game the game name to set
 	 * @param status the new status to be set for the game
 	 */
-	public static void setStatus(String game, @Nullable GameStatus status) {
+	public static void setStatus(String game, GameStatus status) {
 		setStatus(game, status, true);
 	}
 
@@ -1096,7 +1095,7 @@ public class GameUtils {
 	 * @param status the new status to be set for the game
 	 * @param forceRemove to force remove the existing game status from list
 	 */
-	public static void setStatus(String game, @Nullable GameStatus status, boolean forceRemove) {
+	public static void setStatus(String game, GameStatus status, boolean forceRemove) {
 		Validate.notNull(game, "Game name can't be null!");
 		Validate.notEmpty(game, "Game name can't be null!");
 
