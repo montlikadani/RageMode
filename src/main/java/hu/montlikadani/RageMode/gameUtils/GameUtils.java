@@ -1113,4 +1113,29 @@ public class GameUtils {
 
 		GameUtils.status.put(game, status);
 	}
+
+	/**
+	 * Checks for the player inventory (in hand) if the item is similar for the game item.
+	 * @param p Player
+	 * @see #isGameItem(ItemStack)
+	 * @return true if similar
+	 */
+	public static boolean isGameItem(Player p) {
+		return isGameItem(NMS.getItemInHand(p));
+	}
+
+	/**
+	 * Checks for the item stack if the item is similar for game item.
+	 * @param item Material
+	 * @return true if similar
+	 */
+	public static boolean isGameItem(ItemStack item) {
+		if (ForceStarter.getItem().isSimilar(item) || CombatAxe.getItem().isSimilar(item)
+				|| Grenade.getItem().isSimilar(item) || RageArrow.getItem().isSimilar(item)
+				|| RageBow.getItem().isSimilar(item) || RageKnife.getItem().isSimilar(item)) {
+			return true;
+		}
+
+		return false;
+	}
 }

@@ -33,20 +33,7 @@ import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerBedEnterEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerEggThrowEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.player.PlayerToggleFlightEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -85,6 +72,7 @@ import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 public class EventListener implements Listener {
 
 	private RageMode plugin;
+
 	private Map<UUID, UUID> explosionVictims = new HashMap<>();
 	private Map<UUID, UUID> grenadeExplosionVictims = new HashMap<>();
 
@@ -138,8 +126,7 @@ public class EventListener implements Listener {
 		String game = GameUtils.getGameByPlayer(p).getName();
 
 		if (GameUtils.getStatus(game) == GameStatus.WAITING) {
-			if (!ConfigValues.isChatEnabledinLobby()
-					&& !hasPerm(p, "ragemode.bypass.lobby.lockchat")) {
+			if (!ConfigValues.isChatEnabledinLobby() && !hasPerm(p, "ragemode.bypass.lobby.lockchat")) {
 				event.setCancelled(true);
 				p.sendMessage(RageMode.getLang().get("game.lobby.chat-is-disabled"));
 				return;
@@ -147,8 +134,7 @@ public class EventListener implements Listener {
 		}
 
 		if (GameUtils.getStatus(game) == GameStatus.RUNNING) {
-			if (!ConfigValues.isEnableChatInGame()
-					&& !hasPerm(p, "ragemode.bypass.game.lockchat")) {
+			if (!ConfigValues.isEnableChatInGame() && !hasPerm(p, "ragemode.bypass.game.lockchat")) {
 				p.sendMessage(RageMode.getLang().get("game.chat-is-disabled"));
 				event.setCancelled(true);
 				return;
@@ -168,11 +154,9 @@ public class EventListener implements Listener {
 			}
 		}
 
-		if (GameUtils.getStatus(game) == GameStatus.GAMEFREEZE) {
-			if (!ConfigValues.isEnableChatAfterEnd()) {
-				p.sendMessage(RageMode.getLang().get("game.game-freeze.chat-is-disabled"));
-				event.setCancelled(true);
-			}
+		if (!ConfigValues.isEnableChatAfterEnd() && GameUtils.getStatus(game) == GameStatus.GAMEFREEZE) {
+			p.sendMessage(RageMode.getLang().get("game.game-freeze.chat-is-disabled"));
+			event.setCancelled(true);
 		}
 	}
 
@@ -326,11 +310,7 @@ public class EventListener implements Listener {
 		}
 
 		Player p = (Player) e.getEntity();
-		if (!GameUtils.isPlayerPlaying(p)) {
-			return;
-		}
-
-		if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())
+		if (GameUtils.isPlayerPlaying(p) && waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())
 				&& waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
 			e.setCancelled(true);
 		}
@@ -741,8 +721,13 @@ public class EventListener implements Listener {
 				}
 			}
 
-			if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR
-					|| event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
+			Action action = event.getAction();
+			if (action == Action.RIGHT_CLICK_BLOCK && GameUtils.isGameItem(p)) {
+				event.setCancelled(true); // Cancels the game items usage, for example with collecting beehives
+			}
+
+			if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR
+					|| action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
 				if (GameUtils.getStatus(p) == GameStatus.WAITING) {
 					ItemStack hand = NMS.getItemInHand(p);
 					ItemMeta meta = hand.getItemMeta();
