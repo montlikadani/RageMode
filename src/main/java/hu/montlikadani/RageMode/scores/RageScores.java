@@ -274,11 +274,7 @@ public class RageScores {
 			pointsHolder.setDeaths(totalDeaths);
 			pointsHolder.setCurrentStreak(currentStreak);
 			pointsHolder.setLongestStreak(longestStreak);
-			if (killer) {
-				pointsHolder.addPoints(points + GameUtils.getBonus().getPointBonus(player));
-			} else {
-				pointsHolder.addPoints(points);
-			}
+			pointsHolder.addPoints(killer ? (points + GameUtils.getBonus().getPointBonus(player)) : points);
 
 			return pointsHolder.getPoints();
 		}

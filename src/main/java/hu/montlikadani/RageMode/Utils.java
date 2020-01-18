@@ -47,25 +47,6 @@ public class Utils {
 	}
 
 	/**
-	 * 1.13 fix for default colors not shows in tablist.
-	 * @param prefix Prefix
-	 * @return ChatColor char to show the given color
-	 */
-	public static ChatColor fromPrefix(String prefix) {
-		char colour = 0;
-		char[] chars = prefix.toCharArray();
-		for (int i = 0; i < chars.length; i++) {
-			char at = chars[i];
-			if ((at == '\u00a7' || at == '&') && i + 1 < chars.length) {
-				char code = chars[i + 1];
-				if (ChatColor.getByChar(code) != null)
-					colour = code;
-			}
-		}
-		return colour == 0 ? ChatColor.RESET : ChatColor.getByChar(colour);
-	}
-
-	/**
 	 * Calls an event.
 	 * <p>If the event is Asynchronous then delays the calling, preventing an error.
 	 * @param event BaseEvent
@@ -205,9 +186,8 @@ public class Utils {
 	public static List<Class<?>> getClasses(String packageName) {
 		List<Class<?>> classes = new ArrayList<>();
 		try {
-			JarFile file = new JarFile(
-					new File(RageMode.getInstance().getFolder().getParentFile().getPath(),
-						RageMode.getInstance().getDescription().getName() + ".jar"));
+			JarFile file = new JarFile(new File(RageMode.getInstance().getFolder().getParentFile().getPath(),
+					RageMode.getInstance().getDescription().getName() + ".jar"));
 			for (Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
 				JarEntry jarEntry = entry.nextElement();
 				String name = jarEntry.getName().replace("/", ".");
@@ -294,6 +274,7 @@ public class Utils {
 		for (String s : list) {
 			cList.add(colors(s));
 		}
+
 		return cList;
 	}
 
@@ -327,6 +308,7 @@ public class Utils {
 		} catch (NumberFormatException e) {
 			return false;
 		}
+
 		return true;
 	}
 
@@ -341,6 +323,7 @@ public class Utils {
 		} catch (NumberFormatException e) {
 			return false;
 		}
+
 		return true;
 	}
 }

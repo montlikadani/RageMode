@@ -245,7 +245,7 @@ public class Language {
 
 		msg = Utils.colors(yc.getString(key));
 
-		if (variables.length > 0) {
+		if (variables != null) {
 			for (int i = 0; i < variables.length; i++) {
 				if (variables.length >= i + 2) {
 					msg = msg.replace(String.valueOf(variables[i]), String.valueOf(variables[i + 1]));
@@ -274,7 +274,7 @@ public class Language {
 
 		ls = Utils.colorList(yc.getStringList(key));
 
-		if (variables.length > 0) {
+		if (variables != null && variables.length > 0) {
 			for (int i = 0; i < ls.size(); i++) {
 				String msg = ls.get(i);
 

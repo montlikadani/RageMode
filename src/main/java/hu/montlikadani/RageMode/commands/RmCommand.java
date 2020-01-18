@@ -12,7 +12,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
@@ -25,7 +24,7 @@ public class RmCommand implements CommandExecutor {
 		arg.clear();
 
 		String path = "hu.montlikadani.ragemode.commands.list";
-		List<Class<?>> classes = Utils.getClasses(path);
+		List<Class<?>> classes = hu.montlikadani.ragemode.Utils.getClasses(path);
 		for (Class<?> cl : classes) {
 			if (cl == null) {
 				continue;
@@ -86,7 +85,7 @@ public class RmCommand implements CommandExecutor {
 
 				msg += "&7==========";
 
-				sendMessage(sender, Utils.colors(msg));
+				sendMessage(sender, msg, true);
 				return true;
 			}
 
@@ -145,7 +144,7 @@ public class RmCommand implements CommandExecutor {
 						msg += "&7-&6 /rm removegame <gameName>&a - Removes the specified game.\n";
 
 					if (!msg.isEmpty()) {
-						sendMessage(sender, Utils.colors(msg));
+						sendMessage(sender, msg, true);
 					}
 				} else if (args[0].equalsIgnoreCase("admin")) {
 					if (!hasPerm(sender, "ragemode.admin.help")) {
@@ -186,7 +185,7 @@ public class RmCommand implements CommandExecutor {
 						msg += "&7-&6 /rm kick <gameName> <player>&a - Kick a player from the game.";
 
 					if (!msg.isEmpty()) {
-						sendMessage(sender, Utils.colors(msg));
+						sendMessage(sender, msg, true);
 					}
 				}
 

@@ -146,7 +146,7 @@ public class ConfigValues {
 		signsList = f.get("signs.list", Arrays.asList("&3[&5RageMode&3]", "&a%game%",
 				"&ePlayers&3 [%current-players%/%max-players%&3]", "%running%"));
 		signBackground = f.get("signs.background.enable", false);
-		signBackgrType = f.get("signs.background.type", "glass");
+		signBackgrType = f.get("signs.background.type", "none");
 		actionBarActions = f.get("actionbar-messages.actions",
 				Arrays.asList("start:&aGame has started!&2 We wish you a good game!"));
 		bossbarMsg = f.getOriginal("bossbar-messages.join.message");

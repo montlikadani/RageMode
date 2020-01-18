@@ -87,23 +87,26 @@ public class SignCreator {
 	}
 
 	public synchronized static boolean removeSign(Sign sign) {
-		if (signData.isEmpty())
+		if (signData.isEmpty()) {
 			return false;
-
-		List<String> signs = fileConf.getStringList("signs");
+		}
 
 		for (java.util.Iterator<SignData> it = signData.iterator(); it.hasNext();) {
 			SignData data = it.next();
 			if (data.getLocation().equals(sign.getLocation())) {
+				List<String> signs = fileConf.getStringList("signs");
 				String index = locationSignToString(data.getLocation(), data.getGame());
 
 				signs.remove(index);
+
 				fileConf.set("signs", signs);
-				signData.remove(data);
 				Configuration.saveFile(fileConf, SignConfiguration.getFile());
+
+				it.remove();
 				return true;
 			}
 		}
+
 		return false;
 	}
 

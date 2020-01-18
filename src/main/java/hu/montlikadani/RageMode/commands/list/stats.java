@@ -39,7 +39,6 @@ public class stats {
 		Player p = (Player) sender;
 		Player target = p;
 		if (args.length == 2) {
-			target = null;
 			target = Bukkit.getPlayer(args[1]);
 			if (target == null) {
 				sendMessage(p, RageMode.getLang().get("commands.stats.player-not-found"));

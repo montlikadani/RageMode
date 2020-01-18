@@ -7,7 +7,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
@@ -43,7 +42,7 @@ public class listplayers {
 					sb.append("&7-&6 " + e.next().getPlayer().getName() + "&a - " + e.next().getGameName());
 				}
 
-				sendMessage(p, Utils.colors("&7Players:\n" + sb));
+				sendMessage(p, "&7Players:\n" + sb, true);
 			}
 
 			if (!GameUtils.getGameBySpectator(p).getPlayersFromList().isEmpty()) {
@@ -53,7 +52,7 @@ public class listplayers {
 					sb.append("&7-&6 " + e.next().getPlayer().getName() + "&a - " + e.next().getGameName());
 				}
 
-				sendMessage(sender, Utils.colors("&7Spectator players:\n" + sb));
+				sendMessage(sender, "&7Spectator players:\n" + sb, true);
 			}
 
 			return true;
@@ -84,7 +83,7 @@ public class listplayers {
 					}
 				}
 
-				sendMessage(sender, Utils.colors("&7Players:\n" + sb));
+				sendMessage(sender, "&7Players:\n" + sb, true);
 			}
 
 			if (!GameUtils.getGame(game).getSpectatorPlayers().isEmpty()) {
@@ -95,7 +94,7 @@ public class listplayers {
 					sb.append("\n&7-&6 " + spec.getKey().getName() + "&a - " + spec.getValue());
 				}
 
-				sendMessage(sender, Utils.colors("&7Spectator players:\n" + sb));
+				sendMessage(sender, "&7Spectator players:\n" + sb, true);
 			}
 		}
 

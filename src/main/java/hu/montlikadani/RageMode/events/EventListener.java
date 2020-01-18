@@ -80,6 +80,8 @@ import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.signs.SignData;
 import hu.montlikadani.ragemode.utils.MaterialUtil;
 
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+
 public class EventListener implements Listener {
 
 	private RageMode plugin;
@@ -137,7 +139,7 @@ public class EventListener implements Listener {
 
 		if (GameUtils.getStatus(game) == GameStatus.WAITING) {
 			if (!ConfigValues.isChatEnabledinLobby()
-					&& !p.hasPermission("ragemode.bypass.lobby.lockchat")) {
+					&& !hasPerm(p, "ragemode.bypass.lobby.lockchat")) {
 				event.setCancelled(true);
 				p.sendMessage(RageMode.getLang().get("game.lobby.chat-is-disabled"));
 				return;
@@ -146,7 +148,7 @@ public class EventListener implements Listener {
 
 		if (GameUtils.getStatus(game) == GameStatus.RUNNING) {
 			if (!ConfigValues.isEnableChatInGame()
-					&& !p.hasPermission("ragemode.bypass.game.lockchat")) {
+					&& !hasPerm(p, "ragemode.bypass.game.lockchat")) {
 				p.sendMessage(RageMode.getLang().get("game.chat-is-disabled"));
 				event.setCancelled(true);
 				return;
@@ -262,8 +264,7 @@ public class EventListener implements Listener {
 				if (GameUtils.isPlayerPlaying(damager)) {
 					ItemStack hand = NMS.getItemInHand(damager);
 					ItemMeta meta = hand.getItemMeta();
-					if (meta != null && meta.getDisplayName() != null
-							&& meta.getDisplayName().equals(RageKnife.getName())) {
+					if (meta != null && meta.hasDisplayName() && meta.getDisplayName().equals(RageKnife.getName())) {
 						event.setDamage(25);
 						tool = "knife";
 					}
@@ -573,7 +574,7 @@ public class EventListener implements Listener {
 
 		org.bukkit.block.BlockState blockState = event.getBlock().getState();
 		if (blockState instanceof Sign && SignCreator.isSign(blockState.getLocation())) {
-			if (!event.getPlayer().hasPermission("ragemode.admin.signs")) {
+			if (!hasPerm(event.getPlayer(), "ragemode.admin.signs")) {
 				event.getPlayer().sendMessage(RageMode.getLang().get("no-permission-to-interact-sign"));
 				event.setCancelled(true);
 				return;
@@ -592,7 +593,7 @@ public class EventListener implements Listener {
 		if (ConfigValues.isSpectatorEnabled() && GameUtils.isSpectatorPlaying(p)) {
 			cmds = ConfigValues.getSpectatorCmds();
 			if (cmds != null && !cmds.isEmpty()) {
-				if (!cmds.contains(arg) && !p.hasPermission("ragemode.bypass.spectatorcommands")) {
+				if (!cmds.contains(arg) && !hasPerm(p, "ragemode.bypass.spectatorcommands")) {
 					p.sendMessage(RageMode.getLang().get("game.this-command-is-disabled-in-game"));
 					event.setCancelled(true);
 					return;
@@ -611,7 +612,7 @@ public class EventListener implements Listener {
 
 			cmds = ConfigValues.getAllowedCmds();
 			if (cmds != null && !cmds.isEmpty()) {
-				if (!cmds.contains(arg) && !p.hasPermission("ragemode.bypass.disabledcommands")) {
+				if (!cmds.contains(arg) && !hasPerm(p, "ragemode.bypass.disabledcommands")) {
 					p.sendMessage(RageMode.getLang().get("game.this-command-is-disabled-in-game"));
 					event.setCancelled(true);
 				}
@@ -734,8 +735,7 @@ public class EventListener implements Listener {
 
 				ItemStack hand = NMS.getItemInHand(thrower);
 				ItemMeta meta = hand.getItemMeta();
-				if (meta != null && meta.getDisplayName() != null
-						&& meta.getDisplayName().equals(CombatAxe.getName())) {
+				if (meta != null && meta.hasDisplayName() && meta.getDisplayName().equals(CombatAxe.getName())) {
 					thrower.launchProjectile(Snowball.class);
 					NMS.setItemInHand(thrower, null);
 				}
@@ -746,10 +746,10 @@ public class EventListener implements Listener {
 				if (GameUtils.getStatus(p) == GameStatus.WAITING) {
 					ItemStack hand = NMS.getItemInHand(p);
 					ItemMeta meta = hand.getItemMeta();
-					if (meta != null && meta.getDisplayName() != null) {
+					if (meta != null && meta.hasDisplayName()) {
 						Game game = GameUtils.getGameByPlayer(p);
 
-						if (p.hasPermission("ragemode.admin.item.forcestart")
+						if (hasPerm(p, "ragemode.admin.item.forcestart")
 								&& meta.getDisplayName().equals(ForceStarter.getName())) {
 							GameUtils.forceStart(game);
 							p.sendMessage(
@@ -773,7 +773,7 @@ public class EventListener implements Listener {
 		org.bukkit.block.Block b = event.getClickedBlock();
 		if (ConfigValues.isSignsEnable() && b != null && b.getState() != null && b.getState() instanceof Sign
 				&& event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-			if (!p.hasPermission("ragemode.join.sign")) {
+			if (!hasPerm(p, "ragemode.join.sign")) {
 				p.sendMessage(RageMode.getLang().get("no-permission"));
 				return;
 			}
@@ -925,7 +925,7 @@ public class EventListener implements Listener {
 
 		if (ConfigValues.isSignsEnable()
 				&& event.getLine(0).contains("[rm]") || event.getLine(0).contains("[ragemode]")) {
-			if (!event.getPlayer().hasPermission("ragemode.admin.signs")) {
+			if (!hasPerm(event.getPlayer(), "ragemode.admin.signs")) {
 				event.getPlayer().sendMessage(RageMode.getLang().get("no-permission-to-interact-sign"));
 				event.setCancelled(true);
 				return;

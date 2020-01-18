@@ -11,7 +11,9 @@ import hu.montlikadani.ragemode.Utils;
 public class ActionBar {
 
 	public static void sendActionBar(Player player, String message) {
-		if (!player.isOnline()) return;
+		if (player == null) {
+			return;
+		}
 
 		if (message == null) message = "";
 
@@ -36,6 +38,7 @@ public class ActionBar {
 						chatMessageType = obj;
 					}
 				}
+
 				Object chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[] { String.class }).newInstance(message);
 				packet = packetPlayOutChatClass.getConstructor(new Class<?>[] { iChatBaseComponentClass, chatMessageTypeClass })
 						.newInstance(chatCompontentText, chatMessageType);
