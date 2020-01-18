@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -26,26 +25,43 @@ public class ScoreBoard implements IObjectives {
 	/**
 	 * Creates a new instance of ScoreBoard, which manages the ScoreBoards for
 	 * the given List of Player UUID Strings.
-	 * 
+	 * @deprecated The players list can be reach from the game instance
 	 * @param players The list of {@link PlayerManager}
 	 */
-	@SuppressWarnings("deprecation")
+	@Deprecated
 	public ScoreBoard(List<PlayerManager> players) {
 		players.forEach(pm -> this.players.add(pm.getPlayer()));
+	}
 
-		Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-		Objective objective = scoreboard.getObjective("ragescores");
-		if (objective != null) {
-			objective.unregister();
-		}
+	/**
+	 * Creates a new instance of ScoreBoard.
+	 */
+	public ScoreBoard() {
+	}
 
-		objective = scoreboard.registerNewObjective("ragescores", "dummy");
-
-		for (Player loopPlayer : this.players) {
+	/**
+	 * Loads the scoreboard for game players.
+	 * @param players {@link PlayerManager} the List of players
+	 */
+	@SuppressWarnings("deprecation")
+	public void loadScoreboard(List<PlayerManager> players) {
+		// TODO: Fixing the scoreboard appears from other players to other players, so the same
+		for (PlayerManager pm : players) {
+			Player loopPlayer = pm.getPlayer();
 			removeScoreBoard(loopPlayer, false);
+
+			// getNewScoreboard() is Asynchronously, and can't fix bukkit task
+			Scoreboard scoreboard = loopPlayer.getScoreboard();
+			Objective objective = scoreboard.getObjective("ragescores");
+			if (objective != null) {
+				objective.unregister();
+			}
+
+			objective = scoreboard.registerNewObjective("ragescores", "dummy");
 
 			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 			scoreboards.put(loopPlayer, new ScoreBoardHolder(loopPlayer, scoreboard, objective));
+			this.players.add(loopPlayer);
 		}
 	}
 

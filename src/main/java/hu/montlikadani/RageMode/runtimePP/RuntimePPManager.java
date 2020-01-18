@@ -16,6 +16,10 @@ public class RuntimePPManager {
 
 	private static List<PlayerPoints> RuntimePPList = new ArrayList<>();
 
+	public static List<PlayerPoints> getRuntimePPList() {
+		return RuntimePPList;
+	}
+
 	public static void loadPPListFromDatabase() {
 		switch (ConfigValues.getDatabaseType()) {
 		case "sql":
@@ -49,11 +53,6 @@ public class RuntimePPManager {
 	 * @return {@link PlayerPoints} the player current stats
 	 */
 	public static PlayerPoints getPPForPlayer(UUID uuid) {
-		if (RuntimePPList == null) {
-			RuntimePPList = new ArrayList<>();
-			return null;
-		}
-
 		int i = 0;
 		int imax = RuntimePPList.size();
 		while (i < imax) {
@@ -67,12 +66,8 @@ public class RuntimePPManager {
 		return null;
 	}
 
-	public static List<PlayerPoints> getRuntimePPList() {
-		return RuntimePPList;
-	}
-
 	public synchronized static void updatePlayerEntry(PlayerPoints pp) {
-		if (RuntimePPList == null || RuntimePPList.isEmpty()) {
+		if (RuntimePPList.isEmpty()) {
 			Debug.logConsole(Level.WARNING, "The database does not loaded correctly when this plugin started.");
 			Debug.logConsole("Reload the plugin, or if this not helps, contact the developer.");
 			return;

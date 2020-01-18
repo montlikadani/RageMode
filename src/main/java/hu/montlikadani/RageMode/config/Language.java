@@ -65,7 +65,6 @@ public class Language {
 			} catch (InvalidConfigurationException e) {
 				Debug.logConsole("Bad/invalid string found in your language file: " + e.getLocalizedMessage());
 			} catch (IOException e2) {
-				Debug.throwMsg();
 				e2.printStackTrace();
 			}
 		}

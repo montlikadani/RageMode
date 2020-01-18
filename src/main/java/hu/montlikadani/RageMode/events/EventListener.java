@@ -779,7 +779,6 @@ public class EventListener implements Listener {
 			}
 
 			if (!SignCreator.isSign(b.getLocation())) {
-				p.sendMessage(RageMode.getLang().get("game.does-not-exist"));
 				return;
 			}
 

@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
@@ -92,8 +91,8 @@ public class TabTitles implements IObjectives {
 		try {
 			Object tabHeader = Utils.getAsIChatBaseComponent(header);
 			Object tabFooter = Utils.getAsIChatBaseComponent(footer);
-			Constructor<?> titleConstructor = Utils.getNMSClass("PacketPlayOutPlayerListHeaderFooter").getConstructor(new Class[0]);
-			Object packet = titleConstructor.newInstance(new Object[0]);
+			Constructor<?> titleConstructor = Utils.getNMSClass("PacketPlayOutPlayerListHeaderFooter").getConstructor();
+			Object packet = titleConstructor.newInstance();
 			Field aField = null;
 			Field bField = null;
 			if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
@@ -111,7 +110,6 @@ public class TabTitles implements IObjectives {
 			Utils.sendPacket(player, packet);
 		} catch (Throwable e) {
 			e.printStackTrace();
-			Debug.throwMsg();
 		}
 	}
 

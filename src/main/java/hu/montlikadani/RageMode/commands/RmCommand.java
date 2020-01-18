@@ -11,7 +11,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 
@@ -262,7 +261,6 @@ public class RmCommand implements CommandExecutor {
 							printMethod.invoke(run, arguments);
 						} catch (Throwable t) {
 							t.printStackTrace();
-							Debug.throwMsg();
 						}
 
 						break;
@@ -270,6 +268,7 @@ public class RmCommand implements CommandExecutor {
 				}
 			}
 		}
+
 		return true;
 	}
 }

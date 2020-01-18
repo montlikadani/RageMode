@@ -50,7 +50,6 @@ public class YAMLDB {
 				file.createNewFile();
 			} catch (IOException e) {
 				e.printStackTrace();
-				Debug.throwMsg();
 			}
 		}
 
@@ -473,7 +472,6 @@ public class YAMLDB {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
-					Debug.throwMsg();
 				}
 			}
 

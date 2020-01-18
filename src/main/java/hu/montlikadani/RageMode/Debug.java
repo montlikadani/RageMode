@@ -8,11 +8,6 @@ import hu.montlikadani.ragemode.config.ConfigValues;
 
 public class Debug {
 
-	public static void throwMsg() {
-		logConsole(Level.WARNING, "There was an error. Please report it here:\nhttps://github.com/montlikadani/RageMode/issues");
-		return;
-	}
-
 	/**
 	 * Logging to console to write debug messages
 	 * @see #logConsole(String, Object...)

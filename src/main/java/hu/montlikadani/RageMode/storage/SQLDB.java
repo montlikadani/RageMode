@@ -590,6 +590,7 @@ public class SQLDB {
 		try {
 			statement = conn.createStatement();
 			ResultSet rs = conn.executeQuery(statement, query);
+			PreparedStatement ps = null;
 			while (rs.next()) {
 				Player p = Bukkit.getPlayer(UUID.fromString(rs.getString("uuid")));
 				if (p != null) {
@@ -598,14 +599,14 @@ public class SQLDB {
 
 				int id = rs.getInt("id");
 				String s = "DELETE FROM `" + connect.getPrefix() + "players` WHERE id = ?;";
-				try (PreparedStatement ps = conn.prepareStatement(s)) {
-					ps.setInt(1, id);
-					ps.executeUpdate();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				ps = conn.prepareStatement(s);
+				ps.setInt(1, id);
+				ps.executeUpdate();
 			}
 
+			if (ps != null) {
+				ps.close();
+			}
 			rs.close();
 		} catch (SQLException e) {
 		} finally {

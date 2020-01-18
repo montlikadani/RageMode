@@ -35,6 +35,10 @@ public class RewardManager {
 		conf = RageMode.getInstance().getConfiguration().getRewardsCfg();
 	}
 
+	public String getGame() {
+		return game;
+	}
+
 	public void rewardForWinner(Player winner) {
 		List<String> cmds = conf.getStringList("rewards.end-game.winner.commands");
 		List<String> msgs = conf.getStringList("rewards.end-game.winner.messages");

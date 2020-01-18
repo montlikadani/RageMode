@@ -163,10 +163,9 @@ public class RageMode extends JavaPlugin {
 					spawns.add(new GameSpawn(g));
 
 					// Loads the game locker
-					if (conf.getArenasCfg().getBoolean("arenas." + game + ".lock", false)) {
-						GameUtils.setStatus(game, GameStatus.NOTREADY);
-					} else
-						GameUtils.setStatus(game, GameStatus.READY);
+					GameUtils.setStatus(game,
+							conf.getArenasCfg().getBoolean("arenas." + game + ".lock", false) ? GameStatus.NOTREADY
+									: GameStatus.READY);
 
 					Debug.logConsole("Loaded {0} game!", game);
 				}
@@ -185,40 +184,36 @@ public class RageMode extends JavaPlugin {
 
 			bossManager = new BossbarManager(this);
 
-			// Metrics has changed the JsonObject and causing the break, so disable under 1.8.5
-			if (Version.isCurrentEqualOrHigher(Version.v1_8_R3)) {
-				Metrics metrics = new Metrics(this);
-				if (metrics.isEnabled()) {
-					metrics.addCustomChart(new Metrics.SingleLineChart("amount_of_games", games::size));
+			Metrics metrics = new Metrics(this);
+			if (metrics.isEnabled()) {
+				metrics.addCustomChart(new Metrics.SingleLineChart("amount_of_games", games::size));
 
-					metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
-						int totalPlayers = 0;
-						switch (ConfigValues.getDatabaseType()) {
-						case "mysql":
-							totalPlayers = MySQLDB.getAllPlayerStatistics().size();
-							break;
-						case "sql":
-						case "sqlite":
-							totalPlayers = SQLDB.getAllPlayerStatistics().size();
-							break;
-						case "yaml":
-							totalPlayers = YAMLDB.getAllPlayerStatistics().size();
-							break;
-						default:
-							break;
-						}
+				metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
+					int totalPlayers = 0;
+					switch (ConfigValues.getDatabaseType()) {
+					case "mysql":
+						totalPlayers = MySQLDB.getAllPlayerStatistics().size();
+						break;
+					case "sql":
+					case "sqlite":
+						totalPlayers = SQLDB.getAllPlayerStatistics().size();
+						break;
+					case "yaml":
+						totalPlayers = YAMLDB.getAllPlayerStatistics().size();
+						break;
+					default:
+						break;
+					}
 
-						return String.valueOf(totalPlayers);
-					}));
+					return String.valueOf(totalPlayers);
+				}));
 
-					metrics.addCustomChart(new Metrics.SimplePie("statistic_type", ConfigValues::getDatabaseType));
+				metrics.addCustomChart(new Metrics.SimplePie("statistic_type", ConfigValues::getDatabaseType));
 
-					Debug.logConsole("Metrics enabled.");
-				}
+				Debug.logConsole("Metrics enabled.");
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
-			Debug.throwMsg();
 		}
 	}
 
@@ -375,9 +370,15 @@ public class RageMode extends JavaPlugin {
 		HandlerList.unregisterAll(this);
 
 		for (Game game : games) {
-			if (game != null && game.isGameRunning()) {
+			if (game == null) {
+				continue;
+			}
+
+			if (game.isGameRunning()) {
 				GameUtils.stopGame(game, false);
 				GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
+			} else if (GameUtils.getStatus(game.getName()) == GameStatus.WAITING) {
+				GameUtils.kickAllPlayers(game);
 			}
 		}
 
@@ -427,8 +428,9 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void registerCommands() {
-		getCommand("ragemode").setExecutor(new RmCommand());
-		getCommand("ragemode").setTabCompleter(new RmTabCompleter());
+		org.bukkit.command.PluginCommand cmd = getCommand("ragemode");
+		cmd.setExecutor(new RmCommand());
+		cmd.setTabCompleter(new RmTabCompleter());
 	}
 
 	private void registerListeners() {
@@ -601,6 +603,7 @@ public class RageMode extends JavaPlugin {
 			Debug.logConsole(Level.WARNING, "Failed to detect Java version.");
 			return false;
 		}
+
 		return true;
 	}
 

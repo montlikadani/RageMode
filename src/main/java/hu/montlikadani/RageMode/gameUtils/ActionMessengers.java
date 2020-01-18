@@ -44,7 +44,7 @@ public class ActionMessengers {
 	}
 
 	public void setTabList() {
-		if (!ConfigValues.isTabEnabled()) {
+		if (game == null) {
 			return;
 		}
 
@@ -55,6 +55,9 @@ public class ActionMessengers {
 		if (gameTab == null) {
 			gameTab = new TabTitles();
 			gameTab.addToList(game.getName());
+		}
+
+		if (!ConfigValues.isTabEnabled()) {
 			return;
 		}
 
@@ -98,7 +101,7 @@ public class ActionMessengers {
 	}
 
 	public void setScoreboard() {
-		if (!ConfigValues.isScoreboardEnabled()) {
+		if (game == null) {
 			return;
 		}
 
@@ -107,8 +110,12 @@ public class ActionMessengers {
 		}
 
 		if (gameBoard == null) {
-			gameBoard = new ScoreBoard(players);
+			gameBoard = new ScoreBoard();
+			gameBoard.loadScoreboard(players);
 			gameBoard.addToList(game.getName());
+		}
+
+		if (!ConfigValues.isScoreboardEnabled()) {
 			return;
 		}
 
@@ -148,7 +155,7 @@ public class ActionMessengers {
 	}
 
 	public void setTeam() {
-		if (!ConfigValues.isTabFormatEnabled()) {
+		if (game == null) {
 			return;
 		}
 
@@ -159,6 +166,9 @@ public class ActionMessengers {
 		if (scoreTeam == null) {
 			scoreTeam = new ScoreTeam();
 			scoreTeam.addToList(game.getName());
+		}
+
+		if (!ConfigValues.isTabFormatEnabled()) {
 			return;
 		}
 

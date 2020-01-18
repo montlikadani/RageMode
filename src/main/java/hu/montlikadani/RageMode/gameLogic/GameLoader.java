@@ -23,6 +23,10 @@ public class GameLoader {
 		this.game = game;
 	}
 
+	public Game getGame() {
+		return game;
+	}
+
 	public boolean startGame() {
 		if (!checkTeleport()) {
 			return false; // stop starting the game if the game not set up correctly
@@ -62,6 +66,10 @@ public class GameLoader {
 	}
 
 	private boolean checkTeleport() {
+		if (game == null) {
+			return false;
+		}
+
 		GameSpawn gameSpawn = GameUtils.getGameSpawn(game);
 		if (gameSpawn.isGameReady()) {
 			GameUtils.teleportPlayersToGameSpawns(gameSpawn);
@@ -75,9 +83,5 @@ public class GameLoader {
 		}
 
 		return false;
-	}
-
-	public Game getGame() {
-		return game;
 	}
 }

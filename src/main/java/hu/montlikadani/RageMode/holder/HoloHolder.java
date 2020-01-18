@@ -18,7 +18,6 @@ import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.gmail.filoghost.holographicdisplays.api.VisibilityManager;
 
-import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
@@ -235,7 +234,6 @@ public class HoloHolder {
 				file.createNewFile();
 			} catch (IOException e) {
 				e.printStackTrace();
-				Debug.throwMsg();
 			}
 
 			config = new YamlConfiguration();

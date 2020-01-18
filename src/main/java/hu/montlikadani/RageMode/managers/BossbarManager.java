@@ -24,6 +24,10 @@ public class BossbarManager {
 		this.plugin = plugin;
 	}
 
+	public Map<Player, BossBar> getBossbarMap() {
+		return bossbarTask;
+	}
+
 	public void createBossbar(final Player p, String message, BarColor color, BarStyle style) {
 		if (Version.isCurrentLower(Version.v1_9_R1)) {
 			return;
@@ -69,13 +73,13 @@ public class BossbarManager {
 			return;
 		}
 
-		if (secAfterRemove < 0) {
-			secAfterRemove = 4;
-		}
-
 		final BossBar boss = bossbarTask.get(p);
 		if (boss == null) {
 			return;
+		}
+
+		if (secAfterRemove < 0) {
+			secAfterRemove = 4;
 		}
 
 		for (int i = 1; i <= secAfterRemove; ++i) {
@@ -115,9 +119,5 @@ public class BossbarManager {
 			boss.setVisible(false);
 			bossbarTask.remove(p);
 		}
-	}
-
-	public Map<Player, BossBar> getBossbarMap() {
-		return bossbarTask;
 	}
 }

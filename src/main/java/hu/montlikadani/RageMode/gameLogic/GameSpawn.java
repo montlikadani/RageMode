@@ -26,6 +26,30 @@ public class GameSpawn {
 		loadSpawns();
 	}
 
+	/**
+	 * Gets the Game what added to this instance.
+	 * @return {@link Game}
+	 */
+	public Game getGame() {
+		return game;
+	}
+
+	/**
+	 * Check if the game spawns are ready.
+	 * @return true if ready
+	 */
+	public boolean isGameReady() {
+		return isGameReady;
+	}
+
+	/**
+	 * Gets all spawn locations from list.
+	 * @return an unmodifiable list
+	 */
+	public List<Location> getSpawnLocations() {
+		return Collections.unmodifiableList(spawnLocations);
+	}
+
 	private void loadSpawns() {
 		removeAllSpawn();
 
@@ -107,25 +131,5 @@ public class GameSpawn {
 
 		int x = ThreadLocalRandom.current().nextInt(spawnLocations.size());
 		return spawnLocations.get(x);
-	}
-
-	public Game getGame() {
-		return game;
-	}
-
-	/**
-	 * Check if the game spawns are ready.
-	 * @return true if ready
-	 */
-	public boolean isGameReady() {
-		return isGameReady;
-	}
-
-	/**
-	 * Gets all spawn locations from list.
-	 * @return an unmodifiable list
-	 */
-	public List<Location> getSpawnLocations() {
-		return Collections.unmodifiableList(spawnLocations);
 	}
 }

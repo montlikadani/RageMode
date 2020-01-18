@@ -57,7 +57,7 @@ public class MapChecker {
 		}
 
 		if (!RageMode.getInstance().getConfiguration().getArenasCfg().contains(path + ".world")
-				|| GetGames.getWorld(gameName).isEmpty()) {
+				|| !GetGames.getWorld(gameName).isPresent()) {
 			message = RageMode.getLang().get("game.worldname-not-set");
 			isValid = false;
 			return;
@@ -85,7 +85,7 @@ public class MapChecker {
 		String thisPath = "arenas." + gameName + ".lobby";
 		if (aFile.isSet(thisPath + ".x") && aFile.isSet(thisPath + ".y") && aFile.isSet(thisPath + ".z")
 				&& aFile.isSet(thisPath + ".yaw") && aFile.isSet(thisPath + ".pitch")) {
-			if (!aFile.contains(thisPath + ".world") || GetGames.getWorld(gameName).isEmpty()) {
+			if (!aFile.contains(thisPath + ".world") || !GetGames.getWorld(gameName).isPresent()) {
 				message = RageMode.getLang().get("setup.lobby.worldname-not-set");
 				isValid = false;
 				return;

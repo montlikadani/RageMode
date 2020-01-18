@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.gameUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -25,8 +26,9 @@ public class GetGames {
 	public static int getConfigGamesCount() {
 		int n = 0;
 
-		if (fi.contains("arenas"))
+		if (fi.contains("arenas")) {
 			n = fi.getConfigurationSection("arenas").getKeys(false).size();
+		}
 
 		return n;
 	}
@@ -56,8 +58,8 @@ public class GetGames {
 	 * @param game Game
 	 * @return World name
 	 */
-	public static String getWorld(String game) {
-		return fi.getString("arenas." + game + ".world", null);
+	public static Optional<String> getWorld(String game) {
+		return Optional.ofNullable(fi.getString("arenas." + game + ".world"));
 	}
 
 	/**
@@ -116,15 +118,19 @@ public class GetGames {
 		int n = 0;
 		int x;
 		String[] names = getGameNames();
-		if (names == null)
+		if (names == null) {
 			return 0;
+		}
 
 		while (i < names.length) {
 			x = fi.getInt("arenas." + names[i] + ".maxplayers");
-			if (n < x)
+			if (n < x) {
 				n = x;
+			}
+
 			i++;
 		}
+
 		return n;
 	}
 
@@ -145,8 +151,10 @@ public class GetGames {
 		}
 
 		while (i < imax) {
-			if (games[i].equalsIgnoreCase(game))
+			if (games[i].equalsIgnoreCase(game)) {
 				return true;
+			}
+
 			i++;
 		}
 

@@ -78,13 +78,11 @@ public class GameTimer extends TimerTask {
 				return;
 			}
 
-			String tFormat = Utils.getFormattedTime(time);
-
 			// Broadcast time message should be in this place, before counting
 			for (int val : ConfigValues.getGameEndBcs()) {
 				if (time == val) {
 					GameUtils.broadcastToGame(game,
-							RageMode.getLang().get("game.broadcast.game-end", "%time%", tFormat));
+							RageMode.getLang().get("game.broadcast.game-end", "%time%", Utils.getFormattedTime(time)));
 					break;
 				}
 			}

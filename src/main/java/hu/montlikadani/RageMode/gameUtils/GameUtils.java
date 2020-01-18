@@ -533,6 +533,14 @@ public class GameUtils {
 	}
 
 	/**
+	 * Kicks all players from the game.
+	 * @param game {@link Game}
+	 */
+	public static void kickAllPlayers(Game game) {
+		game.getPlayersFromList().forEach(pm -> kickPlayer(pm.getPlayer(), game));
+	}
+
+	/**
 	 * Kicks the given player from the game.
 	 * @param p Player
 	 * @param game {@link Game}
@@ -540,15 +548,21 @@ public class GameUtils {
 	public static void kickPlayer(Player p, Game game) {
 		Validate.notNull(p, "Player can't be null!");
 
-		if (game != null && getStatus(game.getName()) == GameStatus.RUNNING && game.removePlayer(p)) {
-			Debug.logConsole("Player " + p.getName() + " left the server while playing.");
+		if (game != null
+				&& (getStatus(game.getName()) == GameStatus.RUNNING || getStatus(game.getName()) == GameStatus.WAITING)
+				&& game.removePlayer(p)) {
 
-			List<String> list = ConfigValues.getCmdsForPlayerLeave();
-			for (String cmds : list) {
-				cmds = cmds.replace("%player%", p.getName());
-				// For ipban
-				cmds = cmds.replace("%player-ip%", p.getAddress().getAddress().getHostAddress());
-				Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), Utils.colors(cmds));
+			// Will execute some tasks when the player left the server, while the game running
+			if (getStatus(game.getName()) == GameStatus.RUNNING) {
+				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
+
+				List<String> list = ConfigValues.getCmdsForPlayerLeave();
+				for (String cmds : list) {
+					cmds = cmds.replace("%player%", p.getName());
+					// For ipban
+					cmds = cmds.replace("%player-ip%", p.getAddress().getAddress().getHostAddress());
+					Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), Utils.colors(cmds));
+				}
 			}
 		}
 	}
@@ -770,9 +784,7 @@ public class GameUtils {
 	 * @param spawn {@link GameSpawn}
 	 */
 	public static void teleportPlayersToGameSpawns(GameSpawn spawn) {
-		for (PlayerManager pm : spawn.getGame().getPlayersFromList()) {
-			teleportPlayerToGameSpawn(pm.getPlayer(), spawn);
-		}
+		spawn.getGame().getPlayersFromList().forEach(pm -> teleportPlayerToGameSpawn(pm.getPlayer(), spawn));
 	}
 
 	/**
@@ -815,12 +827,11 @@ public class GameUtils {
 			return;
 		}
 
-		final String name = game.getName();
-
 		final List<PlayerManager> players = game.getPlayersFromList();
 
 		Utils.callEvent(new RMGameStopEvent(game, players));
 
+		final String name = game.getName();
 		boolean winnervalid = false;
 		UUID winnerUUID = RageScores.calculateWinner(name, players);
 		if (winnerUUID != null && Bukkit.getPlayer(winnerUUID) != null) {
