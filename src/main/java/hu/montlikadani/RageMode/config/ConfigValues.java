@@ -487,23 +487,23 @@ public class ConfigValues {
 		return enableChatInGame;
 	}
 
-	public static boolean isDeathMsgs() {
+	public static boolean isDefaultDeathMessageEnabled() {
 		return deathMsgs;
 	}
 
-	public static boolean isBossbarEnabled() {
+	public static boolean isDefaultBossbarEnabled() {
 		return bossbarEnable;
 	}
 
-	public static boolean isActionbarEnabled() {
+	public static boolean isDefaultActionbarEnabled() {
 		return actionbarEnable;
 	}
 
-	public static int getLobbyDelay() {
+	public static int getDefaultLobbyDelay() {
 		return lobbyDelay;
 	}
 
-	public static int getGameTime() {
+	public static int getDefaultGameTime() {
 		return gameTime;
 	}
 

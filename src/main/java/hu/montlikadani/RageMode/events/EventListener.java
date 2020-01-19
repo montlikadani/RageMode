@@ -335,7 +335,7 @@ public class EventListener implements Listener {
 
 		if ((deceased.getKiller() != null && GameUtils.isPlayerPlaying(deceased.getKiller()))
 				|| deceased.getKiller() == null) {
-			boolean doDeathBroadcast = ConfigValues.isDeathMsgs();
+			boolean doDeathBroadcast = ConfigValues.isDefaultDeathMessageEnabled();
 
 			if (plugin.getConfiguration().getArenasCfg().isSet("arenas." + game.getName() + ".death-messages")) {
 				String gameBroadcast = plugin.getConfiguration().getArenasCfg()

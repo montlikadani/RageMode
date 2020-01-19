@@ -40,17 +40,17 @@ public class joinrandom {
 		}
 
 		if (ConfigValues.isRejoinDelayEnabled() && !p.hasPermission("ragemode.bypass.rejoindelay")) {
+			if (ReJoinDelay.isValid(p)) {
+				sendMessage(p, RageMode.getLang().get("commands.joinrandom.rejoin-delay", "%delay%",
+						ReJoinDelay.format(ReJoinDelay.getTimeByPlayer(p) - System.currentTimeMillis())));
+				return;
+			}
+
 			int hour = ConfigValues.getRejoinDelayHour();
 			int minute = ConfigValues.getRejoinDelayMinute();
 			int second = ConfigValues.getRejoinDelaySecond();
 
 			if (hour != 0 || minute != 0 || second != 0) {
-				if (ReJoinDelay.isValid(p)) {
-					sendMessage(p, RageMode.getLang().get("commands.joinrandom.rejoin-delay", "%delay%",
-							ReJoinDelay.format(ReJoinDelay.getTimeByPlayer(p) - System.currentTimeMillis())));
-					return;
-				}
-
 				ReJoinDelay.resetTime(p);
 				ReJoinDelay.setTime(p, hour, minute, second);
 			} else {

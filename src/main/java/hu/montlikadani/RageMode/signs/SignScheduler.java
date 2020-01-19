@@ -1,6 +1,6 @@
 package hu.montlikadani.ragemode.signs;
 
-import java.util.List;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -21,7 +21,7 @@ public class SignScheduler implements Runnable, Listener {
 
 	@Override
 	public void run() {
-		List<SignData> signs = SignCreator.getSignData();
+		Set<SignData> signs = SignCreator.getSignData();
 		SignsUpdateEvent event = new SignsUpdateEvent(signs);
 		Utils.callEvent(event);
 		Bukkit.getScheduler().runTaskLater(plugin, this, ConfigValues.getSignsUpdateTime() * 20L);

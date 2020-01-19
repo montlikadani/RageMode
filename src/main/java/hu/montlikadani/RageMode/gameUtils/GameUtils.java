@@ -686,7 +686,7 @@ public class GameUtils {
 		if (conf.getArenasCfg().isSet("arenas." + game + ".actionbar")) {
 			if (!conf.getArenasCfg().getBoolean("arenas." + game + ".actionbar"))
 				return;
-		} else if (!ConfigValues.isActionbarEnabled())
+		} else if (!ConfigValues.isDefaultActionbarEnabled())
 			return;
 
 		List<String> list = ConfigValues.getActionbarActions();
@@ -740,7 +740,7 @@ public class GameUtils {
 		if (RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + game + ".bossbar")) {
 			if (!RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + game + ".bossbar"))
 				return;
-		} else if (!ConfigValues.isActionbarEnabled())
+		} else if (!ConfigValues.isDefaultBossbarEnabled())
 			return;
 
 		List<String> list = ConfigValues.getBossbarActions();

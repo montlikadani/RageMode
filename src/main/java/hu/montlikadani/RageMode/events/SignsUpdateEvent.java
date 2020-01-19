@@ -1,6 +1,6 @@
 package hu.montlikadani.ragemode.events;
 
-import java.util.List;
+import java.util.Set;
 
 import org.bukkit.event.Cancellable;
 
@@ -9,14 +9,14 @@ import hu.montlikadani.ragemode.signs.SignData;
 
 public class SignsUpdateEvent extends BaseEvent implements Cancellable {
 
-	private List<SignData> signs;
+	private Set<SignData> signs;
 	private boolean cancelled = false;
 
-	public SignsUpdateEvent(List<SignData> signs) {
+	public SignsUpdateEvent(Set<SignData> signs) {
 		this.signs = signs;
 	}
 
-	public List<SignData> getSigns() {
+	public Set<SignData> getSigns() {
 		return signs;
 	}
 

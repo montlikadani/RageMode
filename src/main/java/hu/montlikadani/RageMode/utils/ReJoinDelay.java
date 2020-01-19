@@ -85,11 +85,11 @@ public class ReJoinDelay {
 	}
 
 	public static boolean isValid(Player pl) {
-		return playerTimes.containsKey(pl) && isValid(pl, playerTimes.get(pl));
+		return isValid(pl, getTimeByPlayer(pl));
 	}
 
 	public static boolean isValid(Player pl, Long time) {
-		if (playerTimes.containsKey(pl) && time > System.currentTimeMillis()) {
+		if (playerTimes.containsKey(pl) && time != null && time > System.currentTimeMillis()) {
 			return true;
 		}
 

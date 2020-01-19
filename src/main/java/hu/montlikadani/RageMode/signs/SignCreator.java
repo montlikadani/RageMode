@@ -1,7 +1,8 @@
 package hu.montlikadani.ragemode.signs;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.apache.commons.lang.Validate;
@@ -20,7 +21,7 @@ public class SignCreator {
 	private static FileConfiguration fileConf = null;
 	private static SignPlaceholder signPlaceholder = null;
 
-	private static List<SignData> signData = new ArrayList<>();
+	private static Set<SignData> signData = new HashSet<>();
 
 	public synchronized static boolean loadSigns() {
 		signData.clear();
@@ -194,9 +195,9 @@ public class SignCreator {
 
 	/**
 	 * Gets the SignData list
-	 * @return List of SignData
+	 * @return Set of SignData
 	 */
-	public static List<SignData> getSignData() {
+	public static Set<SignData> getSignData() {
 		return signData;
 	}
 

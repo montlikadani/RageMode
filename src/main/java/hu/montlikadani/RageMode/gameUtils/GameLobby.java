@@ -43,9 +43,10 @@ public class GameLobby {
 	public static int getLobbyTime(String game) {
 		int time = 0;
 		if (game == null || !fi.isSet("arenas." + game + ".lobbydelay")) {
-			time = ConfigValues.getLobbyDelay() > 0 ? ConfigValues.getLobbyDelay() : 30;
-		} else
+			time = ConfigValues.getDefaultLobbyDelay() > 0 ? ConfigValues.getDefaultLobbyDelay() : 30;
+		} else {
 			time = fi.getInt("arenas." + game + ".lobbydelay");
+		}
 
 		return time;
 	}

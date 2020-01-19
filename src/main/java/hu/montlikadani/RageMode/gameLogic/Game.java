@@ -34,6 +34,7 @@ public class Game {
 	private boolean running = false;
 	private LobbyTimer lobbyTimer;
 
+	// TODO: In the future add ability to work with ids
 	public Game(String name) {
 		this.name = name;
 	}
@@ -242,7 +243,7 @@ public class Game {
 	 * @return true if the players size not equal to vips size
 	 */
 	public boolean hasRoomForVIP(String game) {
-		if (game == null || game.isEmpty()) {
+		if (game == null || game.trim().isEmpty()) {
 			game = name;
 		}
 
