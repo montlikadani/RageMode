@@ -1,3 +1,28 @@
+# v1.6.0
+- Added option to display the thrown egg custom name
+- Fixed problems when stopping all games while the plugin disabling.
+- Now the bossbar will remove from the screen if the player not playing anymore in a game.
+- Improvements for kicking a player & force starting a game
+- Some fixes related to sign updates
+- Fixed issue when the scoreboard not works correctly, which stopped the game
+- Forcing the game start, from now not needed to join to a game
+- Fixed issue when the players are in lobby, and suddenly happened a server restart, the players will not removed from the list.
+- Database handling is now asynchronously
+- Added joinrandom sub-command, to join to a random game, which is running or waiting.
+- Now check for hanging break event to prevent removing paintings
+- Fixed issue when the spawns are not loaded when first used
+- Fixed issue when the game name is incorrect when typed stopgame command
+- Reworked the game modules (tablist, scoreboard, teams), which is more reliable and more readable.
+- Added option to save the join delays to the database
+- Optimized handling of game bonuses, + now you can specify per-line chances
+- Now the players will be removed from the waiting lobby when reloading
+- Fixed issue when the players are not removed from the game when the game end.
+- Now checks to the game items to prevent usage, for example with collecting beehives
+
+
+# v1.5.5
+- Added support for 1.15 servers
+
 # v1.5.0
 - Added maxplayers sub-command
 - Fixed issue when setting the points to player
