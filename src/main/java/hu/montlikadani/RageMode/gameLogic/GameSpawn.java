@@ -53,16 +53,19 @@ public class GameSpawn {
 	private void loadSpawns() {
 		removeAllSpawn();
 
-		FileConfiguration aCfg = RageMode.getInstance().getConfiguration().getArenasCfg();
+		FileConfiguration conf = RageMode.getInstance().getConfiguration().getArenasCfg();
 		String path = "arenas." + game.getName() + ".spawns";
+		if (!conf.contains(path)) {
+			return;
+		}
 
-		for (String spawnName : aCfg.getConfigurationSection(path).getKeys(false)) {
-			String world = aCfg.getString(path + "." + spawnName + ".world");
-			double spawnX = aCfg.getDouble(path + "." + spawnName + ".x");
-			double spawnY = aCfg.getDouble(path + "." + spawnName + ".y");
-			double spawnZ = aCfg.getDouble(path + "." + spawnName + ".z");
-			double spawnYaw = aCfg.getDouble(path + "." + spawnName + ".yaw");
-			double spawnPitch = aCfg.getDouble(path + "." + spawnName + ".pitch");
+		for (String spawnName : conf.getConfigurationSection(path).getKeys(false)) {
+			String world = conf.getString(path + "." + spawnName + ".world");
+			double spawnX = conf.getDouble(path + "." + spawnName + ".x");
+			double spawnY = conf.getDouble(path + "." + spawnName + ".y");
+			double spawnZ = conf.getDouble(path + "." + spawnName + ".z");
+			double spawnYaw = conf.getDouble(path + "." + spawnName + ".yaw");
+			double spawnPitch = conf.getDouble(path + "." + spawnName + ".pitch");
 
 			Location location = new Location(Bukkit.getWorld(world), spawnX, spawnY, spawnZ);
 			location.setYaw((float) spawnYaw);

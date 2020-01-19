@@ -57,7 +57,7 @@ public class Configuration {
 			if (!config.isSet("config-version") || !config.get("config-version").equals(configVersion)) {
 				Debug.logConsole(Level.WARNING,
 						"Found outdated configuration (config.yml)! (Your version: {0} | Newest version: {1})",
-						config.getDouble("config-version"), configVersion);
+						config.getString("config-version"), String.valueOf(configVersion));
 			}
 
 			if (arenas_file.exists()) {

@@ -80,14 +80,14 @@ public class addgame {
 		Game g = new Game(game);
 		plugin.getGames().add(g);
 
-		plugin.getSpawns().add(new GameSpawn(g));
-
 		Utils.callEvent(new RMGameCreateEvent(g, x, m));
 
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".maxplayers", x);
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".minplayers", m);
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".world", p.getWorld().getName());
 		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
+
+		plugin.getSpawns().add(new GameSpawn(g));
 
 		sendMessage(p, RageMode.getLang().get("setup.addgame.success-added", "%game%", game));
 		return true;
