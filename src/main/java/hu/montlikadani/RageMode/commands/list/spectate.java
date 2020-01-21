@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.items.LeaveGame;
+import hu.montlikadani.ragemode.items.Items;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
@@ -52,9 +52,10 @@ public class spectate {
 			p.setAllowFlight(true);
 			p.setFlying(true);
 			p.setGameMode(GameMode.SPECTATOR);
-			if (RageMode.getInstance().getConfiguration().getCfg().contains("items.leavegameitem"))
-				p.getInventory().setItem(RageMode.getInstance().getConfiguration().getCfg().getInt("items.leavegameitem.slot"),
-						LeaveGame.getItem());
+			if (Items.getLeaveGameItem() != null) {
+				p.getInventory().setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().getResult());
+			}
+
 			return true;
 		}
 

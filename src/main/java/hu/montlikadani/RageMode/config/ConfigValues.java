@@ -27,9 +27,6 @@ public class ConfigValues {
 	private static String signGameFull;
 	private static String signGameLocked;
 	private static String signBackgrType;
-	@Deprecated private static String bossbarMsg;
-	@Deprecated private static String bossbarStyle;
-	@Deprecated private static String bossbarColor;
 	private static String titleJoinGame;
 	private static String subtitleJoinGame;
 	private static String joinTitleTime;
@@ -149,17 +146,8 @@ public class ConfigValues {
 		signBackgrType = f.get("signs.background.type", "none");
 		actionBarActions = f.get("actionbar-messages.actions",
 				Arrays.asList("start:&aGame has started!&2 We wish you a good game!"));
-		bossbarMsg = f.getOriginal("bossbar-messages.join.message");
-		bossbarStyle = f.getOriginal("bossbar-messages.join.style");
-		bossbarColor = f.getOriginal("bossbar-messages.join.color");
-		if (bossbarMsg != null) {
-			bossBarActions = f.get("bossbar-messages.actions",
-					Arrays.asList("start:" + bossbarMsg + ":" + (bossbarStyle != null ? bossbarStyle
-							: "SEGMENTED_6") + ":" + (bossbarColor != null ? bossbarColor : "GREEN")));
-		} else {
-			bossBarActions = f.get("bossbar-messages.actions",
-					Arrays.asList("start:&bWelcome&a %player%&b to the&c %game%&b game!:SEGMENTED_6:GREEN"));
-		}
+		bossBarActions = f.get("bossbar-messages.actions",
+				Arrays.asList("start:&bWelcome&a %player%&b to the&c %game%&b game!:SEGMENTED_6:GREEN"));
 		titleJoinGame = f.get("titles.join-game.title", "&e%game%");
 		subtitleJoinGame = f.get("titles.join-game.subtitle", "&3by yourname");
 		joinTitleTime = f.get("titles.join-game.time", "20, 50, 20");
@@ -362,21 +350,6 @@ public class ConfigValues {
 
 	public static List<String> getBossbarActions() {
 		return bossBarActions;
-	}
-
-	@Deprecated
-	public static String getBossbarMsg() {
-		return bossbarMsg;
-	}
-
-	@Deprecated
-	public static String getBossbarStyle() {
-		return bossbarStyle;
-	}
-
-	@Deprecated
-	public static String getBossbarColor() {
-		return bossbarColor;
 	}
 
 	public static String getTitleJoinGame() {

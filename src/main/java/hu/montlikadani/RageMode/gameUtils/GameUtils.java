@@ -316,36 +316,13 @@ public class GameUtils {
 		if (clear)
 			Utils.clearPlayerInventory(p);
 
-		ItemStack result = null;
-		FileConfiguration f = RageMode.getInstance().getConfiguration().getCfg();
-		String path = "items.";
-		if (f.contains(path + "rageBow.slot"))
-			inv.setItem(f.getInt("items.rageBow.slot"), RageBow.getItem());
-		else
-			result = RageBow.getItem();
-
-		if (f.contains(path + "rageKnife.slot"))
-			inv.setItem(f.getInt("items.rageKnife.slot"), RageKnife.getItem());
-		else
-			result = RageKnife.getItem();
-
-		if (f.contains(path + "combatAxe.slot"))
-			inv.setItem(f.getInt("items.combatAxe.slot"), CombatAxe.getItem());
-		else
-			result = CombatAxe.getItem();
-
-		if (f.contains(path + "rageArrow.slot"))
-			inv.setItem(f.getInt("items.rageArrow.slot"), RageArrow.getItem());
-		else
-			result = RageArrow.getItem();
-
-		if (f.contains(path + "grenade.slot"))
-			inv.setItem(f.getInt("items.grenade.slot"), Grenade.getItem());
-		else
-			result = Grenade.getItem();
-
-		if (result != null)
-			inv.addItem(result);
+		for (ItemHandler ih : RageMode.getInstance().getGameItems()) {
+			if (ih.getSlot() != -1) {
+				inv.setItem(ih.getSlot(), ih.getResult());
+			} else {
+				inv.addItem(ih.getResult());
+			}
+		}
 	}
 
 	/**
@@ -419,7 +396,6 @@ public class GameUtils {
 	 */
 	public static void joinPlayer(Player p, Game game) {
 		PlayerInventory inv = p.getInventory();
-		Configuration conf = RageMode.getInstance().getConfiguration();
 		String name = game.getName();
 
 		if (getStatus(name) == GameStatus.RUNNING) {
@@ -440,8 +416,9 @@ public class GameUtils {
 				p.setFlying(true);
 				p.setGameMode(GameMode.SPECTATOR);
 
-				if (conf.getCfg().contains("items.leavegameitem"))
-					inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getItem());
+				if (Items.getLeaveGameItem() != null) {
+					inv.setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().getResult());
+				}
 			}
 		} else {
 			if (getStatus(name) == GameStatus.NOTREADY) {
@@ -499,12 +476,13 @@ public class GameUtils {
 			sendActionBarMessages(p, name, "join");
 			setStatus(name, GameStatus.WAITING, false);
 
-			if (conf.getCfg().contains("items.leavegameitem"))
-				inv.setItem(conf.getCfg().getInt("items.leavegameitem.slot"), LeaveGame.getItem());
+			if (Items.getLeaveGameItem() != null) {
+				inv.setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().getResult());
+			}
 
-			if (conf.getCfg().contains("items.force-start")
+			if (Items.getForceStarter() != null
 					&& hu.montlikadani.ragemode.utils.Misc.hasPerm(p, "ragemode.admin.item.forcestart")) {
-				inv.setItem(conf.getCfg().getInt("items.force-start.slot"), ForceStarter.getItem());
+				inv.setItem(Items.getForceStarter().getSlot(), Items.getForceStarter().getResult());
 			}
 
 			broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
@@ -1129,10 +1107,10 @@ public class GameUtils {
 	 * @return true if similar
 	 */
 	public static boolean isGameItem(ItemStack item) {
-		if (ForceStarter.getItem().isSimilar(item) || CombatAxe.getItem().isSimilar(item)
-				|| Grenade.getItem().isSimilar(item) || RageArrow.getItem().isSimilar(item)
-				|| RageBow.getItem().isSimilar(item) || RageKnife.getItem().isSimilar(item)) {
-			return true;
+		for (ItemHandler ih : RageMode.getInstance().getGameItems()) {
+			if (ih != null && ih.getResult().isSimilar(item)) {
+				return true;
+			}
 		}
 
 		return false;

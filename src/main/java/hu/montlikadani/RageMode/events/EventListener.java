@@ -56,11 +56,7 @@ import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.MapChecker;
 import hu.montlikadani.ragemode.holder.HoloHolder;
-import hu.montlikadani.ragemode.items.CombatAxe;
-import hu.montlikadani.ragemode.items.ForceStarter;
-import hu.montlikadani.ragemode.items.Grenade;
-import hu.montlikadani.ragemode.items.LeaveGame;
-import hu.montlikadani.ragemode.items.RageKnife;
+import hu.montlikadani.ragemode.items.Items;
 import hu.montlikadani.ragemode.libs.Sounds;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
@@ -68,6 +64,7 @@ import hu.montlikadani.ragemode.signs.SignData;
 import hu.montlikadani.ragemode.utils.MaterialUtil;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class EventListener implements Listener {
 
@@ -128,14 +125,14 @@ public class EventListener implements Listener {
 		if (GameUtils.getStatus(game) == GameStatus.WAITING) {
 			if (!ConfigValues.isChatEnabledinLobby() && !hasPerm(p, "ragemode.bypass.lobby.lockchat")) {
 				event.setCancelled(true);
-				p.sendMessage(RageMode.getLang().get("game.lobby.chat-is-disabled"));
+				sendMessage(p, RageMode.getLang().get("game.lobby.chat-is-disabled"));
 				return;
 			}
 		}
 
 		if (GameUtils.getStatus(game) == GameStatus.RUNNING) {
 			if (!ConfigValues.isEnableChatInGame() && !hasPerm(p, "ragemode.bypass.game.lockchat")) {
-				p.sendMessage(RageMode.getLang().get("game.chat-is-disabled"));
+				sendMessage(p, RageMode.getLang().get("game.chat-is-disabled"));
 				event.setCancelled(true);
 				return;
 			}
@@ -155,7 +152,7 @@ public class EventListener implements Listener {
 		}
 
 		if (!ConfigValues.isEnableChatAfterEnd() && GameUtils.getStatus(game) == GameStatus.GAMEFREEZE) {
-			p.sendMessage(RageMode.getLang().get("game.game-freeze.chat-is-disabled"));
+			sendMessage(p, RageMode.getLang().get("game.game-freeze.chat-is-disabled"));
 			event.setCancelled(true);
 		}
 	}
@@ -248,7 +245,8 @@ public class EventListener implements Listener {
 				if (GameUtils.isPlayerPlaying(damager)) {
 					ItemStack hand = NMS.getItemInHand(damager);
 					ItemMeta meta = hand.getItemMeta();
-					if (meta != null && meta.hasDisplayName() && meta.getDisplayName().equals(RageKnife.getName())) {
+					if (Items.getRageKnife() != null && meta != null && meta.hasDisplayName()
+							&& meta.getDisplayName().equals(Items.getRageKnife().getDisplayName())) {
 						event.setDamage(25);
 						tool = "knife";
 					}
@@ -411,7 +409,7 @@ public class EventListener implements Listener {
 						if (doDeathBroadcast)
 							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.error-kill"));
 
-						deceased.sendMessage(RageMode.getLang().get("game.unknown-killer"));
+						sendMessage(deceased, RageMode.getLang().get("game.unknown-killer"));
 					}
 
 					killed = new RMPlayerKilledEvent(game, deceased,
@@ -555,7 +553,7 @@ public class EventListener implements Listener {
 		org.bukkit.block.BlockState blockState = event.getBlock().getState();
 		if (blockState instanceof Sign && SignCreator.isSign(blockState.getLocation())) {
 			if (!hasPerm(event.getPlayer(), "ragemode.admin.signs")) {
-				event.getPlayer().sendMessage(RageMode.getLang().get("no-permission-to-interact-sign"));
+				sendMessage(event.getPlayer(), RageMode.getLang().get("no-permission-to-interact-sign"));
 				event.setCancelled(true);
 				return;
 			}
@@ -574,7 +572,7 @@ public class EventListener implements Listener {
 			cmds = ConfigValues.getSpectatorCmds();
 			if (cmds != null && !cmds.isEmpty()) {
 				if (!cmds.contains(arg) && !hasPerm(p, "ragemode.bypass.spectatorcommands")) {
-					p.sendMessage(RageMode.getLang().get("game.this-command-is-disabled-in-game"));
+					sendMessage(p, RageMode.getLang().get("game.this-command-is-disabled-in-game"));
 					event.setCancelled(true);
 					return;
 				}
@@ -585,7 +583,7 @@ public class EventListener implements Listener {
 			if (ConfigValues.isCommandsDisabledInEndGame()
 					&& waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())
 					&& waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
-				p.sendMessage(RageMode.getLang().get("game.command-disabled-in-end-game"));
+				sendMessage(p, RageMode.getLang().get("game.command-disabled-in-end-game"));
 				event.setCancelled(true);
 				return;
 			}
@@ -593,7 +591,7 @@ public class EventListener implements Listener {
 			cmds = ConfigValues.getAllowedCmds();
 			if (cmds != null && !cmds.isEmpty()) {
 				if (!cmds.contains(arg) && !hasPerm(p, "ragemode.bypass.disabledcommands")) {
-					p.sendMessage(RageMode.getLang().get("game.this-command-is-disabled-in-game"));
+					sendMessage(p, RageMode.getLang().get("game.this-command-is-disabled-in-game"));
 					event.setCancelled(true);
 				}
 			}
@@ -638,8 +636,8 @@ public class EventListener implements Listener {
 		grenade.setPickupDelay(41);
 
 		// make custom name
-		if (!Grenade.getCustomName().isEmpty()) {
-			grenade.setCustomName(Grenade.getCustomName());
+		if (Items.getGrenade() != null && !Items.getGrenade().getCustomName().isEmpty()) {
+			grenade.setCustomName(Items.getGrenade().getCustomName());
 			grenade.setCustomNameVisible(true);
 		}
 
@@ -715,14 +713,16 @@ public class EventListener implements Listener {
 
 				ItemStack hand = NMS.getItemInHand(thrower);
 				ItemMeta meta = hand.getItemMeta();
-				if (meta != null && meta.hasDisplayName() && meta.getDisplayName().equals(CombatAxe.getName())) {
+				if (meta != null && meta.hasDisplayName() && Items.getCombatAxe() != null
+						&& meta.getDisplayName().equals(Items.getCombatAxe().getDisplayName())) {
 					thrower.launchProjectile(Snowball.class);
 					NMS.setItemInHand(thrower, null);
 				}
 			}
 
 			Action action = event.getAction();
-			if (action == Action.RIGHT_CLICK_BLOCK && GameUtils.isGameItem(p)) {
+			if (action == Action.RIGHT_CLICK_BLOCK && !NMS.getItemInHand(p).getType().equals(Material.EGG)
+					&& GameUtils.isGameItem(p)) {
 				event.setCancelled(true); // Cancels the game items usage, for example with collecting beehives
 			}
 
@@ -734,14 +734,15 @@ public class EventListener implements Listener {
 					if (meta != null && meta.hasDisplayName()) {
 						Game game = GameUtils.getGameByPlayer(p);
 
-						if (hasPerm(p, "ragemode.admin.item.forcestart")
-								&& meta.getDisplayName().equals(ForceStarter.getName())) {
+						if (hasPerm(p, "ragemode.admin.item.forcestart") && Items.getForceStarter() != null
+								&& meta.getDisplayName().equals(Items.getForceStarter().getDisplayName())) {
 							GameUtils.forceStart(game);
-							p.sendMessage(
+							sendMessage(p,
 									RageMode.getLang().get("commands.forcestart.game-start", "%game%", game.getName()));
 						}
 
-						if (meta.getDisplayName().equals(LeaveGame.getName())) {
+						if (Items.getLeaveGameItem() != null
+								&& meta.getDisplayName().equals(Items.getLeaveGameItem().getDisplayName())) {
 							RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
 							Utils.callEvent(gameLeaveEvent);
 							if (!gameLeaveEvent.isCancelled()) {
@@ -750,6 +751,7 @@ public class EventListener implements Listener {
 							game.removeSpectatorPlayer(p);
 						}
 					}
+
 					event.setCancelled(true);
 				}
 			}
@@ -759,7 +761,7 @@ public class EventListener implements Listener {
 		if (ConfigValues.isSignsEnable() && b != null && b.getState() != null && b.getState() instanceof Sign
 				&& event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			if (!hasPerm(p, "ragemode.join.sign")) {
-				p.sendMessage(RageMode.getLang().get("no-permission"));
+				sendMessage(p, RageMode.getLang().get("no-permission"));
 				return;
 			}
 
@@ -771,7 +773,7 @@ public class EventListener implements Listener {
 				if (data.getLocation().equals(b.getLocation())) {
 					String name = data.getGame();
 					if (name == null || !GameUtils.isGameWithNameExists(name)) {
-						p.sendMessage(RageMode.getLang().get("game.does-not-exist"));
+						sendMessage(p, RageMode.getLang().get("game.does-not-exist"));
 						break;
 					}
 
@@ -911,14 +913,14 @@ public class EventListener implements Listener {
 		if (ConfigValues.isSignsEnable()
 				&& event.getLine(0).contains("[rm]") || event.getLine(0).contains("[ragemode]")) {
 			if (!hasPerm(event.getPlayer(), "ragemode.admin.signs")) {
-				event.getPlayer().sendMessage(RageMode.getLang().get("no-permission-to-interact-sign"));
+				sendMessage(event.getPlayer(), RageMode.getLang().get("no-permission-to-interact-sign"));
 				event.setCancelled(true);
 				return;
 			}
 
 			String l1 = event.getLine(1);
 			if (!GameUtils.isGameWithNameExists(l1)) {
-				event.getPlayer().sendMessage(RageMode.getLang().get("invalid-game", "%game%", l1));
+				sendMessage(event.getPlayer(), RageMode.getLang().get("invalid-game", "%game%", l1));
 				return;
 			}
 

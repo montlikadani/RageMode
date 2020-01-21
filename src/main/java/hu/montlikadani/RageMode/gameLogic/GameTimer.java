@@ -7,15 +7,8 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
-import hu.montlikadani.ragemode.gameUtils.ScoreTeam;
-import hu.montlikadani.ragemode.gameUtils.TabTitles;
 
 public class GameTimer extends TimerTask {
-
-	@Deprecated private TabTitles gameTab = null;
-	@Deprecated private ScoreBoard gameBoard = null;
-	@Deprecated private ScoreTeam scoreTeam = null;
 
 	private ActionMessengers ac = null;
 
@@ -33,33 +26,6 @@ public class GameTimer extends TimerTask {
 
 	public int getGameTime() {
 		return time;
-	}
-
-	/**
-	 * Moved to {@link ActionMessengers}
-	 * @return {@link TabTitles}
-	 */
-	@Deprecated
-	public TabTitles getTabTitles() {
-		return gameTab;
-	}
-
-	/**
-	 * Moved to {@link ActionMessengers}
-	 * @return {@link ScoreBoard}
-	 */
-	@Deprecated
-	public ScoreBoard getScoreboard() {
-		return gameBoard;
-	}
-
-	/**
-	 * Moved to {@link ActionMessengers}
-	 * @return {@link ScoreTeam}
-	 */
-	@Deprecated
-	public ScoreTeam getScoreTeam() {
-		return scoreTeam;
 	}
 
 	@Override

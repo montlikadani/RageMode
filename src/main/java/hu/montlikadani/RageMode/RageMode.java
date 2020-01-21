@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
+import org.bukkit.Material;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -38,6 +39,7 @@ import hu.montlikadani.ragemode.gameUtils.BungeeUtils;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.holder.HoloHolder;
+import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.managers.BossbarManager;
 import hu.montlikadani.ragemode.metrics.Metrics;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
@@ -72,6 +74,8 @@ public class RageMode extends JavaPlugin {
 
 	private List<Game> games = new ArrayList<>();
 	private List<GameSpawn> spawns = new ArrayList<>();
+	private ItemHandler[] gameItems = new ItemHandler[5];
+	private ItemHandler[] lobbyItems = new ItemHandler[2];
 
 	@Override
 	public void onEnable() {
@@ -147,29 +151,7 @@ public class RageMode extends JavaPlugin {
 			}
 
 			RuntimePPManager.loadPPListFromDatabase();
-
-			if (conf.getArenasCfg().contains("arenas")) {
-				for (String game : GetGames.getGameNames()) {
-					if (game == null) {
-						continue;
-					}
-
-					Game g = new Game(game);
-					games.add(g);
-
-					if (ConfigValues.isBungee())
-						getManager().registerEvents(new BungeeListener(game), this);
-
-					spawns.add(new GameSpawn(g));
-
-					// Loads the game locker
-					GameUtils.setStatus(game,
-							conf.getArenasCfg().getBoolean("arenas." + game + ".lock", false) ? GameStatus.NOTREADY
-									: GameStatus.READY);
-
-					Debug.logConsole("Loaded {0} game!", game);
-				}
-			}
+			loadGames();
 
 			sign = new SignScheduler(this);
 
@@ -181,8 +163,6 @@ public class RageMode extends JavaPlugin {
 
 				signTask = getServer().getScheduler().runTaskLater(this, sign, 40L);
 			}
-
-			bossManager = new BossbarManager(this);
 
 			Metrics metrics = new Metrics(this);
 			if (metrics.isEnabled()) {
@@ -418,6 +398,7 @@ public class RageMode extends JavaPlugin {
 			signTask = getServer().getScheduler().runTaskLater(this, sign, 40L);
 		}
 
+		loadItems();
 		registerListeners();
 		loadDatabases();
 
@@ -439,6 +420,106 @@ public class RageMode extends JavaPlugin {
 			getManager().registerEvents(new Listeners_1_8(), this);
 		else
 			getManager().registerEvents(new Listeners_1_9(), this);
+	}
+
+	private void loadGames() {
+		if (conf.getArenasCfg().contains("arenas")) {
+			for (String game : GetGames.getGameNames()) {
+				if (game == null) {
+					continue;
+				}
+
+				Game g = new Game(game);
+				games.add(g);
+
+				if (ConfigValues.isBungee()) {
+					getManager().registerEvents(new BungeeListener(game), this);
+				}
+
+				spawns.add(new GameSpawn(g));
+
+				// Loads the game locker
+				GameUtils.setStatus(game,
+						conf.getArenasCfg().getBoolean("arenas." + game + ".lock", false) ? GameStatus.NOTREADY
+								: GameStatus.READY);
+
+				Debug.logConsole("Loaded {0} game!", game);
+			}
+		}
+
+		loadItems();
+		bossManager = new BossbarManager(this);
+	}
+
+	private void loadItems() {
+		ItemHandler itemHandler = new ItemHandler();
+		org.bukkit.configuration.file.FileConfiguration c = conf.getCfg();
+
+		// TODO: Simplify this somehow
+		if (c.contains("items.combatAxe")) {
+			itemHandler.setItem(Material.IRON_AXE)
+					.setDisplayName(Utils.colors(c.getString("items.combatAxe.name", "&6CombatAxe")))
+					.setLore(Utils.colorList(c.getStringList("items.combatAxe.lore")))
+					.setSlot(c.getInt("items.combatAxe.slot", 2)).build();
+			gameItems[0] = itemHandler;
+		}
+
+		if (c.contains("items.grenade")) {
+			itemHandler = new ItemHandler();
+			itemHandler.setItem(Material.EGG)
+					.setDisplayName(Utils.colors(c.getString("items.grenade.name", "&8Grenade")))
+					.setCustomName(c.getString("items.grenade.custom-name", ""))
+					.setLore(Utils.colorList(c.getStringList("items.grenade.lore")))
+					.setSlot(c.getInt("items.grenade.slot", 6)).build();
+			gameItems[1] = itemHandler;
+		}
+
+		if (c.contains("items.rageArrow")) {
+			itemHandler = new ItemHandler();
+			itemHandler.setItem(Material.ARROW)
+					.setDisplayName(Utils.colors(c.getString("items.rageArrow.name", "&6RageArrow")))
+					.setLore(Utils.colorList(c.getStringList("items.rageArrow.lore")))
+					.setSlot(c.getInt("items.rageArrow.slot", 9)).build();
+			gameItems[2] = itemHandler;
+		}
+
+		if (c.contains("items.rageBow")) {
+			itemHandler = new ItemHandler();
+			itemHandler.setItem(Material.BOW)
+					.setDisplayName(Utils.colors(c.getString("items.rageBow.name", "&6RageBow")))
+					.setLore(Utils.colorList(c.getStringList("items.rageBow.lore")))
+					.setSlot(c.getInt("items.rageBow.slot", 0))
+					.build(org.bukkit.enchantments.Enchantment.ARROW_INFINITE, 1);
+			gameItems[3] = itemHandler;
+		}
+
+		if (c.contains("items.rageKnife")) {
+			itemHandler = new ItemHandler();
+			itemHandler.setItem(Material.SHEARS)
+					.setDisplayName(Utils.colors(c.getString("items.rageKnife.name", "&6RageKnife")))
+					.setLore(Utils.colorList(c.getStringList("items.rageKnife.lore")))
+					.setSlot(c.getInt("items.rageKnife.slot", 1)).build();
+			gameItems[4] = itemHandler;
+		}
+
+		// Lobby items
+		if (c.contains("items.force-start")) {
+			itemHandler = new ItemHandler();
+			itemHandler.setItem(Material.valueOf(c.getString("items.force-start.item")))
+					.setDisplayName(Utils.colors(c.getString("items.force-start.name", "&2Force the game start")))
+					.setLore(Utils.colorList(c.getStringList("items.force-start.lore")))
+					.setSlot(c.getInt("items.force-start.slot", 3)).build();
+			lobbyItems[0] = itemHandler;
+		}
+
+		if (c.contains("items.leavegameitem")) {
+			itemHandler = new ItemHandler();
+			itemHandler.setItem(Material.valueOf(c.getString("items.leavegameitem.item")))
+					.setDisplayName(Utils.colors(c.getString("items.leavegameitem.name", "&cExit")))
+					.setLore(Utils.colorList(c.getStringList("items.leavegameitem.lore")))
+					.setSlot(c.getInt("items.leavegameitem.slot", 5)).build();
+			lobbyItems[1] = itemHandler;
+		}
 	}
 
 	public File getFolder() {
@@ -583,6 +664,14 @@ public class RageMode extends JavaPlugin {
 
 	public List<GameSpawn> getSpawns() {
 		return spawns;
+	}
+
+	public ItemHandler[] getGameItems() {
+		return gameItems;
+	}
+
+	public ItemHandler[] getLobbyItems() {
+		return lobbyItems;
 	}
 
 	private PluginManager getManager() {
