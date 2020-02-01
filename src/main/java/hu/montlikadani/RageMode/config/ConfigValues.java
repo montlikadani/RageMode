@@ -81,7 +81,6 @@ public class ConfigValues {
 	private static boolean rejoinDelayEnabled;
 	private static boolean rememberRejoinDelay;
 
-	private static int signsUpdateTime;
 	private static int gameFreezeTime;
 	private static int lobbyDelay;
 	private static int gameTime;
@@ -135,7 +134,6 @@ public class ConfigValues {
 		sqlFileName = f.get("SQL.file-name", "rm.sqlite");
 		sqlTablePrefix = f.get("SQL.table-prefix", "ragemode_");
 		signsEnable = f.get("signs.enable", false);
-		signsUpdateTime = f.get("signs.update-time", 20);
 		signGameRunning = f.get("signs.game.running", "&6&oRunning...");
 		signGameWaiting = f.get("signs.game.waiting", "&cWaiting...");
 		signGameFull = f.get("signs.game.full", "&4FULL");
@@ -309,10 +307,6 @@ public class ConfigValues {
 
 	public static boolean isSignsEnable() {
 		return signsEnable;
-	}
-
-	public static int getSignsUpdateTime() {
-		return signsUpdateTime;
 	}
 
 	public static String getSignGameRunning() {

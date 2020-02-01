@@ -16,7 +16,6 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.base.StandardSystemProperty;
 
@@ -46,7 +45,6 @@ import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.signs.SignConfiguration;
 import hu.montlikadani.ragemode.signs.SignCreator;
-import hu.montlikadani.ragemode.signs.SignScheduler;
 import hu.montlikadani.ragemode.storage.MySQLDB;
 import hu.montlikadani.ragemode.storage.SQLDB;
 import hu.montlikadani.ragemode.storage.YAMLDB;
@@ -55,7 +53,6 @@ import net.milkbowl.vault.economy.Economy;
 public class RageMode extends JavaPlugin {
 
 	private Configuration conf = null;
-	private SignScheduler sign = null;
 	private BungeeUtils bungee = null;
 	private BossbarManager bossManager = null;
 
@@ -66,7 +63,6 @@ public class RageMode extends JavaPlugin {
 	private static ServerVersion serverVersion = null;
 
 	private Economy econ = null;
-	private BukkitTask signTask;
 
 	private boolean hologram = false;
 	private boolean vault = false;
@@ -111,19 +107,7 @@ public class RageMode extends JavaPlugin {
 			lang = new Language(this);
 			lang.loadLanguage(ConfigValues.getLang());
 
-			if (getManager().isPluginEnabled("HolographicDisplays")) {
-				hologram = true;
-				HoloHolder.initHoloHolder();
-			} else
-				hologram = false;
-
-			if (getManager().isPluginEnabled("Vault") && initEconomy()) {
-				vault = true;
-			} else
-				vault = false;
-
-			if (getManager().isPluginEnabled("PlaceholderAPI"))
-				new Placeholder().register();
+			loadHooks();
 
 			if (ConfigValues.isBungee()) {
 				bungee = new BungeeUtils(this);
@@ -153,18 +137,14 @@ public class RageMode extends JavaPlugin {
 			RuntimePPManager.loadPPListFromDatabase();
 			loadGames();
 
-			sign = new SignScheduler(this);
+			bossManager = new BossbarManager(this);
 
 			if (ConfigValues.isSignsEnable()) {
-				getManager().registerEvents(sign, this);
-
 				SignConfiguration.initSignConfiguration();
 				SignCreator.loadSigns();
-
-				signTask = getServer().getScheduler().runTaskLater(this, sign, 40L);
 			}
 
-			Metrics metrics = new Metrics(this);
+			Metrics metrics = new Metrics(this, 5076);
 			if (metrics.isEnabled()) {
 				metrics.addCustomChart(new Metrics.SingleLineChart("amount_of_games", games::size));
 
@@ -207,6 +187,25 @@ public class RageMode extends JavaPlugin {
 		getServer().getScheduler().cancelTasks(this);
 		HandlerList.unregisterAll(this);
 		instance = null;
+	}
+
+	private void loadHooks() {
+		if (getManager().isPluginEnabled("HolographicDisplays")) {
+			hologram = true;
+			HoloHolder.initHoloHolder();
+		} else {
+			hologram = false;
+		}
+
+		if (getManager().isPluginEnabled("Vault") && initEconomy()) {
+			vault = true;
+		} else {
+			vault = false;
+		}
+
+		if (getManager().isPluginEnabled("PlaceholderAPI")) {
+			new Placeholder().register();
+		}
 	}
 
 	private void initYamlDatabase() {
@@ -362,43 +361,19 @@ public class RageMode extends JavaPlugin {
 			}
 		}
 
-		if (signTask != null) {
-			signTask.cancel();
-			signTask = null;
-		}
-
 		games.clear();
 		spawns.clear();
 
 		conf.loadConfig();
 		lang.loadLanguage(ConfigValues.getLang());
 
-		if (conf.getArenasCfg().contains("arenas")) {
-			for (String game : GetGames.getGameNames()) {
-				if (game == null) {
-					continue;
-				}
-
-				Game g = new Game(game);
-				games.add(g);
-
-				if (ConfigValues.isBungee())
-					getManager().registerEvents(new BungeeListener(game), this);
-
-				spawns.add(new GameSpawn(g));
-			}
-		}
+		loadGames();
 
 		if (ConfigValues.isSignsEnable()) {
-			getManager().registerEvents(sign, this);
-
 			SignConfiguration.initSignConfiguration();
 			SignCreator.loadSigns();
-
-			signTask = getServer().getScheduler().runTaskLater(this, sign, 40L);
 		}
 
-		loadItems();
 		registerListeners();
 		loadDatabases();
 
@@ -448,15 +423,16 @@ public class RageMode extends JavaPlugin {
 		}
 
 		loadItems();
-		bossManager = new BossbarManager(this);
 	}
 
 	private void loadItems() {
-		ItemHandler itemHandler = new ItemHandler();
 		org.bukkit.configuration.file.FileConfiguration c = conf.getCfg();
+		if (!c.contains("items")) {
+			return;
+		}
 
-		// TODO: Simplify this somehow
 		if (c.contains("items.combatAxe")) {
+			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.IRON_AXE)
 					.setDisplayName(Utils.colors(c.getString("items.combatAxe.name", "&6CombatAxe")))
 					.setLore(Utils.colorList(c.getStringList("items.combatAxe.lore")))
@@ -465,17 +441,17 @@ public class RageMode extends JavaPlugin {
 		}
 
 		if (c.contains("items.grenade")) {
-			itemHandler = new ItemHandler();
+			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.EGG)
 					.setDisplayName(Utils.colors(c.getString("items.grenade.name", "&8Grenade")))
-					.setCustomName(c.getString("items.grenade.custom-name", ""))
+					.setCustomName(Utils.colors(c.getString("items.grenade.custom-name", "")))
 					.setLore(Utils.colorList(c.getStringList("items.grenade.lore")))
 					.setSlot(c.getInt("items.grenade.slot", 6)).build();
 			gameItems[1] = itemHandler;
 		}
 
 		if (c.contains("items.rageArrow")) {
-			itemHandler = new ItemHandler();
+			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.ARROW)
 					.setDisplayName(Utils.colors(c.getString("items.rageArrow.name", "&6RageArrow")))
 					.setLore(Utils.colorList(c.getStringList("items.rageArrow.lore")))
@@ -484,7 +460,7 @@ public class RageMode extends JavaPlugin {
 		}
 
 		if (c.contains("items.rageBow")) {
-			itemHandler = new ItemHandler();
+			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.BOW)
 					.setDisplayName(Utils.colors(c.getString("items.rageBow.name", "&6RageBow")))
 					.setLore(Utils.colorList(c.getStringList("items.rageBow.lore")))
@@ -494,7 +470,7 @@ public class RageMode extends JavaPlugin {
 		}
 
 		if (c.contains("items.rageKnife")) {
-			itemHandler = new ItemHandler();
+			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.SHEARS)
 					.setDisplayName(Utils.colors(c.getString("items.rageKnife.name", "&6RageKnife")))
 					.setLore(Utils.colorList(c.getStringList("items.rageKnife.lore")))
@@ -504,7 +480,7 @@ public class RageMode extends JavaPlugin {
 
 		// Lobby items
 		if (c.contains("items.force-start")) {
-			itemHandler = new ItemHandler();
+			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.valueOf(c.getString("items.force-start.item")))
 					.setDisplayName(Utils.colors(c.getString("items.force-start.name", "&2Force the game start")))
 					.setLore(Utils.colorList(c.getStringList("items.force-start.lore")))
@@ -513,7 +489,7 @@ public class RageMode extends JavaPlugin {
 		}
 
 		if (c.contains("items.leavegameitem")) {
-			itemHandler = new ItemHandler();
+			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.valueOf(c.getString("items.leavegameitem.item")))
 					.setDisplayName(Utils.colors(c.getString("items.leavegameitem.name", "&cExit")))
 					.setLore(Utils.colorList(c.getStringList("items.leavegameitem.lore")))
@@ -648,10 +624,6 @@ public class RageMode extends JavaPlugin {
 
 	public BungeeUtils getBungeeUtils() {
 		return bungee;
-	}
-
-	public SignScheduler getSignScheduler() {
-		return sign;
 	}
 
 	public BossbarManager getBossbarManager() {

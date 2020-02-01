@@ -6,6 +6,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.signs.SignCreator;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
@@ -46,6 +47,8 @@ public class togglegame {
 
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".lock", toggle);
 		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
+
+		SignCreator.updateAllSigns(game);
 
 		sendMessage(sender,
 				RageMode.getLang().get("commands.togglegame.successfully-toggled", "%game%", game, "%status%",

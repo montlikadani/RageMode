@@ -330,9 +330,9 @@ public class EventListener implements Listener {
 		}
 
 		Game game = GameUtils.getGameByPlayer(deceased);
+		boolean killerExists = deceased.getKiller() != null;
 
-		if ((deceased.getKiller() != null && GameUtils.isPlayerPlaying(deceased.getKiller()))
-				|| deceased.getKiller() == null) {
+		if ((killerExists && GameUtils.isPlayerPlaying(deceased.getKiller())) || !killerExists) {
 			boolean doDeathBroadcast = ConfigValues.isDefaultDeathMessageEnabled();
 
 			if (plugin.getConfiguration().getArenasCfg().isSet("arenas." + game.getName() + ".death-messages")) {
@@ -344,6 +344,7 @@ public class EventListener implements Listener {
 				}
 			}
 
+			String message = "";
 			String deceaseName = deceased.getName();
 			List<MetadataValue> data = deceased.getMetadata("killedWith");
 			RMPlayerKilledEvent killed = null;
@@ -351,111 +352,100 @@ public class EventListener implements Listener {
 			if (data != null && !data.isEmpty()) {
 				switch (data.get(0).asString()) {
 				case "arrow":
-					if (deceased.getKiller() == null) {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.arrow-kill",
-									"%victim%", deceaseName, "%killer%", deceaseName));
+					if (!killerExists) {
+						message = RageMode.getLang().get("game.broadcast.arrow-kill", "%victim%", deceaseName,
+								"%killer%", deceaseName);
 
 						RageScores.addPointsToPlayer(deceased, deceased, "ragebow");
 					} else {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.arrow-kill",
-									"%victim%", deceaseName, "%killer%", deceased.getKiller().getName()));
+						message = RageMode.getLang().get("game.broadcast.arrow-kill", "%victim%", deceaseName,
+								"%killer%", deceased.getKiller().getName());
 
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "ragebow");
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased,
-							deceased.getKiller() != null ? deceased.getKiller() : null, "arrow");
+					killed = new RMPlayerKilledEvent(game, deceased, killerExists ? deceased.getKiller() : null,
+							"arrow");
 					break;
 				case "snowball":
-					if (deceased.getKiller() == null) {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.axe-kill",
-									"%victim%", deceaseName, "%killer%", deceased.getName()));
+					if (!killerExists) {
+						message = RageMode.getLang().get("game.broadcast.axe-kill", "%victim%", deceaseName, "%killer%",
+								deceased.getName());
 
 						RageScores.addPointsToPlayer(deceased, deceased, "combataxe");
 					} else {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.axe-kill",
-									"%victim%", deceaseName, "%killer%", deceased.getKiller().getName()));
+						message = RageMode.getLang().get("game.broadcast.axe-kill", "%victim%", deceaseName, "%killer%",
+								deceased.getKiller().getName());
 
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "combataxe");
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased,
-							deceased.getKiller() != null ? deceased.getKiller() : null, "snowball");
+					killed = new RMPlayerKilledEvent(game, deceased, killerExists ? deceased.getKiller() : null,
+							"snowball");
 					break;
 				case "explosion":
 					if (explosionVictims.containsKey(deceased.getUniqueId())) {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game,
-									RageMode.getLang().get("game.broadcast.explosion-kill", "%victim%", deceaseName,
-											"%killer%",
-											Bukkit.getPlayer(explosionVictims.get(deceased.getUniqueId())).getName()));
+						message = RageMode.getLang().get("game.broadcast.explosion-kill", "%victim%", deceaseName,
+								"%killer%", Bukkit.getPlayer(explosionVictims.get(deceased.getUniqueId())).getName());
 
 						RageScores.addPointsToPlayer(Bukkit.getPlayer(explosionVictims.get(deceased.getUniqueId())),
 								deceased, "explosion");
 					} else if (grenadeExplosionVictims.containsKey(deceased.getUniqueId())) {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.explosion-kill",
-									"%victim%", deceaseName, "%killer%",
-									Bukkit.getPlayer(grenadeExplosionVictims.get(deceased.getUniqueId())).getName()));
+						message = RageMode.getLang().get("game.broadcast.explosion-kill", "%victim%", deceaseName,
+								"%killer%",
+								Bukkit.getPlayer(grenadeExplosionVictims.get(deceased.getUniqueId())).getName());
 
 						RageScores.addPointsToPlayer(
 								Bukkit.getPlayer(grenadeExplosionVictims.get(deceased.getUniqueId())), deceased,
 								"explosion");
 					} else {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.error-kill"));
+						message = RageMode.getLang().get("game.broadcast.error-kill");
 
 						sendMessage(deceased, RageMode.getLang().get("game.unknown-killer"));
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased,
-							deceased.getKiller() != null ? deceased.getKiller() : null, "explosion");
+					killed = new RMPlayerKilledEvent(game, deceased, killerExists ? deceased.getKiller() : null,
+							"explosion");
 					break;
 				case "grenade":
-					if (deceased.getKiller() == null) {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.grenade-kill",
-									"%victim%", deceaseName, "%killer%", deceased.getName()));
+					if (!killerExists) {
+						message = RageMode.getLang().get("game.broadcast.grenade-kill", "%victim%", deceaseName,
+								"%killer%", deceased.getName());
 
 						RageScores.addPointsToPlayer(deceased, deceased, "grenade");
 					} else {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.grenade-kill",
-									"%victim%", deceaseName, "%killer%", deceased.getKiller().getName()));
+						message = RageMode.getLang().get("game.broadcast.grenade-kill", "%victim%", deceaseName,
+								"%killer%", deceased.getKiller().getName());
 
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "grenade");
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased,
-							deceased.getKiller() != null ? deceased.getKiller() : null, "grenade");
+					killed = new RMPlayerKilledEvent(game, deceased, killerExists ? deceased.getKiller() : null,
+							"grenade");
 					break;
 				case "knife":
-					if (deceased.getKiller() == null) {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.knife-kill",
-									"%victim%", deceaseName, "%killer%", deceaseName));
+					if (!killerExists) {
+						message = RageMode.getLang().get("game.broadcast.knife-kill", "%victim%", deceaseName,
+								"%killer%", deceaseName);
 
 						RageScores.addPointsToPlayer(deceased, deceased, "rageknife");
 					} else {
-						if (doDeathBroadcast)
-							GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.knife-kill",
-									"%victim%", deceaseName, "%killer%", deceased.getKiller().getName()));
+						message = RageMode.getLang().get("game.broadcast.knife-kill", "%victim%", deceaseName,
+								"%killer%", deceased.getKiller().getName());
 
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "rageknife");
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased,
-							deceased.getKiller() != null ? deceased.getKiller() : null, "knife");
+					killed = new RMPlayerKilledEvent(game, deceased, killerExists ? deceased.getKiller() : null,
+							"knife");
 					break;
 				default:
-					if (doDeathBroadcast)
-						GameUtils.broadcastToGame(game,
-								RageMode.getLang().get("game.unknown-weapon", "%victim%", deceaseName));
+					message = RageMode.getLang().get("game.unknown-weapon", "%victim%", deceaseName);
 					break;
+				}
+
+				if (doDeathBroadcast && !message.isEmpty()) {
+					GameUtils.broadcastToGame(game, message);
 				}
 
 				deceased.removeMetadata("killedWith", plugin);
@@ -470,7 +460,7 @@ public class EventListener implements Listener {
 			event.getDrops().clear();
 
 			GameUtils.runCommands(deceased, game.getName(), "death");
-			if (deceased.getKiller() != null) {
+			if (killerExists) {
 				GameUtils.getBonus().addKillBonus(deceased.getKiller());
 			}
 		}
@@ -492,9 +482,6 @@ public class EventListener implements Listener {
 		}
 
 		Game game = GameUtils.getGameByPlayer(p);
-		if (game == null) {
-			return;
-		}
 
 		// If player still is in game with respawn screen then remove player
 		// 1.14 issue
@@ -566,11 +553,10 @@ public class EventListener implements Listener {
 	public void disableCommand(PlayerCommandPreprocessEvent event) {
 		Player p = event.getPlayer();
 		String arg = event.getMessage().trim().toLowerCase();
-		List<String> cmds = null;
 
 		if (ConfigValues.isSpectatorEnabled() && GameUtils.isSpectatorPlaying(p)) {
-			cmds = ConfigValues.getSpectatorCmds();
-			if (cmds != null && !cmds.isEmpty()) {
+			List<String> cmds = ConfigValues.getSpectatorCmds();
+			if (!cmds.isEmpty()) {
 				if (!cmds.contains(arg) && !hasPerm(p, "ragemode.bypass.spectatorcommands")) {
 					sendMessage(p, RageMode.getLang().get("game.this-command-is-disabled-in-game"));
 					event.setCancelled(true);
@@ -588,8 +574,8 @@ public class EventListener implements Listener {
 				return;
 			}
 
-			cmds = ConfigValues.getAllowedCmds();
-			if (cmds != null && !cmds.isEmpty()) {
+			List<String> cmds = ConfigValues.getAllowedCmds();
+			if (!cmds.isEmpty()) {
 				if (!cmds.contains(arg) && !hasPerm(p, "ragemode.bypass.disabledcommands")) {
 					sendMessage(p, RageMode.getLang().get("game.this-command-is-disabled-in-game"));
 					event.setCancelled(true);

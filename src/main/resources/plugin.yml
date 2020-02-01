@@ -1,7 +1,7 @@
 name: RageMode
 main: hu.montlikadani.ragemode.RageMode
 version: 1.6.0.000
-softdepend: [HolographicDisplays, PlaceholderAPI]
+softdepend: [HolographicDisplays, PlaceholderAPI, Vault]
 description: A RageMode minigame plugin
 api-version: 1.13
 # DO NOT EDIT ANYTHING ABOVE THIS LINE!

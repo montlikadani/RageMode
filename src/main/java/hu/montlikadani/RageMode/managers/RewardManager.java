@@ -27,12 +27,11 @@ import hu.montlikadani.ragemode.Utils;
 public class RewardManager {
 
 	private String game;
-	private FileConfiguration conf;
+
+	private FileConfiguration conf = RageMode.getInstance().getConfiguration().getRewardsCfg();
 
 	public RewardManager(String game) {
 		this.game = game;
-
-		conf = RageMode.getInstance().getConfiguration().getRewardsCfg();
 	}
 
 	public String getGame() {
@@ -77,7 +76,7 @@ public class RewardManager {
 	}
 
 	public void rewardForPlayers(Player winner, Player pls) {
-		if (winner != null && pls == winner)
+		if (winner != null && pls.equals(winner))
 			return;
 
 		List<String> cmds = conf.getStringList("rewards.end-game.players.commands");

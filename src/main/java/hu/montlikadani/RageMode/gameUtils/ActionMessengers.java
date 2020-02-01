@@ -44,6 +44,10 @@ public class ActionMessengers {
 	}
 
 	public void setTabList() {
+		setTabList(-1);
+	}
+
+	public void setTabList(int time) {
 		if (game == null) {
 			return;
 		}
@@ -93,14 +97,20 @@ public class ActionMessengers {
 			he = Utils.setPlaceholders(he, pl);
 			fo = Utils.setPlaceholders(fo, pl);
 
-			he = he.replace("%game-time%", "");
-			fo = fo.replace("%game-time%", "");
+			if (time > -1) {
+				he = he.replace("%game-time%", Utils.getFormattedTime(time));
+				fo = fo.replace("%game-time%", Utils.getFormattedTime(time));
+			}
 
 			gameTab.sendTabTitle(pl, he, fo);
 		}
 	}
 
 	public void setScoreboard() {
+		setScoreboard(-1);
+	}
+
+	public void setScoreboard(int time) {
 		if (game == null) {
 			return;
 		}
@@ -143,7 +153,9 @@ public class ActionMessengers {
 					}
 
 					row = Utils.setPlaceholders(row, pl);
-					row = row.replace("%game-time%", "");
+					if (time > -1) {
+						row = row.replace("%game-time%", Utils.getFormattedTime(time));
+					}
 
 					gameBoard.setLine(row, rowMax);
 					rowMax--;

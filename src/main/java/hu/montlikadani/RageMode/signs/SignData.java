@@ -68,44 +68,42 @@ public class SignData {
 	}
 
 	@SuppressWarnings("deprecation")
-	protected void updateSign() {
+	public void updateSign() {
 		Location location = getLocation();
-		synchronized (location) {
-			// TODO: Remove or change that to fix server crash on startup
-			if (!location.getWorld().getChunkAt(location).isLoaded()) {
-				return;
-			}
-
-			Block b = location.getBlock();
-			if (!(b.getState() instanceof Sign)) {
-				return;
-			}
-
-			Sign sign = (Sign) b.getState();
-			if (placeholder != null && game != null && GameUtils.isGameWithNameExists(game)) {
-				List<String> lines = placeholder.parsePlaceholder(game);
-				if (placeholder.getLines().size() > 4 || placeholder.getLines().size() < 4) {
-					Bukkit.getLogger().log(Level.INFO, "In the configuration the signs lines is equal to 4.");
-					return;
-				}
-
-				for (int i = 0; i < 4; i++) {
-					sign.setLine(i, lines.get(i));
-				}
-
-				if ((ConfigValues.isSignBackground() || !ConfigValues.getSignBackground().equalsIgnoreCase("none"))
-						&& MaterialUtil.isWallSign(sign.getType())) {
-					changeBlockBackground();
-				}
-			} else {
-				String[] errorLines = { "\u00a74ERROR:", "\u00a76Game", "\u00a76with that name", "\u00a7cnot found!" };
-				for (int i = 0; i < 4; i++) {
-					sign.setLine(i, errorLines[i]);
-				}
-			}
-
-			sign.update();
+		// TODO: Remove or change that to fix server crash on startup
+		if (!location.getWorld().getChunkAt(location).isLoaded()) {
+			return;
 		}
+
+		Block b = location.getBlock();
+		if (!(b.getState() instanceof Sign)) {
+			return;
+		}
+
+		Sign sign = (Sign) b.getState();
+		if (placeholder != null && game != null && GameUtils.isGameWithNameExists(game)) {
+			List<String> lines = placeholder.parsePlaceholder(game);
+			if (placeholder.getLines().size() > 4 || placeholder.getLines().size() < 4) {
+				Bukkit.getLogger().log(Level.INFO, "In the configuration the signs lines is equal to 4.");
+				return;
+			}
+
+			for (int i = 0; i < 4; i++) {
+				sign.setLine(i, lines.get(i));
+			}
+
+			if ((ConfigValues.isSignBackground() || !ConfigValues.getSignBackground().equalsIgnoreCase("none"))
+					&& MaterialUtil.isWallSign(sign.getType())) {
+				changeBlockBackground();
+			}
+		} else {
+			String[] errorLines = { "\u00a74ERROR:", "\u00a76Game", "\u00a76with that name", "\u00a7cnot found!" };
+			for (int i = 0; i < 4; i++) {
+				sign.setLine(i, errorLines[i]);
+			}
+		}
+
+		sign.update();
 	}
 
 	private void updateBackground(Material mat) {

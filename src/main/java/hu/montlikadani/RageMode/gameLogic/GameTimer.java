@@ -57,8 +57,8 @@ public class GameTimer extends TimerTask {
 				ac = new ActionMessengers(game, game.getPlayersFromList());
 			}
 
-			ac.setScoreboard();
-			ac.setTabList();
+			ac.setScoreboard(time);
+			ac.setTabList(time);
 			ac.setTeam();
 
 			if (time == 0) {

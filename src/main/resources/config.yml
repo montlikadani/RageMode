@@ -57,9 +57,6 @@ signs:
   # Enables the signs creates.
   enable: false
 
-  # Sign refresh time in seconds.
-  update-time: 20
-
   # Sign text when the game running or waiting for players.
   game:
     running: "&6&oRunning..."

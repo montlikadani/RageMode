@@ -12,8 +12,10 @@ import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.Debug;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.events.SignsUpdateEvent;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class SignCreator {
@@ -142,6 +144,12 @@ public class SignCreator {
 
 		List<String> signs = fileConf.getStringList("signs");
 		if (signs == null) {
+			return false;
+		}
+
+		SignsUpdateEvent event = new SignsUpdateEvent(signData);
+		Utils.callEvent(event);
+		if (event.isCancelled()) {
 			return false;
 		}
 

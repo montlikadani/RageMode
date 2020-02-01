@@ -171,17 +171,9 @@ public class RageScores {
 			break;
 		}
 
-		if (!killerMessage.isEmpty()) {
-			sendMessage(killer, killerMessage);
-		}
-
-		if (!victimMsg.isEmpty()) {
-			sendMessage(victim, victimMsg);
-		}
-
-		if (!killerMsg2.isEmpty()) {
-			sendMessage(killer, killerMsg2);
-		}
+		sendMessage(killer, killerMessage);
+		sendMessage(victim, victimMsg);
+		sendMessage(killer, killerMsg2);
 
 		if (killerPoints == null) {
 			return;

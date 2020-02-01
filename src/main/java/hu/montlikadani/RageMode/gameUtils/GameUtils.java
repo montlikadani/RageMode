@@ -510,6 +510,8 @@ public class GameUtils {
 
 		GameLoader loder = new GameLoader(game);
 		loder.startGame();
+
+		SignCreator.updateAllSigns(game.getName());
 	}
 
 	/**
@@ -612,10 +614,6 @@ public class GameUtils {
 
 		List<String> list = RageMode.getInstance().getConfiguration().getRewardsCfg()
 				.getStringList("rewards.in-game.run-commands");
-		if (list == null) {
-			return;
-		}
-
 		for (String cmd : list) {
 			if (cmd.split(":").length < 3 && cmd.split(":").length > 4) {
 				Debug.logConsole(Level.WARNING,
@@ -668,10 +666,6 @@ public class GameUtils {
 			return;
 
 		List<String> list = ConfigValues.getActionbarActions();
-		if (list == null) {
-			return;
-		}
-
 		for (String msg : list) {
 			if (msg.split(":").length < 2 && msg.split(":").length > 2) {
 				Debug.logConsole(Level.WARNING,
@@ -722,10 +716,6 @@ public class GameUtils {
 			return;
 
 		List<String> list = ConfigValues.getBossbarActions();
-		if (list == null) {
-			return;
-		}
-
 		for (String msg : list) {
 			String[] split = msg.split(":");
 			if (split.length < 2) {
@@ -883,6 +873,7 @@ public class GameUtils {
 		EventListener.waitingGames.put(name, true);
 
 		setStatus(name, GameStatus.GAMEFREEZE);
+		SignCreator.updateAllSigns(name);
 
 		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 				new Runnable() {
@@ -917,6 +908,7 @@ public class GameUtils {
 			game.removeSpectatorPlayer(pl);
 		}
 
+		RewardManager reward = new RewardManager(gName);
 		for (PlayerManager pm : game.getPlayersFromList()) {
 			final Player p = pm.getPlayer();
 			final PlayerPoints pP = RageScores.getPlayerPoints(p.getUniqueId());
@@ -946,8 +938,7 @@ public class GameUtils {
 				sendMessage(p, RageMode.getLang().get("game.stopped", "%game%", gName));
 
 				if (ConfigValues.isRewardEnabled()) {
-					RewardManager reward = new RewardManager(gName);
-					if (winner != null && p == winner) {
+					if (winner != null && p.equals(winner)) {
 						reward.rewardForWinner(winner);
 					}
 
@@ -1031,6 +1022,7 @@ public class GameUtils {
 			s = s.replace("%kills%", Integer.toString(score.getKills()));
 		if (s.contains("%deaths%"))
 			s = s.replace("%deaths%", Integer.toString(score.getDeaths()));
+
 		return s;
 	}
 

@@ -347,6 +347,10 @@ public class YAMLDB {
 			return false;
 		}
 
+		if (!statsConf.contains("data")) {
+			return false;
+		}
+
 		if (statsConf.getConfigurationSection("data").getKeys(false).contains(uuid.toString())) {
 			String path = "data." + uuid + ".";
 			statsConf.set(path + "kills", 0);
