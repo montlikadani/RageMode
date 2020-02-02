@@ -1,30 +1,12 @@
 package hu.montlikadani.ragemode.gameUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 
 import org.bukkit.entity.Player;
-
-import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class ScoreTeam implements IObjectives {
 
 	public static HashMap<String, ScoreTeam> allTeams = new HashMap<>();
-	@Deprecated private List<Player> players = new ArrayList<>();
-
-	/**
-	 * Creates a new instance of Team, which manages the Team for
-	 * the team prefixes/suffixes.
-	 * @deprecated The players list can be reach from the game instance
-	 * @param players The list of {@link PlayerManager}
-	 */
-	@Deprecated
-	public ScoreTeam(List<PlayerManager> players) {
-		players.forEach(pm -> this.players.add(pm.getPlayer()));
-	}
 
 	/**
 	 * Just creates a new instance of Team.
@@ -62,34 +44,15 @@ public class ScoreTeam implements IObjectives {
 	}
 
 	/**
-	 * Sends ScoreTeam to all online players that are currently playing in the game.
-	 * @param prefix String
-	 * @param suffix String
-	 */
-	@Deprecated
-	public void setTeam(String prefix, String suffix) {
-		for (Player player : this.players) {
-			setTeam(player, prefix, suffix);
-		}
-	}
-
-	/**
 	 * Sets the current player prefix/suffix.
 	 * @param player Player
 	 * @param prefix String
 	 * @param suffix String
 	 */
 	public void setTeam(Player player, String prefix, String suffix) {
+		// TODO: Work with scoreboard teams to prevent showing formats
+		// without playing in a game
 		player.setPlayerListName(prefix + player.getName() + suffix);
-	}
-
-	/**
-	 * Removing the team from all online player that are currently playing in a game.
-	 */
-	@Deprecated
-	@Override
-	public void remove() {
-		this.players.forEach(this::remove);
 	}
 
 	/**
@@ -99,21 +62,5 @@ public class ScoreTeam implements IObjectives {
 	@Override
 	public void remove(Player player) {
 		player.setPlayerListName(player.getName());
-
-		for (Iterator<Player> it = this.players.iterator(); it.hasNext();) {
-			if (it.next().equals(player)) {
-				it.remove();
-				break;
-			}
-		}
-	}
-
-	/**
-	 * Returns the stored players who added to the list.
-	 * @return An unmodifiable list of players
-	 */
-	@Deprecated
-	public List<Player> getPlayers() {
-		return Collections.unmodifiableList(players);
 	}
 }

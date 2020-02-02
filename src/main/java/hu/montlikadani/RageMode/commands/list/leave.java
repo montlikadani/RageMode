@@ -8,6 +8,7 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.signs.SignCreator;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
@@ -44,7 +45,7 @@ public class leave {
 		}
 
 		game.removeSpectatorPlayer(p);
-
+		SignCreator.updateAllSigns(game.getName());
 		return true;
 	}
 }

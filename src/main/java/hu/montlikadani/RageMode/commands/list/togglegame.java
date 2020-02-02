@@ -37,7 +37,7 @@ public class togglegame {
 		}
 
 		boolean toggle = true;
-		if (GameUtils.getStatus(game) == GameStatus.NOTREADY) {
+		if (GameUtils.getStatus(game).isPresent() && GameUtils.getStatus(game).get() == GameStatus.NOTREADY) {
 			GameUtils.setStatus(game, GameStatus.READY);
 			toggle = false;
 		} else {

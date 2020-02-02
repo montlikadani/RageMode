@@ -7,6 +7,4 @@ public interface IObjectives {
 	boolean addToList(String gameName, boolean forceReplace);
 
 	void remove(Player p);
-
-	void remove();
 }

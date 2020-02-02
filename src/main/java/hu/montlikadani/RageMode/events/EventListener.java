@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.events;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -121,8 +122,12 @@ public class EventListener implements Listener {
 		}
 
 		String game = GameUtils.getGameByPlayer(p).getName();
+		Optional<GameStatus> status = GameUtils.getStatus(game);
+		if (!status.isPresent()) {
+			return;
+		}
 
-		if (GameUtils.getStatus(game) == GameStatus.WAITING) {
+		if (status.get() == GameStatus.WAITING) {
 			if (!ConfigValues.isChatEnabledinLobby() && !hasPerm(p, "ragemode.bypass.lobby.lockchat")) {
 				event.setCancelled(true);
 				sendMessage(p, RageMode.getLang().get("game.lobby.chat-is-disabled"));
@@ -130,7 +135,7 @@ public class EventListener implements Listener {
 			}
 		}
 
-		if (GameUtils.getStatus(game) == GameStatus.RUNNING) {
+		if (status.get() == GameStatus.RUNNING) {
 			if (!ConfigValues.isEnableChatInGame() && !hasPerm(p, "ragemode.bypass.game.lockchat")) {
 				sendMessage(p, RageMode.getLang().get("game.chat-is-disabled"));
 				event.setCancelled(true);
@@ -151,7 +156,7 @@ public class EventListener implements Listener {
 			}
 		}
 
-		if (!ConfigValues.isEnableChatAfterEnd() && GameUtils.getStatus(game) == GameStatus.GAMEFREEZE) {
+		if (!ConfigValues.isEnableChatAfterEnd() && status.get() == GameStatus.GAMEFREEZE) {
 			sendMessage(p, RageMode.getLang().get("game.game-freeze.chat-is-disabled"));
 			event.setCancelled(true);
 		}
@@ -171,14 +176,18 @@ public class EventListener implements Listener {
 			}
 
 			String game = GameUtils.getGameByPlayer(shooter).getName();
+			Optional<GameStatus> status = GameUtils.getStatus(game);
+			if (!status.isPresent()) {
+				return;
+			}
 
-			if (GameUtils.getStatus(game) == GameStatus.GAMEFREEZE && waitingGames.containsKey(game)
+			if (status.get() == GameStatus.GAMEFREEZE && waitingGames.containsKey(game)
 					&& waitingGames.get(game)) {
 				arrow.remove();
 				return;
 			}
 
-			if (GameUtils.getStatus(game) == GameStatus.RUNNING) {
+			if (status.get() == GameStatus.RUNNING) {
 				Location location = arrow.getLocation();
 				double x = location.getX();
 				double y = location.getY();
@@ -226,6 +235,9 @@ public class EventListener implements Listener {
 
 		if (event.getDamager() instanceof Player) {
 			Player damager = (Player) event.getDamager();
+			if (!GameUtils.isPlayerPlaying(damager)) {
+				return; // Preventing non-playing players damaging to playing players
+			}
 
 			if (waitingGames.containsKey(GameUtils.getGameByPlayer(damager).getName())
 					&& waitingGames.get(GameUtils.getGameByPlayer(damager).getName())) {
@@ -364,7 +376,7 @@ public class EventListener implements Listener {
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "ragebow");
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, killerExists ? deceased.getKiller() : null,
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(),
 							"arrow");
 					break;
 				case "snowball":
@@ -380,7 +392,7 @@ public class EventListener implements Listener {
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "combataxe");
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, killerExists ? deceased.getKiller() : null,
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(),
 							"snowball");
 					break;
 				case "explosion":
@@ -404,7 +416,7 @@ public class EventListener implements Listener {
 						sendMessage(deceased, RageMode.getLang().get("game.unknown-killer"));
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, killerExists ? deceased.getKiller() : null,
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(),
 							"explosion");
 					break;
 				case "grenade":
@@ -420,7 +432,7 @@ public class EventListener implements Listener {
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "grenade");
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, killerExists ? deceased.getKiller() : null,
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(),
 							"grenade");
 					break;
 				case "knife":
@@ -436,7 +448,7 @@ public class EventListener implements Listener {
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "rageknife");
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, killerExists ? deceased.getKiller() : null,
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(),
 							"knife");
 					break;
 				default:
@@ -735,6 +747,7 @@ public class EventListener implements Listener {
 								game.removePlayer(p);
 							}
 							game.removeSpectatorPlayer(p);
+							SignCreator.updateAllSigns(game.getName());
 						}
 					}
 

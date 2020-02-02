@@ -24,23 +24,24 @@ public class SignPlaceholder {
 	protected List<String> parsePlaceholder(String game) {
 		List<String> variables = new ArrayList<>();
 
+		java.util.Optional<GameStatus> status = GameUtils.getStatus(game);
+
 		for (String line : lines) {
 			if (line.contains("%game%"))
 				line = line.replace("%game%", game);
 
-			if (line.contains("%current-players%")) {
+			if (line.contains("%current-players%") && status.isPresent()) {
 				line = line.replace("%current-players%",
-						GameUtils.getStatus(game) == GameStatus.RUNNING
-								|| GameUtils.getStatus(game) == GameStatus.WAITING
-										? Integer.toString(GameUtils.getGame(game).getPlayers().size())
-										: "0");
+						status.get() == GameStatus.RUNNING || status.get() == GameStatus.WAITING
+								? Integer.toString(GameUtils.getGame(game).getPlayers().size())
+								: "0");
 			}
 
 			if (line.contains("%max-players%"))
 				line = line.replace("%max-players%", Integer.toString(GetGames.getMaxPlayers(game)));
 
-			if (line.contains("%running%")) {
-				switch (GameUtils.getStatus(game)) {
+			if (line.contains("%running%") && status.isPresent()) {
+				switch (status.get()) {
 				case WAITING:
 					if (GameUtils.getGame(game).getPlayers().size() == GetGames.getMaxPlayers(game))
 						line = line.replace("%running%", ConfigValues.getSignGameFull());

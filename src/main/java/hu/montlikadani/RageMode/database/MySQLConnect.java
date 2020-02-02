@@ -17,6 +17,7 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 				+ autoReconnect + "&useSSL=" + useSSL, userName, password, prefix);
 
 		createStatsTable();
+		createPlayersTable();
 	}
 
 	public void createStatsTable() {
@@ -29,6 +30,16 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 					+ "`kd` DOUBLE, UNIQUE(uuid));";
 			createTable(query);
 		}
+	}
+
+	public void createPlayersTable() {
+		if (!isConnected()) {
+			return;
+		}
+
+		String query = "CREATE TABLE IF NOT EXISTS `" + getPrefix() + "players` (`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY , "
+				+ "`uuid` VARCHAR(255) , `time` LONG, UNIQUE(uuid));";
+		createTable(query);
 	}
 
 	@Override

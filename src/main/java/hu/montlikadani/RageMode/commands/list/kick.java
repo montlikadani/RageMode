@@ -9,6 +9,7 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.PlayerKickedFromGame;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.signs.SignCreator;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
@@ -57,6 +58,7 @@ public class kick {
 
 		Utils.callEvent(new PlayerKickedFromGame(game, sender, target));
 		game.removePlayer(target);
+		SignCreator.updateAllSigns(game.getName());
 
 		sendMessage(sender,
 				RageMode.getLang().get("commands.kick.player-kicked", "%player%", target.getName(), "%game%", name));

@@ -32,8 +32,6 @@ public class GameTimer extends TimerTask {
 	public void run() {
 		try { // Stop the game if something wrong or missing
 			if (!game.isGameRunning()) {
-				// TODO: fix IllegalPluginAccessException when calling new event
-				//GameUtils.setStatus(game.getName(), null);
 				cancel();
 				return;
 			}

@@ -179,8 +179,8 @@ public class Game {
 		Utils.clearPlayerInventory(player);
 		getPlayerManager(player).addBackTools();
 
-		removePlayerSynced(player);
 		players.remove(player);
+		removePlayerSynced(player);
 
 		if (!player.isCustomNameVisible()) {
 			player.setCustomNameVisible(true);
@@ -194,7 +194,7 @@ public class Game {
 
 	public void removePlayerSynced(Player player) {
 		if (ScoreBoard.allScoreBoards.containsKey(name))
-			ScoreBoard.allScoreBoards.get(name).removeScoreBoard(player, true);
+			ScoreBoard.allScoreBoards.get(name).remove(player);
 
 		if (TabTitles.allTabLists.containsKey(name))
 			TabTitles.allTabLists.get(name).remove(player);

@@ -68,10 +68,10 @@ public class RageMode extends JavaPlugin {
 	private boolean vault = false;
 	private static boolean isSpigot = false;
 
-	private List<Game> games = new ArrayList<>();
-	private List<GameSpawn> spawns = new ArrayList<>();
-	private ItemHandler[] gameItems = new ItemHandler[5];
-	private ItemHandler[] lobbyItems = new ItemHandler[2];
+	private final List<Game> games = new ArrayList<>();
+	private final List<GameSpawn> spawns = new ArrayList<>();
+	private final ItemHandler[] gameItems = new ItemHandler[5];
+	private final ItemHandler[] lobbyItems = new ItemHandler[2];
 
 	@Override
 	public void onEnable() {
@@ -356,7 +356,8 @@ public class RageMode extends JavaPlugin {
 			if (game.isGameRunning()) {
 				GameUtils.stopGame(game, false);
 				GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
-			} else if (GameUtils.getStatus(game.getName()) == GameStatus.WAITING) {
+			} else if (GameUtils.getStatus(game.getName()).isPresent()
+					&& GameUtils.getStatus(game.getName()).get() == GameStatus.WAITING) {
 				GameUtils.kickAllPlayers(game);
 			}
 		}

@@ -76,26 +76,24 @@ public class LobbyTimer extends TimerTask {
 				String title = ConfigValues.getLobbyTitle();
 				String sTitle = ConfigValues.getLobbySubTitle();
 
-				if (title != null && sTitle != null) {
-					title = title.replace("%time%", Integer.toString(time));
-					title = title.replace("%game%", game.getName());
+				title = title.replace("%time%", Integer.toString(time));
+				title = title.replace("%game%", game.getName());
 
-					sTitle = sTitle.replace("%time%", Integer.toString(time));
-					sTitle = sTitle.replace("%game%", game.getName());
+				sTitle = sTitle.replace("%time%", Integer.toString(time));
+				sTitle = sTitle.replace("%game%", game.getName());
 
-					List<Integer> titleValues = ConfigValues.getLobbyTitleStartMsgs();
-					for (int val : titleValues) {
-						if (time == val) {
-							String[] split = ConfigValues.getLobbyTitleTime().split(", ");
-							if (split.length == 3) {
-								Titles.sendTitle(player, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
-										Integer.parseInt(split[2]), title, sTitle);
-							} else {
-								Titles.sendTitle(player, 20, 30, 20, title, sTitle);
-							}
-
-							break;
+				List<Integer> titleValues = ConfigValues.getLobbyTitleStartMsgs();
+				for (int val : titleValues) {
+					if (time == val) {
+						String[] split = ConfigValues.getLobbyTitleTime().split(", ");
+						if (split.length == 3) {
+							Titles.sendTitle(player, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
+									Integer.parseInt(split[2]), title, sTitle);
+						} else {
+							Titles.sendTitle(player, 20, 30, 20, title, sTitle);
 						}
+
+						break;
 					}
 				}
 			}

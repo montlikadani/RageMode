@@ -36,7 +36,8 @@ public class latestart {
 			return false;
 		}
 
-		if (GameUtils.getStatus(GameUtils.getGameByPlayer(p).getName()) != GameStatus.WAITING) {
+		String playerGame = GameUtils.getGameByPlayer(p).getName();
+		if (GameUtils.getStatus(playerGame).isPresent() && GameUtils.getStatus(playerGame).get() != GameStatus.WAITING) {
 			sendMessage(sender, RageMode.getLang().get("commands.latestart.player-not-in-lobby"));
 			return false;
 		}
@@ -52,7 +53,7 @@ public class latestart {
 			return false;
 		}
 
-		GameUtils.getGame(GameUtils.getGameByPlayer(p).getName()).getLobbyTimer().addLobbyTime(newTime);
+		GameUtils.getGame(playerGame).getLobbyTimer().addLobbyTime(newTime);
 		sendMessage(sender, RageMode.getLang().get("commands.latestart.lobby-timer-increased", "%newtime%", newTime));
 		return true;
 	}

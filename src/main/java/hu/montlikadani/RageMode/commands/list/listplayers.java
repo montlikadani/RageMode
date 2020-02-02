@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.commands.list;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -65,7 +66,8 @@ public class listplayers {
 				return false;
 			}
 
-			if (!(GameUtils.getStatus(game) == GameStatus.RUNNING || GameUtils.getStatus(game) == GameStatus.WAITING)) {
+			Optional<GameStatus> status = GameUtils.getStatus(game);
+			if (status.isPresent() && !(status.get() == GameStatus.RUNNING || status.get() == GameStatus.WAITING)) {
 				sendMessage(sender, RageMode.getLang().get("commands.listplayers.game-not-running"));
 				return false;
 			}

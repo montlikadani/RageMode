@@ -12,6 +12,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.Debug;
+import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
@@ -161,10 +162,18 @@ public class SignCreator {
 
 			if (game.equalsIgnoreCase(gameName)) {
 				Location signLocation = stringToLocationSign(signString);
-				if (signLocation != null && signLocation.getBlock().getState() instanceof Sign) {
-					signData.forEach(data -> data.updateSign());
-					return true;
+				if (signLocation == null) {
+					continue;
 				}
+
+				Bukkit.getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
+					if (signLocation.getBlock() != null && signLocation.getBlock().getState() instanceof Sign) {
+						signData.forEach(data -> data.updateSign());
+						return true;
+					}
+
+					return true;
+				});
 			}
 		}
 

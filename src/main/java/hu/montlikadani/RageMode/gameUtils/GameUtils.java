@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
@@ -309,7 +310,7 @@ public class GameUtils {
 	 * Give game items to the given player. If the item slot not found
 	 * in configuration, then adds the item to the inventory.
 	 * @param p Player
-	 * @param clear - if true clears the player inventory before add items
+	 * @param clear - if true clears the player inventory before adding items
 	 */
 	public static void addGameItems(Player p, boolean clear) {
 		PlayerInventory inv = p.getInventory();
@@ -398,7 +399,12 @@ public class GameUtils {
 		PlayerInventory inv = p.getInventory();
 		String name = game.getName();
 
-		if (getStatus(name) == GameStatus.RUNNING) {
+		Optional<GameStatus> status = getStatus(name);
+		if (!status.isPresent()) {
+			return;
+		}
+
+		if (status.get() == GameStatus.RUNNING) {
 			if (!ConfigValues.isSpectatorEnabled()) {
 				sendMessage(p, RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
 				return;
@@ -420,85 +426,87 @@ public class GameUtils {
 					inv.setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().getResult());
 				}
 			}
-		} else {
-			if (getStatus(name) == GameStatus.NOTREADY) {
-				sendMessage(p, RageMode.getLang().get("commands.join.game-locked"));
-				return;
-			}
 
-			if (isPlayerPlaying(p) || getStatus(name) == GameStatus.WAITING && game.getPlayers().containsKey(p)) {
-				sendMessage(p, RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
-				return;
-			}
-
-			MapChecker mapChecker = new MapChecker(name);
-			if (!mapChecker.isValid()) {
-				sendMessage(p, mapChecker.getMessage());
-				return;
-			}
-
-			if (ConfigValues.isRequireEmptyInv()) {
-				for (ItemStack armor : inv.getArmorContents()) {
-					if (armor != null && !armor.getType().equals(Material.AIR)) {
-						sendMessage(p, RageMode.getLang().get("commands.join.empty-inventory.armor"));
-						return;
-					}
-				}
-
-				for (ItemStack content : inv.getContents()) {
-					if (content != null && !content.getType().equals(Material.AIR)) {
-						sendMessage(p, RageMode.getLang().get("commands.join.empty-inventory.contents"));
-						return;
-					}
-				}
-			}
-
-			if (!game.addPlayer(p)) {
-				Debug.sendMessage(RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", name));
-				return;
-			}
-
-			if (!ConfigValues.isSavePlayerData()) {
-				// We still need some data saving
-				game.getPlayerManager(p).getStorePlayer().oldLocation = p.getLocation();
-				game.getPlayerManager(p).getStorePlayer().oldGameMode = p.getGameMode();
-
-				p.setGameMode(GameMode.SURVIVAL);
-			} else {
-				savePlayerData(p);
-			}
-			clearPlayerTools(p);
-
-			p.teleport(GameLobby.getLobbyLocation(name));
-
-			runCommands(p, name, "join");
-			sendBossBarMessages(p, name, "join");
-			sendActionBarMessages(p, name, "join");
-			setStatus(name, GameStatus.WAITING, false);
-
-			if (Items.getLeaveGameItem() != null) {
-				inv.setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().getResult());
-			}
-
-			if (Items.getForceStarter() != null
-					&& hu.montlikadani.ragemode.utils.Misc.hasPerm(p, "ragemode.admin.item.forcestart")) {
-				inv.setItem(Items.getForceStarter().getSlot(), Items.getForceStarter().getResult());
-			}
-
-			broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
-
-			String title = ConfigValues.getTitleJoinGame();
-			String subtitle = ConfigValues.getSubTitleJoinGame();
-			title = title.replace("%game%", name);
-			subtitle = subtitle.replace("%game%", name);
-
-			String[] split = ConfigValues.getJoinTitleTime().split(", ");
-			Titles.sendTitle(p, (split.length > 1 ? Integer.parseInt(split[0]) : 20),
-					(split.length > 2 ? Integer.parseInt(split[1]) : 30),
-					(split.length > 3 ? Integer.parseInt(split[2]) : 20), title, subtitle);
-
-			SignCreator.updateAllSigns(name);
+			return;
 		}
+
+		if (status.get() == GameStatus.NOTREADY) {
+			sendMessage(p, RageMode.getLang().get("commands.join.game-locked"));
+			return;
+		}
+
+		if (isPlayerPlaying(p) || status.get() == GameStatus.WAITING && game.getPlayers().containsKey(p)) {
+			sendMessage(p, RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
+			return;
+		}
+
+		MapChecker mapChecker = new MapChecker(name);
+		if (!mapChecker.isValid()) {
+			sendMessage(p, mapChecker.getMessage());
+			return;
+		}
+
+		if (ConfigValues.isRequireEmptyInv()) {
+			for (ItemStack armor : inv.getArmorContents()) {
+				if (armor != null && !armor.getType().equals(Material.AIR)) {
+					sendMessage(p, RageMode.getLang().get("commands.join.empty-inventory.armor"));
+					return;
+				}
+			}
+
+			for (ItemStack content : inv.getContents()) {
+				if (content != null && !content.getType().equals(Material.AIR)) {
+					sendMessage(p, RageMode.getLang().get("commands.join.empty-inventory.contents"));
+					return;
+				}
+			}
+		}
+
+		if (!game.addPlayer(p)) {
+			Debug.sendMessage(RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", name));
+			return;
+		}
+
+		if (!ConfigValues.isSavePlayerData()) {
+			// We still need some data saving
+			game.getPlayerManager(p).getStorePlayer().oldLocation = p.getLocation();
+			game.getPlayerManager(p).getStorePlayer().oldGameMode = p.getGameMode();
+
+			p.setGameMode(GameMode.SURVIVAL);
+		} else {
+			savePlayerData(p);
+		}
+		clearPlayerTools(p);
+
+		p.teleport(GameLobby.getLobbyLocation(name));
+
+		runCommands(p, name, "join");
+		sendBossBarMessages(p, name, "join");
+		sendActionBarMessages(p, name, "join");
+		setStatus(name, GameStatus.WAITING, false);
+
+		if (Items.getLeaveGameItem() != null) {
+			inv.setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().getResult());
+		}
+
+		if (Items.getForceStarter() != null
+				&& hu.montlikadani.ragemode.utils.Misc.hasPerm(p, "ragemode.admin.item.forcestart")) {
+			inv.setItem(Items.getForceStarter().getSlot(), Items.getForceStarter().getResult());
+		}
+
+		broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
+
+		String title = ConfigValues.getTitleJoinGame();
+		String subtitle = ConfigValues.getSubTitleJoinGame();
+		title = title.replace("%game%", name);
+		subtitle = subtitle.replace("%game%", name);
+
+		String[] split = ConfigValues.getJoinTitleTime().split(", ");
+		Titles.sendTitle(p, (split.length > 1 ? Integer.parseInt(split[0]) : 20),
+				(split.length > 2 ? Integer.parseInt(split[1]) : 30),
+				(split.length > 3 ? Integer.parseInt(split[2]) : 20), title, subtitle);
+
+		SignCreator.updateAllSigns(name);
 	}
 
 	/**
@@ -530,22 +538,31 @@ public class GameUtils {
 	public static void kickPlayer(Player p, Game game) {
 		Validate.notNull(p, "Player can't be null!");
 
-		if (game != null
-				&& (getStatus(game.getName()) == GameStatus.RUNNING || getStatus(game.getName()) == GameStatus.WAITING)
-				&& game.removePlayer(p)) {
+		if (game == null) {
+			return;
+		}
+
+		Optional<GameStatus> status = getStatus(game.getName());
+		if (!status.isPresent()) {
+			return;
+		}
+
+		if ((status.get() == GameStatus.RUNNING || status.get() == GameStatus.WAITING) && game.removePlayer(p)) {
 
 			// Will execute some tasks when the player left the server, while the game running
-			if (getStatus(game.getName()) == GameStatus.RUNNING) {
+			if (status.get() == GameStatus.RUNNING) {
 				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
 
 				List<String> list = ConfigValues.getCmdsForPlayerLeave();
 				for (String cmds : list) {
 					cmds = cmds.replace("%player%", p.getName());
 					// For ipban
-					//cmds = cmds.replace("%player-ip%", p.getAddress().getAddress().getHostAddress());
+					// cmds = cmds.replace("%player-ip%", p.getAddress().getAddress().getHostAddress());
 					Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), Utils.colors(cmds));
 				}
 			}
+
+			SignCreator.updateAllSigns(game.getName());
 		}
 	}
 
@@ -975,41 +992,46 @@ public class GameUtils {
 		if (games == null)
 			return;
 
-		int i = 0;
-		while (i < games.length) {
-			String name = games[i];
-			if (name != null) {
-				Game g = getGame(name);
-				if (g != null) {
-					List<PlayerManager> pList = g.getPlayersFromList();
-					if (getStatus(name) == GameStatus.RUNNING && g.isGameRunning()) {
-						Debug.logConsole("Stopping " + name + " ...");
-
-						RageScores.calculateWinner(name, pList);
-
-						for (PlayerManager players : pList) {
-							Player p = players.getPlayer();
-
-							p.removeMetadata("killedWith", RageMode.getInstance());
-							g.removePlayer(p);
-							RageScores.removePointsForPlayer(p.getUniqueId());
-						}
-
-						for (Iterator<Entry<Player, PlayerManager>> it = g.getSpectatorPlayers().entrySet()
-								.iterator(); it.hasNext();) {
-							g.removeSpectatorPlayer(it.next().getKey());
-						}
-
-						g.setGameNotRunning();
-
-						Debug.logConsole(name + " has been stopped.");
-					} else if (getStatus(name) == GameStatus.WAITING) {
-						pList.forEach(pl -> g.removePlayer(pl.getPlayer()));
-					}
-				}
+		for (String game : games) {
+			if (game == null) {
+				continue;
 			}
 
-			i++;
+			Game g = getGame(game);
+			if (g == null) {
+				continue;
+			}
+
+			Optional<GameStatus> status = getStatus(game);
+			if (!status.isPresent()) {
+				continue;
+			}
+
+			List<PlayerManager> pList = g.getPlayersFromList();
+			if (status.get() == GameStatus.RUNNING && g.isGameRunning()) {
+				Debug.logConsole("Stopping " + game + " ...");
+
+				RageScores.calculateWinner(game, pList);
+
+				for (PlayerManager players : pList) {
+					Player p = players.getPlayer();
+
+					p.removeMetadata("killedWith", RageMode.getInstance());
+					g.removePlayer(p);
+					RageScores.removePointsForPlayer(p.getUniqueId());
+				}
+
+				for (Iterator<Entry<Player, PlayerManager>> it = g.getSpectatorPlayers().entrySet().iterator(); it
+						.hasNext();) {
+					g.removeSpectatorPlayer(it.next().getKey());
+				}
+
+				g.setGameNotRunning();
+
+				Debug.logConsole(game + " has been stopped.");
+			} else if (status.get() == GameStatus.WAITING) {
+				pList.forEach(pl -> g.removePlayer(pl.getPlayer()));
+			}
 		}
 	}
 
@@ -1033,7 +1055,7 @@ public class GameUtils {
 	 * @return {@link GameStatus} if the player is in game
 	 */
 	public static GameStatus getStatus(Player p) {
-		return isPlayerPlaying(p) ? getStatus(getGameByPlayer(p).getName()) : null;
+		return isPlayerPlaying(p) ? getStatus(getGameByPlayer(p).getName()).get() : null;
 	}
 
 	/**
@@ -1041,11 +1063,11 @@ public class GameUtils {
 	 * @param game Game name
 	 * @return {@link GameStatus}
 	 */
-	public static GameStatus getStatus(String game) {
+	public static Optional<GameStatus> getStatus(String game) {
 		Validate.notNull(game, "Game name can't be null!");
 		Validate.notEmpty(game, "Game name can't be null!");
 
-		return status.get(game);
+		return Optional.ofNullable(status.get(game));
 	}
 
 	/**

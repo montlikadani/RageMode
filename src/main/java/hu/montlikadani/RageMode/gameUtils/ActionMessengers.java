@@ -1,5 +1,6 @@
 package hu.montlikadani.ragemode.gameUtils;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.bukkit.entity.Player;
@@ -68,8 +69,13 @@ public class ActionMessengers {
 		List<String> tabHeader = ConfigValues.getTabHeader();
 		List<String> tabFooter = ConfigValues.getTabFooter();
 
-		for (PlayerManager pm : players) {
-			Player pl = pm.getPlayer();
+		for (Iterator<PlayerManager> it = players.iterator(); it.hasNext();) {
+			Player pl = it.next().getPlayer();
+			if (!GameUtils.isPlayerPlaying(pl)) {
+				it.remove();
+				continue;
+			}
+
 			String he = "";
 			int s = 0;
 
@@ -131,9 +137,11 @@ public class ActionMessengers {
 
 		String boardTitle = ConfigValues.getSbTitle();
 		List<String> rows = ConfigValues.getSbContent();
-		for (Player pl : gameBoard.getPlayers()) {
-			if (!boardTitle.isEmpty()) {
-				gameBoard.setTitle(Utils.colors(boardTitle));
+		for (Iterator<PlayerManager> it = players.iterator(); it.hasNext();) {
+			Player pl = it.next().getPlayer();
+			if (!GameUtils.isPlayerPlaying(pl)) {
+				gameBoard.remove(pl);
+				continue;
 			}
 
 			// should fix duplicated lines
@@ -142,7 +150,11 @@ public class ActionMessengers {
 				sb.resetScores(entry);
 			}
 
-			if (rows != null && !rows.isEmpty()) {
+			if (!boardTitle.isEmpty()) {
+				gameBoard.setTitle(pl, Utils.colors(boardTitle));
+			}
+
+			if (!rows.isEmpty()) {
 				int rowMax = rows.size();
 
 				for (String row : rows) {
@@ -157,10 +169,9 @@ public class ActionMessengers {
 						row = row.replace("%game-time%", Utils.getFormattedTime(time));
 					}
 
-					gameBoard.setLine(row, rowMax);
-					rowMax--;
-
+					gameBoard.setLine(pl, row, rowMax);
 					gameBoard.setScoreBoard(pl);
+					rowMax--;
 				}
 			}
 		}
@@ -187,8 +198,12 @@ public class ActionMessengers {
 		String prefix = ConfigValues.getTabPrefix();
 		String suffix = ConfigValues.getTabSuffix();
 
-		for (PlayerManager pm : players) {
-			Player pl = pm.getPlayer();
+		for (Iterator<PlayerManager> it = players.iterator(); it.hasNext();) {
+			Player pl = it.next().getPlayer();
+			if (!GameUtils.isPlayerPlaying(pl)) {
+				it.remove();
+				continue;
+			}
 
 			prefix = Utils.setPlaceholders(prefix, pl);
 			suffix = Utils.setPlaceholders(suffix, pl);

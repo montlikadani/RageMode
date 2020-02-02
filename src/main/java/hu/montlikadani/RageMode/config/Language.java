@@ -240,7 +240,7 @@ public class Language {
 			return msg;
 		}
 
-		if (yc.getString(key, "").isEmpty())
+		if (yc.getString(key).isEmpty())
 			return msg;
 
 		msg = Utils.colors(yc.getString(key));

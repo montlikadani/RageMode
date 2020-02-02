@@ -2,33 +2,16 @@ package hu.montlikadani.ragemode.gameUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class TabTitles implements IObjectives {
 
 	public static HashMap<String, TabTitles> allTabLists = new HashMap<>();
-	@Deprecated private List<Player> players = new ArrayList<>();
-
-	/**
-	 * Creates a new instance of TabList, which manages the Tablist for
-	 * the List of Players.
-	 * @deprecated The players list can be reach from the game instance
-	 * @param players The list of {@link PlayerManager}
-	 */
-	@Deprecated
-	public TabTitles(List<PlayerManager> players) {
-		players.forEach(pm -> this.players.add(pm.getPlayer()));
-	}
 
 	/**
 	 * Just creates a new instance of ScoreBoard.
@@ -63,18 +46,6 @@ public class TabTitles implements IObjectives {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Sends TabList to all online players that are currently playing in the game.
-	 * @param header TabList header
-	 * @param footer TabList footer
-	 */
-	@Deprecated
-	public void sendTabTitle(String header, String footer) {
-		for (Player player : this.players) {
-			sendTabTitle(player, header, footer);
-		}
 	}
 
 	/**
@@ -114,36 +85,11 @@ public class TabTitles implements IObjectives {
 	}
 
 	/**
-	 * Removing the tablist from all online player that are currently playing in a game.
-	 */
-	@Deprecated
-	@Override
-	public void remove() {
-		this.players.forEach(this::remove);
-	}
-
-	/**
 	 * Removes the tablist from the given player that are currently playing in a game.
 	 * @param player Player
 	 */
 	@Override
 	public void remove(Player player) {
 		sendTabTitle(player, null, null);
-
-		for (Iterator<Player> it = this.players.iterator(); it.hasNext();) {
-			if (it.next().equals(player)) {
-				it.remove();
-				break;
-			}
-		}
-	}
-
-	/**
-	 * Returns the players who added to the list.
-	 * @return List player
-	 */
-	@Deprecated
-	public List<Player> getPlayers() {
-		return Collections.unmodifiableList(players);
 	}
 }

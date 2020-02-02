@@ -1,9 +1,6 @@
 package hu.montlikadani.ragemode.gameUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import org.bukkit.entity.Player;
@@ -19,19 +16,7 @@ public class ScoreBoard implements IObjectives {
 
 	public static HashMap<String, ScoreBoard> allScoreBoards = new HashMap<>();
 
-	private List<Player> players = new ArrayList<>();
-	private HashMap<Player, ScoreBoardHolder> scoreboards = new HashMap<>();
-
-	/**
-	 * Creates a new instance of ScoreBoard, which manages the ScoreBoards for
-	 * the given List of Player UUID Strings.
-	 * @deprecated The players list can be reach from the game instance
-	 * @param players The list of {@link PlayerManager}
-	 */
-	@Deprecated
-	public ScoreBoard(List<PlayerManager> players) {
-		players.forEach(pm -> this.players.add(pm.getPlayer()));
-	}
+	private final HashMap<Player, ScoreBoardHolder> scoreboards = new HashMap<>();
 
 	/**
 	 * Creates a new instance of ScoreBoard.
@@ -48,7 +33,7 @@ public class ScoreBoard implements IObjectives {
 		// TODO: Fixing the scoreboard appears from other players to other players, so the same
 		for (PlayerManager pm : players) {
 			Player loopPlayer = pm.getPlayer();
-			removeScoreBoard(loopPlayer, false);
+			remove(loopPlayer);
 
 			// getNewScoreboard() is Asynchronously, and can't fix bukkit task
 			Scoreboard scoreboard = loopPlayer.getScoreboard();
@@ -61,7 +46,6 @@ public class ScoreBoard implements IObjectives {
 
 			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 			scoreboards.put(loopPlayer, new ScoreBoardHolder(loopPlayer, scoreboard, objective));
-			this.players.add(loopPlayer);
 		}
 	}
 
@@ -96,26 +80,24 @@ public class ScoreBoard implements IObjectives {
 
 	/**
 	 * Sets the title for the created ScoreBoard.
+	 * @param player The player who needs to set the title
 	 * @param title The String, where the title should be set to.
 	 */
-	public void setTitle(String title) {
-		for (Player player : this.players) {
-			scoreboards.get(player).getObjective().setDisplayName(title);
-		}
+	public void setTitle(Player player, String title) {
+		scoreboards.get(player).getObjective().setDisplayName(title);
 	}
 
 	/**
 	 * Sets one score-line with the given String as the name and the Integer as
 	 * a score which should be displayed next to the name.
 	 * 
+	 * @param player The player who needs to set the lines
 	 * @param line The name of the new score.
 	 * @param dummyScore The integer, the score should be set to.
 	 */
-	public void setLine(String line, int dummyScore) {
-		for (Player player : this.players) {
-			Score score = scoreboards.get(player).getObjective().getScore(line);
-			score.setScore(dummyScore);
-		}
+	public void setLine(Player player, String line, int dummyScore) {
+		Score score = scoreboards.get(player).getObjective().getScore(line);
+		score.setScore(dummyScore);
 	}
 
 	/**
@@ -134,13 +116,6 @@ public class ScoreBoard implements IObjectives {
 	}
 
 	/**
-	 * Sets the ScoreBoard for all the Players given in the constructor.
-	 */
-	public void setScoreBoard() {
-		this.players.forEach(this::setScoreBoard);
-	}
-
-	/**
 	 * Sets the ScoreBoard for the given Player.
 	 * @param player The Player instance for which the ScoreBoard should be set.
 	 */
@@ -149,39 +124,13 @@ public class ScoreBoard implements IObjectives {
 	}
 
 	/**
-	 * Removes the ScoreBoard for all the players given in the constructor.
-	 */
-	@Override
-	public void remove() {
-		this.players.forEach(pl -> removeScoreBoard(pl, false));
-	}
-
-	/**
-	 * Removes the player from the stored list.
-	 * @param pl Player
+	 * Removes the ScoreBoard and the player who exist in the list for the given Player.
+	 * @param player The Player instance for which the ScoreBoard should be removed.
 	 */
 	@Override
 	public void remove(Player pl) {
-		for (Iterator<Player> it = players.iterator(); it.hasNext();) {
-			if (it.next().equals(pl)) {
-				it.remove();
-				break;
-			}
-		}
-	}
-
-	/**
-	 * Removes the ScoreBoard and the player who exist in the list for the given Player.
-	 * @param player The Player instance for which the ScoreBoard should be removed.
-	 * @param rem if true removes the exists player from the list.
-	 */
-	public void removeScoreBoard(Player player, boolean rem) {
-		player.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
-		scoreboards.remove(player);
-
-		if (rem) {
-			remove(player);
-		}
+		pl.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+		scoreboards.remove(pl);
 	}
 
 	/**
@@ -190,13 +139,5 @@ public class ScoreBoard implements IObjectives {
 	 */
 	public HashMap<Player, ScoreBoardHolder> getScoreboards() {
 		return scoreboards;
-	}
-
-	/**
-	 * Returns the players who added to the list.
-	 * @return List player
-	 */
-	public List<Player> getPlayers() {
-		return Collections.unmodifiableList(players);
 	}
 }
