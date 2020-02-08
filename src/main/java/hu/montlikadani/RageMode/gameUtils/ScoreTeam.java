@@ -9,12 +9,6 @@ public class ScoreTeam implements IObjectives {
 	public static HashMap<String, ScoreTeam> allTeams = new HashMap<>();
 
 	/**
-	 * Just creates a new instance of Team.
-	 */
-	public ScoreTeam() {
-	}
-
-	/**
 	 * Adds this instance to the global ScoreTeam.
 	 * @param gameName the unique game-name for which the ScoreTeam element should be saved for.
 	 * @return Whether the ScoreTeam was stored successfully or not.

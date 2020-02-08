@@ -33,7 +33,6 @@ import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.events.EventListener;
 import hu.montlikadani.ragemode.gameLogic.*;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.items.*;
@@ -50,8 +49,12 @@ import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class GameUtils {
 
-	private static Map<String, GameStatus> status = new HashMap<>();
+	/**
+	 * When the game ended and players waiting for teleport.
+	 */
+	public static HashMap<String, Boolean> waitingGames = new HashMap<>();
 
+	private static Map<String, GameStatus> status = new HashMap<>();
 	private static Bonus bonuses = null;
 
 	/**
@@ -489,24 +492,40 @@ public class GameUtils {
 			inv.setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().getResult());
 		}
 
-		if (Items.getForceStarter() != null
-				&& hu.montlikadani.ragemode.utils.Misc.hasPerm(p, "ragemode.admin.item.forcestart")) {
-			inv.setItem(Items.getForceStarter().getSlot(), Items.getForceStarter().getResult());
+		ItemHandler starter = Items.getForceStarter();
+		if (starter != null && hu.montlikadani.ragemode.utils.Misc.hasPerm(p, "ragemode.admin.item.forcestart")) {
+			inv.setItem(starter.getSlot(), starter.getResult());
 		}
 
 		broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
 
 		String title = ConfigValues.getTitleJoinGame();
 		String subtitle = ConfigValues.getSubTitleJoinGame();
-		title = title.replace("%game%", name);
-		subtitle = subtitle.replace("%game%", name);
+		String times = ConfigValues.getJoinTitleTime();
 
-		String[] split = ConfigValues.getJoinTitleTime().split(", ");
-		Titles.sendTitle(p, (split.length > 1 ? Integer.parseInt(split[0]) : 20),
-				(split.length > 2 ? Integer.parseInt(split[1]) : 30),
-				(split.length > 3 ? Integer.parseInt(split[2]) : 20), title, subtitle);
+		title = title.replace("%game%", game.getName());
+		subtitle = subtitle.replace("%game%", game.getName());
+
+		sendTitleMessages(p, title, subtitle, times);
 
 		SignCreator.updateAllSigns(name);
+	}
+
+	/**
+	 * Sends title messages to the given player.
+	 * @param p Player
+	 * @param title Title
+	 * @param subtitle SubTitle
+	 * @param times The times splitting <code>", "</code>
+	 */
+	public static void sendTitleMessages(Player p, String title, String subtitle, String times) {
+		String[] split = times.split(", ");
+
+		int fadeIn = split.length > 1 ? Integer.parseInt(split[0]) : 20;
+		int stay = split.length > 2 ? Integer.parseInt(split[1]) : 30;
+		int fadeOut = split.length > 3 ? Integer.parseInt(split[2]) : 20;
+
+		Titles.sendTitle(p, fadeIn, stay, fadeOut, title, subtitle);
 	}
 
 	/**
@@ -516,8 +535,8 @@ public class GameUtils {
 	public static void forceStart(Game game) {
 		Validate.notNull(game, "Game can't be null!");
 
-		GameLoader loder = new GameLoader(game);
-		loder.startGame();
+		GameLoader loader = new GameLoader(game);
+		loader.startGame();
 
 		SignCreator.updateAllSigns(game.getName());
 	}
@@ -790,6 +809,35 @@ public class GameUtils {
 	}
 
 	/**
+	 * Force stopping the given game when an error or something else occurs during starting
+	 * the game.
+	 * @param game Game
+	 */
+	public static void forceStopGame(Game game) {
+		Validate.notNull(game, "Game can't be null!");
+
+		if (!game.isGameRunning()) {
+			return;
+		}
+
+		final List<PlayerManager> players = game.getPlayersFromList();
+
+		Utils.callEvent(new RMGameStopEvent(game, players));
+
+		for (PlayerManager pm : players) {
+			final Player p = pm.getPlayer();
+			RageScores.removePointsForPlayer(p.getUniqueId());
+
+			game.removePlayerSynced(p);
+			game.removePlayer(p);
+		}
+
+		game.setGameNotRunning();
+		setStatus(game.getName(), null);
+		SignCreator.updateAllSigns(game.getName());
+	}
+
+	/**
 	 * Stops the specified game if running.
 	 * @see #stopGame(Game, boolean)
 	 * @param name Game name
@@ -844,10 +892,8 @@ public class GameUtils {
 				final Player p = pm.getPlayer();
 
 				if (p != winner) {
-					String[] split = ConfigValues.getWonTitleTime().split(", ");
-					Titles.sendTitle(p, (split.length > 1 ? Integer.parseInt(split[0]) : 20),
-							(split.length > 2 ? Integer.parseInt(split[1]) : 30),
-							(split.length > 3 ? Integer.parseInt(split[2]) : 20), wonTitle, wonSubtitle);
+					String wonTime = ConfigValues.getWonTitleTime();
+					sendTitleMessages(p, wonTitle, wonSubtitle, wonTime);
 
 					if (ConfigValues.isSwitchGMForPlayers()) {
 						// Why?
@@ -855,10 +901,8 @@ public class GameUtils {
 								() -> p.setGameMode(GameMode.SPECTATOR));
 					}
 				} else {
-					String[] split = ConfigValues.getYouWonTitleTime().split(", ");
-					Titles.sendTitle(p, (split.length > 1 ? Integer.parseInt(split[0]) : 20),
-							(split.length > 2 ? Integer.parseInt(split[1]) : 30),
-							(split.length > 3 ? Integer.parseInt(split[2]) : 20), youWonTitle, youWonSubtitle);
+					String wonTime = ConfigValues.getYouWonTitleTime();
+					sendTitleMessages(p, youWonTitle, youWonSubtitle, wonTime);
 				}
 
 				game.removePlayerSynced(p);
@@ -883,11 +927,11 @@ public class GameUtils {
 			return;
 		}
 
-		if (EventListener.waitingGames.containsKey(name)) {
-			EventListener.waitingGames.remove(name);
+		if (waitingGames.containsKey(name)) {
+			waitingGames.remove(name);
 		}
 
-		EventListener.waitingGames.put(name, true);
+		waitingGames.put(name, true);
 
 		setStatus(name, GameStatus.GAMEFREEZE);
 		SignCreator.updateAllSigns(name);
@@ -896,8 +940,8 @@ public class GameUtils {
 				new Runnable() {
 					@Override
 					public void run() {
-						if (EventListener.waitingGames.containsKey(name)) {
-							EventListener.waitingGames.remove(name);
+						if (waitingGames.containsKey(name)) {
+							waitingGames.remove(name);
 						}
 
 						finishStopping(game, winner, true);
@@ -1128,5 +1172,33 @@ public class GameUtils {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Checks if the given player is in the freeze room, when the game ended.
+	 * @param player Player
+	 * @return true if player is in
+	 */
+	public static boolean isPlayerInFreezeRoom(Player player) {
+		return isPlayerPlaying(player) && isGameInFreezeRoom(getGameByPlayer(player));
+	}
+
+	/**
+	 * Checks if the specified game is in the freeze room.
+	 * @see #isGameInFreezeRoom(String)
+	 * @param game Game
+	 * @return true if the game is in
+	 */
+	public static boolean isGameInFreezeRoom(Game game) {
+		return isGameInFreezeRoom(game.getName());
+	}
+
+	/**
+	 * Checks if the specified game is in the freeze room.
+	 * @param game Game name
+	 * @return true if the game is in
+	 */
+	public static boolean isGameInFreezeRoom(String game) {
+		return waitingGames.containsKey(game) && waitingGames.get(game);
 	}
 }

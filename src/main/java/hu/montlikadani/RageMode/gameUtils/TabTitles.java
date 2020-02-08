@@ -14,12 +14,6 @@ public class TabTitles implements IObjectives {
 	public static HashMap<String, TabTitles> allTabLists = new HashMap<>();
 
 	/**
-	 * Just creates a new instance of ScoreBoard.
-	 */
-	public TabTitles() {
-	}
-
-	/**
 	 * Adds this instance to the global TabList list allTabLists.
 	 * @param gameName the unique game-name for which the TabList element should be saved for.
 	 * @return Whether the TabList was stored successfully or not.

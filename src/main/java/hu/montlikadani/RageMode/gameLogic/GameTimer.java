@@ -10,7 +10,7 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class GameTimer extends TimerTask {
 
-	private ActionMessengers ac = null;
+	private ActionMessengers ac;
 
 	private Game game;
 	private int time;
@@ -18,6 +18,8 @@ public class GameTimer extends TimerTask {
 	public GameTimer(Game game, int time) {
 		this.game = game;
 		this.time = time;
+
+		ac = new ActionMessengers(game, game.getPlayersFromList());
 	}
 
 	public Game getGame() {
@@ -51,10 +53,6 @@ public class GameTimer extends TimerTask {
 				}
 			}
 
-			if (ac == null) {
-				ac = new ActionMessengers(game, game.getPlayersFromList());
-			}
-
 			ac.setScoreboard(time);
 			ac.setTabList(time);
 			ac.setTeam();
@@ -62,13 +60,14 @@ public class GameTimer extends TimerTask {
 			if (time == 0) {
 				cancel();
 				GameUtils.stopGame(game.getName());
+				return;
 			}
 
 			time--;
 		} catch (Exception e) {
 			e.printStackTrace();
 			cancel();
-			GameUtils.stopGame(game.getName());
+			GameUtils.forceStopGame(game);
 			return;
 		}
 	}

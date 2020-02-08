@@ -28,11 +28,11 @@ public class GameLoader {
 	}
 
 	public boolean startGame() {
-		if (!checkTeleport()) {
+		List<PlayerManager> l = game.getPlayersFromList();
+		if (!checkTeleport(l)) {
 			return false; // stop starting the game if the game not set up correctly
 		}
 
-		List<PlayerManager> l = game.getPlayersFromList();
 		Utils.callEvent(new RMGameStartEvent(game, l));
 
 		String name = game.getName();
@@ -65,7 +65,7 @@ public class GameLoader {
 		return true;
 	}
 
-	private boolean checkTeleport() {
+	private boolean checkTeleport(List<PlayerManager> l) {
 		if (game == null) {
 			return false;
 		}
@@ -78,7 +78,7 @@ public class GameLoader {
 
 		GameUtils.broadcastToGame(game, RageMode.getLang().get("game.not-set-up"));
 
-		for (Iterator<PlayerManager> it = game.getPlayersFromList().iterator(); it.hasNext();) {
+		for (Iterator<PlayerManager> it = l.iterator(); it.hasNext();) {
 			game.removePlayer(it.next().getPlayer());
 		}
 

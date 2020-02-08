@@ -59,6 +59,7 @@ import hu.montlikadani.ragemode.gameUtils.MapChecker;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.items.Items;
 import hu.montlikadani.ragemode.libs.Sounds;
+import hu.montlikadani.ragemode.scores.KilledWith;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.signs.SignData;
@@ -74,6 +75,7 @@ public class EventListener implements Listener {
 	private Map<UUID, UUID> explosionVictims = new HashMap<>();
 	private Map<UUID, UUID> grenadeExplosionVictims = new HashMap<>();
 
+	@Deprecated
 	public static HashMap<String, Boolean> waitingGames = new HashMap<>();
 
 	public EventListener(RageMode plugin) {
@@ -181,8 +183,7 @@ public class EventListener implements Listener {
 				return;
 			}
 
-			if (status.get() == GameStatus.GAMEFREEZE && waitingGames.containsKey(game)
-					&& waitingGames.get(game)) {
+			if (status.get() == GameStatus.GAMEFREEZE && GameUtils.isGameInFreezeRoom(game)) {
 				arrow.remove();
 				return;
 			}
@@ -239,8 +240,7 @@ public class EventListener implements Listener {
 				return; // Preventing non-playing players damaging to playing players
 			}
 
-			if (waitingGames.containsKey(GameUtils.getGameByPlayer(damager).getName())
-					&& waitingGames.get(GameUtils.getGameByPlayer(damager).getName())) {
+			if (GameUtils.isPlayerInFreezeRoom(damager)) {
 				event.setCancelled(true);
 				return;
 			}
@@ -292,7 +292,7 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		String game = GameUtils.getGameByPlayer(victim).getName();
+		Game game = GameUtils.getGameByPlayer(victim);
 
 		// Hit player event
 		if (GameUtils.getStatus(victim) == GameStatus.RUNNING) {
@@ -301,11 +301,11 @@ public class EventListener implements Listener {
 				return;
 			}
 
-			if (waitingGames.containsKey(game) && waitingGames.get(game)) {
+			if (GameUtils.isGameInFreezeRoom(game)) {
 				event.setCancelled(true);
 			}
 		} else if (GameUtils.getStatus(victim) == GameStatus.GAMEFREEZE) { // Prevent damage in game freeze
-			if (waitingGames.containsKey(game) && waitingGames.get(game)) {
+			if (GameUtils.isGameInFreezeRoom(game)) {
 				event.setCancelled(true);
 			}
 		} else if (GameUtils.getStatus(victim) == GameStatus.WAITING) {
@@ -320,8 +320,7 @@ public class EventListener implements Listener {
 		}
 
 		Player p = (Player) e.getEntity();
-		if (GameUtils.isPlayerPlaying(p) && waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())
-				&& waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
+		if (GameUtils.isPlayerInFreezeRoom(p)) {
 			e.setCancelled(true);
 		}
 	}
@@ -368,32 +367,30 @@ public class EventListener implements Listener {
 						message = RageMode.getLang().get("game.broadcast.arrow-kill", "%victim%", deceaseName,
 								"%killer%", deceaseName);
 
-						RageScores.addPointsToPlayer(deceased, deceased, "ragebow");
+						RageScores.addPointsToPlayer(deceased, deceased, KilledWith.RAGEBOW);
 					} else {
 						message = RageMode.getLang().get("game.broadcast.arrow-kill", "%victim%", deceaseName,
 								"%killer%", deceased.getKiller().getName());
 
-						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "ragebow");
+						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, KilledWith.RAGEBOW);
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(),
-							"arrow");
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), "arrow");
 					break;
 				case "snowball":
 					if (!killerExists) {
 						message = RageMode.getLang().get("game.broadcast.axe-kill", "%victim%", deceaseName, "%killer%",
 								deceased.getName());
 
-						RageScores.addPointsToPlayer(deceased, deceased, "combataxe");
+						RageScores.addPointsToPlayer(deceased, deceased, KilledWith.COMBATAXE);
 					} else {
 						message = RageMode.getLang().get("game.broadcast.axe-kill", "%victim%", deceaseName, "%killer%",
 								deceased.getKiller().getName());
 
-						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "combataxe");
+						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, KilledWith.COMBATAXE);
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(),
-							"snowball");
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), "snowball");
 					break;
 				case "explosion":
 					if (explosionVictims.containsKey(deceased.getUniqueId())) {
@@ -401,7 +398,7 @@ public class EventListener implements Listener {
 								"%killer%", Bukkit.getPlayer(explosionVictims.get(deceased.getUniqueId())).getName());
 
 						RageScores.addPointsToPlayer(Bukkit.getPlayer(explosionVictims.get(deceased.getUniqueId())),
-								deceased, "explosion");
+								deceased, KilledWith.EXPLOSION);
 					} else if (grenadeExplosionVictims.containsKey(deceased.getUniqueId())) {
 						message = RageMode.getLang().get("game.broadcast.explosion-kill", "%victim%", deceaseName,
 								"%killer%",
@@ -409,47 +406,44 @@ public class EventListener implements Listener {
 
 						RageScores.addPointsToPlayer(
 								Bukkit.getPlayer(grenadeExplosionVictims.get(deceased.getUniqueId())), deceased,
-								"explosion");
+								KilledWith.EXPLOSION);
 					} else {
 						message = RageMode.getLang().get("game.broadcast.error-kill");
 
 						sendMessage(deceased, RageMode.getLang().get("game.unknown-killer"));
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(),
-							"explosion");
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), "explosion");
 					break;
 				case "grenade":
 					if (!killerExists) {
 						message = RageMode.getLang().get("game.broadcast.grenade-kill", "%victim%", deceaseName,
 								"%killer%", deceased.getName());
 
-						RageScores.addPointsToPlayer(deceased, deceased, "grenade");
+						RageScores.addPointsToPlayer(deceased, deceased, KilledWith.GRENADE);
 					} else {
 						message = RageMode.getLang().get("game.broadcast.grenade-kill", "%victim%", deceaseName,
 								"%killer%", deceased.getKiller().getName());
 
-						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "grenade");
+						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, KilledWith.GRENADE);
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(),
-							"grenade");
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), "grenade");
 					break;
 				case "knife":
 					if (!killerExists) {
 						message = RageMode.getLang().get("game.broadcast.knife-kill", "%victim%", deceaseName,
 								"%killer%", deceaseName);
 
-						RageScores.addPointsToPlayer(deceased, deceased, "rageknife");
+						RageScores.addPointsToPlayer(deceased, deceased, KilledWith.RAGEKNIFE);
 					} else {
 						message = RageMode.getLang().get("game.broadcast.knife-kill", "%victim%", deceaseName,
 								"%killer%", deceased.getKiller().getName());
 
-						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, "rageknife");
+						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, KilledWith.RAGEKNIFE);
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(),
-							"knife");
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), "knife");
 					break;
 				default:
 					message = RageMode.getLang().get("game.unknown-weapon", "%victim%", deceaseName);
@@ -568,30 +562,24 @@ public class EventListener implements Listener {
 
 		if (ConfigValues.isSpectatorEnabled() && GameUtils.isSpectatorPlaying(p)) {
 			List<String> cmds = ConfigValues.getSpectatorCmds();
-			if (!cmds.isEmpty()) {
-				if (!cmds.contains(arg) && !hasPerm(p, "ragemode.bypass.spectatorcommands")) {
-					sendMessage(p, RageMode.getLang().get("game.this-command-is-disabled-in-game"));
-					event.setCancelled(true);
-					return;
-				}
+			if (!cmds.isEmpty() && !cmds.contains(arg) && !hasPerm(p, "ragemode.bypass.spectatorcommands")) {
+				sendMessage(p, RageMode.getLang().get("game.this-command-is-disabled-in-game"));
+				event.setCancelled(true);
+				return;
 			}
 		}
 
 		if (GameUtils.isPlayerPlaying(p)) {
-			if (ConfigValues.isCommandsDisabledInEndGame()
-					&& waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())
-					&& waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
+			if (ConfigValues.isCommandsDisabledInEndGame() && GameUtils.isPlayerInFreezeRoom(p)) {
 				sendMessage(p, RageMode.getLang().get("game.command-disabled-in-end-game"));
 				event.setCancelled(true);
 				return;
 			}
 
 			List<String> cmds = ConfigValues.getAllowedCmds();
-			if (!cmds.isEmpty()) {
-				if (!cmds.contains(arg) && !hasPerm(p, "ragemode.bypass.disabledcommands")) {
-					sendMessage(p, RageMode.getLang().get("game.this-command-is-disabled-in-game"));
-					event.setCancelled(true);
-				}
+			if (!cmds.isEmpty() && !cmds.contains(arg) && !hasPerm(p, "ragemode.bypass.disabledcommands")) {
+				sendMessage(p, RageMode.getLang().get("game.this-command-is-disabled-in-game"));
+				event.setCancelled(true);
 			}
 		}
 	}
@@ -623,8 +611,7 @@ public class EventListener implements Listener {
 		event.setHatching(false);
 
 		// check if player is in waiting game (game freeze)
-		if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())
-				&& waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
+		if (GameUtils.isPlayerInFreezeRoom(p)) {
 			return;
 		}
 
@@ -661,10 +648,8 @@ public class EventListener implements Listener {
 				}
 
 				// Remove egg in 1 second of the game when a player dropped
-				if (waitingGames.containsKey(GameUtils.getGameByPlayer(p).getName())
-						&& waitingGames.get(GameUtils.getGameByPlayer(p).getName())) {
+				if (GameUtils.isPlayerInFreezeRoom(p)) {
 					grenadeExplosionVictims.clear();
-
 					grenade.remove();
 					cancel();
 					return;
@@ -704,8 +689,7 @@ public class EventListener implements Listener {
 		if (GameUtils.isPlayerPlaying(p)) {
 			if (GameUtils.getStatus(p) == GameStatus.RUNNING) {
 				Player thrower = event.getPlayer();
-				if (waitingGames.containsKey(GameUtils.getGameByPlayer(thrower).getName())
-						&& waitingGames.get(GameUtils.getGameByPlayer(thrower).getName())) {
+				if (GameUtils.isPlayerInFreezeRoom(thrower)) {
 					return;
 				}
 
@@ -909,8 +893,8 @@ public class EventListener implements Listener {
 	public void onSignChange(SignChangeEvent event) {
 		if (event.isCancelled() || event.getPlayer() == null || event.getBlock() == null) return;
 
-		if (ConfigValues.isSignsEnable()
-				&& event.getLine(0).contains("[rm]") || event.getLine(0).contains("[ragemode]")) {
+		if (ConfigValues.isSignsEnable() && event.getLine(0).contains("[rm]")
+				|| event.getLine(0).contains("[ragemode]")) {
 			if (!hasPerm(event.getPlayer(), "ragemode.admin.signs")) {
 				sendMessage(event.getPlayer(), RageMode.getLang().get("no-permission-to-interact-sign"));
 				event.setCancelled(true);
@@ -945,7 +929,7 @@ public class EventListener implements Listener {
 		Game game = GameUtils.getGameByPlayer(p);
 
 		if (GameUtils.getStatus(p) == GameStatus.RUNNING) {
-			if (waitingGames.containsKey(game.getName()) && waitingGames.get(game.getName())) {
+			if (GameUtils.isGameInFreezeRoom(game)) {
 				Location from = event.getFrom();
 				Location to = event.getTo();
 				double x = Math.floor(from.getX());
@@ -970,9 +954,8 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onWorldChangedEvent(PlayerTeleportEvent event) {
-		if (GameUtils.isPlayerPlaying(event.getPlayer()) && !MapChecker.isGameWorld(
-				GameUtils.getGameByPlayer(event.getPlayer()).getName(),
-				event.getTo().getWorld())) {
+		if (GameUtils.isPlayerPlaying(event.getPlayer()) && !MapChecker
+				.isGameWorld(GameUtils.getGameByPlayer(event.getPlayer()).getName(), event.getTo().getWorld())) {
 			if (!event.getPlayer().hasMetadata("Leaving"))
 				event.getPlayer().performCommand("rm leave");
 			else

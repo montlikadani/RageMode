@@ -2,7 +2,9 @@ package hu.montlikadani.ragemode.gameUtils;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -17,34 +19,20 @@ public class ScoreBoard implements IObjectives {
 	public static HashMap<String, ScoreBoard> allScoreBoards = new HashMap<>();
 
 	private final HashMap<Player, ScoreBoardHolder> scoreboards = new HashMap<>();
+	private final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 
-	/**
-	 * Creates a new instance of ScoreBoard.
-	 */
-	public ScoreBoard() {
-	}
-
-	/**
-	 * Loads the scoreboard for game players.
-	 * @param players {@link PlayerManager} the List of players
-	 */
 	@SuppressWarnings("deprecation")
 	public void loadScoreboard(List<PlayerManager> players) {
-		// TODO: Fixing the scoreboard appears from other players to other players, so the same
+		// TODO: Same scoreboard appears for players and duplicating lines
+		Objective objective = scoreboard.getObjective("ragescores");
+		if (objective == null) {
+			objective = scoreboard.registerNewObjective("ragescores", "dummy");
+		}
+
+		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+
 		for (PlayerManager pm : players) {
 			Player loopPlayer = pm.getPlayer();
-			remove(loopPlayer);
-
-			// getNewScoreboard() is Asynchronously, and can't fix bukkit task
-			Scoreboard scoreboard = loopPlayer.getScoreboard();
-			Objective objective = scoreboard.getObjective("ragescores");
-			if (objective != null) {
-				objective.unregister();
-			}
-
-			objective = scoreboard.registerNewObjective("ragescores", "dummy");
-
-			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 			scoreboards.put(loopPlayer, new ScoreBoardHolder(loopPlayer, scoreboard, objective));
 		}
 	}
@@ -84,7 +72,10 @@ public class ScoreBoard implements IObjectives {
 	 * @param title The String, where the title should be set to.
 	 */
 	public void setTitle(Player player, String title) {
-		scoreboards.get(player).getObjective().setDisplayName(title);
+		Optional<ScoreBoardHolder> board = getScoreboard(player);
+		if (board.isPresent()) {
+			board.get().getObjective().setDisplayName(title);
+		}
 	}
 
 	/**
@@ -96,7 +87,12 @@ public class ScoreBoard implements IObjectives {
 	 * @param dummyScore The integer, the score should be set to.
 	 */
 	public void setLine(Player player, String line, int dummyScore) {
-		Score score = scoreboards.get(player).getObjective().getScore(line);
+		Optional<ScoreBoardHolder> board = getScoreboard(player);
+		if (!board.isPresent()) {
+			return;
+		}
+
+		Score score = board.get().getObjective().getScore(line);
 		score.setScore(dummyScore);
 	}
 
@@ -110,8 +106,13 @@ public class ScoreBoard implements IObjectives {
 	 * @param dummyScore The integer, the score should be set to.
 	 */
 	public void updateLine(Player player, String oldLine, String line, int dummyScore) {
-		scoreboards.get(player).getScoreboard().resetScores(oldLine);
-		Score score = scoreboards.get(player).getObjective().getScore(line);
+		Optional<ScoreBoardHolder> board = getScoreboard(player);
+		if (!board.isPresent()) {
+			return;
+		}
+
+		board.get().getScoreboard().resetScores(oldLine);
+		Score score = board.get().getObjective().getScore(line);
 		score.setScore(dummyScore);
 	}
 
@@ -120,7 +121,10 @@ public class ScoreBoard implements IObjectives {
 	 * @param player The Player instance for which the ScoreBoard should be set.
 	 */
 	public void setScoreBoard(Player player) {
-		player.setScoreboard(scoreboards.get(player).getScoreboard());
+		Optional<ScoreBoardHolder> board = getScoreboard(player);
+		if (board.isPresent()) {
+			player.setScoreboard(board.get().getScoreboard());
+		}
 	}
 
 	/**
@@ -139,5 +143,14 @@ public class ScoreBoard implements IObjectives {
 	 */
 	public HashMap<Player, ScoreBoardHolder> getScoreboards() {
 		return scoreboards;
+	}
+
+	/**
+	 * Returns an {@link Optional} player scoreboard which is saved.
+	 * @param player Player
+	 * @return {@link Optional} scoreboard
+	 */
+	public Optional<ScoreBoardHolder> getScoreboard(Player player) {
+		return Optional.ofNullable(scoreboards.get(player));
 	}
 }

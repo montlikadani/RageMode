@@ -92,10 +92,8 @@ public class Utils {
 	 * @return The replaced placeholders
 	 */
 	public static String setPlaceholders(String s, Player player, boolean fromDatabase) {
-		PlayerPoints pp = null;
 		java.util.UUID uuid = player.getUniqueId();
-		pp = fromDatabase ? RageMode.getPPFromDatabase(uuid) : RuntimePPManager.getPPForPlayer(uuid);
-
+		PlayerPoints pp = fromDatabase ? RageMode.getPPFromDatabase(uuid) : RuntimePPManager.getPPForPlayer(uuid);
 		if (GameUtils.isPlayerPlaying(player)) {
 			pp = RageScores.getPlayerPoints(uuid);
 		}

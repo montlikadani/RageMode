@@ -19,9 +19,9 @@ public class GetGames {
 	}
 
 	/**
-	 * Get arenas games count
+	 * Gets the the total number of games.
 	 * <p>This will return 0 if the section not found in the file.
-	 * @return int games count
+	 * @return total games size
 	 */
 	public static int getConfigGamesCount() {
 		int n = 0;
@@ -34,29 +34,29 @@ public class GetGames {
 	}
 
 	/**
-	 * Get max players from a file
+	 * Gets the max players size from the file.
 	 * <p>This will return -1 if the value not found in the file.
 	 * @param game Game
-	 * @return int the maximum players
+	 * @return the maximum players
 	 */
 	public static int getMaxPlayers(String game) {
 		return fi.getInt("arenas." + game + ".maxplayers", -1);
 	}
 
 	/**
-	 * Get min players from a file
+	 * Gets the minimum players size from the file.
 	 * <p>This will return -1 if the value not found in the file.
 	 * @param game Game
-	 * @return int the minimum players
+	 * @return the minimum players
 	 */
 	public static int getMinPlayers(String game) {
 		return fi.getInt("arenas." + game + ".minplayers", -1);
 	}
 
 	/**
-	 * Get the specified game world
+	 * Get the specified game world name.
 	 * @param game Game
-	 * @return World name
+	 * @return {@link Optional} world name
 	 */
 	public static Optional<String> getWorld(String game) {
 		return Optional.ofNullable(fi.getString("arenas." + game + ".world"));
@@ -65,7 +65,7 @@ public class GetGames {
 	/**
 	 * Check if actionbar is enabled in config
 	 * @param game Game
-	 * @return actionbar boolean
+	 * @return true if exists and enabled
 	 */
 	public static boolean isActionbarEnabled(String game) {
 		return fi.getBoolean("arenas." + game + ".actionbar", false);
@@ -74,25 +74,25 @@ public class GetGames {
 	/**
 	 * Check if bossbar is enabled in config
 	 * @param game Game
-	 * @return bossbar boolean
+	 * @return true if exists and enabled
 	 */
 	public static boolean isBossbarEnabled(String game) {
 		return fi.getBoolean("arenas." + game + ".bossbar", false);
 	}
 
 	/**
-	 * Get the game time from config
+	 * Get the game time from config.
 	 * @param game Game
-	 * @return time
+	 * @return the game time
 	 */
 	public static int getGameTime(String game) {
 		return fi.getInt("arenas." + game + ".gametime");
 	}
 
 	/**
-	 * Get game names from file
+	 * Adds all game names to an array.
 	 * <p>This will returns null if the section not found in the file.
-	 * @return config section
+	 * @return the array of game names
 	 */
 	public static String[] getGameNames() {
 		return fi.contains("arenas")
@@ -111,7 +111,7 @@ public class GetGames {
 
 	/**
 	 * Gets overall max players from file
-	 * @return max players integer
+	 * @return max players
 	 */
 	public static int getOverallMaxPlayers() {
 		int i = 0;
@@ -137,7 +137,7 @@ public class GetGames {
 	/**
 	 * Check if game is exist that found in the file
 	 * @param game Game
-	 * @return true if correct
+	 * @return true if the game is exists
 	 */
 	public static boolean isGameExistent(String game) {
 		Validate.notNull(game, "Game name can't be null!");

@@ -10,7 +10,6 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
-import hu.montlikadani.ragemode.gameUtils.Titles;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class LobbyTimer extends TimerTask {
@@ -69,37 +68,33 @@ public class LobbyTimer extends TimerTask {
 			}
 		}
 
-		for (PlayerManager pm : list) {
-			Player player = pm.getPlayer();
-
-			if (ConfigValues.isLobbyTitle()) {
-				String title = ConfigValues.getLobbyTitle();
-				String sTitle = ConfigValues.getLobbySubTitle();
-
-				title = title.replace("%time%", Integer.toString(time));
-				title = title.replace("%game%", game.getName());
-
-				sTitle = sTitle.replace("%time%", Integer.toString(time));
-				sTitle = sTitle.replace("%game%", game.getName());
-
-				List<Integer> titleValues = ConfigValues.getLobbyTitleStartMsgs();
-				for (int val : titleValues) {
-					if (time == val) {
-						String[] split = ConfigValues.getLobbyTitleTime().split(", ");
-						if (split.length == 3) {
-							Titles.sendTitle(player, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
-									Integer.parseInt(split[2]), title, sTitle);
-						} else {
-							Titles.sendTitle(player, 20, 30, 20, title, sTitle);
-						}
-
-						break;
-					}
-				}
-			}
-
-			if (ConfigValues.isPlayerLevelAsTimeCounter()) {
+		if (ConfigValues.isPlayerLevelAsTimeCounter()) {
+			for (PlayerManager pm : list) {
+				Player player = pm.getPlayer();
 				player.setLevel(time);
+			}
+		}
+
+		if (ConfigValues.isLobbyTitle()) {
+			List<Integer> titleValues = ConfigValues.getLobbyTitleStartMsgs();
+			for (int val : titleValues) {
+				if (time == val) {
+					String title = ConfigValues.getLobbyTitle();
+					String sTitle = ConfigValues.getLobbySubTitle();
+					String times = ConfigValues.getLobbyTitleTime();
+
+					title = title.replace("%time%", Integer.toString(time));
+					title = title.replace("%game%", game.getName());
+
+					sTitle = sTitle.replace("%time%", Integer.toString(time));
+					sTitle = sTitle.replace("%game%", game.getName());
+
+					for (PlayerManager pm : list) {
+						GameUtils.sendTitleMessages(pm.getPlayer(), title, sTitle, times);
+					}
+
+					break;
+				}
 			}
 		}
 

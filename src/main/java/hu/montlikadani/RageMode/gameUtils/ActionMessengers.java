@@ -15,13 +15,19 @@ public class ActionMessengers {
 	private Game game;
 	private List<PlayerManager> players;
 
-	private TabTitles gameTab = null;
-	private ScoreBoard gameBoard = null;
-	private ScoreTeam scoreTeam = null;
+	private TabTitles gameTab = new TabTitles();
+	private ScoreBoard gameBoard = new ScoreBoard();
+	private ScoreTeam scoreTeam = new ScoreTeam();
 
 	public ActionMessengers(Game game, List<PlayerManager> players) {
 		this.game = game;
 		this.players = players;
+
+		scoreTeam.addToList(game.getName());
+		gameTab.addToList(game.getName());
+		gameBoard.addToList(game.getName());
+
+		gameBoard.loadScoreboard(players);
 	}
 
 	public Game getGame() {
@@ -55,11 +61,6 @@ public class ActionMessengers {
 
 		if (players == null) {
 			return;
-		}
-
-		if (gameTab == null) {
-			gameTab = new TabTitles();
-			gameTab.addToList(game.getName());
 		}
 
 		if (!ConfigValues.isTabEnabled()) {
@@ -125,12 +126,6 @@ public class ActionMessengers {
 			return;
 		}
 
-		if (gameBoard == null) {
-			gameBoard = new ScoreBoard();
-			gameBoard.loadScoreboard(players);
-			gameBoard.addToList(game.getName());
-		}
-
 		if (!ConfigValues.isScoreboardEnabled()) {
 			return;
 		}
@@ -145,9 +140,11 @@ public class ActionMessengers {
 			}
 
 			// should fix duplicated lines
-			org.bukkit.scoreboard.Scoreboard sb = gameBoard.getScoreboards().get(pl).getScoreboard();
-			for (String entry : sb.getEntries()) {
-				sb.resetScores(entry);
+			if (gameBoard.getScoreboard(pl).isPresent()) {
+				org.bukkit.scoreboard.Scoreboard sb = gameBoard.getScoreboard(pl).get().getScoreboard();
+				for (String entry : sb.getEntries()) {
+					sb.resetScores(entry);
+				}
 			}
 
 			if (!boardTitle.isEmpty()) {
@@ -160,19 +157,20 @@ public class ActionMessengers {
 				for (String row : rows) {
 					if (row.trim().isEmpty()) {
 						for (int i = 0; i <= rowMax; i++) {
-							row = row + " ";
+							row += " ";
 						}
 					}
 
-					row = Utils.setPlaceholders(row, pl);
 					if (time > -1) {
 						row = row.replace("%game-time%", Utils.getFormattedTime(time));
 					}
+					row = Utils.setPlaceholders(row, pl);
 
 					gameBoard.setLine(pl, row, rowMax);
-					gameBoard.setScoreBoard(pl);
 					rowMax--;
 				}
+
+				gameBoard.setScoreBoard(pl);
 			}
 		}
 	}
@@ -184,11 +182,6 @@ public class ActionMessengers {
 
 		if (players == null) {
 			return;
-		}
-
-		if (scoreTeam == null) {
-			scoreTeam = new ScoreTeam();
-			scoreTeam.addToList(game.getName());
 		}
 
 		if (!ConfigValues.isTabFormatEnabled()) {

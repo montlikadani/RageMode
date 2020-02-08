@@ -23,7 +23,7 @@ public class RageScores {
 
 	private static HashMap<UUID, PlayerPoints> playerpoints = new HashMap<>();
 
-	public static void addPointsToPlayer(Player killer, Player victim, String killCause) {
+	public static void addPointsToPlayer(Player killer, Player victim, KilledWith killCause) {
 		UUID killerUUID = killer.getUniqueId();
 		UUID victimUUID = victim.getUniqueId();
 
@@ -58,8 +58,8 @@ public class RageScores {
 
 		int totalPoints = 0;
 
-		switch (killCause.toLowerCase().trim()) {
-		case "ragebow":
+		switch (killCause) {
+		case RAGEBOW:
 			int bowPoints = ConfigValues.getBowKill();
 			totalPoints = addPoints(killer, bowPoints, true);
 			addPoints(victim, 0, false);
@@ -82,7 +82,7 @@ public class RageScores {
 
 			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", totalPoints);
 			break;
-		case "combataxe":
+		case COMBATAXE:
 			int axePoints = RageMode.getInstance().getConfiguration().getCfg().getInt("points.axekill");
 			int axeMinusPoints = ConfigValues.getAxeDeath();
 			totalPoints = addPoints(killer, axePoints, true);
@@ -106,7 +106,7 @@ public class RageScores {
 
 			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", totalPoints);
 			break;
-		case "rageknife":
+		case RAGEKNIFE:
 			int knifePoints = ConfigValues.getKnifeKill();
 			totalPoints = addPoints(killer, knifePoints, true);
 			addPoints(victim, 0, false);
@@ -129,7 +129,7 @@ public class RageScores {
 
 			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", totalPoints);
 			break;
-		case "explosion":
+		case EXPLOSION:
 			int explosionPoints = ConfigValues.getExplosionKill();
 			totalPoints = addPoints(killer, explosionPoints, true);
 			addPoints(victim, 0, false);
@@ -152,7 +152,7 @@ public class RageScores {
 
 			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", totalPoints);
 			break;
-		case "grenade":
+		case GRENADE:
 			int grenadePoints = ConfigValues.getGrenadeKill();
 			totalPoints = addPoints(killer, grenadePoints, true);
 			addPoints(victim, 0, false);

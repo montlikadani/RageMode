@@ -45,6 +45,10 @@ public class PlayerManager {
 	 * @param spectator the player is spectator or not
 	 */
 	public void storePlayerTools(boolean spectator) {
+		if (player == null) {
+			return;
+		}
+
 		PlayerInventory inv = player.getInventory();
 		if (spectator) {
 			sps.fly = player.isFlying();
@@ -99,6 +103,10 @@ public class PlayerManager {
 	 * @param spectator the player is spectator or not
 	 */
 	public void addBackTools(boolean spectator) {
+		if (player == null) {
+			return;
+		}
+
 		if (!player.getActivePotionEffects().isEmpty()) {
 			player.getActivePotionEffects().forEach(e -> player.removePotionEffect(e.getType()));
 		}
