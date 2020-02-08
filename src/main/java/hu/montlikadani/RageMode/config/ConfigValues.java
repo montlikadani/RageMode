@@ -11,17 +11,16 @@ import java.util.List;
 public class ConfigValues {
 
 	private static String lang;
-	private static String databaseType;
 	private static String hubName;
+	private static String databaseType;
+	private static String databaseTablePrefix;
 	private static String username;
 	private static String password;
 	private static String database;
 	private static String host;
 	private static String port;
-	private static String tablePrefix;
 	private static String encoding;
 	private static String sqlFileName;
-	private static String sqlTablePrefix;
 	private static String signGameRunning;
 	private static String signGameWaiting;
 	private static String signGameFull;
@@ -65,6 +64,7 @@ public class ConfigValues {
 	private static boolean cancelRedstoneActivating;
 	private static boolean cancelDoorUse;
 	private static boolean enableChatInGame;
+	private static boolean kickRandomPlayerIfJoinsVipToFullGame;
 	private static boolean deathMsgs;
 	private static boolean bossbarEnable;
 	private static boolean actionbarEnable;
@@ -113,26 +113,28 @@ public class ConfigValues {
 
 	public static void loadValues(FileConfig f) {
 		lang = f.get("language", "en");
-		databaseType = f.get("databaseType", "yaml");
 		checkForUpdates = f.get("check-for-updates", true);
 		logConsole = f.get("log-console", true);
 		savePlayerData = f.get("save-player-datas-to-file", false);
 		requireEmptyInv = f.get("require-empty-inventory-to-join", true);
 		bungee = f.get("bungee.enable", false);
 		hubName = f.get("bungee.hub-name", "lobby");
-		autoReconnect = f.get("MySQL.auto-reconnect", true);
-		useSSL = f.get("MySQL.use-SSL", false);
-		username = f.get("MySQL.username", "accountname");
-		password = f.get("MySQL.password", "password");
-		database = f.get("MySQL.database", "database");
-		host = f.get("MySQL.host", "localhost");
-		port = f.get("MySQL.port", "3306");
-		tablePrefix = f.get("MySQL.table-prefix", "rm_");
-		unicode = f.get("MySQL.use-unicode", true);
-		certificate = f.get("MySQL.verify-server-certificate", false);
-		encoding = f.get("MySQL.character-encoding", "UTF-8");
-		sqlFileName = f.get("SQL.file-name", "rm.sqlite");
-		sqlTablePrefix = f.get("SQL.table-prefix", "ragemode_");
+		databaseType = f.get("databaseType", "");
+		if (databaseType.isEmpty()) {
+			databaseType = f.get("database.type", "yaml");
+		}
+		databaseTablePrefix = f.get("database.table-prefix", "ragemode_");
+		autoReconnect = f.get("database.MySQL.auto-reconnect", true);
+		useSSL = f.get("database.MySQL.use-SSL", false);
+		username = f.get("database.MySQL.username", "accountname");
+		password = f.get("database.MySQL.password", "password");
+		database = f.get("database.MySQL.database", "database");
+		host = f.get("database.MySQL.host", "localhost");
+		port = f.get("database.MySQL.port", "3306");
+		unicode = f.get("database.MySQL.use-unicode", true);
+		certificate = f.get("database.MySQL.verify-server-certificate", false);
+		encoding = f.get("database.MySQL.character-encoding", "UTF-8");
+		sqlFileName = f.get("database.SQL.file-name", "rm.sqlite");
 		signsEnable = f.get("signs.enable", false);
 		signGameRunning = f.get("signs.game.running", "&6&oRunning...");
 		signGameWaiting = f.get("signs.game.waiting", "&cWaiting...");
@@ -177,6 +179,7 @@ public class ConfigValues {
 		cancelDoorUse = f.get("game.cancel-door-use", false);
 		gameFreezeTime = f.get("game.game-freeze-time-at-end-game", 10);
 		enableChatInGame = f.get("game.enable-chat-in-game", true);
+		kickRandomPlayerIfJoinsVipToFullGame = f.get("game.kickRandomPlayerIfJoinsVipToFullGame", true);
 		deathMsgs = f.get("game.defaults.death-messages", true);
 		bossbarEnable = f.get("game.defaults.bossbar", false);
 		actionbarEnable = f.get("game.defaults.actionbar", true);
@@ -253,10 +256,6 @@ public class ConfigValues {
 		return port;
 	}
 
-	public static String getTablePrefix() {
-		return tablePrefix;
-	}
-
 	public static String getEncoding() {
 		return encoding;
 	}
@@ -301,8 +300,8 @@ public class ConfigValues {
 		return sqlFileName;
 	}
 
-	public static String getSqlTablePrefix() {
-		return sqlTablePrefix;
+	public static String getDatabaseTablePrefix() {
+		return databaseTablePrefix;
 	}
 
 	public static boolean isSignsEnable() {
@@ -452,6 +451,10 @@ public class ConfigValues {
 
 	public static boolean isEnableChatInGame() {
 		return enableChatInGame;
+	}
+
+	public static boolean isKickRandomPlayerIfJoinsVip() {
+		return kickRandomPlayerIfJoinsVipToFullGame;
 	}
 
 	public static boolean isDefaultDeathMessageEnabled() {

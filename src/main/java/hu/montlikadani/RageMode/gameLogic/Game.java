@@ -83,21 +83,19 @@ public class Game {
 		if (event.isCancelled())
 			return false;
 
+		PlayerManager pm = new PlayerManager(player, name);
+
 		int time = GameLobby.getLobbyTime(name);
 		int maxPlayers = GetGames.getMaxPlayers(name);
 		int minPlayers = GetGames.getMinPlayers(name);
-		if (minPlayers < 1) {
-			minPlayers = 2;
-		}
+		int size = players.size();
 
-		PlayerManager pm = new PlayerManager(player, name);
-
-		if (players.size() < maxPlayers) {
+		if (size < maxPlayers) {
 			players.put(player, pm);
 
 			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
 
-			if (players.size() == minPlayers) {
+			if (size == minPlayers) {
 				lobbyTimer = new LobbyTimer(this, time);
 				lobbyTimer.loadTimer();
 			}
@@ -106,7 +104,7 @@ public class Game {
 		}
 
 		// Gets a random player who is in game and kicks from the game to join the VIP player.
-		if (player.hasPermission("ragemode.vip") && hasRoomForVIP(name)) {
+		if (ConfigValues.isKickRandomPlayerIfJoinsVip() && player.hasPermission("ragemode.vip") && hasRoomForVIP()) {
 			boolean isVIP = false;
 			Player playerToKick;
 
@@ -126,7 +124,7 @@ public class Game {
 
 			players.put(player, pm);
 
-			if (players.size() == minPlayers) {
+			if (size == minPlayers) {
 				lobbyTimer = new LobbyTimer(this, time);
 				lobbyTimer.loadTimer();
 			}
@@ -239,14 +237,9 @@ public class Game {
 
 	/**
 	 * Check whatever has free room for VIP players.
-	 * @param game Game
 	 * @return true if the players size not equal to vips size
 	 */
-	public boolean hasRoomForVIP(String game) {
-		if (game == null || game.trim().isEmpty()) {
-			game = name;
-		}
-
+	public boolean hasRoomForVIP() {
 		if (players == null) {
 			return false;
 		}
@@ -254,10 +247,9 @@ public class Game {
 		int vipsInGame = 0;
 
 		for (Entry<Player, PlayerManager> players : players.entrySet()) {
-			if (players.getValue().getGameName().equalsIgnoreCase(game)) {
-				if (players.getKey().hasPermission("ragemode.vip")) {
-					vipsInGame++;
-				}
+			if (players.getValue().getGameName().equalsIgnoreCase(name)
+					&& players.getKey().hasPermission("ragemode.vip")) {
+				vipsInGame++;
 			}
 		}
 

@@ -572,7 +572,7 @@ public class MySQLDB {
 	}
 
 	public static void loadJoinDelay() {
-		if (!ConfigValues.isRememberRejoinDelay()) {
+		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay()) {
 			return;
 		}
 

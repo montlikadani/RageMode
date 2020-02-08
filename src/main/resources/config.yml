@@ -2,17 +2,13 @@
 # You can find all supported languages on: https://github.com/montlikadani/RageMode/wiki/Languages
 language: en
 
-# Database types: yaml, mysql, sqlite
-# To database where the player datas will be saved.
-databaseType: yaml
-
 # Logging console messages, such as error description
 log-console: true
 
 # Check for updates on plugin startup.
 check-for-updates: true
 
-# This saves the player datas, such as inventory, effects etc. to a file.
+# This saves the player data, such as inventory, effects etc. to a file.
 # This can be useful for a random server shutdown.
 # If this false and "require-empty-inventory-to-join" also false then the players 
 # loses his items from inventory.
@@ -33,24 +29,32 @@ bungee:
   # Bungeecord server name when the game end and teleport players to this server.
   hub-name: "lobby"
 
-# MySQL database settings.
-MySQL:
-  auto-reconnect: true
-  use-SSL: false
-  username: accountname
-  password: password
-  database: database
-  host: localhost
-  port: "3306"
-  table-prefix: rm_
-  use-unicode: true
-  verify-server-certificate: false
-  character-encoding: "UTF-8"
+# The database where to save plugin data.
+database:
+  # Database types: yaml, mysql, sqlite
+  # To database where the player data will be saved.
+  type: yaml
 
-# SQLite database settings.
-SQL:
-  file-name: rm.sqlite
+  # The database table name
+  # This is only for sql databases.
   table-prefix: ragemode_
+
+  # SQLite database settings
+  SQL:
+    file-name: rm.sqlite
+
+  # MySQL database settings
+  MySQL:
+    auto-reconnect: true
+    use-SSL: false
+    username: accountname
+    password: password
+    database: database
+    host: localhost
+    port: "3306"
+    use-unicode: true
+    verify-server-certificate: false
+    character-encoding: "UTF-8"
 
 # Sign texts
 signs:
@@ -187,6 +191,10 @@ game:
   # Should be enable chat in the game?
   # This ignores with ragemode.bypass.game.lockchat permission.
   enable-chat-in-game: true
+
+  # Kicks random player from the game if that game is full, and
+  # the joining player have permission "ragemode.vip".
+  kickRandomPlayerIfJoinsVipToFullGame: true
 
   # Defaults values when in the setup not specify e.g bossbar.
   defaults:

@@ -215,7 +215,7 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void saveDatabase() {
-		if (!ConfigValues.isRememberRejoinDelay()) {
+		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay()) {
 			return;
 		}
 
@@ -249,15 +249,23 @@ public class RageMode extends JavaPlugin {
 		String database = ConfigValues.getDatabase();
 		String username = ConfigValues.getUsername();
 		String password = ConfigValues.getPassword();
-		String characterEnc = ConfigValues.getEncoding().isEmpty() ? "UTF-8" : ConfigValues.getEncoding();
-		String prefix = ConfigValues.getTablePrefix().isEmpty() ? "rm_" : ConfigValues.getTablePrefix();
+		String charEncode = ConfigValues.getEncoding();
+		String prefix = ConfigValues.getDatabaseTablePrefix();
 		boolean serverCertificate = ConfigValues.isCertificate();
 		boolean useUnicode = ConfigValues.isUnicode();
 		boolean autoReconnect = ConfigValues.isAutoReconnect();
 		boolean useSSL = ConfigValues.isUseSSL();
 
+		if (charEncode.isEmpty()) {
+			charEncode = "UTF-8";
+		}
+
+		if (prefix.isEmpty()) {
+			prefix = "rm_";
+		}
+
 		mySQLConnect = new MySQLConnect(host, port, database, username, password, serverCertificate, useUnicode,
-				characterEnc, autoReconnect, useSSL, prefix);
+				charEncode, autoReconnect, useSSL, prefix);
 		if (mySQLConnect == null) {
 			return;
 		}
@@ -291,7 +299,12 @@ public class RageMode extends JavaPlugin {
 			}
 		}
 
-		sqlConnect = new SQLConnect(sqlFile, ConfigValues.getSqlTablePrefix());
+		String prefix = ConfigValues.getDatabaseTablePrefix();
+		if (prefix.isEmpty()) {
+			prefix = "rm_";
+		}
+
+		sqlConnect = new SQLConnect(sqlFile, prefix);
 		if (sqlConnect == null) {
 			return;
 		}

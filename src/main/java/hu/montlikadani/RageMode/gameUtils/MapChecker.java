@@ -1,13 +1,16 @@
 package hu.montlikadani.ragemode.gameUtils;
 
 import java.util.Set;
+import java.util.logging.Level;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.config.Configuration;
 
 public class MapChecker {
 
@@ -48,16 +51,15 @@ public class MapChecker {
 	}
 
 	private void checkBasics() {
+		Configuration conf = RageMode.getInstance().getConfiguration();
 		String path = "arenas." + gameName;
-		if (!RageMode.getInstance().getConfiguration().getArenasCfg().isSet(path + ".maxplayers")
-				|| !RageMode.getInstance().getConfiguration().getArenasCfg().isSet(path + ".world")) {
+		if (!conf.getArenasCfg().isSet(path + ".maxplayers") || !conf.getArenasCfg().isSet(path + ".world")) {
 			message = RageMode.getLang().get("game.name-or-maxplayers-not-set");
 			isValid = false;
 			return;
 		}
 
-		if (!RageMode.getInstance().getConfiguration().getArenasCfg().contains(path + ".world")
-				|| !GetGames.getWorld(gameName).isPresent()) {
+		if (!conf.getArenasCfg().contains(path + ".world") || !GetGames.getWorld(gameName).isPresent()) {
 			message = RageMode.getLang().get("game.worldname-not-set");
 			isValid = false;
 			return;
@@ -70,12 +72,32 @@ public class MapChecker {
 			return;
 		}
 
+		boolean changed = false;
+		int minPlayers = GetGames.getMinPlayers(gameName);
+		if (minPlayers > maxPlayers) {
+			Debug.logConsole(Level.WARNING, "Minimum players can't greater than maximum players. Changed...");
+			while (minPlayers > maxPlayers) {
+				minPlayers--;
+			}
+
+			changed = true;
+		}
+
+		if (minPlayers < 1) {
+			minPlayers = 2;
+			changed = true;
+		}
+
+		if (changed) {
+			conf.getArenasCfg().set(path + ".minplayers", minPlayers);
+			Configuration.saveFile(conf.getArenasCfg(), conf.getArenasFile());
+		}
+
 		isValid = true;
 	}
 
 	private void checkLobby() {
 		FileConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
-
 		if (!aFile.isSet("arenas." + gameName + ".lobby")) {
 			message = RageMode.getLang().get("setup.lobby.not-set", "%game%", gameName);
 			isValid = false;

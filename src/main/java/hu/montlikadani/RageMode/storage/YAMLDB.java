@@ -384,7 +384,7 @@ public class YAMLDB {
 	}
 
 	public static void loadJoinDelay() {
-		if (!ConfigValues.isRememberRejoinDelay()) {
+		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay()) {
 			return;
 		}
 

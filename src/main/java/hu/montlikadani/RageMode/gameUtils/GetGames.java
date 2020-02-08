@@ -6,17 +6,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang.Validate;
-import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.Configuration;
 
 public class GetGames {
 
-	private static FileConfiguration fi;
-
-	static {
-		fi = RageMode.getInstance().getConfiguration().getArenasCfg();
-	}
+	private static Configuration c = RageMode.getInstance().getConfiguration();
 
 	/**
 	 * Gets the the total number of games.
@@ -26,8 +22,8 @@ public class GetGames {
 	public static int getConfigGamesCount() {
 		int n = 0;
 
-		if (fi.contains("arenas")) {
-			n = fi.getConfigurationSection("arenas").getKeys(false).size();
+		if (c.getArenasCfg().contains("arenas")) {
+			n = c.getArenasCfg().getConfigurationSection("arenas").getKeys(false).size();
 		}
 
 		return n;
@@ -40,7 +36,7 @@ public class GetGames {
 	 * @return the maximum players
 	 */
 	public static int getMaxPlayers(String game) {
-		return fi.getInt("arenas." + game + ".maxplayers", -1);
+		return c.getArenasCfg().getInt("arenas." + game + ".maxplayers", -1);
 	}
 
 	/**
@@ -50,7 +46,7 @@ public class GetGames {
 	 * @return the minimum players
 	 */
 	public static int getMinPlayers(String game) {
-		return fi.getInt("arenas." + game + ".minplayers", -1);
+		return c.getArenasCfg().getInt("arenas." + game + ".minplayers", -1);
 	}
 
 	/**
@@ -59,7 +55,7 @@ public class GetGames {
 	 * @return {@link Optional} world name
 	 */
 	public static Optional<String> getWorld(String game) {
-		return Optional.ofNullable(fi.getString("arenas." + game + ".world"));
+		return Optional.ofNullable(c.getArenasCfg().getString("arenas." + game + ".world"));
 	}
 
 	/**
@@ -68,7 +64,7 @@ public class GetGames {
 	 * @return true if exists and enabled
 	 */
 	public static boolean isActionbarEnabled(String game) {
-		return fi.getBoolean("arenas." + game + ".actionbar", false);
+		return c.getArenasCfg().getBoolean("arenas." + game + ".actionbar", false);
 	}
 
 	/**
@@ -77,7 +73,7 @@ public class GetGames {
 	 * @return true if exists and enabled
 	 */
 	public static boolean isBossbarEnabled(String game) {
-		return fi.getBoolean("arenas." + game + ".bossbar", false);
+		return c.getArenasCfg().getBoolean("arenas." + game + ".bossbar", false);
 	}
 
 	/**
@@ -86,7 +82,7 @@ public class GetGames {
 	 * @return the game time
 	 */
 	public static int getGameTime(String game) {
-		return fi.getInt("arenas." + game + ".gametime");
+		return c.getArenasCfg().getInt("arenas." + game + ".gametime");
 	}
 
 	/**
@@ -95,8 +91,8 @@ public class GetGames {
 	 * @return the array of game names
 	 */
 	public static String[] getGameNames() {
-		return fi.contains("arenas")
-				? fi.getConfigurationSection("arenas").getKeys(false).toArray(new String[getConfigGamesCount()])
+		return c.getArenasCfg().contains("arenas")
+				? c.getArenasCfg().getConfigurationSection("arenas").getKeys(false).toArray(new String[getConfigGamesCount()])
 				: null;
 	}
 
@@ -110,7 +106,7 @@ public class GetGames {
 	}
 
 	/**
-	 * Gets overall max players from file
+	 * Counts all max players from all games.
 	 * @return max players
 	 */
 	public static int getOverallMaxPlayers() {
@@ -123,7 +119,7 @@ public class GetGames {
 		}
 
 		while (i < names.length) {
-			x = fi.getInt("arenas." + names[i] + ".maxplayers");
+			x = c.getArenasCfg().getInt("arenas." + names[i] + ".maxplayers");
 			if (n < x) {
 				n = x;
 			}
