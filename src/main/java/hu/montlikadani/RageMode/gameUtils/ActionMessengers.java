@@ -130,8 +130,6 @@ public class ActionMessengers {
 			return;
 		}
 
-		String boardTitle = ConfigValues.getSbTitle();
-		List<String> rows = ConfigValues.getSbContent();
 		for (Iterator<PlayerManager> it = players.iterator(); it.hasNext();) {
 			Player pl = it.next().getPlayer();
 			if (!GameUtils.isPlayerPlaying(pl)) {
@@ -147,10 +145,12 @@ public class ActionMessengers {
 				}
 			}
 
+			String boardTitle = ConfigValues.getSbTitle();
 			if (!boardTitle.isEmpty()) {
 				gameBoard.setTitle(pl, Utils.colors(boardTitle));
 			}
 
+			List<String> rows = ConfigValues.getSbContent();
 			if (!rows.isEmpty()) {
 				int rowMax = rows.size();
 
@@ -169,9 +169,9 @@ public class ActionMessengers {
 					gameBoard.setLine(pl, row, rowMax);
 					rowMax--;
 				}
-
-				gameBoard.setScoreBoard(pl);
 			}
+
+			gameBoard.setScoreBoard(pl);
 		}
 	}
 
@@ -188,15 +188,15 @@ public class ActionMessengers {
 			return;
 		}
 
-		String prefix = ConfigValues.getTabPrefix();
-		String suffix = ConfigValues.getTabSuffix();
-
 		for (Iterator<PlayerManager> it = players.iterator(); it.hasNext();) {
 			Player pl = it.next().getPlayer();
 			if (!GameUtils.isPlayerPlaying(pl)) {
 				it.remove();
 				continue;
 			}
+
+			String prefix = ConfigValues.getTabPrefix();
+			String suffix = ConfigValues.getTabSuffix();
 
 			prefix = Utils.setPlaceholders(prefix, pl);
 			suffix = Utils.setPlaceholders(suffix, pl);

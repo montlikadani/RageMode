@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.commands.list;
 import org.bukkit.command.CommandSender;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.signs.SignCreator;
 
@@ -17,7 +18,7 @@ public class signupdate {
 			return false;
 		}
 
-		if (!RageMode.getInstance().getConfiguration().getCfg().getBoolean("signs.enable"))
+		if (!ConfigValues.isSignsEnable())
 			return false;
 
 		if (args.length != 2) {

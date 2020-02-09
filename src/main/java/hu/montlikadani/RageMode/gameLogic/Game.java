@@ -88,14 +88,13 @@ public class Game {
 		int time = GameLobby.getLobbyTime(name);
 		int maxPlayers = GetGames.getMaxPlayers(name);
 		int minPlayers = GetGames.getMinPlayers(name);
-		int size = players.size();
 
-		if (size < maxPlayers) {
+		if (players.size() < maxPlayers) {
 			players.put(player, pm);
 
 			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
 
-			if (size == minPlayers) {
+			if (players.size() == minPlayers) {
 				lobbyTimer = new LobbyTimer(this, time);
 				lobbyTimer.loadTimer();
 			}
@@ -124,12 +123,13 @@ public class Game {
 
 			players.put(player, pm);
 
-			if (size == minPlayers) {
+			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
+
+			if (players.size() == minPlayers) {
 				lobbyTimer = new LobbyTimer(this, time);
 				lobbyTimer.loadTimer();
 			}
 
-			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
 			return true;
 		}
 

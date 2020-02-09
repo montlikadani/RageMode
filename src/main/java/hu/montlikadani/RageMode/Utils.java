@@ -75,25 +75,14 @@ public class Utils {
 
 	/**
 	 * Sets the available placeholders to that string, that manages from RageMode
-	 * @param s String to replace the variables
-	 * @param player Player
-	 * @return String
-	 */
-	public static String setPlaceholders(String s, Player player) {
-		return setPlaceholders(s, player, false);
-	}
-
-	/**
-	 * Sets the available placeholders to that string, that manages from RageMode
 	 * <p>If the <code>fromDatabase</code> false, will gets the statistic from class instance.
 	 * @param s String to replace the variables
 	 * @param player Player
-	 * @param fromDatabase gets the stats from database
 	 * @return The replaced placeholders
 	 */
-	public static String setPlaceholders(String s, Player player, boolean fromDatabase) {
+	public static String setPlaceholders(String s, Player player) {
 		java.util.UUID uuid = player.getUniqueId();
-		PlayerPoints pp = fromDatabase ? RageMode.getPPFromDatabase(uuid) : RuntimePPManager.getPPForPlayer(uuid);
+		PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid);
 		if (GameUtils.isPlayerPlaying(player)) {
 			pp = RageScores.getPlayerPoints(uuid);
 		}

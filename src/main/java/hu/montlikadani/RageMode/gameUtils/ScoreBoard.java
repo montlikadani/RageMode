@@ -72,10 +72,7 @@ public class ScoreBoard implements IObjectives {
 	 * @param title The String, where the title should be set to.
 	 */
 	public void setTitle(Player player, String title) {
-		Optional<ScoreBoardHolder> board = getScoreboard(player);
-		if (board.isPresent()) {
-			board.get().getObjective().setDisplayName(title);
-		}
+		getScoreboard(player).ifPresent(board -> board.getObjective().setDisplayName(title));
 	}
 
 	/**
@@ -87,13 +84,10 @@ public class ScoreBoard implements IObjectives {
 	 * @param dummyScore The integer, the score should be set to.
 	 */
 	public void setLine(Player player, String line, int dummyScore) {
-		Optional<ScoreBoardHolder> board = getScoreboard(player);
-		if (!board.isPresent()) {
-			return;
-		}
-
-		Score score = board.get().getObjective().getScore(line);
-		score.setScore(dummyScore);
+		getScoreboard(player).ifPresent(board -> {
+			Score score = board.getObjective().getScore(line);
+			score.setScore(dummyScore);
+		});
 	}
 
 	/**
@@ -106,14 +100,11 @@ public class ScoreBoard implements IObjectives {
 	 * @param dummyScore The integer, the score should be set to.
 	 */
 	public void updateLine(Player player, String oldLine, String line, int dummyScore) {
-		Optional<ScoreBoardHolder> board = getScoreboard(player);
-		if (!board.isPresent()) {
-			return;
-		}
-
-		board.get().getScoreboard().resetScores(oldLine);
-		Score score = board.get().getObjective().getScore(line);
-		score.setScore(dummyScore);
+		getScoreboard(player).ifPresent(board -> {
+			board.getScoreboard().resetScores(oldLine);
+			Score score = board.getObjective().getScore(line);
+			score.setScore(dummyScore);
+		});
 	}
 
 	/**
@@ -121,10 +112,7 @@ public class ScoreBoard implements IObjectives {
 	 * @param player The Player instance for which the ScoreBoard should be set.
 	 */
 	public void setScoreBoard(Player player) {
-		Optional<ScoreBoardHolder> board = getScoreboard(player);
-		if (board.isPresent()) {
-			player.setScoreboard(board.get().getScoreboard());
-		}
+		getScoreboard(player).ifPresent(board -> player.setScoreboard(board.getScoreboard()));
 	}
 
 	/**
