@@ -159,6 +159,10 @@ lobby:
 # Does the player can join to running games when types /rm joinrandom command to spectate?
 players-can-join-random-to-running-games: true
 
+# Enables per join permissions for joining.
+# Use "ragemode.join.gameName" permission.
+per-join-permissions: false
+
 # Global settings for game.
 game:
   # If this false if player has fallen to ground then not damage.

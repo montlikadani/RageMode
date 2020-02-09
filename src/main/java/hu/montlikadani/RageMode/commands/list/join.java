@@ -41,6 +41,11 @@ public class join {
 			return;
 		}
 
+		if (ConfigValues.isPerJoinPermissions() && !hasPerm(p, "ragemode.join." + map)) {
+			sendMessage(p, RageMode.getLang().get("no-permission"));
+			return;
+		}
+
 		if (ConfigValues.isRejoinDelayEnabled() && !p.hasPermission("ragemode.bypass.rejoindelay")) {
 			if (ReJoinDelay.isValid(p)) {
 				sendMessage(p, RageMode.getLang().get("commands.join.rejoin-delay", "%delay%",
