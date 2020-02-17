@@ -7,7 +7,6 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameCreateEvent;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.events.BungeeListener;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -73,9 +72,6 @@ public class addgame {
 				return false;
 			}
 		}
-
-		if (hu.montlikadani.ragemode.config.ConfigValues.isBungee())
-			plugin.getServer().getPluginManager().registerEvents(new BungeeListener(game), plugin);
 
 		Game g = new Game(game);
 		plugin.getGames().add(g);

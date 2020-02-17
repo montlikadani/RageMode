@@ -8,19 +8,14 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class BungeeListener implements Listener {
 
-	private String game;
-
-	public BungeeListener(String game) {
-		this.game = game;
-	}
-
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onJoin(PlayerJoinEvent event) {
-		GameUtils.joinPlayer(event.getPlayer(), GameUtils.getGame(game));
+		GameUtils.joinPlayer(event.getPlayer(), GameUtils.getGame(RageMode.getInstance().getGames().get(0).getName()));
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)

@@ -64,6 +64,7 @@ public class ConfigValues {
 	private static boolean hidePlayerNameTag;
 	private static boolean cancelRedstoneActivating;
 	private static boolean cancelDoorUse;
+	private static boolean useGrenadeTrails;
 	private static boolean enableChatInGame;
 	private static boolean kickRandomPlayerIfJoinsVipToFullGame;
 	private static boolean deathMsgs;
@@ -180,6 +181,7 @@ public class ConfigValues {
 		cancelRedstoneActivating = f.get("game.cancel-redstone-activating-blocks", true);
 		cancelDoorUse = f.get("game.cancel-door-use", false);
 		gameFreezeTime = f.get("game.game-freeze-time-at-end-game", 10);
+		useGrenadeTrails = f.get("game.use-grenade-trails", true);
 		enableChatInGame = f.get("game.enable-chat-in-game", true);
 		kickRandomPlayerIfJoinsVipToFullGame = f.get("game.kickRandomPlayerIfJoinsVipToFullGame", true);
 		deathMsgs = f.get("game.defaults.death-messages", true);
@@ -449,6 +451,10 @@ public class ConfigValues {
 
 	public static boolean isCancelDoorUse() {
 		return cancelDoorUse;
+	}
+
+	public static boolean isUseGrenadeTrails() {
+		return useGrenadeTrails;
 	}
 
 	public static int getGameFreezeTime() {

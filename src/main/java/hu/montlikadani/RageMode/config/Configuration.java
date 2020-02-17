@@ -102,7 +102,7 @@ public class Configuration {
 			plugin.saveResource(name, false);
 		}
 
-		plugin.getLogger().log(Level.INFO, "The {0} file successfully created!", name);
+		plugin.getLogger().log(Level.INFO, "{0} file created!", name);
 		return YamlConfiguration.loadConfiguration(file);
 	}
 

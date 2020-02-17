@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
+import java.util.stream.Stream;
 
 import org.bukkit.Material;
 import org.bukkit.event.HandlerList;
@@ -29,6 +30,7 @@ import hu.montlikadani.ragemode.database.MySQLConnect;
 import hu.montlikadani.ragemode.database.SQLConnect;
 import hu.montlikadani.ragemode.events.BungeeListener;
 import hu.montlikadani.ragemode.events.EventListener;
+import hu.montlikadani.ragemode.events.GameListener;
 import hu.montlikadani.ragemode.events.Listeners_1_8;
 import hu.montlikadani.ragemode.events.Listeners_1_9;
 import hu.montlikadani.ragemode.gameLogic.Game;
@@ -404,7 +406,13 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void registerListeners() {
-		getManager().registerEvents(new EventListener(this), this);
+		Stream.of(new EventListener(this), new GameListener(this))
+				.forEach(l -> getServer().getPluginManager().registerEvents(l, this));
+
+		if (ConfigValues.isBungee()) {
+			getManager().registerEvents(new BungeeListener(), this);
+		}
+
 		if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
 			getManager().registerEvents(new Listeners_1_8(), this);
 		else
@@ -420,10 +428,6 @@ public class RageMode extends JavaPlugin {
 
 				Game g = new Game(game);
 				games.add(g);
-
-				if (ConfigValues.isBungee()) {
-					getManager().registerEvents(new BungeeListener(game), this);
-				}
 
 				spawns.add(new GameSpawn(g));
 
