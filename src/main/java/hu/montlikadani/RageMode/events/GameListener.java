@@ -145,7 +145,7 @@ public class GameListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onProjectileHit(ProjectileHitEvent event) {
 		// RageArrow explosion event
-		if (event.getEntity() != null && event.getEntity().getShooter() != null
+		if (event.getEntity().getShooter() != null
 				&& event.getEntity().getShooter() instanceof Player
 				&& GameUtils.isPlayerPlaying((Player) event.getEntity().getShooter())
 				&& event.getEntity() instanceof Arrow) {
@@ -264,7 +264,7 @@ public class GameListener implements Listener {
 	@EventHandler
 	public void onHitPlayer(EntityDamageEvent event) {
 		Entity e = event.getEntity();
-		if (e == null || !(e instanceof Player)) {
+		if (!(e instanceof Player)) {
 			return;
 		}
 
@@ -296,7 +296,7 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	public void onBowShoot(EntityShootBowEvent e) {
-		if (e.getEntity() == null || !(e.getEntity() instanceof Player)) {
+		if (!(e.getEntity() instanceof Player)) {
 			return;
 		}
 
@@ -341,7 +341,7 @@ public class GameListener implements Listener {
 			List<MetadataValue> data = deceased.getMetadata("killedWith");
 			RMPlayerKilledEvent killed = null;
 
-			if (data != null && !data.isEmpty()) {
+			if (!data.isEmpty()) {
 				switch (data.get(0).asString()) {
 				case "arrow":
 					if (!killerExists) {
@@ -460,7 +460,9 @@ public class GameListener implements Listener {
 		GameUtils.addGameItems(deceased, true);
 	}
 
-	@EventHandler(priority = EventPriority.HIGH)
+	// The event priority should be HIGHEST to prevent overwriting
+	// spawns over plugins
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onRespawn(PlayerRespawnEvent e) {
 		Player p = e.getPlayer();
 
@@ -558,10 +560,6 @@ public class GameListener implements Listener {
 		}
 
 		Projectile proj = ev.getEntity();
-		if (proj == null) {
-			return;
-		}
-
 		Player shooter = (Player) proj.getShooter();
 		if (shooter == null) {
 			return;
@@ -580,8 +578,7 @@ public class GameListener implements Listener {
 	@EventHandler
 	public void eggThrow(PlayerEggThrowEvent event) {
 		final Player p = event.getPlayer();
-
-		if (p == null || !p.isOnline()) {
+		if (!p.isOnline()) {
 			return;
 		}
 
@@ -597,7 +594,9 @@ public class GameListener implements Listener {
 		// other item remove when moved the slot to another
 		if (p.getInventory().contains(Material.EGG)) {
 			ItemStack item = p.getInventory().getItem(plugin.getConfiguration().getCfg().getInt("items.grenade.slot"));
-			item.setAmount(item.getAmount() - 1);
+			if (item != null) {
+				item.setAmount(item.getAmount() - 1);
+			}
 		}
 
 		// no baby chickens
@@ -750,7 +749,8 @@ public class GameListener implements Listener {
 	// To prevent removing paintings
 	@EventHandler
 	public void onHanging(HangingBreakByEntityEvent ev) {
-		if (ev.getRemover() instanceof Player && GameUtils.isPlayerPlaying((Player) ev.getRemover())) {
+		if (ev.getRemover() != null && ev.getRemover() instanceof Player
+				&& GameUtils.isPlayerPlaying((Player) ev.getRemover())) {
 			ev.setCancelled(true);
 		}
 	}

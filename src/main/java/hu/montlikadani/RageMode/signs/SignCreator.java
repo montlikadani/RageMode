@@ -167,7 +167,7 @@ public class SignCreator {
 				}
 
 				Bukkit.getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
-					if (signLocation.getBlock() != null && signLocation.getBlock().getState() instanceof Sign) {
+					if (signLocation.getBlock().getState() instanceof Sign) {
 						signData.forEach(data -> data.updateSign());
 						return true;
 					}

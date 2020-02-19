@@ -240,10 +240,6 @@ public class Game {
 	 * @return true if the players size not equal to vips size
 	 */
 	public boolean hasRoomForVIP() {
-		if (players == null) {
-			return false;
-		}
-
 		int vipsInGame = 0;
 
 		for (Entry<Player, PlayerManager> players : players.entrySet()) {
@@ -268,11 +264,9 @@ public class Game {
 		Validate.notNull(name, "Name can't be null!");
 		Validate.notEmpty(name, "Name can't be empty!");
 
-		if (players != null) {
-			for (Entry<Player, PlayerManager> players : players.entrySet()) {
-				if (players.getKey().getName().equalsIgnoreCase(name)) {
-					return players.getKey();
-				}
+		for (Entry<Player, PlayerManager> players : players.entrySet()) {
+			if (players.getKey().getName().equalsIgnoreCase(name)) {
+				return players.getKey();
 			}
 		}
 
@@ -288,11 +282,9 @@ public class Game {
 		Validate.notNull(name, "Name can't be null!");
 		Validate.notEmpty(name, "Name can't be empty!");
 
-		if (specPlayer != null) {
-			for (Entry<Player, PlayerManager> specs : specPlayer.entrySet()) {
-				if (specs.getKey().getName().equalsIgnoreCase(name)) {
-					return specs.getKey();
-				}
+		for (Entry<Player, PlayerManager> specs : specPlayer.entrySet()) {
+			if (specs.getKey().getName().equalsIgnoreCase(name)) {
+				return specs.getKey();
 			}
 		}
 
@@ -306,10 +298,8 @@ public class Game {
 	public List<PlayerManager> getPlayersFromList() {
 		List<PlayerManager> list = new ArrayList<>();
 
-		if (players != null) {
-			for (Entry<Player, PlayerManager> players : players.entrySet()) {
-				list.add(players.getValue());
-			}
+		for (Entry<Player, PlayerManager> players : players.entrySet()) {
+			list.add(players.getValue());
 		}
 
 		return list;
@@ -322,10 +312,8 @@ public class Game {
 	public List<PlayerManager> getSpectatorPlayersFromList() {
 		List<PlayerManager> list = new ArrayList<>();
 
-		if (specPlayer != null) {
-			for (Entry<Player, PlayerManager> players : specPlayer.entrySet()) {
-				list.add(players.getValue());
-			}
+		for (Entry<Player, PlayerManager> players : specPlayer.entrySet()) {
+			list.add(players.getValue());
 		}
 
 		return list;
@@ -339,7 +327,7 @@ public class Game {
 	public PlayerManager getSpectatorPlayerManager(Player p) {
 		Validate.notNull(p, "Player can't be null!");
 
-		return specPlayer != null ? specPlayer.get(p) : null;
+		return specPlayer.get(p);
 	}
 
 	/**
@@ -350,7 +338,7 @@ public class Game {
 	public PlayerManager getPlayerManager(Player p) {
 		Validate.notNull(p, "Player can't be null!");
 
-		return players != null ? players.get(p) : null;
+		return players.get(p);
 	}
 
 	public LobbyTimer getLobbyTimer() {

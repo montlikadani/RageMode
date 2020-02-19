@@ -5,6 +5,7 @@ import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 import java.util.HashMap;
 
+import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -84,8 +85,8 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void onInteract(PlayerInteractEvent event) {
 		Player p = event.getPlayer();
-		org.bukkit.block.Block b = event.getClickedBlock();
-		if (ConfigValues.isSignsEnable() && b != null && b.getState() != null && b.getState() instanceof Sign
+		Block b = event.getClickedBlock();
+		if (ConfigValues.isSignsEnable() && b != null && b.getState() instanceof Sign
 				&& event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			if (!hasPerm(p, "ragemode.join.sign")) {
 				sendMessage(p, RageMode.getLang().get("no-permission"));
@@ -113,7 +114,7 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onSignChange(SignChangeEvent event) {
-		if (event.isCancelled() || event.getPlayer() == null || event.getBlock() == null) {
+		if (event.isCancelled()) {
 			return;
 		}
 
@@ -121,28 +122,29 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		if (event.getLine(0).contains("[rm]")
-				|| event.getLine(0).contains("[ragemode]")) {
-			if (!hasPerm(event.getPlayer(), "ragemode.admin.signs")) {
-				sendMessage(event.getPlayer(), RageMode.getLang().get("no-permission-to-interact-sign"));
+		Block b = event.getBlock();
+		Player p = event.getPlayer();
+		String l0 = event.getLine(0).toLowerCase();
+
+		if (l0.contains("[rm]") || l0.contains("[ragemode]")) {
+			if (!hasPerm(p, "ragemode.admin.signs")) {
+				sendMessage(p, RageMode.getLang().get("no-permission-to-interact-sign"));
 				event.setCancelled(true);
 				return;
 			}
 
 			String l1 = event.getLine(1);
 			if (!GameUtils.isGameWithNameExists(l1)) {
-				sendMessage(event.getPlayer(), RageMode.getLang().get("invalid-game", "%game%", l1));
+				sendMessage(p, RageMode.getLang().get("invalid-game", "%game%", l1));
 				return;
 			}
 
-			for (Game game : plugin.getGames()) {
-				if (game.getName().equalsIgnoreCase(l1)) {
-					SignCreator.createNewSign((Sign) event.getBlock().getState(), game.getName());
-					break;
-				}
+			Game game = GameUtils.getGame(l1);
+			if (game != null) {
+				SignCreator.createNewSign((Sign) b.getState(), game.getName());
 			}
 
-			SignCreator.updateSign(((Sign) event.getBlock().getState()).getLocation());
+			SignCreator.updateSign(((Sign) b.getState()).getLocation());
 		}
 	}
 }
