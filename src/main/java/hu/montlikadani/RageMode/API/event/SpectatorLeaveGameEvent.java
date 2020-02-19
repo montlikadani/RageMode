@@ -4,18 +4,13 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
 
-public class SpectatorLeaveGameEvent extends BaseEvent {
+public class SpectatorLeaveGameEvent extends GameEvent {
 
-	private Game game;
 	private Player player;
 
 	public SpectatorLeaveGameEvent(Game game, Player player) {
-		this.game = game;
+		super(game);
 		this.player = player;
-	}
-
-	public Game getGame() {
-		return game;
 	}
 
 	public Player getPlayer() {

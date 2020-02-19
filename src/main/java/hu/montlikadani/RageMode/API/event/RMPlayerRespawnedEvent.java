@@ -5,20 +5,15 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 
-public class RMPlayerRespawnedEvent extends BaseEvent {
+public class RMPlayerRespawnedEvent extends GameEvent {
 
-	private Game game;
 	private Player player;
 	private GameSpawn spawn;
 
 	public RMPlayerRespawnedEvent(Game game, Player player, GameSpawn spawn) {
-		this.game = game;
+		super(game);
 		this.player = player;
 		this.spawn = spawn;
-	}
-
-	public Game getGame() {
-		return game;
 	}
 
 	public Player getPlayer() {

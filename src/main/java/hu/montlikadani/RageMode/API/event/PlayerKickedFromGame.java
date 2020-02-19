@@ -5,20 +5,15 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
 
-public class PlayerKickedFromGame extends BaseEvent {
+public class PlayerKickedFromGame extends GameEvent {
 
-	private Game game;
 	private CommandSender by;
 	private Player target;
 
 	public PlayerKickedFromGame(Game game, CommandSender by, Player target) {
-		this.game = game;
+		super(game);
 		this.by = by;
 		this.target = target;
-	}
-
-	public Game getGame() {
-		return game;
 	}
 
 	public CommandSender getBySender() {

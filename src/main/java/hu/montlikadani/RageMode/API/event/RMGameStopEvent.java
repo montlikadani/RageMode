@@ -5,18 +5,13 @@ import java.util.List;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
-public class RMGameStopEvent extends BaseEvent {
+public class RMGameStopEvent extends GameEvent {
 
-	private Game game;
 	private List<PlayerManager> players;
 
 	public RMGameStopEvent(Game game, List<PlayerManager> players) {
-		this.game = game;
+		super(game);
 		this.players = players;
-	}
-
-	public Game getGame() {
-		return game;
 	}
 
 	public List<PlayerManager> getPlayers() {

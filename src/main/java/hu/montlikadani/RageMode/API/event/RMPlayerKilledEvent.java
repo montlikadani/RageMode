@@ -4,22 +4,17 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
 
-public class RMPlayerKilledEvent extends BaseEvent {
+public class RMPlayerKilledEvent extends GameEvent {
 
-	private Game game;
 	private Player killer;
 	private Player player;
 	private String tool;
 
 	public RMPlayerKilledEvent(Game game, Player player, Player killer, String tool) {
-		this.game = game;
+		super(game);
 		this.player = player;
 		this.killer = killer;
 		this.tool = tool;
-	}
-
-	public Game getGame() {
-		return game;
 	}
 
 	public Player getKiller() {
