@@ -484,9 +484,11 @@ public class GameListener implements Listener {
 		}
 
 		GameSpawn gsg = GameUtils.getGameSpawn(game.getName());
-		if (gsg.getSpawnLocations().size() > 0) {
-			e.setRespawnLocation(gsg.getRandomSpawn());
+		if (gsg.getSpawnLocations().size() < 0) {
+			return;
 		}
+
+		e.setRespawnLocation(gsg.getRandomSpawn());
 
 		int time = ConfigValues.getRespawnProtectTime();
 		if (time > 0) {
@@ -690,15 +692,21 @@ public class GameListener implements Listener {
 			}
 		}
 
+		ItemStack hand = NMS.getItemInHand(p);
 		Action action = event.getAction();
-		if (action == Action.RIGHT_CLICK_BLOCK && !NMS.getItemInHand(p).getType().equals(Material.EGG)
-				&& GameUtils.isGameItem(p)) {
-			event.setCancelled(true); // Cancels the game items usage, for example with collecting beehives
+
+		/** Cancels the rage knife usage, for example with collecting beehives
+		 * 
+		 * For this we don't need to check all game items, because
+		 * there is no possibility to change the item types from config.
+		 */
+		if (action == Action.RIGHT_CLICK_BLOCK && Items.getRageKnife() != null
+				&& hand.getType().equals(Items.getRageKnife().getItem())) {
+			event.setCancelled(true);
 		}
 
-		if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR || action == Action.LEFT_CLICK_AIR
-				|| action == Action.LEFT_CLICK_BLOCK && GameUtils.getStatus(p) == GameStatus.WAITING) {
-			ItemStack hand = NMS.getItemInHand(p);
+		if ((action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR || action == Action.LEFT_CLICK_AIR
+				|| action == Action.LEFT_CLICK_BLOCK) && GameUtils.getStatus(p) == GameStatus.WAITING) {
 			ItemMeta meta = hand.getItemMeta();
 			if (meta != null && meta.hasDisplayName()) {
 				Game game = GameUtils.getGameByPlayer(p);
@@ -758,9 +766,10 @@ public class GameListener implements Listener {
 			return;
 		}
 
+		Action action = ev.getAction();
 		Material t = ev.getClickedBlock().getType();
 
-		if (ev.getAction() == Action.PHYSICAL) {
+		if (action == Action.PHYSICAL) {
 			if (t == Material.FARMLAND) {
 				ev.setUseInteractedBlock(Event.Result.DENY);
 				ev.setCancelled(true);
@@ -777,7 +786,7 @@ public class GameListener implements Listener {
 					ev.setCancelled(true);
 				}
 			}
-		} else if (ConfigValues.isCancelRedstoneActivate() && ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
+		} else if (ConfigValues.isCancelRedstoneActivate() && action == Action.RIGHT_CLICK_BLOCK) {
 			if (GameUtils.getStatus(p) == GameStatus.RUNNING || GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
 				if (MaterialUtil.isTrapdoor(t) || MaterialUtil.isButton(t)) {
 					ev.setUseInteractedBlock(Event.Result.DENY);
@@ -803,7 +812,7 @@ public class GameListener implements Listener {
 			}
 		}
 
-		if (ConfigValues.isCancelDoorUse() && ev.getAction() == Action.RIGHT_CLICK_BLOCK
+		if (ConfigValues.isCancelDoorUse() && action == Action.RIGHT_CLICK_BLOCK
 				&& GameUtils.getStatus(p) == GameStatus.RUNNING || GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
 			if (MaterialUtil.isWoodenDoor(t)) {
 				ev.setUseInteractedBlock(Event.Result.DENY);
@@ -812,7 +821,7 @@ public class GameListener implements Listener {
 		}
 
 		// Just prevent usage of bush
-		if (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && ev.getAction() == Action.RIGHT_CLICK_BLOCK) {
+		if (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && action == Action.RIGHT_CLICK_BLOCK) {
 			if (t.equals(Material.SWEET_BERRY_BUSH) || t.equals(Material.COMPOSTER)) {
 				ev.setUseInteractedBlock(Event.Result.DENY);
 				ev.setCancelled(true);
