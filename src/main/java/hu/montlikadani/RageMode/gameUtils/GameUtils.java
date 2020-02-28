@@ -1026,8 +1026,7 @@ public class GameUtils {
 	}
 
 	/**
-	 * Stops all currently running games. If there are no running games
-	 * will returns.
+	 * Stops all currently running games.
 	 */
 	public static void stopAllGames() {
 		Debug.logConsole("Searching games to stop...");

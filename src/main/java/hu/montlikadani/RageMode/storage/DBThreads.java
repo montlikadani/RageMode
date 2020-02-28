@@ -12,16 +12,17 @@ public class DBThreads implements Runnable {
 
 	@Override
 	public void run() {
-		switch (hu.montlikadani.ragemode.config.ConfigValues.getDatabaseType()) {
-		case "mysql":
+		switch (hu.montlikadani.ragemode.RageMode.getInstance().getDatabaseHandler().getDBType()) {
+		case MYSQL:
 			MySQLDB.addPlayerStatistics(pP);
 			break;
-		case "sqlite":
-		case "sql":
+		case SQLITE:
 			SQLDB.addPlayerStatistics(pP);
 			break;
-		default:
+		case YAML:
 			YAMLDB.createPlayersStats(pP);
+			break;
+		default:
 			break;
 		}
 	}

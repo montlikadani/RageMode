@@ -2,7 +2,6 @@ package hu.montlikadani.ragemode;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -18,14 +17,13 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.google.common.base.StandardSystemProperty;
-
 import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.commands.RmTabCompleter;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.Language;
+import hu.montlikadani.ragemode.database.DatabaseHandler;
 import hu.montlikadani.ragemode.database.MySQLConnect;
 import hu.montlikadani.ragemode.database.SQLConnect;
 import hu.montlikadani.ragemode.events.BungeeListener;
@@ -60,8 +58,7 @@ public class RageMode extends JavaPlugin {
 
 	private static RageMode instance = null;
 	private static Language lang = null;
-	private static MySQLConnect mySQLConnect = null;
-	private static SQLConnect sqlConnect = null;
+	private DatabaseHandler dbHandler = null;
 	private static ServerVersion serverVersion = null;
 
 	private Economy econ = null;
@@ -79,103 +76,83 @@ public class RageMode extends JavaPlugin {
 	public void onEnable() {
 		instance = this;
 
+		serverVersion = new ServerVersion();
+
+		if (Version.isCurrentLower(Version.v1_8_R1)) {
+			getLogger().log(Level.SEVERE,
+					"[RageMode] This version is not supported by this plugin! Please use larger 1.8+");
+			getManager().disablePlugin(this);
+			return;
+		}
+
 		try {
-			if (!checkJavaVersion()) {
-				getManager().disablePlugin(this);
-				return;
-			}
+			Class.forName("org.spigotmc.SpigotConfig");
+			isSpigot = true;
+		} catch (ClassNotFoundException c) {
+			isSpigot = false;
+		}
 
-			serverVersion = new ServerVersion();
+		if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
+			getLogger().log(Level.INFO,
+					"[RageMode] This version not fully supported by this plugin, so some options will not work.");
 
-			if (Version.isCurrentLower(Version.v1_8_R1)) {
-				getLogger().log(Level.SEVERE, "[RageMode] This version is not supported by this plugin! Please use larger 1.8+");
-				getManager().disablePlugin(this);
-				return;
-			}
+		conf = new Configuration(this);
+		conf.loadConfig();
 
-			try {
-				Class.forName("org.spigotmc.SpigotConfig");
-				isSpigot = true;
-			} catch (ClassNotFoundException c) {
-				isSpigot = false;
-			}
+		lang = new Language(this);
+		lang.loadLanguage(ConfigValues.getLang());
 
-			if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
-				getLogger().log(Level.INFO, "[RageMode] This version not fully supported by this plugin, so some options will not work.");
+		loadHooks();
 
-			conf = new Configuration(this);
-			conf.loadConfig();
+		if (ConfigValues.isBungee()) {
+			bungee = new BungeeUtils(this);
+			getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+		}
 
-			lang = new Language(this);
-			lang.loadLanguage(ConfigValues.getLang());
+		if (ConfigValues.isCheckForUpdates()) {
+			Debug.logConsole(checkVersion("console"));
+		}
 
-			loadHooks();
+		registerListeners();
+		registerCommands();
+		connectDatabase();
 
-			if (ConfigValues.isBungee()) {
-				bungee = new BungeeUtils(this);
-				getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-			}
+		RuntimePPManager.loadPPListFromDatabase();
+		loadGames();
 
-			if (ConfigValues.isCheckForUpdates()) {
-				Debug.logConsole(checkVersion("console"));
-			}
+		bossManager = new BossbarManager(this);
 
-			registerListeners();
-			registerCommands();
+		if (ConfigValues.isSignsEnable()) {
+			SignConfiguration.initSignConfiguration();
+			SignCreator.loadSigns();
+		}
 
-			switch (ConfigValues.getDatabaseType()) {
-			case "mysql":
-				connectMySQL();
-				break;
-			case "sql":
-			case "sqlite":
-				connectSQL();
-				break;
-			default:
-				initYamlDatabase();
-				break;
-			}
+		Metrics metrics = new Metrics(this, 5076);
+		if (metrics.isEnabled()) {
+			metrics.addCustomChart(new Metrics.SingleLineChart("amount_of_games", games::size));
 
-			RuntimePPManager.loadPPListFromDatabase();
-			loadGames();
+			metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
+				int totalPlayers = 0;
+				switch (dbHandler.getDBType()) {
+				case MYSQL:
+					totalPlayers = MySQLDB.getAllPlayerStatistics().size();
+					break;
+				case SQLITE:
+					totalPlayers = SQLDB.getAllPlayerStatistics().size();
+					break;
+				case YAML:
+					totalPlayers = YAMLDB.getAllPlayerStatistics().size();
+					break;
+				default:
+					break;
+				}
 
-			bossManager = new BossbarManager(this);
+				return String.valueOf(totalPlayers);
+			}));
 
-			if (ConfigValues.isSignsEnable()) {
-				SignConfiguration.initSignConfiguration();
-				SignCreator.loadSigns();
-			}
+			metrics.addCustomChart(new Metrics.SimplePie("statistic_type", dbHandler.getDBType()::name));
 
-			Metrics metrics = new Metrics(this, 5076);
-			if (metrics.isEnabled()) {
-				metrics.addCustomChart(new Metrics.SingleLineChart("amount_of_games", games::size));
-
-				metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
-					int totalPlayers = 0;
-					switch (ConfigValues.getDatabaseType()) {
-					case "mysql":
-						totalPlayers = MySQLDB.getAllPlayerStatistics().size();
-						break;
-					case "sql":
-					case "sqlite":
-						totalPlayers = SQLDB.getAllPlayerStatistics().size();
-						break;
-					case "yaml":
-						totalPlayers = YAMLDB.getAllPlayerStatistics().size();
-						break;
-					default:
-						break;
-					}
-
-					return String.valueOf(totalPlayers);
-				}));
-
-				metrics.addCustomChart(new Metrics.SimplePie("statistic_type", ConfigValues::getDatabaseType));
-
-				Debug.logConsole("Metrics enabled.");
-			}
-		} catch (Throwable e) {
-			e.printStackTrace();
+			Debug.logConsole("Metrics enabled.");
 		}
 	}
 
@@ -210,10 +187,29 @@ public class RageMode extends JavaPlugin {
 		}
 	}
 
-	private void initYamlDatabase() {
-		YAMLDB.initFile();
-		YAMLDB.loadPlayerStatistics();
-		YAMLDB.loadJoinDelay();
+	private void connectDatabase() {
+		dbHandler = new DatabaseHandler(this);
+
+		String type = "yaml";
+		switch (ConfigValues.getDatabaseType()) {
+		case "mysql":
+			type = "mysql";
+			break;
+		case "sql":
+		case "sqlite":
+			type = "sqlite";
+			break;
+		case "yml":
+		case "yaml":
+			type = "yaml";
+			break;
+		default:
+			break;
+		}
+
+		dbHandler.setDatabaseType(type);
+		dbHandler.connectDatabase();
+		dbHandler.loadDatabase(true);
 	}
 
 	private void saveDatabase() {
@@ -221,15 +217,14 @@ public class RageMode extends JavaPlugin {
 			return;
 		}
 
-		switch (ConfigValues.getDatabaseType()) {
-		case "yaml":
+		switch (dbHandler.getDBType()) {
+		case YAML:
 			YAMLDB.saveJoinDelay();
 			break;
-		case "sql":
-		case "sqlite":
+		case SQLITE:
 			SQLDB.saveJoinDelay();
 			break;
-		case "mysql":
+		case MYSQL:
 			MySQLDB.saveJoinDelay();
 			break;
 		default:
@@ -237,126 +232,9 @@ public class RageMode extends JavaPlugin {
 		}
 	}
 
-	private void connectMySQL() {
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException c) {
-			c.printStackTrace();
-			Debug.logConsole(Level.WARNING, "Could not connect to the MySQL database. No MySql found.");
-			return;
-		}
-
-		String host = ConfigValues.getHost();
-		String port = ConfigValues.getPort();
-		String database = ConfigValues.getDatabase();
-		String username = ConfigValues.getUsername();
-		String password = ConfigValues.getPassword();
-		String charEncode = ConfigValues.getEncoding();
-		String prefix = ConfigValues.getDatabaseTablePrefix();
-		boolean serverCertificate = ConfigValues.isCertificate();
-		boolean useUnicode = ConfigValues.isUnicode();
-		boolean autoReconnect = ConfigValues.isAutoReconnect();
-		boolean useSSL = ConfigValues.isUseSSL();
-
-		if (charEncode.isEmpty()) {
-			charEncode = "UTF-8";
-		}
-
-		if (prefix.isEmpty()) {
-			prefix = "rm_";
-		}
-
-		mySQLConnect = new MySQLConnect(host, port, database, username, password, serverCertificate, useUnicode,
-				charEncode, autoReconnect, useSSL, prefix);
-		if (mySQLConnect == null) {
-			return;
-		}
-
-		if (!mySQLConnect.isValid()) {
-			return;
-		}
-
-		MySQLDB.loadPlayerStatistics();
-
-		if (mySQLConnect.isConnected()) {
-			Debug.logConsole("Successfully connected to MySQL!");
-		}
-	}
-
-	private void connectSQL() {
-		try {
-			Class.forName("org.sqlite.JDBC");
-		} catch (ClassNotFoundException c) {
-			c.printStackTrace();
-			Debug.logConsole(Level.WARNING, "Could not connect to the SQL database. No Sql found.");
-			return;
-		}
-
-		File sqlFile = new File(getFolder(), ConfigValues.getSqlFileName() + ".db");
-		if (!sqlFile.exists()) {
-			try {
-				sqlFile.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		String prefix = ConfigValues.getDatabaseTablePrefix();
-		if (prefix.isEmpty()) {
-			prefix = "rm_";
-		}
-
-		sqlConnect = new SQLConnect(sqlFile, prefix);
-		if (sqlConnect == null) {
-			return;
-		}
-
-		if (!sqlConnect.isValid()) {
-			return;
-		}
-
-		SQLDB.loadPlayerStatistics();
-		SQLDB.loadJoinDelay();
-
-		if (sqlConnect.isConnected()) {
-			Debug.logConsole("Successfully connected to SQL!");
-		}
-	}
-
-	private void loadDatabases() {
-		switch (ConfigValues.getDatabaseType()) {
-		case "mysql":
-			if (mySQLConnect == null || !mySQLConnect.isConnected()) {
-				connectMySQL();
-			} else {
-				MySQLDB.loadPlayerStatistics();
-			}
-
-			break;
-		case "sql":
-		case "sqlite":
-			if (sqlConnect == null || !sqlConnect.isConnected()) {
-				connectSQL();
-			} else {
-				SQLDB.loadPlayerStatistics();
-			}
-
-			break;
-		default:
-			YAMLDB.initFile();
-			YAMLDB.loadPlayerStatistics();
-			break;
-		}
-
-		RuntimePPManager.loadPPListFromDatabase();
-	}
-
 	private boolean initEconomy() {
 		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-		if (rsp == null)
-			return false;
-
-		econ = rsp.getProvider();
+		econ = rsp == null ? null : rsp.getProvider();
 		return econ != null;
 	}
 
@@ -391,7 +269,11 @@ public class RageMode extends JavaPlugin {
 		}
 
 		registerListeners();
-		loadDatabases();
+		if (dbHandler != null) {
+			dbHandler.loadDatabase(false);
+		} else {
+			connectDatabase();
+		}
 
 		if (hologram)
 			HoloHolder.initHoloHolder();
@@ -483,7 +365,7 @@ public class RageMode extends JavaPlugin {
 					.setDisplayName(Utils.colors(c.getString("items.rageBow.name", "&6RageBow")))
 					.setLore(Utils.colorList(c.getStringList("items.rageBow.lore")))
 					.setSlot(c.getInt("items.rageBow.slot", 0))
-					.build(org.bukkit.enchantments.Enchantment.ARROW_INFINITE, 1);
+					.setEnchant(org.bukkit.enchantments.Enchantment.ARROW_INFINITE).build();
 			gameItems[3] = itemHandler;
 		}
 
@@ -525,19 +407,28 @@ public class RageMode extends JavaPlugin {
 	}
 
 	/**
+	 * Gets the database handler which handles the database connection.
+	 * @return {@link DatabaseHandler}
+	 */
+	public DatabaseHandler getDatabaseHandler() {
+		return dbHandler;
+	}
+
+	/**
 	 * Gets the given player statistics from database.
 	 * @param uuid Player uuid
 	 * @return {@link PlayerPoints}
 	 */
 	public static PlayerPoints getPPFromDatabase(UUID uuid) {
-		switch (ConfigValues.getDatabaseType()) {
-		case "sql":
-		case "sqlite":
+		switch (instance.getDatabaseHandler().getDBType()) {
+		case SQLITE:
 			return SQLDB.getPlayerStatsFromData(uuid);
-		case "mysql":
+		case MYSQL:
 			return MySQLDB.getPlayerStatsFromData(uuid);
-		default:
+		case YAML:
 			return YAMLDB.getPlayerStatsFromData(uuid);
+		default:
+			return null;
 		}
 	}
 
@@ -594,18 +485,22 @@ public class RageMode extends JavaPlugin {
 
 	/**
 	 * Gets the {@link MySQLConnect} class
+	 * @deprecated Use {@link #getDatabaseHandler()}
 	 * @return mySQLConnect class
 	 */
+	@Deprecated
 	public static MySQLConnect getMySQL() {
-		return mySQLConnect;
+		return DatabaseHandler.getMySQL();
 	}
 
 	/**
 	 * Gets the {@link SQLConnect} class
+	 * @deprecated Use {@link #getDatabaseHandler()}
 	 * @return SQLConnect class
 	 */
+	@Deprecated
 	public static SQLConnect getSQL() {
-		return sqlConnect;
+		return DatabaseHandler.getSQL();
 	}
 
 	/**
@@ -672,27 +567,14 @@ public class RageMode extends JavaPlugin {
 		return econ;
 	}
 
-	private boolean checkJavaVersion() {
-		try {
-			if (Float.parseFloat(StandardSystemProperty.JAVA_CLASS_VERSION.value()) < 52.0) {
-				Debug.logConsole(Level.WARNING, "You are using an older Java that is not supported. Please use 1.8 or higher versions!");
-				return false;
-			}
-		} catch (NumberFormatException e) {
-			Debug.logConsole(Level.WARNING, "Failed to detect Java version.");
-			return false;
-		}
-
-		return true;
-	}
-
 	public String checkVersion(String sender) {
 		String msg = "";
 		String[] nVersion;
 		String[] cVersion;
 		String lineWithVersion = "";
 		try {
-			URL githubUrl = new URL("https://raw.githubusercontent.com/montlikadani/RageMode/master/src/main/resources/plugin.yml");
+			URL githubUrl = new URL(
+					"https://raw.githubusercontent.com/montlikadani/RageMode/master/src/main/resources/plugin.yml");
 			BufferedReader br = new BufferedReader(new InputStreamReader(githubUrl.openStream()));
 			String s;
 			while ((s = br.readLine()) != null) {
@@ -717,7 +599,8 @@ public class RageMode extends JavaPlugin {
 							+ "\n&6Download:&c &nhttps://www.spigotmc.org/resources/69169/"
 							+ "\n&8&m&l--------------------------------------------------";
 				} else if (sender.equals("console")) {
-					msg = "New version (" + versionString + ") is available at https://www.spigotmc.org/resources/69169/";
+					msg = "New version (" + versionString
+							+ ") is available at https://www.spigotmc.org/resources/69169/";
 				}
 			} else if (sender.equals("console")) {
 				msg = "You're running the latest version.";

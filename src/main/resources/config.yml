@@ -192,6 +192,10 @@ game:
   # Counting in seconds!
   game-freeze-time-at-end-game: 10
 
+  # Do we use grenade effects when a player thrown?
+  # Currently the effect type can't be changed.
+  use-grenade-trails: true
+
   # Should be enable chat in the game?
   # This ignores with ragemode.bypass.game.lockchat permission.
   enable-chat-in-game: true
@@ -297,7 +301,7 @@ rejoin-delay:
     minute: 0
     second: 30
 
-# Grant rewards at end of game.
+# The player rewards if the game end or doing something else in a game.
 # Rewards can be found in the rewards.yml file.
 rewards:
   enable: true

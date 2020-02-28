@@ -53,6 +53,7 @@ permissions:
       ragemode.admin.points: true
       ragemode.admin.givesaveditems: true
       ragemode.admin.latestart: true
+      ragemode.admin.convertdatabase: true
   ragemode.joinrandom:
     description: Gives access to the /rm joinrandom command.
     default: false

@@ -14,11 +14,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.Debug;
-import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.database.DatabaseHandler;
 import hu.montlikadani.ragemode.database.MySQLConnect;
 import hu.montlikadani.ragemode.database.RMConnection;
-import hu.montlikadani.ragemode.database.SQLConnect;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.utils.ReJoinDelay;
@@ -28,7 +27,7 @@ public class MySQLDB {
 	private static List<PlayerPoints> points = new ArrayList<>();
 
 	public static void loadPlayerStatistics() {
-		MySQLConnect mySQL = RageMode.getMySQL();
+		MySQLConnect mySQL = DatabaseHandler.getMySQL();
 		if (!mySQL.isConnected()) {
 			return;
 		}
@@ -140,7 +139,7 @@ public class MySQLDB {
 	 * @param playerPoints The PlayerPoints instance from which the statistics should be gotten.
 	 */
 	public synchronized static void addPlayerStatistics(PlayerPoints playerPoints) {
-		MySQLConnect mySQL = RageMode.getMySQL();
+		MySQLConnect mySQL = DatabaseHandler.getMySQL();
 		if (!mySQL.isValid()) {
 			return;
 		}
@@ -264,7 +263,7 @@ public class MySQLDB {
 	 * @param uuid player uuid
 	 */
 	public synchronized static void addPoints(int points, UUID uuid) {
-		MySQLConnect mysql = RageMode.getMySQL();
+		MySQLConnect mysql = DatabaseHandler.getMySQL();
 		if (!mysql.isValid()) {
 			return;
 		}
@@ -351,7 +350,7 @@ public class MySQLDB {
 	 * @return A List of all PlayerPoints objects which are stored in the MySQL database.
 	 */
 	public synchronized static List<PlayerPoints> getAllPlayerStatistics() {
-		MySQLConnect connect = RageMode.getMySQL();
+		MySQLConnect connect = DatabaseHandler.getMySQL();
 		if (!connect.isValid()) {
 			return Collections.emptyList();
 		}
@@ -406,7 +405,7 @@ public class MySQLDB {
 	 * @return {@link PlayerPoints}
 	 */
 	public synchronized static PlayerPoints getPlayerStatsFromData(UUID uuid) {
-		MySQLConnect connect = RageMode.getMySQL();
+		MySQLConnect connect = DatabaseHandler.getMySQL();
 		if (!connect.isValid()) {
 			return null;
 		}
@@ -534,14 +533,14 @@ public class MySQLDB {
 		rpp.setGames(0);
 		rpp.setKD(0d);
 
-		RMConnection conn = RageMode.getMySQL().getConnection();
+		RMConnection conn = DatabaseHandler.getMySQL().getConnection();
 		if (!conn.isConnected()) {
 			return false;
 		}
 
 		PreparedStatement prestt = null;
 		try {
-			prestt = conn.prepareStatement("REPLACE INTO `" + RageMode.getMySQL().getPrefix()
+			prestt = conn.prepareStatement("REPLACE INTO `" + DatabaseHandler.getMySQL().getPrefix()
 					+ "stats_players` (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills,"
 					+ " knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
 					+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
@@ -576,7 +575,7 @@ public class MySQLDB {
 			return;
 		}
 
-		SQLConnect connect = RageMode.getSQL();
+		MySQLConnect connect = DatabaseHandler.getMySQL();
 		if (!connect.isConnected()) {
 			return;
 		}
@@ -618,7 +617,7 @@ public class MySQLDB {
 	}
 
 	public static void saveJoinDelay() {
-		MySQLConnect connect = RageMode.getMySQL();
+		MySQLConnect connect = DatabaseHandler.getMySQL();
 		if (!connect.isConnected()) {
 			return;
 		}

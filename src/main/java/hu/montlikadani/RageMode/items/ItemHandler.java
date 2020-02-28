@@ -10,15 +10,22 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class ItemHandler {
 
 	private Material item;
+	private int amount = 1;
 	private String displayName;
 	private String customName;
 	private List<String> lore;
+	private Enchantment enchant;
+	private int enchantLevel = 1;
 	private int slot = -1;
 
 	private ItemStack result;
 
 	public Material getItem() {
 		return item;
+	}
+
+	public int getAmount() {
+		return amount;
 	}
 
 	public String getDisplayName() {
@@ -31,6 +38,14 @@ public class ItemHandler {
 
 	public List<String> getLore() {
 		return lore;
+	}
+
+	public Enchantment getEnchant() {
+		return enchant;
+	}
+
+	public int getEnchantLevel() {
+		return enchantLevel;
 	}
 
 	public int getSlot() {
@@ -52,6 +67,11 @@ public class ItemHandler {
 		return this;
 	}
 
+	public ItemHandler setAmount(int amount) {
+		this.amount = amount < 1 ? 1 : 0;
+		return this;
+	}
+
 	public ItemHandler setDisplayName(String displayName) {
 		this.displayName = displayName;
 		return this;
@@ -67,16 +87,22 @@ public class ItemHandler {
 		return this;
 	}
 
-	public ItemStack build() {
-		return build(null, 1);
+	public ItemHandler setEnchant(Enchantment enchant) {
+		this.enchant = enchant;
+		return this;
 	}
 
-	public ItemStack build(Enchantment enchant, int level) {
+	public ItemHandler setEnchantLevel(int enchantLevel) {
+		this.enchantLevel = enchantLevel < 1 ? 1 : enchantLevel;
+		return this;
+	}
+
+	public ItemStack build() {
 		if (item == null) {
 			return null;
 		}
 
-		ItemStack item = new ItemStack(this.item);
+		ItemStack item = new ItemStack(this.item, amount);
 		assert item != null;
 
 		ItemMeta meta = item.getItemMeta();
@@ -90,8 +116,8 @@ public class ItemHandler {
 			meta.setLore(lore);
 		}
 
-		if (enchant != null && level != 0) {
-			meta.addEnchant(enchant, level, false);
+		if (enchant != null) {
+			meta.addEnchant(enchant, enchantLevel, false);
 		}
 
 		item.setItemMeta(meta);

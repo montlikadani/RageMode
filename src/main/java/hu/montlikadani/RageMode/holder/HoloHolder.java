@@ -84,8 +84,8 @@ public class HoloHolder {
 		final UUID uuid = player.getUniqueId();
 		final Hologram dataHologram = hologram;
 
-		switch (hu.montlikadani.ragemode.config.ConfigValues.getDatabaseType()) {
-		case "mysql":
+		switch (RageMode.getInstance().getDatabaseHandler().getDBType()) {
+		case MYSQL:
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final PlayerPoints rpp;
 				if (RuntimePPManager.getPPForPlayer(uuid) == null)
@@ -100,7 +100,7 @@ public class HoloHolder {
 				});
 			});
 			break;
-		case "yaml":
+		case YAML:
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final PlayerPoints rpp;
 				if (RuntimePPManager.getPPForPlayer(uuid) == null)
@@ -115,8 +115,7 @@ public class HoloHolder {
 				});
 			});
 			break;
-		case "sql":
-		case "sqlite":
+		case SQLITE:
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 				final PlayerPoints rpp;
 				if (RuntimePPManager.getPPForPlayer(uuid) == null)

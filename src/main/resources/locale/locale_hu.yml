@@ -12,6 +12,7 @@ player-non-existent: "&cEz a játékos nem létezik."
 not-played-yet: "&cEz a játékos&7 %player%&c nem játszot ezen a szerveren még."
 bad-ragemode-name: "&cA játék név nem tartalmazhat speciális karaktert, ragemode parancsot vagy nem lehet 20-nál nagyobb."
 no-games: "&cNincs egy elérhető játék sem."
+invalid-database-name: "&cNincs ilyen névvel lévő adatbázis."
 
 commands:
   listgames:
@@ -78,6 +79,10 @@ commands:
     changed: "&2A maximum játékosok a(z)&e %game%&2 játékhoz megváltoztatva&e %value%&2 értékre."
   minplayers:
     changed: "&2A minimum játékosok a(z)&e %game%&2 játékhoz megváltoztatva&e %value%&2 értékre."
+  convertdb:
+    done: "&2Az adatbázis &e%from%&2-ról konvertálva &e%to%&a-ra/re&2.&c Ne felejtsd el megváltoztatni az adatbázist a konfigban!"
+    error: "&cValami nincs rendben a konvertálás során. Kérlek, ellenőrizd az adatbázis formátumát."
+    already-set: "&cEz az adatbázis már használatban van."
 
 hologram-list:
 - "&9Pontszám:&a %points%"

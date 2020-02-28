@@ -87,6 +87,7 @@ public class Language {
 		l.getL("not-played-yet", "&cThat player&7 %player%&c hasn't played on this server yet.");
 		l.getL("bad-ragemode-name", "&cThe game name may contains special characters, ragemode commands, or the the name greater than 20.");
 		l.getL("no-games", "&cThere are no games available.");
+		l.getL("invalid-database-name", "&cThere is no database type with this name.");
 
 		l.getL("commands.listgames.listing-games", "&6Listing all available ragemode games... There are&a %games%&6 available.");
 		l.getL("commands.listgames.no-games-available", "&cThere are currently no RageMode maps on this server.");
@@ -134,6 +135,9 @@ public class Language {
 		l.getL("commands.listplayers.player-currently-not-playing", "&cYou are not currently playing.");
 		l.getL("commands.maxplayers.changed", "&2The maxplayers for&e %game%&2 has been changed to&e %value%&2.");
 		l.getL("commands.minplayers.changed", "&2The minplayers for&e %game%&2 has been changed to&e %value%&2.");
+		l.getL("commands.convertdb.done", "&2The database has been converted from&e %from%&2 to&e %to%&2.&c Don't forget to change the db type in config!");
+		l.getL("commands.convertdb.error", "&cSomething wrong while converting. Please check your database format.");
+		l.getL("commands.convertdb.already-set", "&cThis database is already in use.");
 
 		List<String> holoList = Arrays.asList("&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
 				"&5KD:&a %kd%", "&4Kills:&a %kills%", "&7Deaths:&a %deaths%");

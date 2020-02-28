@@ -13,6 +13,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
+import hu.montlikadani.ragemode.database.DBType;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class RmTabCompleter implements TabCompleter {
@@ -42,6 +43,10 @@ public class RmTabCompleter implements TabCompleter {
 				} else if (args[0].equalsIgnoreCase("signupdate")) {
 					GetGames.getGames().forEach(cmds::add);
 					cmds.add("all");
+				} else if (args[0].equalsIgnoreCase("convertdatabase")) {
+					for (DBType type : DBType.values()) {
+						cmds.add(type.name().toLowerCase());
+					}
 				} else {
 					for (String game : getGameListCmds()) {
 						if (args[0].equalsIgnoreCase(game) && !GetGames.getGames().isEmpty()) {
@@ -104,7 +109,7 @@ public class RmTabCompleter implements TabCompleter {
 		List<String> c = new ArrayList<>();
 		for (String cmds : Arrays.asList("addgame", "addspawn", "setlobby", "reload", "holostats", "removegame",
 				"resetplayerstats", "forcestart", "kick", "stopgame", "signupdate", "togglegame", "points", "givesaveditems",
-				"removespawn", "latestart", "maxplayers", "minplayers")) {
+				"removespawn", "latestart", "maxplayers", "minplayers", "convertdatabase")) {
 			if (sender instanceof Player && hasPerm(sender, "ragemode.admin." + cmds)) {
 				c.add(cmds);
 			}

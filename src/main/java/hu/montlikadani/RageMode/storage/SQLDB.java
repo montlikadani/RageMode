@@ -14,8 +14,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.Debug;
-import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.database.DatabaseHandler;
 import hu.montlikadani.ragemode.database.RMConnection;
 import hu.montlikadani.ragemode.database.SQLConnect;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
@@ -27,7 +27,7 @@ public class SQLDB {
 	private static List<PlayerPoints> points = new ArrayList<>();
 
 	public static void loadPlayerStatistics() {
-		SQLConnect sqlConnect = RageMode.getSQL();
+		SQLConnect sqlConnect = DatabaseHandler.getSQL();
 		if (!sqlConnect.isConnected()) {
 			return;
 		}
@@ -144,7 +144,7 @@ public class SQLDB {
 	 * @param playerPoints The PlayerPoints instance from which the statistics should be gotten.
 	 */
 	public synchronized static void addPlayerStatistics(PlayerPoints playerPoints) {
-		SQLConnect sqlConnect = RageMode.getSQL();
+		SQLConnect sqlConnect = DatabaseHandler.getSQL();
 		if (!sqlConnect.isValid()) {
 			return;
 		}
@@ -268,7 +268,7 @@ public class SQLDB {
 	 * @param uuid player uuid
 	 */
 	public synchronized static void addPoints(int points, UUID uuid) {
-		SQLConnect sql = RageMode.getSQL();
+		SQLConnect sql = DatabaseHandler.getSQL();
 		if (!sql.isValid()) {
 			return;
 		}
@@ -355,7 +355,7 @@ public class SQLDB {
 	 * @return A List of all PlayerPoints objects which are stored in the SQL database.
 	 */
 	public synchronized static List<PlayerPoints> getAllPlayerStatistics() {
-		SQLConnect connect = RageMode.getSQL();
+		SQLConnect connect = DatabaseHandler.getSQL();
 		if (!connect.isValid()) {
 			return Collections.emptyList();
 		}
@@ -409,7 +409,7 @@ public class SQLDB {
 	 * @return {@link PlayerPoints}
 	 */
 	public synchronized static PlayerPoints getPlayerStatsFromData(UUID uuid) {
-		SQLConnect connect = RageMode.getSQL();
+		SQLConnect connect = DatabaseHandler.getSQL();
 		if (!connect.isValid()) {
 			return null;
 		}
@@ -537,14 +537,14 @@ public class SQLDB {
 		rpp.setGames(0);
 		rpp.setKD(0d);
 
-		RMConnection conn = RageMode.getSQL().getConnection();
+		RMConnection conn = DatabaseHandler.getSQL().getConnection();
 		if (!conn.isConnected()) {
 			return false;
 		}
 
 		PreparedStatement prestt = null;
 		try {
-			prestt = conn.prepareStatement("REPLACE INTO `" + RageMode.getSQL().getPrefix()
+			prestt = conn.prepareStatement("REPLACE INTO `" + DatabaseHandler.getSQL().getPrefix()
 					+ "stats_players` (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills,"
 					+ " knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
 					+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
@@ -579,7 +579,7 @@ public class SQLDB {
 			return;
 		}
 
-		SQLConnect connect = RageMode.getSQL();
+		SQLConnect connect = DatabaseHandler.getSQL();
 		if (!connect.isConnected()) {
 			return;
 		}
@@ -621,7 +621,7 @@ public class SQLDB {
 	}
 
 	public static void saveJoinDelay() {
-		SQLConnect connect = RageMode.getSQL();
+		SQLConnect connect = DatabaseHandler.getSQL();
 		if (!connect.isConnected()) {
 			return;
 		}

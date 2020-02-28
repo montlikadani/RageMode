@@ -24,10 +24,10 @@ public class SQLConnect extends DBConnector implements DBMethods {
 
 		String query = "CREATE TABLE IF NOT EXISTS `" + getPrefix()
 				+ "stats_players` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, "
-				+ "`name` VARCHAR(255) , `uuid` VARCHAR(255) , `kills` INTEGER , "
-				+ "`axe_kills` INTEGER , `direct_arrow_kills` INTEGER , `explosion_kills` INTEGER , "
-				+ "`knife_kills` INTEGER , `deaths` INTEGER , `axe_deaths` INTEGER , `direct_arrow_deaths` INTEGER , "
-				+ "`explosion_deaths` INTEGER , `knife_deaths` INTEGER , `wins` INTEGER , `score` INTEGER , `games` INTEGER , "
+				+ "`name` VARCHAR(255) NOT NULL, `uuid` VARCHAR(255) NOT NULL, `kills` INTEGER, "
+				+ "`axe_kills` INTEGER, `direct_arrow_kills` INTEGER, `explosion_kills` INTEGER, "
+				+ "`knife_kills` INTEGER, `deaths` INTEGER, `axe_deaths` INTEGER, `direct_arrow_deaths` INTEGER, "
+				+ "`explosion_deaths` INTEGER, `knife_deaths` INTEGER, `wins` INTEGER, `score` INTEGER, `games` INTEGER, "
 				+ "`kd` DOUBLE, UNIQUE(uuid));";
 		createTable(query);
 	}
@@ -37,8 +37,9 @@ public class SQLConnect extends DBConnector implements DBMethods {
 			return;
 		}
 
-		String query = "CREATE TABLE IF NOT EXISTS `" + getPrefix() + "players` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, "
-				+ "`uuid` VARCHAR(255) , `time` LONG, UNIQUE(uuid));";
+		String query = "CREATE TABLE IF NOT EXISTS `" + getPrefix()
+				+ "players` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, "
+				+ "`uuid` VARCHAR(255) NOT NULL, `time` LONG, UNIQUE(uuid));";
 		createTable(query);
 	}
 
@@ -74,7 +75,7 @@ public class SQLConnect extends DBConnector implements DBMethods {
 		}
 
 		try {
-			getConnection().executeUpdate( "DELETE FROM " + table + ";");
+			getConnection().executeUpdate("DELETE FROM " + table + ";");
 			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();

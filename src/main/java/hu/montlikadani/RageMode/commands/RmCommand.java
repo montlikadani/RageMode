@@ -172,6 +172,10 @@ public class RmCommand implements CommandExecutor {
 					if (hasPerm(sender, "ragemode.admin.stopgame"))
 						msg += "&7-&6 /rm stop <gameName>&a - Stops the specified game.\n";
 
+					if (hasPerm(sender, "ragemode.admin.convertdatabase")) {
+						msg += "&7-&6 /rm convertdatabase <type>&a - Converts the current database to a new one.\n";
+					}
+
 					if (hasPerm(sender, "ragemode.admin.signupdate"))
 						msg += "&7-&6 /rm signupdate <gameName/all>&a - Refresh the specified or all game signs.\n";
 
