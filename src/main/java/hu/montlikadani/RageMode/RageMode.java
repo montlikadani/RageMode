@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.stream.Stream;
@@ -68,7 +70,9 @@ public class RageMode extends JavaPlugin {
 	private static boolean isSpigot = false;
 
 	private final List<Game> games = new ArrayList<>();
-	private final List<GameSpawn> spawns = new ArrayList<>();
+
+	private final Set<GameSpawn> spawns = new HashSet<>();
+
 	private final ItemHandler[] gameItems = new ItemHandler[5];
 	private final ItemHandler[] lobbyItems = new ItemHandler[2];
 
@@ -555,7 +559,7 @@ public class RageMode extends JavaPlugin {
 		return games;
 	}
 
-	public List<GameSpawn> getSpawns() {
+	public Set<GameSpawn> getSpawns() {
 		return spawns;
 	}
 
