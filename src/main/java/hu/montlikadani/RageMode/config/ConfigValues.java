@@ -82,6 +82,7 @@ public class ConfigValues {
 	private static boolean rewardEnable;
 	private static boolean rejoinDelayEnabled;
 	private static boolean rememberRejoinDelay;
+	private static boolean freezePlayers;
 
 	private static int gameFreezeTime;
 	private static int lobbyDelay;
@@ -180,7 +181,11 @@ public class ConfigValues {
 				new ArrayList<Integer>(Arrays.asList(60, 30, 20, 10, 5, 4, 3, 2, 1)));
 		cancelRedstoneActivating = f.get("game.cancel-redstone-activating-blocks", true);
 		cancelDoorUse = f.get("game.cancel-door-use", false);
-		gameFreezeTime = f.get("game.game-freeze-time-at-end-game", 10);
+		gameFreezeTime = f.get("game.game-freeze.time", 10);
+		freezePlayers = f.get("game.game-freeze.freeze-players", false);
+		switchGMForPlayers = f.get("game.game-freeze.switch-gamemode-to-spectator", true);
+		disableAllCommandsInGameFreeze = f.get("game.game-freeze.disable-all-commands", false);
+		enableChatAfterEnd = f.get("game.game-freeze.enable-chat", true);
 		useGrenadeTrails = f.get("game.use-grenade-trails", true);
 		enableChatInGame = f.get("game.enable-chat-in-game", true);
 		kickRandomPlayerIfJoinsVipToFullGame = f.get("game.kickRandomPlayerIfJoinsVipToFullGame", true);
@@ -189,9 +194,6 @@ public class ConfigValues {
 		actionbarEnable = f.get("game.defaults.actionbar", true);
 		lobbyDelay = f.get("game.defaults.lobby-delay", 30);
 		gameTime = f.get("game.defaults.gametime", 10);
-		switchGMForPlayers = f.get("game.switch-gamemode-to-spectator-at-end-of-game", true);
-		disableAllCommandsInGameFreeze = f.get("game.disable-all-commands-in-game-freeze", false);
-		enableChatAfterEnd = f.get("game.enable-chat-after-end", true);
 		tabFormatEnable = f.get("game.tablist.player-format.enable", false);
 		tabPrefix = f.get("game.tablist.player-format.prefix", "");
 		tabSuffix = f.get("game.tablist.player-format.suffix", "&e %kills%");
@@ -623,5 +625,9 @@ public class ConfigValues {
 
 	public static boolean isHidePlayerNameTag() {
 		return hidePlayerNameTag;
+	}
+
+	public static boolean isFreezePlayers() {
+		return freezePlayers;
 	}
 }

@@ -629,6 +629,8 @@ public class GameListener implements Listener {
 		else
 			Sounds.ENTITY_CREEPER_PRIMED.playSound(grenade.getLocation(), 1, 1);
 
+		final Location loc = grenade.getLocation();
+
 		new BukkitRunnable() {
 			@Override
 			public void run() {
@@ -638,8 +640,6 @@ public class GameListener implements Listener {
 					cancel();
 					return;
 				}
-
-				Location loc = grenade.getLocation();
 
 				double gX = loc.getX();
 				double gY = loc.getY();
@@ -864,21 +864,25 @@ public class GameListener implements Listener {
 		Game game = GameUtils.getGameByPlayer(p);
 
 		if (GameUtils.getStatus(p) == GameStatus.GAMEFREEZE && GameUtils.isGameInFreezeRoom(game)) {
+			if (!ConfigValues.isFreezePlayers()) {
+				return;
+			}
+
 			Location from = event.getFrom();
 			Location to = event.getTo();
 
 			double x = Math.floor(from.getX());
+			double y = Math.floor(from.getY());
 			double z = Math.floor(from.getZ());
 
-			if (Math.floor(to.getX()) != x || Math.floor(to.getZ()) != z) {
+			if (Math.floor(to.getX()) != x || Math.floor(to.getY()) != y || Math.floor(to.getZ()) != z) {
 				x += .5;
+				y += .5;
 				z += .5;
 
-				p.teleport(new Location(from.getWorld(), x, from.getY(), z, from.getYaw(), from.getPitch()));
+				p.teleport(new Location(from.getWorld(), x, y, z, from.getYaw(), from.getPitch()));
 			}
-		}
-
-		if (p.getLocation().getY() < 0) {
+		} else if (p.getLocation().getY() < 0) {
 			p.teleport(GameUtils.getGameSpawn(game).getRandomSpawn());
 
 			// Prevent damaging player when respawned
