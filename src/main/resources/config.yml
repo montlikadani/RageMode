@@ -186,11 +186,26 @@ game:
   # Cancels the door opening/closing events in game.
   cancel-door-use: false
 
-  # When the game is over, the players will freeze (if the game mode is not in spectator),
-  # then if the time expires, it will be automatically returned to the set location.
-  # This ignores the winner player.
-  # Counting in seconds!
-  game-freeze-time-at-end-game: 10
+  # Game freeze settings
+  game-freeze:
+    # When the game is over, the players will freeze (if the game mode is not in spectator),
+    # then if the time expires, it will be automatically returned to the set location.
+    # This ignores the winner player.
+    # Counting in seconds!
+    time: 10
+
+    # Do freeze players completely?
+    freeze-players: false
+
+    # Switch the game mode to spectator when the game is end?
+    # This will ignores the winner player.
+    switch-gamemode-to-spectator: true
+
+    # Disable all commands execution?
+    disable-all-commands: false
+
+    # Enables the chat messaging
+    enable-chat: true
 
   # Do we use grenade effects when a player thrown?
   # Currently the effect type can't be changed.
@@ -224,16 +239,6 @@ game:
     # Game time in minutes.
     # This ignores, when the integer is contains in the arenas file.
     gametime: 10
-
-  # Switch the game mode to spectator when the game is end?
-  # This will ignores the winner player.
-  switch-gamemode-to-spectator-at-end-of-game: true
-
-  # Disable all commands execution on game freeze?
-  disable-all-commands-in-game-freeze: false
-
-  # Enables the chat after end of game.
-  enable-chat-after-end: true
 
   # Tablist formatting.
   tablist:
@@ -370,6 +375,7 @@ items:
     lore:
     - "&7Right click, throws a grenade and boom!"
     slot: 5
+    amount: 2
 
 # Do NOT edit this!!!
 config-version: 1.6

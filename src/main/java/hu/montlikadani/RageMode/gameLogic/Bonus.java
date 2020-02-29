@@ -8,6 +8,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.items.ItemHandler;
+import hu.montlikadani.ragemode.items.Items;
 import hu.montlikadani.ragemode.libs.Sounds;
 
 public class Bonus {
@@ -45,6 +47,49 @@ public class Bonus {
 				String[] split = b.split(":");
 				Sounds.playSound(player, split[0].toUpperCase(), (split.length > 2 ? Float.parseFloat(split[1]) : 1f),
 						(split.length > 3 ? Float.parseFloat(split[2]) : 1f));
+			} else if (b.contains("givegameitem:")) {
+				b = b.replace("givegameitem:", "");
+
+				if ((b = chance(b)) == null) {
+					continue;
+				}
+
+				String[] split = b.split(":");
+				String gameItem = split.length > 1 ? split[0].toLowerCase() : null;
+				if (gameItem == null) {
+					continue;
+				}
+
+				ItemHandler item = null;
+				if (gameItem.equals("grenade")) {
+					item = Items.getGrenade();
+				} else if (gameItem.equals("combataxe")) {
+					item = Items.getCombatAxe();
+				}
+
+				if (item == null) {
+					continue;
+				}
+
+				int amount = 1;
+				if (gameItem.equals("grenade")) {
+					// clone the item to make sure we are not modifying anything
+					item = (ItemHandler) item.clone();
+
+					amount = split.length > 2 ? Integer.parseInt(split[1]) : 1;
+					if (amount < 1) {
+						amount = 1;
+					}
+
+					item.setAmount(amount).build();
+				}
+
+				org.bukkit.inventory.PlayerInventory inv = player.getInventory();
+				if (!inv.contains(item.getItem()) && item.getSlot() != -1) {
+					inv.setItem(item.getSlot(), item.getResult());
+				} else {
+					inv.addItem(item.getResult());
+				}
 			}
 		}
 	}

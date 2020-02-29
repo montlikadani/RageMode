@@ -7,7 +7,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class ItemHandler {
+public class ItemHandler implements Cloneable {
 
 	private Material item;
 	private int amount = 1;
@@ -68,7 +68,7 @@ public class ItemHandler {
 	}
 
 	public ItemHandler setAmount(int amount) {
-		this.amount = amount < 1 ? 1 : 0;
+		this.amount = amount < 1 ? 1 : amount;
 		return this;
 	}
 
@@ -128,5 +128,16 @@ public class ItemHandler {
 
 	public ItemStack getResult() {
 		return result;
+	}
+
+	@Override
+	public Object clone() {
+		try {
+			return super.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 }

@@ -592,12 +592,12 @@ public class GameListener implements Listener {
 
 		// Removes the egg from player inventory and prevent
 		// other item remove when moved the slot to another
-		if (p.getInventory().contains(Material.EGG)) {
+		/*if (p.getInventory().contains(Material.EGG)) {
 			ItemStack item = p.getInventory().getItem(plugin.getConfiguration().getCfg().getInt("items.grenade.slot"));
 			if (item != null) {
 				item.setAmount(item.getAmount() - 1);
 			}
-		}
+		}*/
 
 		// no baby chickens
 		event.setHatching(false);
