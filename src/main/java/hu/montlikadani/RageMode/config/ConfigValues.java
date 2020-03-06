@@ -44,6 +44,7 @@ public class ConfigValues {
 	private static String chatFormat;
 
 	private static boolean checkForUpdates;
+	private static boolean downloadUpdates;
 	private static boolean logConsole;
 	private static boolean savePlayerData;
 	private static boolean requireEmptyInv;
@@ -117,6 +118,7 @@ public class ConfigValues {
 	public static void loadValues(FileConfig f) {
 		lang = f.get("language", "en");
 		checkForUpdates = f.get("check-for-updates", true);
+		downloadUpdates = f.get("download-updates", true);
 		logConsole = f.get("log-console", true);
 		savePlayerData = f.get("save-player-datas-to-file", false);
 		requireEmptyInv = f.get("require-empty-inventory-to-join", true);
@@ -272,6 +274,10 @@ public class ConfigValues {
 
 	public static boolean isCheckForUpdates() {
 		return checkForUpdates;
+	}
+
+	public static boolean isDownloadUpdates() {
+		return downloadUpdates;
 	}
 
 	public static boolean isSavePlayerData() {

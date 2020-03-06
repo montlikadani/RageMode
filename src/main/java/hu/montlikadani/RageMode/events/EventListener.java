@@ -25,22 +25,17 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.signs.SignData;
+import hu.montlikadani.ragemode.utils.UpdateDownloader;
 
 public class EventListener implements Listener {
-
-	private RageMode plugin;
 
 	@Deprecated
 	public static HashMap<String, Boolean> waitingGames = new HashMap<>();
 
-	public EventListener(RageMode plugin) {
-		this.plugin = plugin;
-	}
-
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		if (ConfigValues.isCheckForUpdates() && event.getPlayer().isOp()) {
-			plugin.checkVersion("player");
+		if (event.getPlayer().isOp()) {
+			event.getPlayer().sendMessage(UpdateDownloader.checkFromGithub("player"));
 		}
 
 		HoloHolder.showAllHolosToPlayer(event.getPlayer());

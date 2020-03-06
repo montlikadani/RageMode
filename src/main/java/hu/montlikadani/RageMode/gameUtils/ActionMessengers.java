@@ -15,9 +15,9 @@ public class ActionMessengers {
 	private Game game;
 	private List<PlayerManager> players;
 
-	private TabTitles gameTab = new TabTitles();
-	private ScoreBoard gameBoard = new ScoreBoard();
-	private ScoreTeam scoreTeam = new ScoreTeam();
+	private final TabTitles gameTab = new TabTitles();
+	private final ScoreBoard gameBoard = new ScoreBoard();
+	private final ScoreTeam scoreTeam = new ScoreTeam();
 
 	public ActionMessengers(Game game, List<PlayerManager> players) {
 		this.game = game;

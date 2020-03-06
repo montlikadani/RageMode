@@ -8,6 +8,9 @@ log-console: true
 # Check for updates on plugin startup.
 check-for-updates: true
 
+# Download releases to \releases folder
+download-updates: true
+
 # This saves the player data, such as inventory, effects etc. to a file.
 # This can be useful for a random server shutdown.
 # If this false and "require-empty-inventory-to-join" also false then the players 

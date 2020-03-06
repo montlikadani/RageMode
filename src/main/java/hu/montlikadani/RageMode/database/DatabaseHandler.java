@@ -169,6 +169,27 @@ public class DatabaseHandler {
 		RuntimePPManager.loadPPListFromDatabase();
 	}
 
+	public void saveDatabase() {
+		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay()) {
+			return;
+		}
+
+		// TODO: complete this to save the database properly
+		switch (type) {
+		case YAML:
+			YAMLDB.saveJoinDelay();
+			break;
+		case SQLITE:
+			SQLDB.saveJoinDelay();
+			break;
+		case MYSQL:
+			MySQLDB.saveJoinDelay();
+			break;
+		default:
+			break;
+		}
+	}
+
 	public boolean convertDatabase(final String type) {
 		if (connector != null && connector.isConnected()) {
 			try {

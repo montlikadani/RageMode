@@ -1,9 +1,6 @@
 package hu.montlikadani.ragemode;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -50,6 +47,7 @@ import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.storage.MySQLDB;
 import hu.montlikadani.ragemode.storage.SQLDB;
 import hu.montlikadani.ragemode.storage.YAMLDB;
+import hu.montlikadani.ragemode.utils.UpdateDownloader;
 import net.milkbowl.vault.economy.Economy;
 
 public class RageMode extends JavaPlugin {
@@ -113,9 +111,7 @@ public class RageMode extends JavaPlugin {
 			getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 		}
 
-		if (ConfigValues.isCheckForUpdates()) {
-			Debug.logConsole(checkVersion("console"));
-		}
+		Debug.logConsole(UpdateDownloader.checkFromGithub("console"));
 
 		registerListeners();
 		registerCommands();
@@ -165,7 +161,7 @@ public class RageMode extends JavaPlugin {
 		if (instance == null) return;
 
 		GameUtils.stopAllGames();
-		saveDatabase();
+		dbHandler.saveDatabase();
 
 		getServer().getScheduler().cancelTasks(this);
 		HandlerList.unregisterAll(this);
@@ -195,7 +191,7 @@ public class RageMode extends JavaPlugin {
 		dbHandler = new DatabaseHandler(this);
 
 		String type = "yaml";
-		switch (ConfigValues.getDatabaseType()) {
+		switch (ConfigValues.getDatabaseType().toLowerCase()) {
 		case "mysql":
 			type = "mysql";
 			break;
@@ -214,26 +210,6 @@ public class RageMode extends JavaPlugin {
 		dbHandler.setDatabaseType(type);
 		dbHandler.connectDatabase();
 		dbHandler.loadDatabase(true);
-	}
-
-	private void saveDatabase() {
-		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay()) {
-			return;
-		}
-
-		switch (dbHandler.getDBType()) {
-		case YAML:
-			YAMLDB.saveJoinDelay();
-			break;
-		case SQLITE:
-			SQLDB.saveJoinDelay();
-			break;
-		case MYSQL:
-			MySQLDB.saveJoinDelay();
-			break;
-		default:
-			break;
-		}
 	}
 
 	private boolean initEconomy() {
@@ -292,7 +268,7 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void registerListeners() {
-		Stream.of(new EventListener(this), new GameListener(this))
+		Stream.of(new EventListener(), new GameListener(this))
 				.forEach(l -> getServer().getPluginManager().registerEvents(l, this));
 
 		if (ConfigValues.isBungee()) {
@@ -577,52 +553,5 @@ public class RageMode extends JavaPlugin {
 
 	public Economy getEconomy() {
 		return econ;
-	}
-
-	public String checkVersion(String sender) {
-		String msg = "";
-		String[] nVersion;
-		String[] cVersion;
-		String lineWithVersion = "";
-		try {
-			URL githubUrl = new URL(
-					"https://raw.githubusercontent.com/montlikadani/RageMode/master/src/main/resources/plugin.yml");
-			BufferedReader br = new BufferedReader(new InputStreamReader(githubUrl.openStream()));
-			String s;
-			while ((s = br.readLine()) != null) {
-				String line = s;
-				if (line.toLowerCase().contains("version")) {
-					lineWithVersion = line;
-					break;
-				}
-			}
-
-			String versionString = lineWithVersion.split(": ")[1];
-			nVersion = versionString.replaceAll("[^0-9.]", "").split("\\.");
-			double newestVersionNumber = Double.parseDouble(nVersion[0] + "." + nVersion[1]);
-
-			cVersion = getDescription().getVersion().replaceAll("[^0-9.]", "").split("\\.");
-			double currentVersionNumber = Double.parseDouble(cVersion[0] + "." + cVersion[1]);
-
-			if (newestVersionNumber > currentVersionNumber) {
-				if (sender.equals("player")) {
-					msg = "&8&m&l--------------------------------------------------\n"
-							+ "&a A new update is available for RageMode!&4 Version:&7 " + versionString
-							+ "\n&6Download:&c &nhttps://www.spigotmc.org/resources/69169/"
-							+ "\n&8&m&l--------------------------------------------------";
-				} else if (sender.equals("console")) {
-					msg = "New version (" + versionString
-							+ ") is available at https://www.spigotmc.org/resources/69169/";
-				}
-			} else if (sender.equals("console")) {
-				msg = "You're running the latest version.";
-			}
-		} catch (Throwable e) {
-			e.printStackTrace();
-			Debug.logConsole(Level.WARNING,
-					"Failed to compare versions. Please report it here:\nhttps://github.com/montlikadani/RageMode/issues");
-		}
-
-		return msg;
 	}
 }

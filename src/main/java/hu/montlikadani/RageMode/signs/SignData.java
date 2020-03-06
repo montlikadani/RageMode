@@ -137,11 +137,12 @@ public class SignData {
 	}
 
 	private void changeBlockBackground() {
-		String type = ConfigValues.getSignBackground();
 		Optional<GameStatus> status = GameUtils.getStatus(game);
 		if (!status.isPresent()) {
 			return;
 		}
+
+		String type = ConfigValues.getSignBackground().toLowerCase();
 
 		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
 			if (status.get() == GameStatus.READY) {

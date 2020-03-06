@@ -81,8 +81,8 @@ public class GameListener implements Listener {
 
 	private RageMode plugin;
 
-	private Map<UUID, UUID> explosionVictims = new HashMap<>();
-	private Map<UUID, UUID> grenadeExplosionVictims = new HashMap<>();
+	private final Map<UUID, UUID> explosionVictims = new HashMap<>();
+	private final Map<UUID, UUID> grenadeExplosionVictims = new HashMap<>();
 
 	public GameListener(RageMode plugin) {
 		this.plugin = plugin;
@@ -231,6 +231,7 @@ public class GameListener implements Listener {
 			return;
 		}
 
+		double finalDamage = 0d;
 		String tool = "";
 
 		if (event.getDamager() instanceof Player) {
@@ -241,19 +242,23 @@ public class GameListener implements Listener {
 				ItemMeta meta = hand.getItemMeta();
 				if (Items.getRageKnife() != null && meta != null && meta.hasDisplayName()
 						&& meta.getDisplayName().equals(Items.getRageKnife().getDisplayName())) {
-					event.setDamage(25);
+					finalDamage = 25;
 					tool = "knife";
 				}
 			}
 		} else if (event.getDamager() instanceof org.bukkit.entity.Egg) {
-			event.setDamage(2.20d);
+			finalDamage = 2.20d;
 			tool = "grenade";
 		} else if (event.getDamager() instanceof Snowball) {
-			event.setDamage(25d);
+			finalDamage = 25d;
 			tool = "snowball";
 		} else if (event.getDamager() instanceof Arrow) {
-			event.setDamage(3.35d);
+			finalDamage = 3.35d;
 			tool = "arrow";
+		}
+
+		if (finalDamage > 0d) {
+			event.setDamage(finalDamage);
 		}
 
 		if (!tool.isEmpty()) {
@@ -330,9 +335,8 @@ public class GameListener implements Listener {
 			if (plugin.getConfiguration().getArenasCfg().isSet("arenas." + game.getName() + ".death-messages")) {
 				String gameBroadcast = plugin.getConfiguration().getArenasCfg()
 						.getString("arenas." + game.getName() + ".death-messages", "");
-				if (!gameBroadcast.isEmpty()) {
-					if (gameBroadcast.equals("true") || gameBroadcast.equals("false"))
-						doDeathBroadcast = Boolean.parseBoolean(gameBroadcast);
+				if (!gameBroadcast.isEmpty() && gameBroadcast.equals("true") || gameBroadcast.equals("false")) {
+					doDeathBroadcast = Boolean.parseBoolean(gameBroadcast);
 				}
 			}
 
@@ -356,7 +360,7 @@ public class GameListener implements Listener {
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, KilledWith.RAGEBOW);
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), "arrow");
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), KilledWith.RAGEBOW);
 					break;
 				case "snowball":
 					if (!killerExists) {
@@ -371,7 +375,7 @@ public class GameListener implements Listener {
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, KilledWith.COMBATAXE);
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), "snowball");
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), KilledWith.COMBATAXE);
 					break;
 				case "explosion":
 					if (explosionVictims.containsKey(deceased.getUniqueId())) {
@@ -394,7 +398,7 @@ public class GameListener implements Listener {
 						sendMessage(deceased, RageMode.getLang().get("game.unknown-killer"));
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), "explosion");
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), KilledWith.EXPLOSION);
 					break;
 				case "grenade":
 					if (!killerExists) {
@@ -409,7 +413,7 @@ public class GameListener implements Listener {
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, KilledWith.GRENADE);
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), "grenade");
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), KilledWith.GRENADE);
 					break;
 				case "knife":
 					if (!killerExists) {
@@ -424,7 +428,7 @@ public class GameListener implements Listener {
 						RageScores.addPointsToPlayer(deceased.getKiller(), deceased, KilledWith.RAGEKNIFE);
 					}
 
-					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), "knife");
+					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), KilledWith.RAGEKNIFE);
 					break;
 				default:
 					message = RageMode.getLang().get("game.unknown-weapon", "%victim%", deceaseName);
