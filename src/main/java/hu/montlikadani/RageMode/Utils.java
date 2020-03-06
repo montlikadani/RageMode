@@ -15,6 +15,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.entity.Player;
 
+import com.google.common.collect.ImmutableList;
+
 import hu.montlikadani.ragemode.API.event.BaseEvent;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
@@ -169,8 +171,9 @@ public class Utils {
 	 * @param packageName where to find the classes
 	 * @return All classes in list
 	 */
-	public static List<Class<?>> getClasses(String packageName) {
+	public static ImmutableList<Class<?>> getClasses(String packageName) {
 		List<Class<?>> classes = new ArrayList<>();
+
 		try {
 			JarFile file = new JarFile(new File(RageMode.getInstance().getFolder().getParentFile().getPath(),
 					RageMode.getInstance().getDescription().getName() + ".jar"));
@@ -187,7 +190,7 @@ public class Utils {
 			e.printStackTrace();
 		}
 
-		return classes;
+		return ImmutableList.<Class<?>>builder().addAll(classes).build();
 	}
 
 	/**

@@ -1,7 +1,6 @@
 package hu.montlikadani.ragemode.commands;
 
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.HashMap;
@@ -10,6 +9,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import com.google.common.collect.ImmutableList;
 
 import hu.montlikadani.ragemode.RageMode;
 
@@ -24,14 +25,12 @@ public class RmCommand implements CommandExecutor {
 		arg.clear();
 
 		String path = "hu.montlikadani.ragemode.commands.list";
-		List<Class<?>> classes = hu.montlikadani.ragemode.Utils.getClasses(path);
+		ImmutableList<Class<?>> classes = hu.montlikadani.ragemode.Utils.getClasses(path);
 		for (Class<?> cl : classes) {
-			if (cl == null) {
-				continue;
+			if (cl != null) {
+				String className = cl.getName().toLowerCase();
+				arg.put(className.replace(path + ".", ""), className);
 			}
-
-			String className = cl.getName().toLowerCase();
-			arg.put(className.replace(path + ".", ""), className);
 		}
 	}
 

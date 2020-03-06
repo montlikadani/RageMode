@@ -101,7 +101,7 @@ public class UpdateDownloader {
 
 						in.close();
 
-						Debug.logConsole("The RageMode successfully downloaded to releases folder.");
+						Debug.logConsole("The new RageMode has been downloaded to releases folder.");
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
