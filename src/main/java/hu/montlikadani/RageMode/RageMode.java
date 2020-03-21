@@ -118,9 +118,10 @@ public class RageMode extends JavaPlugin {
 		connectDatabase();
 
 		RuntimePPManager.loadPPListFromDatabase();
+
 		loadGames();
 
-		bossManager = new BossbarManager(this);
+		bossManager = new BossbarManager();
 
 		if (ConfigValues.isSignsEnable()) {
 			SignConfiguration.initSignConfiguration();

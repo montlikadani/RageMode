@@ -56,21 +56,21 @@ public class UpdateDownloader {
 			currentVersion = Double.parseDouble(cVersion[0] + "." + cVersion[1]);
 
 			if (newVersion > currentVersion) {
-				if (sender.equals("player")) {
+				if ("player".equals(sender)) {
 					msg = "&8&m&l--------------------------------------------------\n"
 							+ "&aA new update is available for RageMode!&4 Version:&7 " + versionString
 							+ (ConfigValues.isDownloadUpdates() ? ""
 									: "\n&6Download:&c &nhttps://www.spigotmc.org/resources/69169/")
 							+ "\n&8&m&l--------------------------------------------------";
-				} else if (sender.equals("console")) {
+				} else if ("console".equals(sender)) {
 					msg = "New version (" + versionString
 							+ ") is available at https://www.spigotmc.org/resources/69169/";
 				}
-			} else if (sender.equals("console")) {
+			} else if ("console".equals(sender)) {
 				return "You're running the latest version.";
 			}
 
-			if (newVersion < currentVersion) {
+			if (newVersion <= currentVersion) {
 				return msg;
 			}
 

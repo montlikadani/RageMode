@@ -124,10 +124,7 @@ public class ConfigValues {
 		requireEmptyInv = f.get("require-empty-inventory-to-join", true);
 		bungee = f.get("bungee.enable", false);
 		hubName = f.get("bungee.hub-name", "lobby");
-		databaseType = f.get("databaseType", "");
-		if (databaseType.isEmpty()) {
-			databaseType = f.get("database.type", "yaml");
-		}
+		databaseType = f.get("database.type", "yaml");
 		databaseTablePrefix = f.get("database.table-prefix", "ragemode_");
 		autoReconnect = f.get("database.MySQL.auto-reconnect", true);
 		useSSL = f.get("database.MySQL.use-SSL", false);

@@ -3,8 +3,6 @@ package hu.montlikadani.ragemode.events;
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-import java.util.HashMap;
-
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -25,20 +23,19 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.signs.SignData;
+import hu.montlikadani.ragemode.utils.Misc;
 import hu.montlikadani.ragemode.utils.UpdateDownloader;
 
 public class EventListener implements Listener {
 
-	@Deprecated
-	public static HashMap<String, Boolean> waitingGames = new HashMap<>();
-
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		if (event.getPlayer().isOp()) {
-			event.getPlayer().sendMessage(UpdateDownloader.checkFromGithub("player"));
+		Player p = event.getPlayer();
+		if (p.isOp()) {
+			Misc.sendMessage(p, UpdateDownloader.checkFromGithub("player"));
 		}
 
-		HoloHolder.showAllHolosToPlayer(event.getPlayer());
+		HoloHolder.showAllHolosToPlayer(p);
 	}
 
 	@EventHandler

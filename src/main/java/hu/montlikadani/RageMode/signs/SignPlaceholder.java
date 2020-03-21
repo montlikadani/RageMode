@@ -24,6 +24,10 @@ public class SignPlaceholder {
 	protected List<String> parsePlaceholder(String game) {
 		List<String> variables = new ArrayList<>();
 
+		if (lines == null) {
+			return variables;
+		}
+
 		java.util.Optional<GameStatus> status = GameUtils.getStatus(game);
 
 		for (String line : lines) {

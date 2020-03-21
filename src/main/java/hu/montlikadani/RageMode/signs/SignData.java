@@ -83,12 +83,12 @@ public class SignData {
 
 		Sign sign = (Sign) b.getState();
 		if (placeholder != null && game != null && GameUtils.isGameWithNameExists(game)) {
-			List<String> lines = placeholder.parsePlaceholder(game);
 			if (placeholder.getLines().size() > 4 || placeholder.getLines().size() < 4) {
 				Bukkit.getLogger().log(Level.INFO, "In the configuration the signs lines is equal to 4.");
 				return;
 			}
 
+			List<String> lines = placeholder.parsePlaceholder(game);
 			for (int i = 0; i < 4; i++) {
 				sign.setLine(i, lines.get(i));
 			}

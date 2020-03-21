@@ -22,9 +22,6 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
-import hu.montlikadani.ragemode.storage.MySQLDB;
-import hu.montlikadani.ragemode.storage.SQLDB;
-import hu.montlikadani.ragemode.storage.YAMLDB;
 
 public class HoloHolder {
 
@@ -87,11 +84,7 @@ public class HoloHolder {
 		switch (RageMode.getInstance().getDatabaseHandler().getDBType()) {
 		case MYSQL:
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
-				final PlayerPoints rpp;
-				if (RuntimePPManager.getPPForPlayer(uuid) == null)
-					rpp = MySQLDB.getPlayerStatistics(uuid);
-				else
-					rpp = RuntimePPManager.getPPForPlayer(uuid);
+				final PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
 
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 					if (rpp != null)
@@ -102,11 +95,7 @@ public class HoloHolder {
 			break;
 		case YAML:
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
-				final PlayerPoints rpp;
-				if (RuntimePPManager.getPPForPlayer(uuid) == null)
-					rpp = YAMLDB.getPlayerStatistics(uuid);
-				else
-					rpp = RuntimePPManager.getPPForPlayer(uuid);
+				final PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
 
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 					if (rpp != null)
@@ -117,15 +106,12 @@ public class HoloHolder {
 			break;
 		case SQLITE:
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
-				final PlayerPoints rpp;
-				if (RuntimePPManager.getPPForPlayer(uuid) == null)
-					rpp = SQLDB.getPlayerStatistics(uuid);
-				else
-					rpp = RuntimePPManager.getPPForPlayer(uuid);
+				final PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
 
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 					if (rpp != null)
 						setHologramLines(dataHologram, rpp);
+
 					return "Done";
 				});
 			});

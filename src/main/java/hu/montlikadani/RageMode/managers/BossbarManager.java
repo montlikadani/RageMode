@@ -16,13 +16,7 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class BossbarManager {
 
-	private RageMode plugin;
-
-	private Map<Player, BossBar> bossbarTask = new HashMap<>();
-
-	public BossbarManager(RageMode plugin) {
-		this.plugin = plugin;
-	}
+	private final Map<Player, BossBar> bossbarTask = new HashMap<>();
 
 	public Map<Player, BossBar> getBossbarMap() {
 		return bossbarTask;
@@ -88,7 +82,7 @@ public class BossbarManager {
 				break;
 			}
 
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
 				if (!GameUtils.isPlayerPlaying(p) || boss.getProgress() <= 0.2D) {
 					removeBossbar(p);
 					return;

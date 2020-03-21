@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.config.ConfigValues;
@@ -24,8 +24,6 @@ import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
 public class MySQLDB {
 
-	private static List<PlayerPoints> points = new ArrayList<>();
-
 	public static void loadPlayerStatistics() {
 		MySQLConnect mySQL = DatabaseHandler.getMySQL();
 		if (!mySQL.isConnected()) {
@@ -37,8 +35,6 @@ public class MySQLDB {
 		}
 
 		int totalPlayers = 0;
-
-		points.clear();
 
 		int kills = 0;
 		int axeKills = 0;
@@ -106,8 +102,6 @@ public class MySQLDB {
 				rPP.setWins(currentWins);
 				rPP.setPoints(currentScore);
 				rPP.setGames(currentGames);
-
-				points.add(rPP);
 
 				totalPlayers++;
 			}
@@ -317,38 +311,10 @@ public class MySQLDB {
 	}
 
 	/**
-	 * Returns an PlayerPoints instance with the statistics from the database
-	 * connection for the given Player.
-	 * 
-	 * @param playerUUID The Player instance for which the statistic should be gotten.
-	 * @return {@link PlayerPoints} class
-	 */
-	@Deprecated
-	public static PlayerPoints getPlayerStatistics(String playerUUID) {
-		return getPlayerStatistics(UUID.fromString(playerUUID));
-	}
-
-	/**
-	 * Returns an PlayerPoints instance with the statistics from the database
-	 * connection for the given Player.
-	 * 
-	 * @param uuid The Player instance for which the statistic should be gotten.
-	 * @return {@link PlayerPoints} class
-	 */
-	public static PlayerPoints getPlayerStatistics(UUID uuid) {
-		for (PlayerPoints rpp : points) {
-			if (rpp.getUUID().equals(uuid)) {
-				return rpp;
-			}
-		}
-
-		return null;
-	}
-
-	/**
 	 * Retrieves the list of PlayerPoints.
 	 * @return A List of all PlayerPoints objects which are stored in the MySQL database.
 	 */
+	@SuppressWarnings("deprecation")
 	public synchronized static List<PlayerPoints> getAllPlayerStatistics() {
 		MySQLConnect connect = DatabaseHandler.getMySQL();
 		if (!connect.isValid()) {
@@ -365,8 +331,8 @@ public class MySQLDB {
 			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
 				String uuid = rs.getString("uuid");
-				if (uuid != null && getPlayerStatistics(uuid) != null) {
-					allRPPs.add(getPlayerStatistics(uuid));
+				if (uuid != null && RuntimePPManager.getPPForPlayer(uuid) != null) {
+					allRPPs.add(RuntimePPManager.getPPForPlayer(uuid));
 				}
 			}
 
@@ -588,7 +554,7 @@ public class MySQLDB {
 			ResultSet rs = conn.executeQuery(statement, query);
 			PreparedStatement ps = null;
 			while (rs.next()) {
-				Player p = Bukkit.getPlayer(UUID.fromString(rs.getString("uuid")));
+				OfflinePlayer p = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("uuid")));
 				if (p != null) {
 					ReJoinDelay.setTime(p, rs.getLong("time"));
 				}
@@ -630,7 +596,7 @@ public class MySQLDB {
 				return;
 			}
 
-			for (Map.Entry<Player, Long> m : ReJoinDelay.getPlayerTimes().entrySet()) {
+			for (Map.Entry<OfflinePlayer, Long> m : ReJoinDelay.getPlayerTimes().entrySet()) {
 				prestt.setString(1, m.getKey().getUniqueId().toString());
 				prestt.setLong(2, m.getValue());
 				prestt.executeUpdate();

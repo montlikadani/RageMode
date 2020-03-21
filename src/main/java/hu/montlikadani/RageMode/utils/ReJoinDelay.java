@@ -5,15 +5,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 
 public class ReJoinDelay {
 
-	private static Map<Player, Long> playerTimes = new HashMap<>();
+	private static Map<OfflinePlayer, Long> playerTimes = new HashMap<>();
 
-	public static void setTime(Player p, Long ticks) {
+	public static void setTime(OfflinePlayer p, Long ticks) {
 		ticks = ticks - System.currentTimeMillis();
 
 		int hours = (int) (ticks / 1000 / 60 / 60);
@@ -28,7 +29,7 @@ public class ReJoinDelay {
 		setTime(p, hours, minutes, sec);
 	}
 
-	public static void setTime(Player p, int hour, int minute, int second) {
+	public static void setTime(OfflinePlayer p, int hour, int minute, int second) {
 		Calendar cal = getCal(new Date());
 
 		cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) + hour);
@@ -100,7 +101,7 @@ public class ReJoinDelay {
 		return playerTimes.containsKey(p) ? playerTimes.get(p) : 0L;
 	}
 
-	public static Map<Player, Long> getPlayerTimes() {
+	public static Map<OfflinePlayer, Long> getPlayerTimes() {
 		return java.util.Collections.unmodifiableMap(playerTimes);
 	}
 }

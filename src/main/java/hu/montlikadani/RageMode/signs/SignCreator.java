@@ -38,7 +38,7 @@ public class SignCreator {
 		}
 
 		List<String> list = fileConf.getStringList("signs");
-		if (list == null || list.isEmpty())
+		if (list.isEmpty())
 			return false;
 
 		signPlaceholder = new SignPlaceholder(ConfigValues.getSignsList());
@@ -144,7 +144,7 @@ public class SignCreator {
 		}
 
 		List<String> signs = fileConf.getStringList("signs");
-		if (signs == null) {
+		if (signs.isEmpty()) {
 			return false;
 		}
 
@@ -187,7 +187,7 @@ public class SignCreator {
 	 */
 	public static boolean isSign(Location loc) {
 		List<String> signs = fileConf.getStringList("signs");
-		if (signs == null) {
+		if (signs.isEmpty()) {
 			return false;
 		}
 

@@ -348,12 +348,8 @@ public class GameUtils {
 			PlayerInventory inv = p.getInventory();
 
 			data.set(path + "location", p.getLocation());
-			if (inv.getContents() != null) {
-				data.set(path + "contents", inv.getContents());
-			}
-			if (inv.getArmorContents() != null) {
-				data.set(path + "armor-contents", inv.getArmorContents());
-			}
+			data.set(path + "contents", inv.getContents());
+			data.set(path + "armor-contents", inv.getArmorContents());
 			if (p.getHealth() < NMS.getMaxHealth(p)) {
 				data.set(path + "health", p.getHealth());
 			}
@@ -999,7 +995,7 @@ public class GameUtils {
 				sendMessage(p, RageMode.getLang().get("game.stopped", "%game%", gName));
 
 				if (ConfigValues.isRewardEnabled()) {
-					if (winner != null && p.equals(winner)) {
+					if (winner != null && winner.equals(p)) {
 						reward.rewardForWinner(winner);
 					}
 

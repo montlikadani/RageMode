@@ -8,11 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
@@ -24,7 +23,6 @@ import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
 public class YAMLDB {
 
-	private static List<PlayerPoints> points = new ArrayList<>();
 	private static boolean inited = false;
 	private static File yamlStatsFile;
 	private static YamlConfiguration statsConf;
@@ -72,8 +70,6 @@ public class YAMLDB {
 			return;
 		}
 
-		points.clear();
-
 		int totalPlayers = 0;
 
 		for (String one : section.getKeys(false)) {
@@ -102,7 +98,6 @@ public class YAMLDB {
 			plPo.setPoints(statsConf.getInt(path + "score"));
 			plPo.setGames(statsConf.getInt(path + "games"));
 
-			points.add(plPo);
 			totalPlayers++;
 		}
 
@@ -206,40 +201,10 @@ public class YAMLDB {
 	}
 
 	/**
-	 * Gets the given uuid of player statistic
-	 * @param uuid Player uuid
-	 * @return returns a PlayerPoints object containing the GLOBAL statistics of a player
-	 */
-	@Deprecated
-	public static PlayerPoints getPlayerStatistics(String uuid) {
-		return getPlayerStatistics(UUID.fromString(uuid));
-	}
-
-	/**
-	 * Gets the given uuid of player statistic
-	 * @param uuid Player uuid
-	 * @return returns a PlayerPoints object containing the GLOBAL statistics of a player
-	 */
-	public static PlayerPoints getPlayerStatistics(UUID uuid) {
-		Validate.notNull(uuid, "Player UUID can't be null!");
-
-		if (!inited) {
-			return null;
-		}
-
-		for (PlayerPoints rpp : points) {
-			if (rpp.getUUID().equals(uuid)) {
-				return rpp;
-			}
-		}
-
-		return null;
-	}
-
-	/**
 	 * Gets all player statistic
 	 * @return returns a List of all PlayerPoints that are stored
 	 */
+	@SuppressWarnings("deprecation")
 	public static List<PlayerPoints> getAllPlayerStatistics() {
 		if (!inited) {
 			return Collections.emptyList();
@@ -247,9 +212,9 @@ public class YAMLDB {
 
 		List<PlayerPoints> allRPPs = new ArrayList<>();
 
-		if (statsConf.contains("data") && statsConf.isConfigurationSection("data")) {
+		if (statsConf.isConfigurationSection("data")) {
 			for (String UUID : statsConf.getConfigurationSection("data").getKeys(false)) {
-				allRPPs.add(getPlayerStatistics(UUID));
+				allRPPs.add(RuntimePPManager.getPPForPlayer(UUID));
 			}
 		}
 
@@ -408,7 +373,7 @@ public class YAMLDB {
 		}
 
 		for (String o : section.getKeys(false)) {
-			Player p = Bukkit.getPlayer(UUID.fromString(o));
+			OfflinePlayer p = Bukkit.getOfflinePlayer(UUID.fromString(o));
 			if (p != null) {
 				ReJoinDelay.setTime(p, section.getLong(o));
 			}
@@ -440,7 +405,7 @@ public class YAMLDB {
 		}
 
 		ConfigurationSection section = config.getConfigurationSection("players");
-		for (Map.Entry<Player, Long> m : ReJoinDelay.getPlayerTimes().entrySet()) {
+		for (Map.Entry<OfflinePlayer, Long> m : ReJoinDelay.getPlayerTimes().entrySet()) {
 			section.set(m.getKey().getName(), m.getValue());
 		}
 

@@ -135,7 +135,6 @@ public class DatabaseHandler {
 			}
 
 			if (startup) {
-				MySQLDB.loadPlayerStatistics();
 				MySQLDB.loadJoinDelay();
 			}
 
@@ -148,7 +147,6 @@ public class DatabaseHandler {
 			}
 
 			if (startup) {
-				SQLDB.loadPlayerStatistics();
 				SQLDB.loadJoinDelay();
 			}
 
