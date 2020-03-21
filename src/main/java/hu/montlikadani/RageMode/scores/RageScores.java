@@ -260,13 +260,15 @@ public class RageScores {
 				totalDeaths++;
 				currentStreak = 0;
 			}
-			longestStreak = (currentStreak > pointsHolder.getLongestStreak()) ? currentStreak : pointsHolder.getLongestStreak();
+			longestStreak = (currentStreak > pointsHolder.getLongestStreak()) ? currentStreak
+					: pointsHolder.getLongestStreak();
 
 			pointsHolder.setKills(totalKills);
 			pointsHolder.setDeaths(totalDeaths);
 			pointsHolder.setCurrentStreak(currentStreak);
 			pointsHolder.setLongestStreak(longestStreak);
-			pointsHolder.addPoints(killer ? (points + GameUtils.getBonus().getPointBonus(player)) : points);
+			pointsHolder.addPoints(
+					killer ? (points + hu.montlikadani.ragemode.gameLogic.Bonus.getPointBonus(player)) : points);
 
 			return pointsHolder.getPoints();
 		}

@@ -131,6 +131,41 @@ public class SignCreator {
 	}
 
 	/**
+	 * Gets the sign data by location.
+	 * @param loc sign the location
+	 * @return {@link SignData} if the location is equal
+	 */
+	public static SignData getSignData(Location loc) {
+		Validate.notNull(loc, "Location can't be null!");
+
+		for (SignData data : signData) {
+			if (data.getLocation().equals(loc)) {
+				return data;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Gets the sign data by game.
+	 * @param game the game name
+	 * @return {@link SignData} if the game is equal
+	 */
+	public static SignData getSignData(String game) {
+		Validate.notNull(game, "Game name can't be null!");
+		Validate.notEmpty(game, "Game name can't be empty!");
+
+		for (SignData data : signData) {
+			if (data.getGame().equalsIgnoreCase(game.trim())) {
+				return data;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Updates all JoinSigns for the given game which are properly configured.
 	 * @param gameName The name of the game for which the signs should be updated.
 	 * @return True if at least one sign was updated successfully for the given game.

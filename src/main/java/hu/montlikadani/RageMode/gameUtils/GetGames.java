@@ -147,7 +147,7 @@ public class GetGames {
 		}
 
 		while (i < imax) {
-			if (games[i].equalsIgnoreCase(game)) {
+			if (games[i].equalsIgnoreCase(game.trim())) {
 				return true;
 			}
 

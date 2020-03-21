@@ -55,7 +55,6 @@ public class GameUtils {
 	public static HashMap<String, Boolean> waitingGames = new HashMap<>();
 
 	private static Map<String, GameStatus> status = new HashMap<>();
-	private static Bonus bonuses = null;
 
 	/**
 	 * Broadcast a message to the currently playing players for that given game.
@@ -295,18 +294,6 @@ public class GameUtils {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Gets the Bonus
-	 * @return {@link Bonus}
-	 */
-	public static Bonus getBonus() {
-		if (bonuses == null) {
-			bonuses = new Bonus();
-		}
-
-		return bonuses;
 	}
 
 	/**

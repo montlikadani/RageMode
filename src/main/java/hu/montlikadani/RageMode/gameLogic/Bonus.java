@@ -14,7 +14,7 @@ import hu.montlikadani.ragemode.libs.Sounds;
 
 public class Bonus {
 
-	public void addKillBonus(Player player) {
+	public static void addKillBonus(Player player) {
 		if (player == null) {
 			return;
 		}
@@ -94,7 +94,7 @@ public class Bonus {
 		}
 	}
 
-	public int getPointBonus(Player player) {
+	public static int getPointBonus(Player player) {
 		if (player == null) {
 			return 0;
 		}
@@ -120,7 +120,7 @@ public class Bonus {
 		return 0;
 	}
 
-	private String chance(String b) {
+	private static String chance(String b) {
 		if (!b.startsWith("chance:")) {
 			return b;
 		}

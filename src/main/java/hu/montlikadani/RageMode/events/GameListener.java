@@ -452,7 +452,7 @@ public class GameListener implements Listener {
 
 			GameUtils.runCommands(deceased, game.getName(), "death");
 			if (killerExists) {
-				GameUtils.getBonus().addKillBonus(deceased.getKiller());
+				hu.montlikadani.ragemode.gameLogic.Bonus.addKillBonus(deceased.getKiller());
 			}
 		}
 

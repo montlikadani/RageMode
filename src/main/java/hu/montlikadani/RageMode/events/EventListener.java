@@ -22,7 +22,6 @@ import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.signs.SignCreator;
-import hu.montlikadani.ragemode.signs.SignData;
 import hu.montlikadani.ragemode.utils.Misc;
 import hu.montlikadani.ragemode.utils.UpdateDownloader;
 
@@ -89,18 +88,13 @@ public class EventListener implements Listener {
 				return;
 			}
 
-			for (SignData data : SignCreator.getSignData()) {
-				if (data.getLocation().equals(b.getLocation())) {
-					String name = data.getGame();
-					if (name == null || !GameUtils.isGameWithNameExists(name)) {
-						sendMessage(p, RageMode.getLang().get("game.does-not-exist"));
-						break;
-					}
-
-					GameUtils.joinPlayer(p, GameUtils.getGame(name));
-					break;
-				}
+			String name = SignCreator.getSignData(b.getLocation()).getGame();
+			if (name == null || !GameUtils.isGameWithNameExists(name)) {
+				sendMessage(p, RageMode.getLang().get("game.does-not-exist"));
+				return;
 			}
+
+			GameUtils.joinPlayer(p, GameUtils.getGame(name));
 		}
 	}
 

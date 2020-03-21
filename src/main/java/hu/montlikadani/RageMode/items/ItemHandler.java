@@ -108,7 +108,7 @@ public class ItemHandler implements Cloneable {
 		ItemMeta meta = item.getItemMeta();
 		assert meta != null;
 
-		if (displayName != null && !displayName.isEmpty()) {
+		if (displayName != null && !displayName.trim().isEmpty()) {
 			meta.setDisplayName(displayName);
 		}
 

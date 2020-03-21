@@ -17,7 +17,7 @@ public class SignConfiguration {
 
 	public static FileConfiguration initSignConfiguration() {
 		if (inited) {
-			return null;
+			return signConfig;
 		}
 
 		File file = new File(RageMode.getInstance().getFolder(), "signs.yml");
