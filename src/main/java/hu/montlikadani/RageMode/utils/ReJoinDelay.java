@@ -98,7 +98,7 @@ public class ReJoinDelay {
 	}
 
 	public static Long getTimeByPlayer(Player p) {
-		return playerTimes.containsKey(p) ? playerTimes.get(p) : 0L;
+		return playerTimes.getOrDefault(p, 0L);
 	}
 
 	public static Map<OfflinePlayer, Long> getPlayerTimes() {

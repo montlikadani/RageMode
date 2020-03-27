@@ -151,7 +151,7 @@ public class RageMode extends JavaPlugin {
 				return String.valueOf(totalPlayers);
 			}));
 
-			metrics.addCustomChart(new Metrics.SimplePie("statistic_type", dbHandler.getDBType()::name));
+			metrics.addCustomChart(new Metrics.SimplePie("statistic_type", dbHandler.getDBType().name()::toLowerCase));
 
 			Debug.logConsole("Metrics enabled.");
 		}

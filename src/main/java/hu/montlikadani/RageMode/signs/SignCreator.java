@@ -60,7 +60,11 @@ public class SignCreator {
 			double x = Double.parseDouble(splited[1]);
 			double y = Double.parseDouble(splited[2]);
 			double z = Double.parseDouble(splited[3]);
+
 			String game = splited[4];
+			if (game == null) {
+				continue;
+			}
 
 			Location loc = new Location(Bukkit.getWorld(world), x, y, z);
 			SignData data = new SignData(loc, game, signPlaceholder);
@@ -120,11 +124,10 @@ public class SignCreator {
 	 * @return True if a sign is found on the set location.
 	 */
 	public static boolean updateSign(Location loc) {
-		for (SignData data : signData) {
-			if (data.getLocation().equals(loc)) {
-				data.updateSign();
-				return true;
-			}
+		SignData data = getSignData(loc);
+		if (data != null) {
+			data.updateSign();
+			return true;
 		}
 
 		return false;

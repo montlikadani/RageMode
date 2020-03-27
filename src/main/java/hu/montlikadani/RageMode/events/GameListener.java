@@ -569,7 +569,11 @@ public class GameListener implements Listener {
 			return;
 		}
 
-		if (!GameUtils.isPlayerPlaying(shooter) || GameUtils.isPlayerInFreezeRoom(shooter)) {
+		if (!GameUtils.isPlayerPlaying(shooter)) {
+			return;
+		}
+
+		if (GameUtils.isPlayerInFreezeRoom(shooter)) {
 			ev.setCancelled(true);
 			return;
 		}

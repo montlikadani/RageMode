@@ -22,7 +22,6 @@ import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.signs.SignCreator;
-import hu.montlikadani.ragemode.utils.Misc;
 import hu.montlikadani.ragemode.utils.UpdateDownloader;
 
 public class EventListener implements Listener {
@@ -31,7 +30,7 @@ public class EventListener implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player p = event.getPlayer();
 		if (p.isOp()) {
-			Misc.sendMessage(p, UpdateDownloader.checkFromGithub("player"));
+			sendMessage(p, UpdateDownloader.checkFromGithub("player"));
 		}
 
 		HoloHolder.showAllHolosToPlayer(p);
@@ -88,7 +87,9 @@ public class EventListener implements Listener {
 				return;
 			}
 
-			String name = SignCreator.getSignData(b.getLocation()).getGame();
+			String name = SignCreator.getSignData(b.getLocation()) != null
+					? SignCreator.getSignData(b.getLocation()).getGame()
+					: null;
 			if (name == null || !GameUtils.isGameWithNameExists(name)) {
 				sendMessage(p, RageMode.getLang().get("game.does-not-exist"));
 				return;
