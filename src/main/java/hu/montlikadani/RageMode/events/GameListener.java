@@ -47,7 +47,6 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.inventory.ItemStack;
@@ -60,7 +59,6 @@ import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerKilledEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerPreRespawnEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerRespawnedEvent;
@@ -69,12 +67,10 @@ import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.gameUtils.MapChecker;
 import hu.montlikadani.ragemode.items.Items;
 import hu.montlikadani.ragemode.libs.Sounds;
 import hu.montlikadani.ragemode.scores.KilledWith;
 import hu.montlikadani.ragemode.scores.RageScores;
-import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.utils.MaterialUtil;
 
 public class GameListener implements Listener {
@@ -564,6 +560,10 @@ public class GameListener implements Listener {
 		}
 
 		Projectile proj = ev.getEntity();
+		if (!(proj.getShooter() instanceof Player)) {
+			return;
+		}
+
 		Player shooter = (Player) proj.getShooter();
 		if (shooter == null) {
 			return;
@@ -726,13 +726,7 @@ public class GameListener implements Listener {
 
 				if (Items.getLeaveGameItem() != null
 						&& meta.getDisplayName().equals(Items.getLeaveGameItem().getDisplayName())) {
-					RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
-					Utils.callEvent(gameLeaveEvent);
-					if (!gameLeaveEvent.isCancelled()) {
-						game.removePlayer(p);
-					}
-					game.removeSpectatorPlayer(p);
-					SignCreator.updateAllSigns(game.getName());
+					GameUtils.leavePlayer(p, game);
 				}
 			}
 
@@ -900,7 +894,7 @@ public class GameListener implements Listener {
 		}
 	}
 
-	@EventHandler
+	/*@EventHandler
 	public void onWorldChangedEvent(PlayerTeleportEvent event) {
 		if (GameUtils.isPlayerPlaying(event.getPlayer()) && !MapChecker
 				.isGameWorld(GameUtils.getGameByPlayer(event.getPlayer()).getName(), event.getTo().getWorld())) {
@@ -909,7 +903,7 @@ public class GameListener implements Listener {
 			else
 				event.getPlayer().removeMetadata("Leaving", RageMode.getInstance());
 		}
-	}
+	}*/
 
 	private void setTrails(Projectile proj) {
 		new BukkitRunnable() {

@@ -28,8 +28,8 @@ public class Game {
 
 	private String name;
 
-	private Map<Player, PlayerManager> players = new HashMap<>();
-	private Map<Player, PlayerManager> specPlayer = new HashMap<>();
+	private final Map<Player, PlayerManager> players = new HashMap<>();
+	private final Map<Player, PlayerManager> specPlayer = new HashMap<>();
 
 	private boolean running = false;
 	private LobbyTimer lobbyTimer;
@@ -59,21 +59,31 @@ public class Game {
 		return specPlayer;
 	}
 
-	private boolean isSpectator(Player p) {
+	/**
+	 * Checks if the player is in spectator list.
+	 * @param p Player
+	 * @return true if in the list
+	 */
+	public boolean isSpectatorInList(Player p) {
 		return specPlayer.containsKey(p);
 	}
 
-	private boolean isInList(Player p) {
+	/**
+	 * Checks if the player is in list.
+	 * @param p Player
+	 * @return true if in the list
+	 */
+	public boolean isPlayerInList(Player p) {
 		return players.containsKey(p);
 	}
 
 	public boolean addPlayer(Player player) {
-		if (isGameRunning()) {
+		if (running) {
 			player.sendMessage(RageMode.getLang().get("game.running"));
 			return false;
 		}
 
-		if (isInList(player)) {
+		if (isPlayerInList(player)) {
 			player.sendMessage(RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
 			return false;
 		}
@@ -148,14 +158,14 @@ public class Game {
 
 		Utils.callEvent(new SpectatorJoinToGameEvent(this, player));
 
-		return isSpectator(player);
+		return isSpectatorInList(player);
 	}
 
 	public boolean removeSpectatorPlayer(Player player) {
 		if (!ConfigValues.isSpectatorEnabled())
 			return false;
 
-		if (!isSpectator(player)) {
+		if (!isSpectatorInList(player)) {
 			return false;
 		}
 
@@ -169,7 +179,7 @@ public class Game {
 	}
 
 	public boolean removePlayer(final Player player) {
-		if (!isInList(player)) {
+		if (!isPlayerInList(player)) {
 			player.sendMessage(RageMode.getLang().get("game.player-not-ingame"));
 			return false;
 		}

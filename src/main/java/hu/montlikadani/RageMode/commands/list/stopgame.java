@@ -41,11 +41,6 @@ public class stopgame {
 
 			for (Iterator<PlayerManager> it = g.getPlayersFromList().iterator(); it.hasNext();) {
 				Player player = it.next().getPlayer();
-
-				player.removeMetadata("killedWith", RageMode.getInstance());
-				if (player.isOp()) {
-					sendMessage(player, RageMode.getLang().get("game.stopped", "%game%", game));
-				}
 				g.removePlayer(player);
 			}
 
@@ -58,6 +53,7 @@ public class stopgame {
 			g.setGameNotRunning();
 			GameUtils.setStatus(game, null);
 			SignCreator.updateAllSigns(game);
+			sendMessage(sender, RageMode.getLang().get("game.stopped", "%game%", game));
 		} else {
 			sendMessage(sender,
 					RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName>"));

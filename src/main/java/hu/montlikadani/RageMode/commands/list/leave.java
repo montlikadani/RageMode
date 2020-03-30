@@ -4,13 +4,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.signs.SignCreator;
+import hu.montlikadani.ragemode.utils.Misc;
 
-import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class leave {
@@ -22,13 +19,10 @@ public class leave {
 		}
 
 		Player p = (Player) sender;
-		if (!hasPerm(p, "ragemode.leave")) {
+		if (!Misc.hasPerm(p, "ragemode.leave")) {
 			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return false;
 		}
-
-		// Make sure the meta removed
-		p.removeMetadata("killedWith", RageMode.getInstance());
 
 		Game game = GameUtils.getGameByPlayer(p);
 		if (game == null) {
@@ -38,14 +32,7 @@ public class leave {
 
 		GameUtils.runCommands(p, game.getName(), "leave");
 		GameUtils.sendActionBarMessages(p, game.getName(), "leave");
-		RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
-		Utils.callEvent(gameLeaveEvent);
-		if (!gameLeaveEvent.isCancelled()) {
-			game.removePlayer(p);
-		}
-
-		game.removeSpectatorPlayer(p);
-		SignCreator.updateAllSigns(game.getName());
+		GameUtils.leavePlayer(p, game);
 		return true;
 	}
 }

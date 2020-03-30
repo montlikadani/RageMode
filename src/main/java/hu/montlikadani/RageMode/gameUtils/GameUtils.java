@@ -208,7 +208,7 @@ public class GameUtils {
 		Validate.notNull(p, "Player can not be null!");
 
 		for (Game game : RageMode.getInstance().getGames()) {
-			if (game.getPlayers().containsKey(p)) {
+			if (game.isPlayerInList(p)) {
 				return game;
 			}
 		}
@@ -252,7 +252,7 @@ public class GameUtils {
 		Validate.notNull(p, "Player can not be null!");
 
 		for (Game game : RageMode.getInstance().getGames()) {
-			if (game.getSpectatorPlayers().containsKey(p)) {
+			if (game.isSpectatorInList(p)) {
 				return game;
 			}
 		}
@@ -396,7 +396,7 @@ public class GameUtils {
 				return;
 			}
 
-			if (isPlayerPlaying(p)) {
+			if (game.isPlayerInList(p)) {
 				sendMessage(p, RageMode.getLang().get("game.player-not-switch-spectate"));
 				return;
 			}
@@ -421,7 +421,7 @@ public class GameUtils {
 			return;
 		}
 
-		if (isPlayerPlaying(p) || status.get() == GameStatus.WAITING && game.getPlayers().containsKey(p)) {
+		if (game.isPlayerInList(p)) {
 			sendMessage(p, RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
 			return;
 		}
@@ -470,16 +470,6 @@ public class GameUtils {
 		sendBossBarMessages(p, name, "join");
 		sendActionBarMessages(p, name, "join");
 		setStatus(name, GameStatus.WAITING, false);
-
-		if (Items.getLeaveGameItem() != null) {
-			inv.setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().getResult());
-		}
-
-		ItemHandler starter = Items.getForceStarter();
-		if (starter != null && hu.montlikadani.ragemode.utils.Misc.hasPerm(p, "ragemode.admin.item.forcestart")) {
-			inv.setItem(starter.getSlot(), starter.getResult());
-		}
-
 		broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
 
 		String title = ConfigValues.getTitleJoinGame();
@@ -491,7 +481,51 @@ public class GameUtils {
 
 		sendTitleMessages(p, title, subtitle, times);
 
+		// Delay items adding, due to world changing and if someone tries to join will
+		// kick out. I don't know why.
+		Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
+			if (Items.getLeaveGameItem() != null) {
+				inv.setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().getResult());
+			}
+
+			ItemHandler starter = Items.getForceStarter();
+			if (starter != null && hu.montlikadani.ragemode.utils.Misc.hasPerm(p, "ragemode.admin.item.forcestart")) {
+				inv.setItem(starter.getSlot(), starter.getResult());
+			}
+		}, 5L);
+
 		SignCreator.updateAllSigns(name);
+	}
+
+	/**
+	 * Attempt to leave the player from the game.
+	 * @param p Player
+	 * @param name the game name
+	 * @see #leavePlayer(Player, Game)
+	 */
+	public static void leavePlayer(Player p, String name) {
+		leavePlayer(p, getGame(name));
+	}
+
+	/**
+	 * Attempt to leave the player from the game and calls the
+	 * {@link RMGameLeaveAttemptEvent}. This also removes the
+	 * spectator player from game of currently in it.
+	 * @param p Player
+	 * @param game {@link Game}
+	 */
+	public static void leavePlayer(Player p, Game game) {
+		Validate.notNull(game, "Game can't be null!");
+
+		RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
+		Utils.callEvent(gameLeaveEvent);
+		if (!gameLeaveEvent.isCancelled()) {
+			game.removePlayer(p);
+		}
+
+		game.removeSpectatorPlayer(p);
+
+		SignCreator.updateAllSigns(game.getName());
 	}
 
 	/**
@@ -850,6 +884,7 @@ public class GameUtils {
 		Utils.callEvent(new RMGameStopEvent(game, players));
 
 		final String name = game.getName();
+
 		boolean winnervalid = false;
 		UUID winnerUUID = RageScores.calculateWinner(name, players);
 		if (winnerUUID != null && Bukkit.getPlayer(winnerUUID) != null) {
@@ -919,17 +954,13 @@ public class GameUtils {
 		setStatus(name, GameStatus.GAMEFREEZE);
 		SignCreator.updateAllSigns(name);
 
-		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-				new Runnable() {
-					@Override
-					public void run() {
-						if (waitingGames.containsKey(name)) {
-							waitingGames.remove(name);
-						}
+		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
+			if (waitingGames.containsKey(name)) {
+				waitingGames.remove(name);
+			}
 
-						finishStopping(game, winner, true);
-					}
-				}, ConfigValues.getGameFreezeTime() * 20);
+			finishStopping(game, winner, true);
+		}, ConfigValues.getGameFreezeTime() * 20);
 	}
 
 	private static void finishStopping(Game game, Player winner, boolean serverStop) {
@@ -1042,7 +1073,6 @@ public class GameUtils {
 				for (PlayerManager players : pList) {
 					Player p = players.getPlayer();
 
-					p.removeMetadata("killedWith", RageMode.getInstance());
 					g.removePlayer(p);
 					RageScores.removePointsForPlayer(p.getUniqueId());
 				}
