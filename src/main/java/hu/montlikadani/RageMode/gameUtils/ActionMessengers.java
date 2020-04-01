@@ -137,14 +137,6 @@ public class ActionMessengers {
 				continue;
 			}
 
-			// should fix duplicated lines
-			if (gameBoard.getScoreboard(pl).isPresent()) {
-				org.bukkit.scoreboard.Scoreboard sb = gameBoard.getScoreboard(pl).get().getScoreboard();
-				for (String entry : sb.getEntries()) {
-					sb.resetScores(entry);
-				}
-			}
-
 			String boardTitle = ConfigValues.getSbTitle();
 			if (!boardTitle.isEmpty()) {
 				gameBoard.setTitle(pl, Utils.colors(boardTitle));
@@ -152,22 +144,21 @@ public class ActionMessengers {
 
 			List<String> rows = ConfigValues.getSbContent();
 			if (!rows.isEmpty()) {
-				int rowMax = rows.size();
+				int scores = rows.size();
+
+				if (scores < 15) {
+					for (int i = (scores + 1); i <= 15; i++) {
+						gameBoard.resetScores(pl, i);
+					}
+				}
 
 				for (String row : rows) {
-					if (row.trim().isEmpty()) {
-						for (int i = 0; i <= rowMax; i++) {
-							row += " ";
-						}
-					}
-
 					if (time > -1) {
 						row = row.replace("%game-time%", Utils.getFormattedTime(time));
 					}
 					row = Utils.setPlaceholders(row, pl);
 
-					gameBoard.setLine(pl, row, rowMax);
-					rowMax--;
+					gameBoard.setLine(pl, row, scores--);
 				}
 			}
 

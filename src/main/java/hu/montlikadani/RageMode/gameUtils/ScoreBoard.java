@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
+import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.holder.ScoreBoardHolder;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
@@ -19,17 +21,27 @@ public class ScoreBoard implements IObjectives {
 	public static HashMap<String, ScoreBoard> allScoreBoards = new HashMap<>();
 
 	private final HashMap<Player, ScoreBoardHolder> scoreboards = new HashMap<>();
+
 	private final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 
 	@SuppressWarnings("deprecation")
 	public void loadScoreboard(List<PlayerManager> players) {
-		// TODO: Same scoreboard appears for players and duplicating lines
+		// TODO: Same scoreboard appears for players
 		Objective objective = scoreboard.getObjective("ragescores");
 		if (objective == null) {
 			objective = scoreboard.registerNewObjective("ragescores", "dummy");
 		}
 
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+		for (int i = 1; i <= 15; i++) {
+			Team team = scoreboard.getTeam("SLOT_" + i);
+			if (team == null) {
+				team = scoreboard.registerNewTeam("SLOT_" + i);
+			}
+
+			team.addEntry(ChatColor.values()[i].toString());
+		}
 
 		for (PlayerManager pm : players) {
 			Player loopPlayer = pm.getPlayer();
@@ -72,7 +84,15 @@ public class ScoreBoard implements IObjectives {
 	 * @param title The String, where the title should be set to.
 	 */
 	public void setTitle(Player player, String title) {
-		getScoreboard(player).ifPresent(board -> board.getObjective().setDisplayName(title));
+		if (Version.isCurrentLower(Version.v1_13_R1) && title.length() > 32) {
+			title = title.substring(0, 32);
+		} else if (Version.isCurrentEqualOrHigher(Version.v1_13_R1) && title.length() > 128) {
+			title = title.substring(0, 128);
+		}
+
+		final String newTitle = title;
+
+		getScoreboard(player).ifPresent(board -> board.getObjective().setDisplayName(newTitle));
 	}
 
 	/**
@@ -85,25 +105,33 @@ public class ScoreBoard implements IObjectives {
 	 */
 	public void setLine(Player player, String line, int dummyScore) {
 		getScoreboard(player).ifPresent(board -> {
-			Score score = board.getObjective().getScore(line);
-			score.setScore(dummyScore);
+			Team team = scoreboard.getTeam("SLOT_" + dummyScore);
+			if (team == null) {
+				return;
+			}
+
+			String entry = ChatColor.values()[dummyScore].toString();
+			if (!scoreboard.getEntries().contains(entry)) {
+				board.getObjective().getScore(entry).setScore(dummyScore);
+			}
+
+			// TODO: Do we need to limit the text length?
+			team.setPrefix(line);
+			team.setSuffix(ChatColor.getLastColors(line));
 		});
 	}
 
 	/**
-	 * Updates one score-line with the given String as the name and the Integer
-	 * as a score which should be displayed next to the name.
-	 * 
-	 * @param player The Player for which the Line should be set.
-	 * @param oldLine The old score-name which should be updated.
-	 * @param line The name of the new score.
-	 * @param dummyScore The integer, the score should be set to.
+	 * Resets the scores with the given score to prevent duplication on scoreboard.
+	 * @param player {@link Player}
+	 * @param score where the line should reset
 	 */
-	public void updateLine(Player player, String oldLine, String line, int dummyScore) {
+	public void resetScores(Player player, int score) {
 		getScoreboard(player).ifPresent(board -> {
-			board.getScoreboard().resetScores(oldLine);
-			Score score = board.getObjective().getScore(line);
-			score.setScore(dummyScore);
+			String entry = ChatColor.values()[score].toString();
+			if (scoreboard.getEntries().contains(entry)) {
+				scoreboard.resetScores(entry);
+			}
 		});
 	}
 
@@ -121,7 +149,13 @@ public class ScoreBoard implements IObjectives {
 	 */
 	@Override
 	public void remove(Player pl) {
-		pl.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+		scoreboard.clearSlot(DisplaySlot.SIDEBAR);
+
+		Objective obj = scoreboard.getObjective("ragescores");
+		if (obj != null) {
+			obj.unregister();
+		}
+
 		scoreboards.remove(pl);
 	}
 

@@ -9,6 +9,7 @@ log-console: true
 check-for-updates: true
 
 # Download releases to \releases folder
+# This only works if the "check-update" is true.
 download-updates: true
 
 # This saves the player data, such as inventory, effects etc. to a file.
@@ -268,6 +269,8 @@ game:
     - ""
     - "&7------"
     - "&aPoints:&e %points%"
+    - ""
+    - "&6Remaining times:&7 %game-time%"
     - ""
     - "&5Wins:&e %wins%"
     - "&7------"
