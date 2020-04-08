@@ -10,13 +10,20 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class ItemHandler implements Cloneable {
 
 	private Material item;
+
 	private int amount = 1;
+
 	private String displayName;
 	private String customName;
+
 	private List<String> lore;
+
 	private Enchantment enchant;
+
 	private int enchantLevel = 1;
 	private int slot = -1;
+
+	private double damage = 0;
 
 	private ItemStack result;
 
@@ -59,6 +66,15 @@ public class ItemHandler implements Cloneable {
 		}
 
 		this.slot = slot;
+		return this;
+	}
+
+	public double getDamage() {
+		return damage;
+	}
+
+	public ItemHandler setDamage(double damage) {
+		this.damage = damage;
 		return this;
 	}
 

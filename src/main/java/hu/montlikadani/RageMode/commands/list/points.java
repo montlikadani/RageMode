@@ -5,6 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
@@ -15,20 +16,22 @@ import hu.montlikadani.ragemode.storage.YAMLDB;
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-public class points {
+public class points implements ICommand {
 
 	private enum Actions {
 		Set, Add, Take;
 	}
 
-	public boolean run(CommandSender sender, String[] args) {
+	@Override
+	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!hasPerm(sender, "ragemode.admin.points")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}
 
 		if (args.length < 4) {
-			sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%", "/rm points set/add/take <player> <amount>"));
+			sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%",
+					"/rm points set/add/take <player> <amount>"));
 			return false;
 		}
 
@@ -94,20 +97,22 @@ public class points {
 
 		java.util.UUID uuid = rpp.getUUID();
 
-		switch (hu.montlikadani.ragemode.config.ConfigValues.getDatabase()) {
-		case "sql":
-		case "sqlite":
+		switch (plugin.getDatabaseHandler().getDBType()) {
+		case SQLITE:
 			SQLDB.addPoints(amount, uuid);
 			break;
-		case "mysql":
+		case MYSQL:
 			MySQLDB.addPoints(amount, uuid);
 			break;
-		default:
+		case YAML:
 			YAMLDB.addPoints(amount, uuid);
 			break;
+		default:
+			return false;
 		}
 
-		sendMessage(sender, RageMode.getLang().get("commands.points.changed", "%amount%", amount, "%new%", rpp.getPoints()));
+		sendMessage(sender,
+				RageMode.getLang().get("commands.points.changed", "%amount%", amount, "%new%", rpp.getPoints()));
 		return true;
 	}
 }

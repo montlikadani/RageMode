@@ -11,14 +11,16 @@ import org.bukkit.inventory.ItemStack;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-public class givesaveditems {
+public class givesaveditems implements ICommand {
 
+	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!hu.montlikadani.ragemode.config.ConfigValues.isSavePlayerData()) {
 			sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.not-enabled"));

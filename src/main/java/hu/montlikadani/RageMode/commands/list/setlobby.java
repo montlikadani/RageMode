@@ -6,14 +6,16 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-public class setlobby {
+public class setlobby implements ICommand {
 
+	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!(sender instanceof Player)) {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
@@ -35,7 +37,8 @@ public class setlobby {
 
 			FileConfiguration aCfg = plugin.getConfiguration().getArenasCfg();
 			if (!aCfg.isSet("arenas." + gameName)) {
-				sendMessage(p, RageMode.getLang().get("setup.not-set-yet", "%usage%", "/rm addgame <gameName> <maxPlayers>"));
+				sendMessage(p,
+						RageMode.getLang().get("setup.not-set-yet", "%usage%", "/rm addgame <gameName> <maxPlayers>"));
 				return false;
 			}
 

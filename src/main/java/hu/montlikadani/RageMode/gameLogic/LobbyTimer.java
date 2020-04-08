@@ -54,7 +54,7 @@ public class LobbyTimer extends TimerTask {
 		}
 
 		if (game.getPlayers().size() < GetGames.getMinPlayers(game.getName())) {
-			GameUtils.setStatus(game.getName(), GameStatus.WAITING);
+			game.setStatus(GameStatus.WAITING);
 			list.forEach(p -> p.getPlayer().setLevel(0));
 			cancel();
 			return;

@@ -3,7 +3,9 @@ package hu.montlikadani.ragemode.commands.list;
 import org.bukkit.command.CommandSender;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.signs.SignCreator;
@@ -11,8 +13,9 @@ import hu.montlikadani.ragemode.signs.SignCreator;
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-public class togglegame {
+public class togglegame implements ICommand {
 
+	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!hasPerm(sender, "ragemode.admin.togglegame")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
@@ -20,7 +23,8 @@ public class togglegame {
 		}
 
 		if (args.length < 2) {
-			sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName>"));
+			sendMessage(sender,
+					RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName>"));
 			return false;
 		}
 
@@ -31,18 +35,19 @@ public class togglegame {
 			return false;
 		}
 
-		if (GameUtils.getGame(game).isGameRunning()) {
+		Game g = GameUtils.getGame(game);
+		if (g.isGameRunning()) {
 			sendMessage(sender, RageMode.getLang().get("commands.togglegame.game-is-running"));
 			return false;
 		}
 
 		boolean toggle = true;
-		if (GameUtils.getStatus(game).isPresent() && GameUtils.getStatus(game).get() == GameStatus.NOTREADY) {
-			GameUtils.setStatus(game, GameStatus.READY);
+		if (g.getStatus() == GameStatus.NOTREADY) {
+			g.setStatus(GameStatus.READY);
 			toggle = false;
 		} else {
-			GameUtils.setStatus(game, GameStatus.NOTREADY);
-			GameUtils.getGame(game).setGameNotRunning();
+			g.setStatus(GameStatus.NOTREADY);
+			g.setGameNotRunning();
 		}
 
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".lock", toggle);

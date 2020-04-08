@@ -33,6 +33,7 @@ commands:
     reseted: "&2Your stats has been reseted!"
     target-stats-reseted: "&7%player%&2 stats has been reseted!"
     player-currently-in-game: "&cThis player is currently playing! Please wait while the game end."
+    could-not-reset-player-stats: "&cCould not reset player stats because that player isn't found in database."
   kick:
     game-not-null: "&cThe game name can not be null!"
     player-not-found: "&cThe player name can not be null!"

@@ -7,14 +7,16 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-public class removespawn {
+public class removespawn implements ICommand {
 
+	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!hasPerm(sender, "ragemode.admin.removespawn")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
@@ -22,7 +24,8 @@ public class removespawn {
 		}
 
 		if (args.length < 3) {
-			sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%", "/rm removespawn <gameName> <id/all>"));
+			sendMessage(sender,
+					RageMode.getLang().get("missing-arguments", "%usage%", "/rm removespawn <gameName> <id/all>"));
 			return false;
 		}
 
@@ -68,15 +71,15 @@ public class removespawn {
 
 		String sPath = path + ".spawns." + i + ".";
 		String world = aFile.getString(sPath + "world");
+
 		double spawnX = aFile.getDouble(sPath + "x");
 		double spawnY = aFile.getDouble(sPath + "y");
 		double spawnZ = aFile.getDouble(sPath + "z");
-		double spawnYaw = aFile.getDouble(sPath + "yaw");
-		double spawnPitch = aFile.getDouble(sPath + "pitch");
 
-		Location loc = new Location(Bukkit.getWorld(world), spawnX, spawnY, spawnZ);
-		loc.setYaw((float) spawnYaw);
-		loc.setPitch((float) spawnPitch);
+		float spawnYaw = (float) aFile.getDouble(sPath + "yaw");
+		float spawnPitch = (float) aFile.getDouble(sPath + "pitch");
+
+		Location loc = new Location(Bukkit.getWorld(world), spawnX, spawnY, spawnZ, spawnYaw, spawnPitch);
 
 		if (GameUtils.getGameSpawn(name) != null) {
 			GameUtils.getGameSpawn(name).removeSpawn(loc);
@@ -85,7 +88,8 @@ public class removespawn {
 		aFile.set(path + ".spawns." + i, null);
 		Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
-		sendMessage(sender, RageMode.getLang().get("commands.removespawn.remove-success", "%number%", i, "%game%", name));
+		sendMessage(sender,
+				RageMode.getLang().get("commands.removespawn.remove-success", "%number%", i, "%game%", name));
 		return true;
 	}
 }

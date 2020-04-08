@@ -28,15 +28,15 @@ public class SignPlaceholder {
 			return variables;
 		}
 
-		java.util.Optional<GameStatus> status = GameUtils.getStatus(game);
+		GameStatus status = GameUtils.getGame(game).getStatus();
 
 		for (String line : lines) {
 			if (line.contains("%game%"))
 				line = line.replace("%game%", game);
 
-			if (line.contains("%current-players%") && status.isPresent()) {
+			if (line.contains("%current-players%")) {
 				line = line.replace("%current-players%",
-						status.get() == GameStatus.RUNNING || status.get() == GameStatus.WAITING
+						status == GameStatus.RUNNING || status == GameStatus.WAITING
 								? Integer.toString(GameUtils.getGame(game).getPlayers().size())
 								: "0");
 			}
@@ -44,8 +44,8 @@ public class SignPlaceholder {
 			if (line.contains("%max-players%"))
 				line = line.replace("%max-players%", Integer.toString(GetGames.getMaxPlayers(game)));
 
-			if (line.contains("%running%") && status.isPresent()) {
-				switch (status.get()) {
+			if (line.contains("%running%")) {
+				switch (status) {
 				case WAITING:
 					if (GameUtils.getGame(game).getPlayers().size() == GetGames.getMaxPlayers(game))
 						line = line.replace("%running%", ConfigValues.getSignGameFull());

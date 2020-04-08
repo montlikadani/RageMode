@@ -3,15 +3,17 @@ package hu.montlikadani.ragemode.commands.list;
 import org.bukkit.command.CommandSender;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-public class listgames {
+public class listgames implements ICommand {
 
-	public boolean run(CommandSender sender) {
+	@Override
+	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!hasPerm(sender, "ragemode.listgames")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;

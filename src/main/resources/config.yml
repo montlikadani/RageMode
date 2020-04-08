@@ -363,6 +363,7 @@ items:
     slot: 0
   rageKnife:
     name: "&6Rage&4 Knife"
+    damage: 25
     lore:
     - "&7One hit, dead."
     slot: 1

@@ -2,12 +2,12 @@ package hu.montlikadani.ragemode.commands.list;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Optional;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
@@ -15,9 +15,10 @@ import hu.montlikadani.ragemode.managers.PlayerManager;
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-public class listplayers {
+public class listplayers implements ICommand {
 
-	public boolean run(CommandSender sender, String[] args) {
+	@Override
+	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!hasPerm(sender, "ragemode.listplayers")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
@@ -39,7 +40,8 @@ public class listplayers {
 			if (!GameUtils.getGameByPlayer(p).getPlayersFromList().isEmpty()) {
 				sb = new StringBuilder();
 
-				for (Iterator<PlayerManager> e = GameUtils.getGameByPlayer(p).getPlayersFromList().iterator(); e.hasNext();) {
+				for (Iterator<PlayerManager> e = GameUtils.getGameByPlayer(p).getPlayersFromList().iterator(); e
+						.hasNext();) {
 					sb.append("&7-&6 " + e.next().getPlayer().getName() + "&a - " + e.next().getGameName());
 				}
 
@@ -49,7 +51,8 @@ public class listplayers {
 			if (!GameUtils.getGameBySpectator(p).getPlayersFromList().isEmpty()) {
 				sb = new StringBuilder();
 
-				for (Iterator<PlayerManager> e = GameUtils.getGameBySpectator(p).getPlayersFromList().iterator(); e.hasNext();) {
+				for (Iterator<PlayerManager> e = GameUtils.getGameBySpectator(p).getPlayersFromList().iterator(); e
+						.hasNext();) {
 					sb.append("&7-&6 " + e.next().getPlayer().getName() + "&a - " + e.next().getGameName());
 				}
 
@@ -66,8 +69,8 @@ public class listplayers {
 				return false;
 			}
 
-			Optional<GameStatus> status = GameUtils.getStatus(game);
-			if (status.isPresent() && !(status.get() == GameStatus.RUNNING || status.get() == GameStatus.WAITING)) {
+			GameStatus status = GameUtils.getGame(game).getStatus();
+			if (!(status == GameStatus.RUNNING || status == GameStatus.WAITING)) {
 				sendMessage(sender, RageMode.getLang().get("commands.listplayers.game-not-running"));
 				return false;
 			}
@@ -79,8 +82,8 @@ public class listplayers {
 				for (PlayerManager pm : GameUtils.getGame(game).getPlayersFromList()) {
 					Player player = pm.getPlayer();
 
-					for (Iterator<String> e = Arrays.asList(GameUtils.getGameByPlayer(player).getName())
-							.iterator(); e.hasNext();) {
+					for (Iterator<String> e = Arrays.asList(GameUtils.getGameByPlayer(player).getName()).iterator(); e
+							.hasNext();) {
 						sb.append("&7-&6 " + player.getName() + "&a - " + e.next());
 					}
 				}

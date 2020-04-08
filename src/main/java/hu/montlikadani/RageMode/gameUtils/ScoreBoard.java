@@ -105,13 +105,13 @@ public class ScoreBoard implements IObjectives {
 	 */
 	public void setLine(Player player, String line, int dummyScore) {
 		getScoreboard(player).ifPresent(board -> {
-			Team team = scoreboard.getTeam("SLOT_" + dummyScore);
+			Team team = board.getScoreboard().getTeam("SLOT_" + dummyScore);
 			if (team == null) {
 				return;
 			}
 
 			String entry = ChatColor.values()[dummyScore].toString();
-			if (!scoreboard.getEntries().contains(entry)) {
+			if (!board.getScoreboard().getEntries().contains(entry)) {
 				board.getObjective().getScore(entry).setScore(dummyScore);
 			}
 
@@ -129,8 +129,8 @@ public class ScoreBoard implements IObjectives {
 	public void resetScores(Player player, int score) {
 		getScoreboard(player).ifPresent(board -> {
 			String entry = ChatColor.values()[score].toString();
-			if (scoreboard.getEntries().contains(entry)) {
-				scoreboard.resetScores(entry);
+			if (board.getScoreboard().getEntries().contains(entry)) {
+				board.getScoreboard().resetScores(entry);
 			}
 		});
 	}
@@ -149,12 +149,14 @@ public class ScoreBoard implements IObjectives {
 	 */
 	@Override
 	public void remove(Player pl) {
-		scoreboard.clearSlot(DisplaySlot.SIDEBAR);
+		getScoreboard(pl).ifPresent(board -> {
+			board.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
 
-		Objective obj = scoreboard.getObjective("ragescores");
-		if (obj != null) {
-			obj.unregister();
-		}
+			Objective obj = board.getScoreboard().getObjective("ragescores");
+			if (obj != null) {
+				obj.unregister();
+			}
+		});
 
 		scoreboards.remove(pl);
 	}

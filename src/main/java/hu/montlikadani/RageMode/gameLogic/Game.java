@@ -14,9 +14,11 @@ import org.bukkit.metadata.FixedMetadataValue;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameJoinAttemptEvent;
+import hu.montlikadani.ragemode.API.event.RMGameStatusChangeEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorJoinToGameEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorLeaveGameEvent;
 import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameLobby;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
@@ -28,15 +30,20 @@ public class Game {
 
 	private String name;
 
+	private GameStatus status = GameStatus.STOPPED;
+
 	private final Map<Player, PlayerManager> players = new HashMap<>();
 	private final Map<Player, PlayerManager> specPlayer = new HashMap<>();
 
 	private boolean running = false;
 	private LobbyTimer lobbyTimer;
+	private ActionMessengers ac;
 
 	// TODO: In the future add ability to work with ids
 	public Game(String name) {
 		this.name = name;
+
+		ac = new ActionMessengers(this);
 	}
 
 	public String getName() {
@@ -246,6 +253,29 @@ public class Game {
 	}
 
 	/**
+	 * Gets the game current set GameStatus.
+	 * @return {@link GameStatus}
+	 */
+	public GameStatus getStatus() {
+		return status;
+	}
+
+	/**
+	 * Sets the game status to new status.
+	 * @param status the new status to be set for the game
+	 */
+	public void setStatus(GameStatus status) {
+		if (status == null) {
+			status = GameStatus.STOPPED;
+		}
+
+		RMGameStatusChangeEvent event = new RMGameStatusChangeEvent(this, status);
+		Utils.callEvent(event);
+
+		this.status = status;
+	}
+
+	/**
 	 * Check whatever has free room for VIP players.
 	 * @return true if the players size not equal to vips size
 	 */
@@ -353,6 +383,10 @@ public class Game {
 
 	public LobbyTimer getLobbyTimer() {
 		return lobbyTimer;
+	}
+
+	public ActionMessengers getActionMessengers() {
+		return ac;
 	}
 
 	/**

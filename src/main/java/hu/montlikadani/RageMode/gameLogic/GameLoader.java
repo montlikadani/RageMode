@@ -38,7 +38,7 @@ public class GameLoader {
 		String name = game.getName();
 
 		game.setGameRunning();
-		GameUtils.setStatus(name, GameStatus.RUNNING);
+		game.setStatus(GameStatus.RUNNING);
 
 		int time = !RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + name + ".gametime")
 				? ConfigValues.getDefaultGameTime() < 0 ? 5 : ConfigValues.getDefaultGameTime()

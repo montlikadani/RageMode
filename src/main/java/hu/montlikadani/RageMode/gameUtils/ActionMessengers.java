@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.gameUtils;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.bukkit.entity.Player;
@@ -13,29 +12,20 @@ import hu.montlikadani.ragemode.managers.PlayerManager;
 public class ActionMessengers {
 
 	private Game game;
-	private List<PlayerManager> players;
 
 	private final TabTitles gameTab = new TabTitles();
 	private final ScoreBoard gameBoard = new ScoreBoard();
 	private final ScoreTeam scoreTeam = new ScoreTeam();
 
-	public ActionMessengers(Game game, List<PlayerManager> players) {
+	public ActionMessengers(Game game) {
 		this.game = game;
-		this.players = players;
 
 		scoreTeam.addToList(game.getName());
 		gameTab.addToList(game.getName());
-		gameBoard.addToList(game.getName());
-
-		gameBoard.loadScoreboard(players);
 	}
 
 	public Game getGame() {
 		return game;
-	}
-
-	public List<PlayerManager> getPlayers() {
-		return java.util.Collections.unmodifiableList(players);
 	}
 
 	public TabTitles getTabTitles() {
@@ -55,14 +45,6 @@ public class ActionMessengers {
 	}
 
 	public void setTabList(int time) {
-		if (game == null) {
-			return;
-		}
-
-		if (players == null) {
-			return;
-		}
-
 		if (!ConfigValues.isTabEnabled()) {
 			return;
 		}
@@ -70,12 +52,8 @@ public class ActionMessengers {
 		List<String> tabHeader = ConfigValues.getTabHeader();
 		List<String> tabFooter = ConfigValues.getTabFooter();
 
-		for (Iterator<PlayerManager> it = players.iterator(); it.hasNext();) {
-			Player pl = it.next().getPlayer();
-			if (!GameUtils.isPlayerPlaying(pl)) {
-				it.remove();
-				continue;
-			}
+		for (PlayerManager pm : game.getPlayersFromList()) {
+			Player pl = pm.getPlayer();
 
 			String he = "";
 			int s = 0;
@@ -83,7 +61,7 @@ public class ActionMessengers {
 			for (String line : tabHeader) {
 				s++;
 				if (s > 1) {
-					he = he +  "\n\u00a7r";
+					he = he + "\n\u00a7r";
 				}
 
 				he = he + line;
@@ -118,25 +96,12 @@ public class ActionMessengers {
 	}
 
 	public void setScoreboard(int time) {
-		if (game == null) {
-			return;
-		}
-
-		if (players == null) {
-			return;
-		}
-
 		if (!ConfigValues.isScoreboardEnabled()) {
 			return;
 		}
 
-		for (Iterator<PlayerManager> it = players.iterator(); it.hasNext();) {
-			Player pl = it.next().getPlayer();
-			if (!GameUtils.isPlayerPlaying(pl)) {
-				gameBoard.remove(pl);
-				continue;
-			}
-
+		for (PlayerManager pm : game.getPlayersFromList()) {
+			Player pl = pm.getPlayer();
 			String boardTitle = ConfigValues.getSbTitle();
 			if (!boardTitle.isEmpty()) {
 				gameBoard.setTitle(pl, Utils.colors(boardTitle));
@@ -167,24 +132,12 @@ public class ActionMessengers {
 	}
 
 	public void setTeam() {
-		if (game == null) {
-			return;
-		}
-
-		if (players == null) {
-			return;
-		}
-
 		if (!ConfigValues.isTabFormatEnabled()) {
 			return;
 		}
 
-		for (Iterator<PlayerManager> it = players.iterator(); it.hasNext();) {
-			Player pl = it.next().getPlayer();
-			if (!GameUtils.isPlayerPlaying(pl)) {
-				it.remove();
-				continue;
-			}
+		for (PlayerManager pm : game.getPlayersFromList()) {
+			Player pl = pm.getPlayer();
 
 			String prefix = ConfigValues.getTabPrefix();
 			String suffix = ConfigValues.getTabSuffix();

@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
@@ -28,7 +26,6 @@ import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
-import hu.montlikadani.ragemode.API.event.RMGameStatusChangeEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.config.ConfigValues;
@@ -53,8 +50,6 @@ public class GameUtils {
 	 * When the game ended and players waiting for teleport.
 	 */
 	public static HashMap<String, Boolean> waitingGames = new HashMap<>();
-
-	private static Map<String, GameStatus> status = new HashMap<>();
 
 	/**
 	 * Broadcast a message to the currently playing players for that given game.
@@ -208,8 +203,10 @@ public class GameUtils {
 		Validate.notNull(p, "Player can not be null!");
 
 		for (Game game : RageMode.getInstance().getGames()) {
-			if (game.isPlayerInList(p)) {
-				return game;
+			for (PlayerManager pl : game.getPlayersFromList()) {
+				if (p.equals(pl.getPlayer())) {
+					return game;
+				}
 			}
 		}
 
@@ -252,8 +249,10 @@ public class GameUtils {
 		Validate.notNull(p, "Player can not be null!");
 
 		for (Game game : RageMode.getInstance().getGames()) {
-			if (game.isSpectatorInList(p)) {
-				return game;
+			for (PlayerManager pl : game.getSpectatorPlayersFromList()) {
+				if (p.equals(pl.getPlayer())) {
+					return game;
+				}
 			}
 		}
 
@@ -385,12 +384,9 @@ public class GameUtils {
 		PlayerInventory inv = p.getInventory();
 		String name = game.getName();
 
-		Optional<GameStatus> status = getStatus(name);
-		if (!status.isPresent()) {
-			return;
-		}
+		GameStatus status = game.getStatus();
 
-		if (status.get() == GameStatus.RUNNING) {
+		if (status == GameStatus.RUNNING) {
 			if (!ConfigValues.isSpectatorEnabled()) {
 				sendMessage(p, RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
 				return;
@@ -416,7 +412,7 @@ public class GameUtils {
 			return;
 		}
 
-		if (status.get() == GameStatus.NOTREADY) {
+		if (status == GameStatus.NOTREADY) {
 			sendMessage(p, RageMode.getLang().get("commands.join.game-locked"));
 			return;
 		}
@@ -469,7 +465,7 @@ public class GameUtils {
 		runCommands(p, name, "join");
 		sendBossBarMessages(p, name, "join");
 		sendActionBarMessages(p, name, "join");
-		setStatus(name, GameStatus.WAITING, false);
+		game.setStatus(GameStatus.WAITING);
 		broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
 
 		String title = ConfigValues.getTitleJoinGame();
@@ -578,15 +574,12 @@ public class GameUtils {
 			return;
 		}
 
-		Optional<GameStatus> status = getStatus(game.getName());
-		if (!status.isPresent()) {
-			return;
-		}
+		GameStatus status = game.getStatus();
 
-		if ((status.get() == GameStatus.RUNNING || status.get() == GameStatus.WAITING) && game.removePlayer(p)) {
+		if ((status == GameStatus.RUNNING || status == GameStatus.WAITING) && game.removePlayer(p)) {
 
 			// Will execute some tasks when the player left the server, while the game running
-			if (status.get() == GameStatus.RUNNING) {
+			if (status == GameStatus.RUNNING) {
 				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
 
 				List<String> list = ConfigValues.getCmdsForPlayerLeave();
@@ -850,7 +843,7 @@ public class GameUtils {
 		}
 
 		game.setGameNotRunning();
-		setStatus(game.getName(), null);
+		game.setStatus(null);
 		SignCreator.updateAllSigns(game.getName());
 	}
 
@@ -951,7 +944,7 @@ public class GameUtils {
 
 		waitingGames.put(name, true);
 
-		setStatus(name, GameStatus.GAMEFREEZE);
+		game.setStatus(GameStatus.GAMEFREEZE);
 		SignCreator.updateAllSigns(name);
 
 		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
@@ -970,7 +963,7 @@ public class GameUtils {
 
 		String gName = game.getName();
 
-		setStatus(gName, null);
+		game.setStatus(null);
 
 		// Lets try to load the stats if empty
 		if (RuntimePPManager.getRuntimePPList().isEmpty()) {
@@ -1024,7 +1017,7 @@ public class GameUtils {
 
 		game.setGameNotRunning();
 		SignCreator.updateAllSigns(gName);
-		setStatus(gName, GameStatus.READY);
+		game.setStatus(GameStatus.READY);
 
 		if (serverStop) {
 			if (ConfigValues.isRestartServerEnabled()) {
@@ -1059,13 +1052,10 @@ public class GameUtils {
 				continue;
 			}
 
-			Optional<GameStatus> status = getStatus(game);
-			if (!status.isPresent()) {
-				continue;
-			}
+			GameStatus status = g.getStatus();
 
 			List<PlayerManager> pList = g.getPlayersFromList();
-			if (status.get() == GameStatus.RUNNING && g.isGameRunning()) {
+			if (status == GameStatus.RUNNING && g.isGameRunning()) {
 				Debug.logConsole("Stopping " + game + " ...");
 
 				RageScores.calculateWinner(game, pList);
@@ -1085,7 +1075,7 @@ public class GameUtils {
 				g.setGameNotRunning();
 
 				Debug.logConsole(game + " has been stopped.");
-			} else if (status.get() == GameStatus.WAITING) {
+			} else if (status == GameStatus.WAITING) {
 				pList.forEach(pl -> g.removePlayer(pl.getPlayer()));
 			}
 		}
@@ -1102,63 +1092,6 @@ public class GameUtils {
 			s = s.replace("%deaths%", Integer.toString(score.getDeaths()));
 
 		return s;
-	}
-
-	/**
-	 * Gets the given game current set GameStatus by player.
-	 * @see #getStatus(String)
-	 * @param p Player
-	 * @return {@link GameStatus} if the player is in game
-	 */
-	public static GameStatus getStatus(Player p) {
-		return isPlayerPlaying(p) ? getStatus(getGameByPlayer(p).getName()).get() : null;
-	}
-
-	/**
-	 * Gets the given game current set GameStatus.
-	 * @param game Game name
-	 * @return {@link GameStatus}
-	 */
-	public static Optional<GameStatus> getStatus(String game) {
-		Validate.notNull(game, "Game name can't be null!");
-		Validate.notEmpty(game, "Game name can't be null!");
-
-		return Optional.ofNullable(status.get(game));
-	}
-
-	/**
-	 * Sets the game status to new status. If the status param is null
-	 * will set to stopped status.
-	 * @see #setStatus(String, GameStatus, boolean)
-	 * @param game the game name to set
-	 * @param status the new status to be set for the game
-	 */
-	public static void setStatus(String game, GameStatus status) {
-		setStatus(game, status, true);
-	}
-
-	/**
-	 * Sets the game status to new status.
-	 * @param game the game name to set
-	 * @param status the new status to be set for the game
-	 * @param forceRemove to force remove the existing game status from list
-	 */
-	public static void setStatus(String game, GameStatus status, boolean forceRemove) {
-		Validate.notNull(game, "Game name can't be null!");
-		Validate.notEmpty(game, "Game name can't be null!");
-
-		if (forceRemove && GameUtils.status.containsKey(game)) {
-			GameUtils.status.remove(game);
-		}
-
-		if (status == null) {
-			status = GameStatus.STOPPED;
-		}
-
-		RMGameStatusChangeEvent event = new RMGameStatusChangeEvent(getGame(game), status);
-		Utils.callEvent(event);
-
-		GameUtils.status.put(game, status);
 	}
 
 	/**

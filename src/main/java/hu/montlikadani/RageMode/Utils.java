@@ -1,21 +1,15 @@
 package hu.montlikadani.ragemode;
 
-import java.io.File;
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.entity.Player;
-
-import com.google.common.collect.ImmutableList;
 
 import hu.montlikadani.ragemode.API.event.BaseEvent;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -164,48 +158,6 @@ public class Utils {
 		}
 
 		return colors(s);
-	}
-
-	/**
-	 * Gets all classes in the given package name.
-	 * @param packageName where to find the classes
-	 * @return All classes in list
-	 */
-	public static ImmutableList<Class<?>> getClasses(String packageName) {
-		List<Class<?>> classes = new ArrayList<>();
-
-		try {
-			String pName = RageMode.getInstance().getDescription().getName();
-
-			final String path = RageMode.getInstance().getFolder().getParentFile().getPath();
-
-			File jar = new File(path, pName + ".jar");
-			if (!jar.exists()) {
-				for (File files : new File(path).listFiles()) {
-					String n = files.getName();
-					if (n.contains("RageMode") && n.endsWith(".jar")) {
-						jar = new File(path, n);
-						break;
-					}
-				}
-			}
-
-			JarFile file = new JarFile(jar);
-			for (Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
-				JarEntry jarEntry = entry.nextElement();
-				String name = jarEntry.getName().replace("/", ".");
-
-				if (name.startsWith(packageName) && name.endsWith(".class")) {
-					classes.add(Class.forName(name.substring(0, name.length() - 6)));
-				}
-			}
-
-			file.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return ImmutableList.<Class<?>>builder().addAll(classes).build();
 	}
 
 	/**

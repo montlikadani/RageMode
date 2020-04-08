@@ -5,6 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.storage.MySQLDB;
 import hu.montlikadani.ragemode.storage.SQLDB;
@@ -15,9 +16,10 @@ import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 import java.util.UUID;
 
-public class resetplayerstats {
+public class resetplayerstats implements ICommand {
 
-	public boolean run(CommandSender sender, String[] args) {
+	@Override
+	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!(sender instanceof Player)) {
 			if (args.length < 2) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-null"));
@@ -42,6 +44,7 @@ public class resetplayerstats {
 				return true;
 			}
 
+			sendMessage(sender, RageMode.getLang().get("commands.stats.could-not-reset-player-stats"));
 			return false;
 		}
 
@@ -70,11 +73,12 @@ public class resetplayerstats {
 				return true;
 			}
 
+			sendMessage(p, RageMode.getLang().get("commands.stats.could-not-reset-player-stats"));
 			return false;
 		}
 
 		if (GameUtils.isPlayerPlaying(p)) {
-			sendMessage(sender, RageMode.getLang().get("commands.stats.player-currently-in-game"));
+			sendMessage(p, RageMode.getLang().get("commands.stats.player-currently-in-game"));
 			return false;
 		}
 
@@ -83,6 +87,7 @@ public class resetplayerstats {
 			return true;
 		}
 
+		sendMessage(p, RageMode.getLang().get("commands.stats.could-not-reset-player-stats"));
 		return false;
 	}
 

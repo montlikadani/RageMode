@@ -103,6 +103,7 @@ public class Language {
 		l.getL("commands.stats.reseted", "&2Your stats has been reseted!");
 		l.getL("commands.stats.target-stats-reseted", "&7%player%&2 stats has been reseted!");
 		l.getL("commands.stats.player-currently-in-game", "&cThis player is currently playing! Please wait while the game end.");
+		l.getL("commands.stats.could-not-reset-player-stats", "&cCould not reset player stats because that player isn't found in database.");
 		l.getL("commands.kick.game-not-null", "&cThe game name can not be null!");
 		l.getL("commands.kick.player-not-found", "&cThe player name can not be null!");
 		l.getL("commands.kick.player-kicked", "&2The player&e %player%&2 successfully kicked from&e %game%&2 game!");

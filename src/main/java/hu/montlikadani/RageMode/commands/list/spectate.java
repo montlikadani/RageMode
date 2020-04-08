@@ -5,15 +5,17 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.Items;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-public class spectate {
+public class spectate implements ICommand {
 
-	public boolean run(CommandSender sender, String[] args) {
+	@Override
+	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!(sender instanceof Player)) {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
 			return false;

@@ -6,7 +6,6 @@ import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -67,6 +66,7 @@ import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.items.Items;
 import hu.montlikadani.ragemode.libs.Sounds;
 import hu.montlikadani.ragemode.scores.KilledWith;
@@ -98,20 +98,17 @@ public class GameListener implements Listener {
 			return;
 		}
 
-		String game = GameUtils.getGameByPlayer(p).getName();
-		Optional<GameStatus> status = GameUtils.getStatus(game);
-		if (!status.isPresent()) {
-			return;
-		}
+		Game game = GameUtils.getGameByPlayer(p);
+		GameStatus status = game.getStatus();
 
-		if (status.get() == GameStatus.WAITING && !ConfigValues.isChatEnabledinLobby()
+		if (status == GameStatus.WAITING && !ConfigValues.isChatEnabledinLobby()
 				&& !hasPerm(p, "ragemode.bypass.lobby.lockchat")) {
 			event.setCancelled(true);
 			sendMessage(p, RageMode.getLang().get("game.lobby.chat-is-disabled"));
 			return;
 		}
 
-		if (status.get() == GameStatus.RUNNING) {
+		if (status == GameStatus.RUNNING) {
 			if (!ConfigValues.isEnableChatInGame() && !hasPerm(p, "ragemode.bypass.game.lockchat")) {
 				sendMessage(p, RageMode.getLang().get("game.chat-is-disabled"));
 				event.setCancelled(true);
@@ -122,9 +119,8 @@ public class GameListener implements Listener {
 				String format = ConfigValues.getChatFormat();
 				format = format.replace("%player%", p.getName());
 				format = format.replace("%player-displayname%", p.getDisplayName());
-				format = format.replace("%game%", game);
-				format = format.replace("%online-ingame-players%",
-						Integer.toString(GameUtils.getGame(game).getPlayers().size()));
+				format = format.replace("%game%", game.getName());
+				format = format.replace("%online-ingame-players%", Integer.toString(game.getPlayers().size()));
 				format = format.replace("%message%", event.getMessage());
 				format = Utils.setPlaceholders(format, p);
 
@@ -132,7 +128,7 @@ public class GameListener implements Listener {
 			}
 		}
 
-		if (!ConfigValues.isEnableChatAfterEnd() && status.get() == GameStatus.GAMEFREEZE) {
+		if (!ConfigValues.isEnableChatAfterEnd() && status == GameStatus.GAMEFREEZE) {
 			sendMessage(p, RageMode.getLang().get("game.game-freeze.chat-is-disabled"));
 			event.setCancelled(true);
 		}
@@ -141,8 +137,7 @@ public class GameListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onProjectileHit(ProjectileHitEvent event) {
 		// RageArrow explosion event
-		if (event.getEntity().getShooter() != null
-				&& event.getEntity().getShooter() instanceof Player
+		if (event.getEntity().getShooter() != null && event.getEntity().getShooter() instanceof Player
 				&& GameUtils.isPlayerPlaying((Player) event.getEntity().getShooter())
 				&& event.getEntity() instanceof Arrow) {
 			Arrow arrow = (Arrow) event.getEntity();
@@ -151,18 +146,15 @@ public class GameListener implements Listener {
 				return;
 			}
 
-			String game = GameUtils.getGameByPlayer(shooter).getName();
-			Optional<GameStatus> status = GameUtils.getStatus(game);
-			if (!status.isPresent()) {
-				return;
-			}
+			Game game = GameUtils.getGameByPlayer(shooter);
+			GameStatus status = game.getStatus();
 
-			if (status.get() == GameStatus.GAMEFREEZE && GameUtils.isGameInFreezeRoom(game)) {
+			if (status == GameStatus.GAMEFREEZE && GameUtils.isGameInFreezeRoom(game)) {
 				arrow.remove();
 				return;
 			}
 
-			if (status.get() == GameStatus.RUNNING) {
+			if (status == GameStatus.RUNNING) {
 				Location location = arrow.getLocation();
 				double x = location.getX();
 				double y = location.getY();
@@ -205,7 +197,7 @@ public class GameListener implements Listener {
 		}
 
 		// Prevent player damage in lobby
-		if (GameUtils.getStatus(victim) == GameStatus.WAITING) {
+		if (GameUtils.getGameByPlayer(victim).getStatus() == GameStatus.WAITING) {
 			event.setCancelled(true);
 		}
 
@@ -223,7 +215,7 @@ public class GameListener implements Listener {
 
 		victim.removeMetadata("killedWith", plugin);
 
-		if (GameUtils.getStatus(victim) != GameStatus.RUNNING) {
+		if (GameUtils.getGameByPlayer(victim).getStatus() != GameStatus.RUNNING) {
 			return;
 		}
 
@@ -236,9 +228,10 @@ public class GameListener implements Listener {
 			if (GameUtils.isPlayerPlaying(damager)) {
 				ItemStack hand = NMS.getItemInHand(damager);
 				ItemMeta meta = hand.getItemMeta();
-				if (Items.getRageKnife() != null && meta != null && meta.hasDisplayName()
-						&& meta.getDisplayName().equals(Items.getRageKnife().getDisplayName())) {
-					finalDamage = 25;
+				ItemHandler knife = Items.getRageKnife();
+				if (knife != null && meta != null && meta.hasDisplayName()
+						&& meta.getDisplayName().equals(knife.getDisplayName())) {
+					finalDamage = knife.getDamage();
 					tool = "knife";
 				}
 			}
@@ -277,7 +270,7 @@ public class GameListener implements Listener {
 		Game game = GameUtils.getGameByPlayer(victim);
 
 		// Hit player event
-		if (GameUtils.getStatus(victim) == GameStatus.RUNNING) {
+		if (GameUtils.getGameByPlayer(victim).getStatus() == GameStatus.RUNNING) {
 			if (event.getCause().equals(DamageCause.FALL) && !ConfigValues.isDamagePlayerFall()) {
 				event.setCancelled(true);
 				return;
@@ -286,11 +279,12 @@ public class GameListener implements Listener {
 			if (GameUtils.isGameInFreezeRoom(game)) {
 				event.setCancelled(true);
 			}
-		} else if (GameUtils.getStatus(victim) == GameStatus.GAMEFREEZE) { // Prevent damage in game freeze
+		} else if (GameUtils.getGameByPlayer(victim).getStatus() == GameStatus.GAMEFREEZE) {
+			// Prevent damage in game freeze
 			if (GameUtils.isGameInFreezeRoom(game)) {
 				event.setCancelled(true);
 			}
-		} else if (GameUtils.getStatus(victim) == GameStatus.WAITING) {
+		} else if (GameUtils.getGameByPlayer(victim).getStatus() == GameStatus.WAITING) {
 			event.setCancelled(true); // Prevent player damage in lobby
 		}
 	}
@@ -318,7 +312,7 @@ public class GameListener implements Listener {
 			return;
 		}
 
-		if (GameUtils.getStatus(deceased) != GameStatus.RUNNING) {
+		if (GameUtils.getGameByPlayer(deceased).getStatus() != GameStatus.RUNNING) {
 			return;
 		}
 
@@ -361,7 +355,7 @@ public class GameListener implements Listener {
 				case "snowball":
 					if (!killerExists) {
 						message = RageMode.getLang().get("game.broadcast.axe-kill", "%victim%", deceaseName, "%killer%",
-								deceased.getName());
+								deceaseName);
 
 						RageScores.addPointsToPlayer(deceased, deceased, KilledWith.COMBATAXE);
 					} else {
@@ -399,7 +393,7 @@ public class GameListener implements Listener {
 				case "grenade":
 					if (!killerExists) {
 						message = RageMode.getLang().get("game.broadcast.grenade-kill", "%victim%", deceaseName,
-								"%killer%", deceased.getName());
+								"%killer%", deceaseName);
 
 						RageScores.addPointsToPlayer(deceased, deceased, KilledWith.GRENADE);
 					} else {
@@ -594,7 +588,8 @@ public class GameListener implements Listener {
 			return;
 		}
 
-		if (GameUtils.getStatus(p) != GameStatus.RUNNING && GameUtils.getStatus(p) != GameStatus.GAMEFREEZE) {
+		if (GameUtils.getGameByPlayer(p).getStatus() != GameStatus.RUNNING
+				&& GameUtils.getGameByPlayer(p).getStatus() != GameStatus.GAMEFREEZE) {
 			return;
 		}
 
@@ -688,7 +683,7 @@ public class GameListener implements Listener {
 			return;
 		}
 
-		if (GameUtils.getStatus(p) == GameStatus.RUNNING) {
+		if (GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING) {
 			Player thrower = event.getPlayer();
 			ItemStack hand = NMS.getItemInHand(thrower);
 			ItemMeta meta = hand.getItemMeta();
@@ -702,10 +697,11 @@ public class GameListener implements Listener {
 		ItemStack hand = NMS.getItemInHand(p);
 		Action action = event.getAction();
 
-		/** Cancels the rage knife usage, for example with collecting beehives
+		/**
+		 * Cancels the rage knife usage, for example with collecting beehives
 		 * 
-		 * For this we don't need to check all game items, because
-		 * there is no possibility to change the item types from config.
+		 * For this we don't need to check all game items, because there is no
+		 * possibility to change the item types from config.
 		 */
 		if (action == Action.RIGHT_CLICK_BLOCK && Items.getRageKnife() != null
 				&& hand.getType().equals(Items.getRageKnife().getItem())) {
@@ -713,7 +709,8 @@ public class GameListener implements Listener {
 		}
 
 		if ((action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR || action == Action.LEFT_CLICK_AIR
-				|| action == Action.LEFT_CLICK_BLOCK) && GameUtils.getStatus(p) == GameStatus.WAITING) {
+				|| action == Action.LEFT_CLICK_BLOCK)
+				&& GameUtils.getGameByPlayer(p).getStatus() == GameStatus.WAITING) {
 			ItemMeta meta = hand.getItemMeta();
 			if (meta != null && meta.hasDisplayName()) {
 				Game game = GameUtils.getGameByPlayer(p);
@@ -775,8 +772,9 @@ public class GameListener implements Listener {
 			if (t == Material.FARMLAND) {
 				ev.setUseInteractedBlock(Event.Result.DENY);
 				ev.setCancelled(true);
-			} else if (ConfigValues.isCancelRedstoneActivate() && GameUtils.getStatus(p) == GameStatus.RUNNING
-					|| GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
+			} else if (ConfigValues.isCancelRedstoneActivate()
+					&& GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING
+					|| GameUtils.getGameByPlayer(p).getStatus() == GameStatus.GAMEFREEZE) {
 				if (MaterialUtil.isWoodenPressurePlate(t)) {
 					ev.setUseInteractedBlock(Event.Result.DENY);
 					ev.setCancelled(true);
@@ -789,7 +787,8 @@ public class GameListener implements Listener {
 				}
 			}
 		} else if (ConfigValues.isCancelRedstoneActivate() && action == Action.RIGHT_CLICK_BLOCK) {
-			if (GameUtils.getStatus(p) == GameStatus.RUNNING || GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
+			if (GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING
+					|| GameUtils.getGameByPlayer(p).getStatus() == GameStatus.GAMEFREEZE) {
 				if (MaterialUtil.isTrapdoor(t) || MaterialUtil.isButton(t)) {
 					ev.setUseInteractedBlock(Event.Result.DENY);
 					ev.setCancelled(true);
@@ -815,7 +814,8 @@ public class GameListener implements Listener {
 		}
 
 		if (ConfigValues.isCancelDoorUse() && action == Action.RIGHT_CLICK_BLOCK
-				&& GameUtils.getStatus(p) == GameStatus.RUNNING || GameUtils.getStatus(p) == GameStatus.GAMEFREEZE) {
+				&& GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING
+				|| GameUtils.getGameByPlayer(p).getStatus() == GameStatus.GAMEFREEZE) {
 			if (MaterialUtil.isWoodenDoor(t)) {
 				ev.setUseInteractedBlock(Event.Result.DENY);
 				ev.setCancelled(true);
@@ -865,7 +865,7 @@ public class GameListener implements Listener {
 
 		Game game = GameUtils.getGameByPlayer(p);
 
-		if (GameUtils.getStatus(p) == GameStatus.GAMEFREEZE && GameUtils.isGameInFreezeRoom(game)) {
+		if (game.getStatus() == GameStatus.GAMEFREEZE && GameUtils.isGameInFreezeRoom(game)) {
 			if (!ConfigValues.isFreezePlayers()) {
 				return;
 			}
@@ -893,17 +893,6 @@ public class GameListener implements Listener {
 			GameUtils.broadcastToGame(game, RageMode.getLang().get("game.void-fall", "%player%", p.getName()));
 		}
 	}
-
-	/*@EventHandler
-	public void onWorldChangedEvent(PlayerTeleportEvent event) {
-		if (GameUtils.isPlayerPlaying(event.getPlayer()) && !MapChecker
-				.isGameWorld(GameUtils.getGameByPlayer(event.getPlayer()).getName(), event.getTo().getWorld())) {
-			if (!event.getPlayer().hasMetadata("Leaving"))
-				event.getPlayer().performCommand("rm leave");
-			else
-				event.getPlayer().removeMetadata("Leaving", RageMode.getInstance());
-		}
-	}*/
 
 	private void setTrails(Projectile proj) {
 		new BukkitRunnable() {

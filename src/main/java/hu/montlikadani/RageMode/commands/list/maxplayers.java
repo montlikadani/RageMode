@@ -7,11 +7,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-public class maxplayers {
+public class maxplayers implements ICommand {
 
+	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!(sender instanceof Player)) {
 			sendMessage(sender, RageMode.getLang().get("in-game-only"));
@@ -25,7 +27,8 @@ public class maxplayers {
 		}
 
 		if (args.length < 3) {
-			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm maxplayers <gameName> <maxPlayers>"));
+			sendMessage(p,
+					RageMode.getLang().get("missing-arguments", "%usage%", "/rm maxplayers <gameName> <maxPlayers>"));
 			return false;
 		}
 

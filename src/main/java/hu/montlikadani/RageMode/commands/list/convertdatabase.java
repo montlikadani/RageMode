@@ -7,11 +7,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.database.DBType;
 
-public class convertdatabase {
+public class convertdatabase implements ICommand {
 
-	public boolean run(final RageMode plugin, final CommandSender sender, final String[] args) {
+	@Override
+	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (sender instanceof Player && !sender.hasPermission("ragemode.admin.convertdatabase")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;

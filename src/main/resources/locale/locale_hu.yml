@@ -33,6 +33,7 @@ commands:
     reseted: "&2A statisztikád visszaállítva!"
     target-stats-reseted: "&7%player%&2 statisztikája visszaállítva!"
     player-currently-in-game: "&cEz a játékos jelenleg játszik! Kérlek, várd meg amíg a játéknak vége lesz."
+    could-not-reset-player-stats: "&cNem lehetett visszaállítani a játékos statisztikáját, mert nincs az adatbázisban."
   kick:
     game-not-null: "&cA játék nem lehet null!"
     player-not-found: "&cA játékos név nem lehet null!"

@@ -1,16 +1,9 @@
 package hu.montlikadani.ragemode.commands;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.HashMap;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import com.google.common.collect.ImmutableList;
 
 import hu.montlikadani.ragemode.RageMode;
 
@@ -18,21 +11,6 @@ import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class RmCommand implements CommandExecutor {
-
-	public static Map<String, String> arg = new HashMap<>();
-
-	public RmCommand() {
-		arg.clear();
-
-		String path = "hu.montlikadani.ragemode.commands.list";
-		ImmutableList<Class<?>> classes = hu.montlikadani.ragemode.Utils.getClasses(path);
-		for (Class<?> cl : classes) {
-			if (cl != null) {
-				String className = cl.getName().toLowerCase();
-				arg.put(className.replace(path + ".", ""), className);
-			}
-		}
-	}
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -144,6 +122,8 @@ public class RmCommand implements CommandExecutor {
 				if (!msg.isEmpty()) {
 					sendMessage(sender, msg, true);
 				}
+
+				return true;
 			} else if (args[0].equalsIgnoreCase("admin")) {
 				if (!hasPerm(sender, "ragemode.admin.help")) {
 					sendMessage(sender, RageMode.getLang().get("no-permission"));
@@ -189,83 +169,23 @@ public class RmCommand implements CommandExecutor {
 				if (!msg.isEmpty()) {
 					sendMessage(sender, msg, true);
 				}
+
+				return true;
 			}
 
-			for (Entry<String, String> a : arg.entrySet()) {
-				if (args[0].equalsIgnoreCase(a.getKey())) {
-					try {
-						Class<?> fclass = Class.forName(a.getValue());
-						Object run = fclass.newInstance();
-						Class<?>[] paramTypes = { RageMode.class, CommandSender.class, Command.class, String[].class };
-						Method printMethod = null;
-						try {
-							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
-						} catch (NoSuchMethodException e2) {
-							paramTypes = new Class<?>[] { RageMode.class, CommandSender.class, String[].class };
-						}
+			String path = "hu.montlikadani.ragemode.commands.list";
+			ICommand command = null;
+			try {
+				command = (ICommand) RageMode.class.getClassLoader().loadClass(path + "." + args[0].toLowerCase())
+						.newInstance();
+			} catch (ClassNotFoundException e) {
+				sendMessage(sender, RageMode.getLang().get("wrong-command"));
+			} catch (IllegalAccessException | InstantiationException e) {
+				e.printStackTrace();
+			}
 
-						if (printMethod == null) {
-							try {
-								printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
-							} catch (NoSuchMethodException e3) {
-								paramTypes = new Class<?>[] { CommandSender.class, String[].class };
-							}
-						}
-
-						if (printMethod == null) {
-							try {
-								printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
-							} catch (NoSuchMethodException e4) {
-								paramTypes = new Class<?>[] { RageMode.class, CommandSender.class };
-							}
-						}
-
-						if (printMethod == null) {
-							try {
-								printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
-							} catch (NoSuchMethodException e5) {
-								paramTypes = new Class<?>[] { CommandSender.class };
-							}
-						}
-
-						if (printMethod == null)
-							printMethod = run.getClass().getDeclaredMethod("run", paramTypes);
-
-						Object[] arguments = { RageMode.getInstance(), sender, cmd, args };
-						try {
-							printMethod.invoke(run, arguments);
-							return true;
-						} catch (IllegalArgumentException e1) {
-							arguments = new Object[] { RageMode.getInstance(), sender, args };
-						}
-
-						try {
-							printMethod.invoke(run, arguments);
-							return true;
-						} catch (IllegalArgumentException e2) {
-							arguments = new Object[] { sender, args };
-						}
-
-						try {
-							printMethod.invoke(run, arguments);
-							return true;
-						} catch (IllegalArgumentException e3) {
-							arguments = new Object[] { RageMode.getInstance(), sender };
-						}
-
-						try {
-							printMethod.invoke(run, arguments);
-							return true;
-						} catch (IllegalArgumentException e4) {
-							arguments = new Object[] { sender };
-						}
-						printMethod.invoke(run, arguments);
-					} catch (Throwable t) {
-						t.printStackTrace();
-					}
-
-					break;
-				}
+			if (command != null) {
+				command.run(RageMode.getInstance(), sender, args);
 			}
 		}
 

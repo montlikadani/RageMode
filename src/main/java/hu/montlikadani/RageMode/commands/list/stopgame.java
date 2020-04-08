@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
@@ -16,9 +17,10 @@ import hu.montlikadani.ragemode.signs.SignCreator;
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-public class stopgame {
+public class stopgame implements ICommand {
 
-	public boolean run(CommandSender sender, String[] args) {
+	@Override
+	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (!hasPerm(sender, "ragemode.admin.stopgame")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
@@ -51,7 +53,7 @@ public class stopgame {
 			}
 
 			g.setGameNotRunning();
-			GameUtils.setStatus(game, null);
+			g.setStatus(null);
 			SignCreator.updateAllSigns(game);
 			sendMessage(sender, RageMode.getLang().get("game.stopped", "%game%", game));
 		} else {
