@@ -1,3 +1,48 @@
+# v1.8.0
+- Fixed that the database loaded twice
+- Some fixes related to rewards
+- Now the rejoin times can works with offline players
+- Some fixes related to interacting with signs
+- Fixed issue with items not working outside of the game
+- Fixed issue when the projectile shooter is not player
+- Removed event when you have game in another world, will check that and this caused player left from game
+- Fixed issue when not enough players are in game then other players can't leave from game anymore
+- Improved release downloader when we have other double format version
+- Improved scoreboard to work correctly, game scoreboards should works now
+  - Now the scoreboard will not duplicate the rows when there is more players.
+- Improved commands handling, including all ragemode commands
+- Improved game-status handling for better work
+- Added option to configure rage knife damage
+- Fixed issue when the spectator player can't leave from the game
+
+# v1.7.0
+- Reworked the game items handling to work faster.
+- Fixed server tps loss when updating the signs due to schedulers that runs on the server background. Sign updates will became if a player joins to game, game stopping or something similar happens.
+- %game-time% placeholder should works in game
+- Fixed database issue when adding new players to database at the end of game
+- Fixed issue when the plugin tries to register a new event even the plugin is disabling.
+- Fixed issue when a player not in-game and hit a game player will throws error
+- Fixed issue when used mysql as database not created a player stats table
+- Fixed asynchronous scoreboard creation when calling new class
+- Improved the freeze waiting game handling, now its easy to get it
+- Fixed NPE error when getting the scoreboards for player
+- Improved the force-stopping game, when an error occured during starting a game.
+- Added option to enable/disable to kick random player from game if joins a vip to full game.
+- Now the minimum players can't be greater than maximum players, because no. If still then it will changes automatically on game joining.
+- Fixed issue when the game time, spawns and other stuff does not loaded on plugin reload.
+- Fixed issue when the score teams not works correctly
+- Added per-join-permission option
+- Fixed minor memory leak issue when registered a lot of events for bungee, but not needed
+- Added option to use grenade trails when player was thrown an egg
+- Fixed issue when some game items are not worked on first use.
+- Now only cancels the usage of rage knife because this can be used to collect beehives. This cancelled during game.
+- Fixed issue when the players died they respawned at the world spawn Thanks @SirKratosAurion
+- Added new sub-command: convertdatabase, to convert current database to a new one
+- Added option to disable players freeze in game freeze
+- Now checks the y location to prevent moving while the player is in game freeze.
+- Added option to specify amount of bonuses (only for grenade)
+- Added release downloader to download plugin updates
+
 # v1.6.0
 - Added option to display the thrown egg custom name
 - Fixed problems when stopping all games while the plugin disabling.

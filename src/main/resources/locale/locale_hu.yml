@@ -106,7 +106,6 @@ setup:
     already-exists: "&cEz a játék &e%game%&c már létezik."
     special-chars: "&cEz a név tartalmaz speciális karaktert a ragemode map-hoz."
     name-greater: "&cEz a név túl hosszú a ragemode map-hoz&7 (< 40)."
-    bad-name: "&cEz a ragemode map név tartalmaz parancs neveket."
   at-least-two: "&cA értéknek legalább 2-nek kell lennie."
   spawn-set-success: "&2A spawn&e %number%&3 %game%&2 játékhoz sikeresen beállítva!"
   success: "&2Sikeres!"

@@ -106,7 +106,6 @@ setup:
     already-exists: "&cThis &e%game%&c game already exists."
     special-chars: "&cThe name of the ragemode map contains special characters."
     name-greater: "&cThe name of the ragemode map is too long&7 (< 40)."
-    bad-name: "&cThe name of the ragemode map is contains the command name."
   at-least-two: "&cThe value must be at least two."
   spawn-set-success: "&2Spawn&e %number%&2 for the game&3 %game%&2 was set successfully!"
   success: "&2Success!"

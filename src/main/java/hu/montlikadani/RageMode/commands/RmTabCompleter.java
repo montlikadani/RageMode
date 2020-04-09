@@ -10,7 +10,6 @@ import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
 import hu.montlikadani.ragemode.database.DBType;
@@ -85,8 +84,7 @@ public class RmTabCompleter implements TabCompleter {
 	private List<String> getDefaultCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
 		for (String cmds : Arrays.asList("join", "leave", "listgames", "stats", "spectate", "listplayers")) {
-			if (sender instanceof Player && hasPerm(sender, "ragemode.help.playercommands")
-					|| hasPerm(sender, "ragemode." + cmds)) {
+			if (hasPerm(sender, "ragemode.help.playercommands") || hasPerm(sender, "ragemode." + cmds)) {
 				c.add(cmds);
 			}
 		}
@@ -97,7 +95,7 @@ public class RmTabCompleter implements TabCompleter {
 	private List<String> getCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
 		for (String cmds : Arrays.asList("joinrandom")) {
-			if (sender instanceof Player && hasPerm(sender, "ragemode." + cmds)) {
+			if (hasPerm(sender, "ragemode." + cmds)) {
 				c.add(cmds);
 			}
 		}
@@ -108,9 +106,9 @@ public class RmTabCompleter implements TabCompleter {
 	private List<String> getAdminCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
 		for (String cmds : Arrays.asList("addgame", "addspawn", "setlobby", "reload", "holostats", "removegame",
-				"resetplayerstats", "forcestart", "kick", "stopgame", "signupdate", "togglegame", "points", "givesaveditems",
-				"removespawn", "latestart", "maxplayers", "minplayers", "convertdatabase")) {
-			if (sender instanceof Player && hasPerm(sender, "ragemode.admin." + cmds)) {
+				"resetplayerstats", "forcestart", "kick", "stopgame", "signupdate", "togglegame", "points",
+				"givesaveditems", "removespawn", "latestart", "maxplayers", "minplayers", "convertdatabase")) {
+			if (hasPerm(sender, "ragemode.admin." + cmds)) {
 				c.add(cmds);
 			}
 		}
@@ -121,7 +119,7 @@ public class RmTabCompleter implements TabCompleter {
 	private List<String> getSomeCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
 		for (String cmds : Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay")) {
-			if (sender instanceof Player && hasPerm(sender, "ragemode.admin.set" + cmds)) {
+			if (hasPerm(sender, "ragemode.admin.set" + cmds)) {
 				c.add(cmds);
 			}
 		}
