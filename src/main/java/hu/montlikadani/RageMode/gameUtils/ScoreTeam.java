@@ -1,40 +1,17 @@
 package hu.montlikadani.ragemode.gameUtils;
 
-import java.util.HashMap;
-
 import org.bukkit.entity.Player;
 
-public class ScoreTeam implements IObjectives {
+public class ScoreTeam {
 
-	public static HashMap<String, ScoreTeam> allTeams = new HashMap<>();
+	private Player player;
 
-	/**
-	 * Adds this instance to the global ScoreTeam.
-	 * @param gameName the unique game-name for which the ScoreTeam element should be saved for.
-	 * @return Whether the ScoreTeam was stored successfully or not.
-	 */
-	public boolean addToList(String gameName) {
-		return addToList(gameName, true);
+	public ScoreTeam(Player player) {
+		this.player = player;
 	}
 
-	/**
-	 * Adds this instance to the global ScoreTeam.
-	 * @param gameName the unique game-name for which the ScoreTeam element should be saved for.
-	 * @param forceReplace force the game put to the list
-	 * @return Whether the ScoreTeam was stored successfully or not.
-	 */
-	@Override
-	public boolean addToList(String gameName, boolean forceReplace) {
-		if (!allTeams.containsKey(gameName)) {
-			allTeams.put(gameName, this);
-		} else if (forceReplace) {
-			allTeams.remove(gameName);
-			allTeams.put(gameName, this);
-		} else {
-			return false;
-		}
-
-		return true;
+	public Player getPlayer() {
+		return player;
 	}
 
 	/**
@@ -53,8 +30,7 @@ public class ScoreTeam implements IObjectives {
 	 * Removes the team from player
 	 * @param player Player
 	 */
-	@Override
-	public void remove(Player player) {
+	public void remove() {
 		player.setPlayerListName(player.getName());
 	}
 }

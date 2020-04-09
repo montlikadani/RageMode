@@ -2,44 +2,22 @@ package hu.montlikadani.ragemode.gameUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.util.HashMap;
 
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.Utils;
 
-public class TabTitles implements IObjectives {
+public class TabTitles {
 
-	public static HashMap<String, TabTitles> allTabLists = new HashMap<>();
+	private Player player;
 
-	/**
-	 * Adds this instance to the global TabList list allTabLists.
-	 * @param gameName the unique game-name for which the TabList element should be saved for.
-	 * @return Whether the TabList was stored successfully or not.
-	 */
-	public boolean addToList(String gameName) {
-		return addToList(gameName, true);
+	public TabTitles(Player player) {
+		this.player = player;
 	}
 
-	/**
-	 * Adds this instance to the global TabList list allTabLists.
-	 * @param gameName the unique game-name for which the TabList element should be saved for.
-	 * @param forceReplace force the game put to the list
-	 * @return Whether the TabList was stored successfully or not.
-	 */
-	@Override
-	public boolean addToList(String gameName, boolean forceReplace) {
-		if (!allTabLists.containsKey(gameName)) {
-			allTabLists.put(gameName, this);
-		} else if (forceReplace) {
-			allTabLists.remove(gameName);
-			allTabLists.put(gameName, this);
-		} else {
-			return false;
-		}
-
-		return true;
+	public Player getPlayer() {
+		return player;
 	}
 
 	/**
@@ -82,8 +60,7 @@ public class TabTitles implements IObjectives {
 	 * Removes the tablist from the given player that are currently playing in a game.
 	 * @param player Player
 	 */
-	@Override
-	public void remove(Player player) {
+	public void remove() {
 		sendTabTitle(player, null, null);
 	}
 }

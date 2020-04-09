@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.gameUtils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,7 +26,6 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
-import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.*;
@@ -83,14 +81,12 @@ public class GameUtils {
 	}
 
 	/**
-	 * Checks the game name if contains special chars, too long or contains
-	 * a ragemode command.
+	 * Checks the game name if contains special chars or too long.
 	 * @param pl Player
 	 * @param name Game
 	 * @return false if:
 	 * <br>- contains special chars
 	 * <br>- the name is too long
-	 * <br>- in the name contains a ragemode command
 	 */
 	public static boolean checkName(Player pl, String name) {
 		if (!name.matches("^[a-zA-Z0-9\\_\\-]+$")) {
@@ -103,23 +99,7 @@ public class GameUtils {
 			return false;
 		}
 
-		if (reservedNames.contains(name)) { // hehe
-			sendMessage(pl, RageMode.getLang().get("setup.addgame.bad-name"));
-			return false;
-		}
-
 		return true;
-	}
-
-	private static List<String> reservedNames = buildReservedNameList();
-
-	private static List<String> buildReservedNameList() {
-		List<String> reservedNames = new ArrayList<>();
-		for (Entry<String, String> cmds : RmCommand.arg.entrySet()) {
-			reservedNames.add(cmds.getKey());
-		}
-
-		return reservedNames;
 	}
 
 	/**

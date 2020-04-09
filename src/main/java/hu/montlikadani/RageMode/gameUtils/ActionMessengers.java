@@ -7,25 +7,32 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
-import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class ActionMessengers {
 
 	private Game game;
+	private Player player;
 
-	private final TabTitles gameTab = new TabTitles();
+	private final TabTitles gameTab;
 	private final ScoreBoard gameBoard = new ScoreBoard();
-	private final ScoreTeam scoreTeam = new ScoreTeam();
+	private final ScoreTeam scoreTeam;
 
-	public ActionMessengers(Game game) {
+	public ActionMessengers(Game game, Player player) {
 		this.game = game;
+		this.player = player;
 
-		scoreTeam.addToList(game.getName());
-		gameTab.addToList(game.getName());
+		gameTab = new TabTitles(player);
+		scoreTeam = new ScoreTeam(player);
+
+		gameBoard.loadScoreboard(player);
 	}
 
 	public Game getGame() {
 		return game;
+	}
+
+	public Player getPlayer() {
+		return player;
 	}
 
 	public TabTitles getTabTitles() {
@@ -52,43 +59,39 @@ public class ActionMessengers {
 		List<String> tabHeader = ConfigValues.getTabHeader();
 		List<String> tabFooter = ConfigValues.getTabFooter();
 
-		for (PlayerManager pm : game.getPlayersFromList()) {
-			Player pl = pm.getPlayer();
+		String he = "";
+		int s = 0;
 
-			String he = "";
-			int s = 0;
-
-			for (String line : tabHeader) {
-				s++;
-				if (s > 1) {
-					he = he + "\n\u00a7r";
-				}
-
-				he = he + line;
+		for (String line : tabHeader) {
+			s++;
+			if (s > 1) {
+				he = he + "\n\u00a7r";
 			}
 
-			String fo = "";
-			s = 0;
-
-			for (String line : tabFooter) {
-				s++;
-				if (s > 1) {
-					fo = fo + "\n\u00a7r";
-				}
-
-				fo = fo + line;
-			}
-
-			he = Utils.setPlaceholders(he, pl);
-			fo = Utils.setPlaceholders(fo, pl);
-
-			if (time > -1) {
-				he = he.replace("%game-time%", Utils.getFormattedTime(time));
-				fo = fo.replace("%game-time%", Utils.getFormattedTime(time));
-			}
-
-			gameTab.sendTabTitle(pl, he, fo);
+			he = he + line;
 		}
+
+		String fo = "";
+		s = 0;
+
+		for (String line : tabFooter) {
+			s++;
+			if (s > 1) {
+				fo = fo + "\n\u00a7r";
+			}
+
+			fo = fo + line;
+		}
+
+		he = Utils.setPlaceholders(he, player);
+		fo = Utils.setPlaceholders(fo, player);
+
+		if (time > -1) {
+			he = he.replace("%game-time%", Utils.getFormattedTime(time));
+			fo = fo.replace("%game-time%", Utils.getFormattedTime(time));
+		}
+
+		gameTab.sendTabTitle(player, he, fo);
 	}
 
 	public void setScoreboard() {
@@ -100,35 +103,32 @@ public class ActionMessengers {
 			return;
 		}
 
-		for (PlayerManager pm : game.getPlayersFromList()) {
-			Player pl = pm.getPlayer();
-			String boardTitle = ConfigValues.getSbTitle();
-			if (!boardTitle.isEmpty()) {
-				gameBoard.setTitle(pl, Utils.colors(boardTitle));
-			}
-
-			List<String> rows = ConfigValues.getSbContent();
-			if (!rows.isEmpty()) {
-				int scores = rows.size();
-
-				if (scores < 15) {
-					for (int i = (scores + 1); i <= 15; i++) {
-						gameBoard.resetScores(pl, i);
-					}
-				}
-
-				for (String row : rows) {
-					if (time > -1) {
-						row = row.replace("%game-time%", Utils.getFormattedTime(time));
-					}
-					row = Utils.setPlaceholders(row, pl);
-
-					gameBoard.setLine(pl, row, scores--);
-				}
-			}
-
-			gameBoard.setScoreBoard(pl);
+		String boardTitle = ConfigValues.getSbTitle();
+		if (!boardTitle.isEmpty()) {
+			gameBoard.setTitle(player, Utils.colors(boardTitle));
 		}
+
+		List<String> rows = ConfigValues.getSbContent();
+		if (!rows.isEmpty()) {
+			int scores = rows.size();
+
+			if (scores < 15) {
+				for (int i = (scores + 1); i <= 15; i++) {
+					gameBoard.resetScores(player, i);
+				}
+			}
+
+			for (String row : rows) {
+				if (time > -1) {
+					row = row.replace("%game-time%", Utils.getFormattedTime(time));
+				}
+				row = Utils.setPlaceholders(row, player);
+
+				gameBoard.setLine(player, row, scores--);
+			}
+		}
+
+		gameBoard.setScoreBoard(player);
 	}
 
 	public void setTeam() {
@@ -136,16 +136,12 @@ public class ActionMessengers {
 			return;
 		}
 
-		for (PlayerManager pm : game.getPlayersFromList()) {
-			Player pl = pm.getPlayer();
+		String prefix = ConfigValues.getTabPrefix();
+		String suffix = ConfigValues.getTabSuffix();
 
-			String prefix = ConfigValues.getTabPrefix();
-			String suffix = ConfigValues.getTabSuffix();
+		prefix = Utils.setPlaceholders(prefix, player);
+		suffix = Utils.setPlaceholders(suffix, player);
 
-			prefix = Utils.setPlaceholders(prefix, pl);
-			suffix = Utils.setPlaceholders(suffix, pl);
-
-			scoreTeam.setTeam(pl, prefix, suffix);
-		}
+		scoreTeam.setTeam(player, prefix, suffix);
 	}
 }

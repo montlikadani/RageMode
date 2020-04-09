@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,9 +22,6 @@ import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameLobby;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
-import hu.montlikadani.ragemode.gameUtils.ScoreBoard;
-import hu.montlikadani.ragemode.gameUtils.ScoreTeam;
-import hu.montlikadani.ragemode.gameUtils.TabTitles;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class Game {
@@ -37,13 +35,12 @@ public class Game {
 
 	private boolean running = false;
 	private LobbyTimer lobbyTimer;
-	private ActionMessengers ac;
+
+	private final List<ActionMessengers> acList = new ArrayList<>();
 
 	// TODO: In the future add ability to work with ids
 	public Game(String name) {
 		this.name = name;
-
-		ac = new ActionMessengers(this);
 	}
 
 	public String getName() {
@@ -100,6 +97,9 @@ public class Game {
 		if (event.isCancelled())
 			return false;
 
+		ActionMessengers ac = new ActionMessengers(this, player);
+		acList.add(ac);
+
 		PlayerManager pm = new PlayerManager(player, name);
 
 		int time = GameLobby.getLobbyTime(name);
@@ -135,6 +135,13 @@ public class Game {
 			Utils.clearPlayerInventory(playerToKick);
 			getPlayerManager(playerToKick).addBackTools();
 			players.remove(playerToKick);
+
+			for (Iterator<ActionMessengers> it = acList.iterator(); it.hasNext();) {
+				if (it.next().getPlayer().equals(playerToKick)) {
+					it.remove();
+					break;
+				}
+			}
 
 			playerToKick.sendMessage(RageMode.getLang().get("game.player-kicked-for-vip"));
 
@@ -207,15 +214,30 @@ public class Game {
 		return true;
 	}
 
+	/**
+	 * Removes all of scoreboard, tablist and score teams things from player.
+	 * @param player Player
+	 */
 	public void removePlayerSynced(Player player) {
-		if (ScoreBoard.allScoreBoards.containsKey(name))
-			ScoreBoard.allScoreBoards.get(name).remove(player);
+		if (player == null) {
+			return;
+		}
 
-		if (TabTitles.allTabLists.containsKey(name))
-			TabTitles.allTabLists.get(name).remove(player);
+		for (ActionMessengers action : acList) {
+			if (action.getPlayer().equals(player)) {
+				action.getScoreboard().remove(player);
+				action.getTabTitles().remove();
+				action.getScoreTeam().remove();
+				break;
+			}
+		}
 
-		if (ScoreTeam.allTeams.containsKey(name))
-			ScoreTeam.allTeams.get(name).remove(player);
+		for (Iterator<ActionMessengers> it = acList.iterator(); it.hasNext();) {
+			if (it.next().getPlayer().equals(player)) {
+				it.remove();
+				break;
+			}
+		}
 	}
 
 	/**
@@ -385,8 +407,8 @@ public class Game {
 		return lobbyTimer;
 	}
 
-	public ActionMessengers getActionMessengers() {
-		return ac;
+	public List<ActionMessengers> getActionMessengers() {
+		return acList;
 	}
 
 	/**

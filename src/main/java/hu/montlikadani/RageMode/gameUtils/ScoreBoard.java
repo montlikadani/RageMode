@@ -1,7 +1,6 @@
 package hu.montlikadani.ragemode.gameUtils;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 
 import org.bukkit.Bukkit;
@@ -14,19 +13,15 @@ import org.bukkit.scoreboard.Team;
 
 import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.holder.ScoreBoardHolder;
-import hu.montlikadani.ragemode.managers.PlayerManager;
 
-public class ScoreBoard implements IObjectives {
-
-	public static HashMap<String, ScoreBoard> allScoreBoards = new HashMap<>();
+public class ScoreBoard {
 
 	private final HashMap<Player, ScoreBoardHolder> scoreboards = new HashMap<>();
 
 	private final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 
 	@SuppressWarnings("deprecation")
-	public void loadScoreboard(List<PlayerManager> players) {
-		// TODO: Same scoreboard appears for players
+	public void loadScoreboard(Player player) {
 		Objective objective = scoreboard.getObjective("ragescores");
 		if (objective == null) {
 			objective = scoreboard.registerNewObjective("ragescores", "dummy");
@@ -43,39 +38,7 @@ public class ScoreBoard implements IObjectives {
 			team.addEntry(ChatColor.values()[i].toString());
 		}
 
-		for (PlayerManager pm : players) {
-			Player loopPlayer = pm.getPlayer();
-			scoreboards.put(loopPlayer, new ScoreBoardHolder(loopPlayer, scoreboard, objective));
-		}
-	}
-
-	/**
-	 * Adds this instance to the global ScoreBoards list allScoreBoards.
-	 * @param gameName the unique game-name for which the ScoreBoards element should be saved for.
-	 * @return Whether the ScoreBoard was stored successfully or not.
-	 */
-	public boolean addToList(String gameName) {
-		return addToList(gameName, true);
-	}
-
-	/**
-	 * Adds this instance to the global ScoreBoards list allScoreBoards.
-	 * @param gameName the unique game-name for which the ScoreBoards element should be saved for.
-	 * @param forceReplace force the game put to the list
-	 * @return Whether the ScoreBoard was stored successfully or not.
-	 */
-	@Override
-	public boolean addToList(String gameName, boolean forceReplace) {
-		if (!allScoreBoards.containsKey(gameName)) {
-			allScoreBoards.put(gameName, this);
-		} else if (forceReplace) {
-			allScoreBoards.remove(gameName);
-			allScoreBoards.put(gameName, this);
-		} else {
-			return false;
-		}
-
-		return true;
+		scoreboards.put(player, new ScoreBoardHolder(player, scoreboard, objective));
 	}
 
 	/**
@@ -147,7 +110,6 @@ public class ScoreBoard implements IObjectives {
 	 * Removes the ScoreBoard and the player who exist in the list for the given Player.
 	 * @param player The Player instance for which the ScoreBoard should be removed.
 	 */
-	@Override
 	public void remove(Player pl) {
 		getScoreboard(pl).ifPresent(board -> {
 			board.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);

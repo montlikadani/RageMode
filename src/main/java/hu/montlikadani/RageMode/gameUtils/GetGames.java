@@ -6,13 +6,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang.Validate;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.config.Configuration;
 
 public class GetGames {
-
-	private static Configuration c = RageMode.getInstance().getConfiguration();
 
 	/**
 	 * Gets the the total number of games.
@@ -22,8 +20,10 @@ public class GetGames {
 	public static int getConfigGamesCount() {
 		int n = 0;
 
-		if (c.getArenasCfg().contains("arenas")) {
-			n = c.getArenasCfg().getConfigurationSection("arenas").getKeys(false).size();
+		FileConfiguration c = RageMode.getInstance().getConfiguration().getArenasCfg();
+
+		if (c.contains("arenas")) {
+			n = c.getConfigurationSection("arenas").getKeys(false).size();
 		}
 
 		return n;
@@ -36,7 +36,7 @@ public class GetGames {
 	 * @return the maximum players
 	 */
 	public static int getMaxPlayers(String game) {
-		return c.getArenasCfg().getInt("arenas." + game + ".maxplayers", -1);
+		return RageMode.getInstance().getConfiguration().getArenasCfg().getInt("arenas." + game + ".maxplayers", -1);
 	}
 
 	/**
@@ -46,7 +46,7 @@ public class GetGames {
 	 * @return the minimum players
 	 */
 	public static int getMinPlayers(String game) {
-		return c.getArenasCfg().getInt("arenas." + game + ".minplayers", -1);
+		return RageMode.getInstance().getConfiguration().getArenasCfg().getInt("arenas." + game + ".minplayers", -1);
 	}
 
 	/**
@@ -55,7 +55,8 @@ public class GetGames {
 	 * @return {@link Optional} world name
 	 */
 	public static Optional<String> getWorld(String game) {
-		return Optional.ofNullable(c.getArenasCfg().getString("arenas." + game + ".world"));
+		return Optional.ofNullable(
+				RageMode.getInstance().getConfiguration().getArenasCfg().getString("arenas." + game + ".world"));
 	}
 
 	/**
@@ -64,7 +65,8 @@ public class GetGames {
 	 * @return true if exists and enabled
 	 */
 	public static boolean isActionbarEnabled(String game) {
-		return c.getArenasCfg().getBoolean("arenas." + game + ".actionbar", false);
+		return RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + game + ".actionbar",
+				false);
 	}
 
 	/**
@@ -73,7 +75,8 @@ public class GetGames {
 	 * @return true if exists and enabled
 	 */
 	public static boolean isBossbarEnabled(String game) {
-		return c.getArenasCfg().getBoolean("arenas." + game + ".bossbar", false);
+		return RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + game + ".bossbar",
+				false);
 	}
 
 	/**
@@ -82,7 +85,7 @@ public class GetGames {
 	 * @return the game time
 	 */
 	public static int getGameTime(String game) {
-		return c.getArenasCfg().getInt("arenas." + game + ".gametime");
+		return RageMode.getInstance().getConfiguration().getArenasCfg().getInt("arenas." + game + ".gametime");
 	}
 
 	/**
@@ -91,8 +94,10 @@ public class GetGames {
 	 * @return the array of game names
 	 */
 	public static String[] getGameNames() {
-		return c.getArenasCfg().contains("arenas")
-				? c.getArenasCfg().getConfigurationSection("arenas").getKeys(false).toArray(new String[getConfigGamesCount()])
+		FileConfiguration c = RageMode.getInstance().getConfiguration().getArenasCfg();
+
+		return c.contains("arenas")
+				? c.getConfigurationSection("arenas").getKeys(false).toArray(new String[getConfigGamesCount()])
 				: null;
 	}
 
@@ -119,7 +124,8 @@ public class GetGames {
 		}
 
 		while (i < names.length) {
-			x = c.getArenasCfg().getInt("arenas." + names[i] + ".maxplayers");
+			x = RageMode.getInstance().getConfiguration().getArenasCfg().getInt("arenas." + names[i] + ".maxplayers");
+
 			if (n < x) {
 				n = x;
 			}

@@ -5,6 +5,7 @@ import java.util.TimerTask;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class GameTimer extends TimerTask {
@@ -48,9 +49,11 @@ public class GameTimer extends TimerTask {
 				}
 			}
 
-			game.getActionMessengers().setScoreboard(time);
-			game.getActionMessengers().setTabList(time);
-			game.getActionMessengers().setTeam();
+			for (ActionMessengers ac : game.getActionMessengers()) {
+				ac.setScoreboard(time);
+				ac.setTabList(time);
+				ac.setTeam();
+			}
 
 			if (time == 0) {
 				cancel();

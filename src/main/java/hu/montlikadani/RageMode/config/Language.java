@@ -154,7 +154,6 @@ public class Language {
 		l.getL("setup.addgame.already-exists", "&cThis &e%game%&c game already exists.");
 		l.getL("setup.addgame.special-chars", "&cThe name of the ragemode map contains special characters.");
 		l.getL("setup.addgame.name-greater", "&cThe name of the ragemode map is too long&7 (< 20).");
-		l.getL("setup.addgame.bad-name", "&cThe name of the ragemode map is contains the command name.");
 		l.getL("setup.at-least-two", "&cThe value must be at least two.");
 		l.getL("setup.spawn-set-success", "&2Spawn&e %number%&2 for the game&3 %game%&2 was set successfully!");
 		l.getL("setup.success", "&2Success!");
