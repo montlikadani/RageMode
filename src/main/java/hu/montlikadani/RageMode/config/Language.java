@@ -49,7 +49,15 @@ public class Language {
 		langFile = new File(localeFolder, "locale_" + lang + ".yml");
 
 		if (!langFile.exists()) {
-			plugin.saveResource("locale/locale_" + lang + ".yml", false);
+			if (plugin.getResource("locale/locale_" + lang + ".yml") == null) {
+				try {
+					langFile.createNewFile();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			} else {
+				plugin.saveResource("locale/locale_" + lang + ".yml", false);
+			}
 		}
 
 		if (lang.equalsIgnoreCase("en")) {
