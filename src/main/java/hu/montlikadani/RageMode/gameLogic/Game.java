@@ -22,6 +22,9 @@ import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameLobby;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.items.shop.IShop;
+import hu.montlikadani.ragemode.items.shop.LobbyShop;
+import hu.montlikadani.ragemode.items.shop.inventory.CustomInventoryType;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class Game {
@@ -35,6 +38,8 @@ public class Game {
 
 	private boolean running = false;
 	private LobbyTimer lobbyTimer;
+
+	private IShop shop = new LobbyShop(CustomInventoryType.RAGEMODE);
 
 	private final List<ActionMessengers> acList = new ArrayList<>();
 
@@ -136,6 +141,8 @@ public class Game {
 			getPlayerManager(playerToKick).addBackTools();
 			players.remove(playerToKick);
 
+			shop.remove(playerToKick);
+
 			for (Iterator<ActionMessengers> it = acList.iterator(); it.hasNext();) {
 				if (it.next().getPlayer().equals(playerToKick)) {
 					it.remove();
@@ -207,6 +214,8 @@ public class Game {
 		if (!player.isCustomNameVisible()) {
 			player.setCustomNameVisible(true);
 		}
+
+		shop.remove(player);
 
 		player.sendMessage(RageMode.getLang().get("game.player-left"));
 
@@ -401,6 +410,14 @@ public class Game {
 		Validate.notNull(p, "Player can't be null!");
 
 		return players.get(p);
+	}
+
+	/**
+	 * Gets the lobby shop.
+	 * @return {@link IShop}
+	 */
+	public IShop getShop() {
+		return shop;
 	}
 
 	public LobbyTimer getLobbyTimer() {

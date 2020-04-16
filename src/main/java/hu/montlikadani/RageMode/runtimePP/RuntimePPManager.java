@@ -66,12 +66,6 @@ public class RuntimePPManager {
 	}
 
 	public synchronized static void updatePlayerEntry(PlayerPoints pp) {
-		/*if (RuntimePPList.isEmpty()) {
-			Debug.logConsole(Level.WARNING, "The database does not loaded correctly when this plugin started.");
-			Debug.logConsole("Reload the plugin, or if this not helps, contact the developer.");
-			return;
-		}*/
-
 		PlayerPoints oldPP = getPPForPlayer(pp.getUUID());
 		if (oldPP == null) {
 			PlayerPoints newPP = new PlayerPoints(pp.getUUID());

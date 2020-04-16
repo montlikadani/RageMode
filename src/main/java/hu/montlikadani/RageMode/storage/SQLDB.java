@@ -301,7 +301,7 @@ public class SQLDB {
 
 			prestt.setString(1, Bukkit.getPlayer(uuid).getName());
 			prestt.setString(2, uuid.toString());
-			prestt.setInt(14, oldPoints + points);
+			prestt.setInt(3, oldPoints + points);
 			prestt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();

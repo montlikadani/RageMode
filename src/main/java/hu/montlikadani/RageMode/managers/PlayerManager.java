@@ -3,7 +3,6 @@ package hu.montlikadani.ragemode.managers;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
 
-import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
@@ -49,17 +48,12 @@ public class PlayerManager {
 			return;
 		}
 
-		PlayerInventory inv = player.getInventory();
 		if (spectator) {
 			sps.fly = player.isFlying();
 			sps.allowFly = player.getAllowFlight();
 		} else {
-			if (player.getHealth() < NMS.getMaxHealth(player)) {
-				sps.oldHealth = player.getHealth();
-			}
-			if (player.getFoodLevel() < 20) {
-				sps.oldHunger = player.getFoodLevel();
-			}
+			sps.oldHealth = player.getHealth();
+			sps.oldHunger = player.getFoodLevel();
 
 			if (!player.getActivePotionEffects().isEmpty())
 				sps.oldEffects = player.getActivePotionEffects();
@@ -83,12 +77,10 @@ public class PlayerManager {
 		sps.oldLocation = player.getLocation();
 		sps.oldGameMode = player.getGameMode();
 
-		if (inv.getContents() != null) {
-			sps.oldInventories = inv.getContents();
-		}
-		if (inv.getArmorContents() != null) {
-			sps.oldArmor = inv.getArmorContents();
-		}
+		PlayerInventory inv = player.getInventory();
+
+		sps.oldInventories = inv.getContents();
+		sps.oldArmor = inv.getArmorContents();
 	}
 
 	/**

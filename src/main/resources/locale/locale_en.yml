@@ -152,6 +152,7 @@ game:
   stopped: "&3%game%&2 has been stopped."
   running: "&4This game is running at the moment. Please wait until it is over."
   not-running: "&cThis game isn't running."
+  cant-bought-elements: "&cYou don't have enough money/points to buy these elements."
   chat-is-disabled: "&cThe chat currently is disabled!"
   game-freeze:
     chat-is-disabled: "&cThe chat currently is disabled!"

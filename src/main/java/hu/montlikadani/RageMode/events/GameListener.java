@@ -627,12 +627,11 @@ public class GameListener implements Listener {
 
 		final List<Entity> nears = grenade.getNearbyEntities(13, 13, 13);
 
-		if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
-			Sounds.CREEPER_HISS.playSound(grenade.getLocation(), 1, 1);
-		else
-			Sounds.ENTITY_CREEPER_PRIMED.playSound(grenade.getLocation(), 1, 1);
-
 		final Location loc = grenade.getLocation();
+
+		Sounds.playSound(loc,
+				Version.isCurrentEqualOrLower(Version.v1_8_R3) ? Sounds.CREEPER_HISS : Sounds.ENTITY_CREEPER_PRIMED, 1,
+				1);
 
 		new BukkitRunnable() {
 			@Override
@@ -716,14 +715,19 @@ public class GameListener implements Listener {
 				Game game = GameUtils.getGameByPlayer(p);
 
 				if (hasPerm(p, "ragemode.admin.item.forcestart") && Items.getForceStarter() != null
-						&& meta.getDisplayName().equals(Items.getForceStarter().getDisplayName())) {
+						&& Items.getForceStarter().getDisplayName().equals(meta.getDisplayName())) {
 					GameUtils.forceStart(game);
 					sendMessage(p, RageMode.getLang().get("commands.forcestart.game-start", "%game%", game.getName()));
 				}
 
 				if (Items.getLeaveGameItem() != null
-						&& meta.getDisplayName().equals(Items.getLeaveGameItem().getDisplayName())) {
+						&& Items.getLeaveGameItem().getDisplayName().equals(meta.getDisplayName())) {
 					GameUtils.leavePlayer(p, game);
+				}
+
+				if (Items.getShopItem() != null && Items.getShopItem().getDisplayName().equals(meta.getDisplayName())) {
+					game.getShop().create(p);
+					p.openInventory(game.getShop().getInventory());
 				}
 			}
 
@@ -733,7 +737,10 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	public void onInventoryOpen(InventoryOpenEvent e) {
-		if (GameUtils.isPlayerPlaying((Player) e.getPlayer()) && e.getInventory().getType() != InventoryType.PLAYER) {
+		Player p = (Player) e.getPlayer();
+
+		if (GameUtils.isPlayerPlaying(p) && GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING
+				&& e.getInventory().getType() != InventoryType.PLAYER) {
 			e.setCancelled(true);
 		}
 	}
@@ -839,8 +846,16 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	public void onInventoryInteract(InventoryClickEvent event) {
-		if (event.getWhoClicked() instanceof Player && GameUtils.isPlayerPlaying((Player) event.getWhoClicked()))
+		if (!(event.getWhoClicked() instanceof Player)) {
+			return;
+		}
+
+		Player p = (Player) event.getWhoClicked();
+
+		if (GameUtils.isPlayerPlaying(p) && (!GameUtils.getGameByPlayer(p).getShop().isOpened(p)
+				&& GameUtils.getGameByPlayer(p).getStatus() == GameStatus.WAITING)) {
 			event.setCancelled(true);
+		}
 	}
 
 	@EventHandler

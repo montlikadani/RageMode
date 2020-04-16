@@ -188,6 +188,7 @@ public class Language {
 		l.getL("game.stopped", "&3%game%&2 has been stopped.");
 		l.getL("game.running", "&4This game is running at the moment. Please wait until it is over.");
 		l.getL("game.not-running", "&cThis game isn't running.");
+		l.getL("game.cant-bought-elements", "&cYou don't have enough money/points to buy these elements.");
 		l.getL("game.chat-is-disabled", "&cThe chat currently is disabled!");
 		l.getL("game.game-freeze.chat-is-disabled", "&cThe chat currently is disabled!");
 		l.getL("game.name-or-maxplayers-not-set", "&4The worldname or the maxplayers are not set. Please contact an Admin for further information.");

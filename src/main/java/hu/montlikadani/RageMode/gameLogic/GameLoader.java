@@ -13,6 +13,8 @@ import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.managers.PlayerManager;
+import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
 
 public class GameLoader {
@@ -60,6 +62,12 @@ public class GameLoader {
 			GameUtils.runCommands(p, name, "start");
 			GameUtils.sendBossBarMessages(p, name, "start");
 			GameUtils.sendActionBarMessages(p, name, "start");
+			GameUtils.buyElements(p);
+
+			java.util.UUID uuid = p.getUniqueId();
+			if (!RageScores.getPlayerPointsMap().containsKey(uuid)) {
+				RageScores.getPlayerPointsMap().put(uuid, new PlayerPoints(uuid));
+			}
 		}
 
 		return true;

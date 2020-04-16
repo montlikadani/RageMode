@@ -152,6 +152,7 @@ game:
   stopped: "&3%game%&2 leállítva."
   running: "&4Ez a játék fut ebben a pillanatban. Várj, amíg vége lesz."
   not-running: "&cEz a játék nem fut."
+  cant-bought-elements: "&cNincs elég pénzed/pontod, hogy megvásárold ezeket az elemeket."
   chat-is-disabled: "&cA chat jelenleg letiltva!"
   game-freeze:
     chat-is-disabled: "&cA chat jelenleg letiltva!"

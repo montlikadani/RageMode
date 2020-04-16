@@ -341,48 +341,5 @@ points:
   # If 0 ignoring the loss.
   suicide: -20
 
-# Item editing (name, lore, slot)
-# Inventory positions here: http://redditpublic.com/images/b/b2/Items_slot_number.png
-items:
-  leavegameitem:
-    item: BARRIER
-    name: "&cExit from the game"
-    lore:
-    - "&7&oLeft/rigth click"
-    slot: 5
-  force-start:
-    item: LEVER
-    name: "&2Force the game start"
-    lore:
-    - "&7&oLeft/rigth click"
-    slot: 3
-  rageBow:
-    name: "&4Rage Bow"
-    lore:
-    - "&7One shot, headshot & explosion"
-    slot: 0
-  rageKnife:
-    name: "&6Rage&4 Knife"
-    damage: 25
-    lore:
-    - "&7One hit, dead."
-    slot: 1
-  combatAxe:
-    name: "&6CombatAxe"
-    lore:
-    - "&7Right click, throws a axe and dead"
-    slot: 2
-  rageArrow:
-    name: "&7Rage Arrow"
-    slot: 9
-  grenade:
-    name: "&7Grenade"
-    # The name of the egg hologram appears when the player throws it
-    #custom-name: "&8Grenade"
-    lore:
-    - "&7Right click, throws a grenade and boom!"
-    slot: 5
-    amount: 2
-
 # Do NOT edit this!!!
 config-version: 1.7

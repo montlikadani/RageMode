@@ -423,34 +423,4 @@ public class YAMLDB {
 	public static YamlConfiguration getConf() {
 		return statsConf;
 	}
-
-	protected static boolean working = false;
-
-	private static class AddToPlayersStats implements Runnable {
-		private PlayerPoints uuids = null;
-
-		public AddToPlayersStats(PlayerPoints uuids) {
-			super();
-			this.uuids = uuids;
-		}
-
-		@Override
-		public void run() {
-			while (working) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-
-			working = true;
-			addPlayerStatistics(uuids);
-			working = false;
-		}
-	}
-
-	public static AddToPlayersStats createPlayersStats(PlayerPoints pp) {
-		return new AddToPlayersStats(pp);
-	}
 }

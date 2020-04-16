@@ -31,6 +31,8 @@ import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.*;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.items.*;
+import hu.montlikadani.ragemode.items.shop.BoughtElements;
+import hu.montlikadani.ragemode.items.shop.LobbyShop;
 import hu.montlikadani.ragemode.managers.BossbarManager;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.managers.RewardManager;
@@ -39,6 +41,7 @@ import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.storage.DBThreads;
+import net.milkbowl.vault.economy.Economy;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
@@ -51,6 +54,7 @@ public class GameUtils {
 
 	/**
 	 * Broadcast a message to the currently playing players for that given game.
+	 * 
 	 * @see #broadcastToGame(Game, String)
 	 * @param name Game Name
 	 * @param message The message
@@ -61,6 +65,7 @@ public class GameUtils {
 
 	/**
 	 * Broadcast a message to the currently playing players for that given game.
+	 * 
 	 * @param game Game
 	 * @param message The message
 	 */
@@ -82,11 +87,12 @@ public class GameUtils {
 
 	/**
 	 * Checks the game name if contains special chars or too long.
+	 * 
 	 * @param pl Player
 	 * @param name Game
-	 * @return false if:
-	 * <br>- contains special chars
-	 * <br>- the name is too long
+	 * @return false if:<br>
+	 * - contains special chars<br>
+	 * - the name is too long
 	 */
 	public static boolean checkName(Player pl, String name) {
 		if (!name.matches("^[a-zA-Z0-9\\_\\-]+$")) {
@@ -104,6 +110,7 @@ public class GameUtils {
 
 	/**
 	 * Checks whatever the specified game is exists or no.
+	 * 
 	 * @param game Game
 	 * @return true if game exists
 	 */
@@ -113,6 +120,7 @@ public class GameUtils {
 
 	/**
 	 * Get the game spawn by game.
+	 * 
 	 * @see #getGameSpawn(String)
 	 * @param game {@link Game}
 	 * @return {@link GameSpawn}
@@ -131,6 +139,7 @@ public class GameUtils {
 
 	/**
 	 * Get the game spawn by name.
+	 * 
 	 * @param name Game name
 	 * @return {@link GameSpawn}
 	 */
@@ -149,6 +158,7 @@ public class GameUtils {
 
 	/**
 	 * Get the game by player uuid.
+	 * 
 	 * @deprecated converting string to uuid is too long time
 	 * @param uuid UUID
 	 * @see #getGameByPlayer(UUID)
@@ -164,6 +174,7 @@ public class GameUtils {
 
 	/**
 	 * Get the game by player uuid.
+	 * 
 	 * @see #getGameByPlayer(Player)
 	 * @param uuid UUID
 	 * @return Game if player is in game.
@@ -176,6 +187,7 @@ public class GameUtils {
 
 	/**
 	 * Get the game by player.
+	 * 
 	 * @param p Player
 	 * @return Game if player is in game.
 	 */
@@ -195,6 +207,7 @@ public class GameUtils {
 
 	/**
 	 * Get the game by player uuid.
+	 * 
 	 * @deprecated converting string to uuid is too long time
 	 * @param uuid UUID
 	 * @see #getGameBySpectator(UUID)
@@ -210,6 +223,7 @@ public class GameUtils {
 
 	/**
 	 * Get the game by player uuid.
+	 * 
 	 * @see #getGameBySpectator(Player)
 	 * @param uuid UUID
 	 * @return Game if player is in game.
@@ -222,6 +236,7 @@ public class GameUtils {
 
 	/**
 	 * Get the game by spectator player.
+	 * 
 	 * @param p Player
 	 * @return Game if player is in spectator mode and in game.
 	 */
@@ -241,6 +256,7 @@ public class GameUtils {
 
 	/**
 	 * Checks if the given player is currently in game.
+	 * 
 	 * @param p Player
 	 * @return true if playing
 	 */
@@ -250,6 +266,7 @@ public class GameUtils {
 
 	/**
 	 * Checks if the given spectator player is currently in game.
+	 * 
 	 * @param p Player
 	 * @return true if in game
 	 */
@@ -259,6 +276,7 @@ public class GameUtils {
 
 	/**
 	 * Get the game by name.
+	 * 
 	 * @param name Game
 	 * @return Game if the given name is exists.
 	 */
@@ -276,16 +294,17 @@ public class GameUtils {
 	}
 
 	/**
-	 * Give game items to the given player. If the item slot not found
-	 * in configuration, then adds the item to the inventory.
+	 * Give game items to the given player. If the item slot not found in
+	 * configuration, then adds the item to the inventory.
+	 * 
 	 * @param p Player
 	 * @param clear - if true clears the player inventory before adding items
 	 */
 	public static void addGameItems(Player p, boolean clear) {
-		PlayerInventory inv = p.getInventory();
 		if (clear)
 			Utils.clearPlayerInventory(p);
 
+		PlayerInventory inv = p.getInventory();
 		for (ItemHandler ih : RageMode.getInstance().getGameItems()) {
 			if (ih.getSlot() != -1) {
 				inv.setItem(ih.getSlot(), ih.getResult());
@@ -298,6 +317,7 @@ public class GameUtils {
 	/**
 	 * Saves the player data to a yaml file
 	 * <p>This prevents losing the player data when the server has stopped randomly.
+	 * 
 	 * @param p Player
 	 */
 	public static void savePlayerData(Player p) {
@@ -316,12 +336,9 @@ public class GameUtils {
 			data.set(path + "location", p.getLocation());
 			data.set(path + "contents", inv.getContents());
 			data.set(path + "armor-contents", inv.getArmorContents());
-			if (p.getHealth() < NMS.getMaxHealth(p)) {
-				data.set(path + "health", p.getHealth());
-			}
-			if (p.getFoodLevel() < 20) {
-				data.set(path + "food", p.getFoodLevel());
-			}
+			data.set(path + "health", p.getHealth());
+			data.set(path + "food", p.getFoodLevel());
+
 			if (!p.getActivePotionEffects().isEmpty())
 				data.set(path + "potion-effects", p.getActivePotionEffects());
 
@@ -353,9 +370,9 @@ public class GameUtils {
 	}
 
 	/**
-	 * Connect the given player to the game. If the game is
-	 * running and the player is not playing, then if want to
-	 * join to the game, switching to spectator mode.
+	 * Connect the given player to the game. If the game is running and the player
+	 * is not playing, then if want to join to the game, switching to spectator
+	 * mode.
 	 * 
 	 * @param p Player
 	 * @param game {@link Game}
@@ -368,7 +385,7 @@ public class GameUtils {
 
 		if (status == GameStatus.RUNNING) {
 			if (!ConfigValues.isSpectatorEnabled()) {
-				sendMessage(p, RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
+				sendMessage(p, RageMode.getLang().get("game.running"));
 				return;
 			}
 
@@ -425,7 +442,8 @@ public class GameUtils {
 		}
 
 		if (!game.addPlayer(p)) {
-			Debug.sendMessage(RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", name));
+			Debug.sendMessage(
+					RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", name));
 			return;
 		}
 
@@ -460,13 +478,17 @@ public class GameUtils {
 		// Delay items adding, due to world changing and if someone tries to join will
 		// kick out. I don't know why.
 		Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
-			if (Items.getLeaveGameItem() != null) {
-				inv.setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().getResult());
-			}
+			for (ItemHandler items : RageMode.getInstance().getLobbyItems()) {
+				if (items == null) {
+					continue;
+				}
 
-			ItemHandler starter = Items.getForceStarter();
-			if (starter != null && hu.montlikadani.ragemode.utils.Misc.hasPerm(p, "ragemode.admin.item.forcestart")) {
-				inv.setItem(starter.getSlot(), starter.getResult());
+				if (items.equals(Items.getForceStarter())
+						&& !hu.montlikadani.ragemode.utils.Misc.hasPerm(p, "ragemode.admin.item.forcestart")) {
+					continue;
+				}
+
+				inv.setItem(items.getSlot(), items.getResult());
 			}
 		}, 5L);
 
@@ -475,6 +497,7 @@ public class GameUtils {
 
 	/**
 	 * Attempt to leave the player from the game.
+	 * 
 	 * @param p Player
 	 * @param name the game name
 	 * @see #leavePlayer(Player, Game)
@@ -485,8 +508,9 @@ public class GameUtils {
 
 	/**
 	 * Attempt to leave the player from the game and calls the
-	 * {@link RMGameLeaveAttemptEvent}. This also removes the
-	 * spectator player from game of currently in it.
+	 * {@link RMGameLeaveAttemptEvent}. This also removes the spectator player from
+	 * game of currently in it.
+	 * 
 	 * @param p Player
 	 * @param game {@link Game}
 	 */
@@ -506,6 +530,7 @@ public class GameUtils {
 
 	/**
 	 * Sends title messages to the given player.
+	 * 
 	 * @param p Player
 	 * @param title Title
 	 * @param subtitle SubTitle
@@ -523,6 +548,7 @@ public class GameUtils {
 
 	/**
 	 * Forces the given game start.
+	 * 
 	 * @param game {@link Game}
 	 */
 	public static void forceStart(Game game) {
@@ -536,6 +562,7 @@ public class GameUtils {
 
 	/**
 	 * Kicks all players from the game.
+	 * 
 	 * @param game {@link Game}
 	 */
 	public static void kickAllPlayers(Game game) {
@@ -544,6 +571,7 @@ public class GameUtils {
 
 	/**
 	 * Kicks the given player from the game.
+	 * 
 	 * @param p Player
 	 * @param game {@link Game}
 	 */
@@ -558,7 +586,8 @@ public class GameUtils {
 
 		if ((status == GameStatus.RUNNING || status == GameStatus.WAITING) && game.removePlayer(p)) {
 
-			// Will execute some tasks when the player left the server, while the game running
+			// Will execute some tasks when the player left the server, while the game
+			// running
 			if (status == GameStatus.RUNNING) {
 				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
 
@@ -566,7 +595,8 @@ public class GameUtils {
 				for (String cmds : list) {
 					cmds = cmds.replace("%player%", p.getName());
 					// For ipban
-					// cmds = cmds.replace("%player-ip%", p.getAddress().getAddress().getHostAddress());
+					// cmds = cmds.replace("%player-ip%",
+					// p.getAddress().getAddress().getHostAddress());
 					Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), Utils.colors(cmds));
 				}
 			}
@@ -577,6 +607,7 @@ public class GameUtils {
 
 	/**
 	 * Kicks the given spectator player from game.
+	 * 
 	 * @param p Player to be kick
 	 * @param game the game where kick from
 	 */
@@ -589,8 +620,9 @@ public class GameUtils {
 	}
 
 	/**
-	 * Fully clears the given player inventory, remove effects, food, health set to 0 and
-	 * more related to player.
+	 * Fully clears the given player inventory, remove effects, food, health set to
+	 * 0 and more related to player.
+	 * 
 	 * @param p Player
 	 */
 	public static void clearPlayerTools(Player p) {
@@ -616,6 +648,7 @@ public class GameUtils {
 	/**
 	 * Run commands for all players in game, when a player doing something in game
 	 * such as it died, joining, starting or stopping game.
+	 * 
 	 * @see #runCommands(Player, String, String)
 	 * @param game Game name
 	 * @param cmdType Command type, such as death, join or other
@@ -627,8 +660,9 @@ public class GameUtils {
 	}
 
 	/**
-	 * Run commands in game, when the player doing something in game
-	 * such as it died, joining, starting or stopping game.
+	 * Run commands in game, when the player doing something in game such as it
+	 * died, joining, starting or stopping game.
+	 * 
 	 * @param p Player
 	 * @param game Game name
 	 * @param cmdType Command type, such as death, join or other
@@ -674,10 +708,62 @@ public class GameUtils {
 		}
 	}
 
+	public static void buyElements(Player player) {
+		if (!LobbyShop.boughtItems.containsKey(player)) {
+			return;
+		}
+
+		for (Entry<Player, BoughtElements> elements : LobbyShop.boughtItems.entrySet()) {
+			if (elements.getKey().equals(player)) {
+				BoughtElements bought = elements.getValue();
+
+				boolean enough = false;
+				if (RageMode.getInstance().isVaultEnabled()) {
+					Economy economy = RageMode.getInstance().getEconomy();
+					double cost = bought.getCost();
+
+					if (cost > 0d && economy.has(player, cost)) {
+						economy.withdrawPlayer(player, cost);
+						enough = true;
+					}
+				}
+
+				if (bought.getPoints() > 0) {
+					PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
+					if (pp != null && pp.getPoints() >= bought.getPoints()) {
+						pp.takePoints(bought.getPoints());
+						enough = true;
+					} else {
+						enough = false;
+					}
+				}
+
+				if (!enough) {
+					sendMessage(player, RageMode.getLang().get("game.cant-bought-elements"));
+					break;
+				}
+
+				if (bought.getPotion() != null) {
+					player.addPotionEffect(bought.getPotion());
+				}
+
+				if (bought.getItem() != null) {
+					player.getInventory().addItem(bought.getItem());
+				}
+
+				break;
+			}
+		}
+
+		LobbyShop.boughtItems.remove(player);
+	}
+
 	/**
-	 * Send action bar messages to the player when doing something,
-	 * such as joining, leave, starting or stopping game.
-	 * <p>This returns if the actionbar option is disabled in configurations.
+	 * Send action bar messages to the player when doing something, such as joining,
+	 * leave, starting or stopping game.
+	 * <p>
+	 * This returns if the actionbar option is disabled in configurations.
+	 * 
 	 * @param p Player
 	 * @param game Game name
 	 * @param type Action type
@@ -709,8 +795,9 @@ public class GameUtils {
 	}
 
 	/**
-	 * Send boss bar messages to all current playing players, when
-	 * doing something, such as joining, leave, starting or stopping game.
+	 * Send boss bar messages to all current playing players, when doing something,
+	 * such as joining, leave, starting or stopping game.
+	 * 
 	 * @see #sendBossBarMessages(Player, String, String)
 	 * @param game Game name
 	 * @param type Action type
@@ -722,9 +809,11 @@ public class GameUtils {
 	}
 
 	/**
-	 * Send boss bar messages to the current playing player, when
-	 * doing something, such as joining, leave, starting or stopping game.
-	 * <p>This returns if the boosbar option is disabled in configurations.
+	 * Send boss bar messages to the current playing player, when doing something,
+	 * such as joining, leave, starting or stopping game.
+	 * <p>
+	 * This returns if the boosbar option is disabled in configurations.
+	 * 
 	 * @param p Player
 	 * @param game Game name
 	 * @param type Action type
@@ -776,6 +865,7 @@ public class GameUtils {
 
 	/**
 	 * Teleports all players to a random spawn location.
+	 * 
 	 * @see #teleportPlayerToGameSpawn(Player, GameSpawn)
 	 * @param spawn {@link GameSpawn}
 	 */
@@ -784,23 +874,26 @@ public class GameUtils {
 	}
 
 	/**
-	 * Teleports the given player to a random spawn location.
-	 * This will return if there are no spawn added to list.
-	 * @param p Player
+	 * Teleports the given player to a random spawn location. This will return if
+	 * there are no spawn added to list.
+	 * 
+	 * @param p     Player
 	 * @param spawn {@link GameSpawn}
 	 */
 	public static void teleportPlayerToGameSpawn(Player p, GameSpawn spawn) {
 		if (spawn.getSpawnLocations().size() > 0) {
 			// Why this always happens?
-			// IllegalStateException: PlayerTeleportEvent may only be triggered synchronously.
+			// IllegalStateException: PlayerTeleportEvent may only be triggered
+			// synchronously.
 			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
 					() -> p.teleport(spawn.getRandomSpawn()));
 		}
 	}
 
 	/**
-	 * Force stopping the given game when an error or something else occurs during starting
-	 * the game.
+	 * Force stopping the given game when an error or something else occurs during
+	 * starting the game.
+	 * 
 	 * @param game Game
 	 */
 	public static void forceStopGame(Game game) {
@@ -829,6 +922,7 @@ public class GameUtils {
 
 	/**
 	 * Stops the specified game if running.
+	 * 
 	 * @see #stopGame(Game, boolean)
 	 * @param name Game name
 	 */
@@ -837,11 +931,12 @@ public class GameUtils {
 	}
 
 	/**
-	 * Stops the specified game if running.
-	 * This calculates the players who has the highest points and announcing
-	 * to a title message. If there are no winner player valid, players
-	 * will be removed from the game with some rewards.
-	 * This will saves the player statistic to the database and finally stopping the game.
+	 * Stops the specified game if running. This calculates the players who has the
+	 * highest points and announcing to a title message. If there are no winner
+	 * player valid, players will be removed from the game with some rewards. This
+	 * will saves the player statistic to the database and finally stopping the
+	 * game.
+	 * 
 	 * @param game {@link Game}
 	 * @param useFreeze if true using game freeze
 	 */
@@ -960,14 +1055,15 @@ public class GameUtils {
 		for (PlayerManager pm : game.getPlayersFromList()) {
 			final Player p = pm.getPlayer();
 			final PlayerPoints pP = RageScores.getPlayerPoints(p.getUniqueId());
+
+			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
+				RuntimePPManager.updatePlayerEntry(pP);
+
+				Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
+						() -> HoloHolder.updateHolosForPlayer(p));
+			});
+
 			if (pP != null) {
-				Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
-					RuntimePPManager.updatePlayerEntry(pP);
-
-					Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-							() -> HoloHolder.updateHolosForPlayer(p));
-				});
-
 				Thread th = new Thread(new DBThreads(pP));
 				th.start();
 			}
@@ -1075,7 +1171,9 @@ public class GameUtils {
 	}
 
 	/**
-	 * Checks for the player inventory (in hand) if the item is similar for the game item.
+	 * Checks for the player inventory (in hand) if the item is similar for the game
+	 * item.
+	 * 
 	 * @param p Player
 	 * @see #isGameItem(ItemStack)
 	 * @return true if similar
@@ -1086,6 +1184,7 @@ public class GameUtils {
 
 	/**
 	 * Checks for the item stack if the item is similar for game item.
+	 * 
 	 * @param item Material
 	 * @return true if similar
 	 */
@@ -1101,6 +1200,7 @@ public class GameUtils {
 
 	/**
 	 * Checks if the given player is in the freeze room, when the game ended.
+	 * 
 	 * @param player Player
 	 * @return true if player is in
 	 */
@@ -1110,6 +1210,7 @@ public class GameUtils {
 
 	/**
 	 * Checks if the specified game is in the freeze room.
+	 * 
 	 * @see #isGameInFreezeRoom(String)
 	 * @param game Game
 	 * @return true if the game is in
@@ -1120,6 +1221,7 @@ public class GameUtils {
 
 	/**
 	 * Checks if the specified game is in the freeze room.
+	 * 
 	 * @param game Game name
 	 * @return true if the game is in
 	 */

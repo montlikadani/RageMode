@@ -78,6 +78,14 @@ public class ItemHandler implements Cloneable {
 		return this;
 	}
 
+	public ItemHandler setItem(String name) {
+		if (name == null || name.isEmpty()) {
+			return null;
+		}
+
+		return setItem(Material.valueOf(name.toUpperCase()));
+	}
+
 	public ItemHandler setItem(Material item) {
 		this.item = item;
 		return this;

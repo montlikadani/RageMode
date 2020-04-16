@@ -14,8 +14,8 @@ import hu.montlikadani.ragemode.RageMode;
 public class Configuration {
 
 	private RageMode plugin;
-	private FileConfiguration config, arenas, rewards, datas;
-	private File config_file, arenas_file, rewards_file, datas_file;
+	private FileConfiguration config, arenas, rewards, datas, items;
+	private File config_file, arenas_file, rewards_file, datas_file, items_file;
 
 	private double configVersion = 1.7;
 
@@ -39,6 +39,10 @@ public class Configuration {
 
 		if (datas_file == null) {
 			datas_file = new File(folder, "datas.yml");
+		}
+
+		if (items_file == null) {
+			items_file = new File(folder, "items.yml");
 		}
 	}
 
@@ -85,6 +89,13 @@ public class Configuration {
 				} else {
 					datas = createFile(datas_file, "datas.yml", true);
 				}
+			}
+
+			if (items_file.exists()) {
+				items = YamlConfiguration.loadConfiguration(items_file);
+				loadFile(items, items_file);
+			} else {
+				items = createFile(items_file, "items.yml", false);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -136,6 +147,14 @@ public class Configuration {
 
 	public File getDatasFile() {
 		return datas_file;
+	}
+
+	public FileConfiguration getItemsCfg() {
+		return items;
+	}
+
+	public File getItemsFile() {
+		return items_file;
 	}
 
 	public double getConfigVersion() {

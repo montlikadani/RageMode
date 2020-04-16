@@ -34,4 +34,8 @@ public class Items {
 	public static ItemHandler getLeaveGameItem() {
 		return li[1];
 	}
+
+	public static ItemHandler getShopItem() {
+		return li[2];
+	}
 }

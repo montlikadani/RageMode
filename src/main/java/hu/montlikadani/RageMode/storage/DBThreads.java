@@ -20,7 +20,7 @@ public class DBThreads implements Runnable {
 			SQLDB.addPlayerStatistics(pP);
 			break;
 		case YAML:
-			YAMLDB.createPlayersStats(pP);
+			YAMLDB.addPlayerStatistics(pP);
 			break;
 		default:
 			break;

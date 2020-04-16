@@ -1,0 +1,95 @@
+gameitems:
+  rageBow:
+    name: "&4Rage Bow"
+    lore:
+    - "&7One shot, headshot & explosion"
+    slot: 0
+  rageKnife:
+    name: "&6Rage&4 Knife"
+    damage: 25
+    lore:
+    - "&7One hit, dead."
+    slot: 1
+  combatAxe:
+    name: "&6CombatAxe"
+    lore:
+    - "&7Right click, throws a axe and dead"
+    slot: 2
+  rageArrow:
+    name: "&7Rage Arrow"
+    slot: 9
+  grenade:
+    name: "&7Grenade"
+    # The name of the egg hologram appears when the player throws it
+    custom-name: "&8Grenade"
+    lore:
+    - "&7Right click, throws a grenade and boom!"
+    slot: 5
+    amount: 2
+
+lobbyitems:
+  leavegameitem:
+    item: barrier
+    name: "&cExit from the game"
+    lore:
+    - "&7&oLeft/right click"
+    slot: 5
+  force-start:
+    item: LEVER
+    name: "&2Force the game start"
+    lore:
+    - "&7&oLeft/right click"
+    slot: 3
+  shopitem:
+    item: emerald
+    name: "&2Game shop"
+    lore:
+    - "&7Right click to open menu"
+    slot: 1
+    gui:
+      title: "&6RageMode shop"
+      fillEmptyFields: green_stained_glass_pane
+      size: 45
+      items:
+        slot-13:
+          item: potion
+          name: "&aBuy potion effects"
+          type: potioneffects
+          gui:
+            title: "&2Buy potion effects"
+            fillEmptyFields: green_stained_glass_pane
+            size: 9
+            items:
+              slot-1:
+                item: nether_star
+                name: "&6Speed"
+                cost:
+                  value: 450
+                  points: 0
+                effect: speed:15:1
+                lore:
+                - "&7Giving speed effect to player when the game started."
+                - "&eCost:&r %cost%"
+                - "&eRequired points:&r %required_points%"
+                - "&7&lThis can be used only once."
+              slot-8:
+                item: paper
+                name: "&bInfo"
+                lore:
+                - "&7The potion effects will automatically apply when the game started."
+              slot-7:
+                item: diamond
+                name: "&6Money/Points"
+                lore:
+                - "&6You have&e %money%&6$ in your account."
+                - "&6You have&e %points%&6 points"
+              slot-5:
+                item: barrier
+                name: "&cClose"
+                lore:
+                - "&7This will close the inventory shop."
+                command: close
+              slot-4:
+                item: arrow
+                name: "&bMain page"
+                command: mainpage

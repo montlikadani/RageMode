@@ -13,6 +13,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
 
 /**
@@ -64,6 +65,8 @@ public class UpdateDownloader {
 					msg = "New version (" + versionString
 							+ ") is available at https://www.spigotmc.org/resources/69169/";
 				}
+
+				msg = Utils.colors(msg);
 			} else if ("console".equals(sender)) {
 				return "You're running the latest version.";
 			}

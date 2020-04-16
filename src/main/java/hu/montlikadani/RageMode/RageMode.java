@@ -72,7 +72,7 @@ public class RageMode extends JavaPlugin {
 	private final Set<GameSpawn> spawns = new HashSet<>();
 
 	private final ItemHandler[] gameItems = new ItemHandler[5];
-	private final ItemHandler[] lobbyItems = new ItemHandler[2];
+	private final ItemHandler[] lobbyItems = new ItemHandler[3];
 
 	@Override
 	public void onEnable() {
@@ -177,11 +177,7 @@ public class RageMode extends JavaPlugin {
 			hologram = false;
 		}
 
-		if (getManager().isPluginEnabled("Vault") && initEconomy()) {
-			vault = true;
-		} else {
-			vault = false;
-		}
+		vault = initEconomy();
 
 		if (getManager().isPluginEnabled("PlaceholderAPI")) {
 			new Placeholder().register();
@@ -214,6 +210,10 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private boolean initEconomy() {
+		if (!getManager().isPluginEnabled("Vault")) {
+			return false;
+		}
+
 		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
 		econ = rsp == null ? null : rsp.getProvider();
 		return econ != null;
@@ -305,12 +305,9 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void loadItems() {
-		org.bukkit.configuration.file.FileConfiguration c = conf.getCfg();
-		if (!c.contains("items")) {
-			return;
-		}
+		org.bukkit.configuration.file.FileConfiguration c = conf.getItemsCfg();
 
-		String path = "items.combatAxe";
+		String path = "gameitems.combatAxe";
 		if (c.contains(path)) {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.IRON_AXE)
@@ -320,7 +317,7 @@ public class RageMode extends JavaPlugin {
 			gameItems[0] = itemHandler;
 		}
 
-		path = "items.grenade";
+		path = "gameitems.grenade";
 		if (c.contains(path)) {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.EGG).setDisplayName(Utils.colors(c.getString(path + ".name", "&8Grenade")))
@@ -330,7 +327,7 @@ public class RageMode extends JavaPlugin {
 			gameItems[1] = itemHandler;
 		}
 
-		path = "items.rageArrow";
+		path = "gameitems.rageArrow";
 		if (c.contains(path)) {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.ARROW).setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageArrow")))
@@ -339,7 +336,7 @@ public class RageMode extends JavaPlugin {
 			gameItems[2] = itemHandler;
 		}
 
-		path = "items.rageBow";
+		path = "gameitems.rageBow";
 		if (c.contains(path)) {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.BOW).setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageBow")))
@@ -348,7 +345,7 @@ public class RageMode extends JavaPlugin {
 			gameItems[3] = itemHandler;
 		}
 
-		path = "items.rageKnife";
+		path = "gameitems.rageKnife";
 		if (c.contains(path)) {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.SHEARS)
@@ -360,24 +357,34 @@ public class RageMode extends JavaPlugin {
 		}
 
 		// Lobby items
-		path = "items.force-start";
+		path = "lobbyitems.force-start";
 		if (c.contains(path)) {
 			ItemHandler itemHandler = new ItemHandler();
-			itemHandler.setItem(Material.valueOf(c.getString(path + ".item")))
+			itemHandler.setItem(c.getString(path + ".item"))
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&2Force the game start")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 3))
 					.build();
 			lobbyItems[0] = itemHandler;
 		}
 
-		path = "items.leavegameitem";
-		if (c.contains("items.leavegameitem")) {
+		path = "lobbyitems.leavegameitem";
+		if (c.contains(path)) {
 			ItemHandler itemHandler = new ItemHandler();
-			itemHandler.setItem(Material.valueOf(c.getString(path + ".item")))
+			itemHandler.setItem(c.getString(path + ".item"))
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&cExit")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 5))
 					.build();
 			lobbyItems[1] = itemHandler;
+		}
+
+		path = "lobbyitems.shopitem";
+		if (c.contains(path)) {
+			ItemHandler itemHandler = new ItemHandler();
+			itemHandler.setItem(c.getString(path + ".item"))
+					.setDisplayName(Utils.colors(c.getString(path + ".name", "&2Shop")))
+					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 1))
+					.build();
+			lobbyItems[2] = itemHandler;
 		}
 	}
 

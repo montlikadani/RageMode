@@ -329,7 +329,6 @@ public class RageScores {
 
 		PlayerWinEvent event = new PlayerWinEvent(GameUtils.getGame(game), winner);
 		Utils.callEvent(event);
-
 		return highest;
 	}
 }

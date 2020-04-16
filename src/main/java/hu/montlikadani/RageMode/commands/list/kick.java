@@ -41,11 +41,6 @@ public class kick implements ICommand {
 			return false;
 		}
 
-		if (!GameUtils.getGame(name).isGameRunning()) {
-			sendMessage(sender, RageMode.getLang().get("game.not-running"));
-			return false;
-		}
-
 		Player target = Bukkit.getPlayer(args[2]);
 		if (target == null) {
 			sendMessage(sender, RageMode.getLang().get("commands.kick.player-not-found"));
