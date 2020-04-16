@@ -40,7 +40,6 @@ import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.managers.BossbarManager;
 import hu.montlikadani.ragemode.metrics.Metrics;
-import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.signs.SignConfiguration;
 import hu.montlikadani.ragemode.signs.SignCreator;
@@ -116,8 +115,6 @@ public class RageMode extends JavaPlugin {
 		registerListeners();
 		registerCommands();
 		connectDatabase();
-
-		RuntimePPManager.loadPPListFromDatabase();
 
 		loadGames();
 

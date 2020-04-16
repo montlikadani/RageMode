@@ -204,7 +204,6 @@ public class YAMLDB {
 	 * Gets all player statistic
 	 * @return returns a List of all PlayerPoints that are stored
 	 */
-	@SuppressWarnings("deprecation")
 	public static List<PlayerPoints> getAllPlayerStatistics() {
 		if (!inited) {
 			return Collections.emptyList();
@@ -213,8 +212,14 @@ public class YAMLDB {
 		List<PlayerPoints> allRPPs = new ArrayList<>();
 
 		if (statsConf.isConfigurationSection("data")) {
-			for (String UUID : statsConf.getConfigurationSection("data").getKeys(false)) {
-				allRPPs.add(RuntimePPManager.getPPForPlayer(UUID));
+			for (String d : statsConf.getConfigurationSection("data").getKeys(false)) {
+				UUID uuid = UUID.fromString(d);
+				PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid);
+				if (pp == null) {
+					pp = new PlayerPoints(uuid);
+				}
+
+				allRPPs.add(pp);
 			}
 		}
 

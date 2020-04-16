@@ -301,7 +301,7 @@ public class LobbyShop implements Listener, IShop {
 				}
 
 				if (mat == Material.AIR) {
-					String filler = sec.getString(mainPath + ".fillEmptyFields", "air");
+					String filler = conf.getString(mainPath + ".fillEmptyFields", "air");
 					if (!filler.isEmpty()) {
 						mat = Material.getMaterial(filler.toUpperCase());
 						if (mat == null) {

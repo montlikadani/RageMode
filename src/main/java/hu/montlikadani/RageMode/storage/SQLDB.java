@@ -320,7 +320,6 @@ public class SQLDB {
 	 * Retrieves the list of PlayerPoints.
 	 * @return A List of all PlayerPoints objects which are stored in the SQL database.
 	 */
-	@SuppressWarnings("deprecation")
 	public synchronized static List<PlayerPoints> getAllPlayerStatistics() {
 		SQLConnect connect = DatabaseHandler.getSQL();
 		if (!connect.isValid()) {
@@ -337,10 +336,20 @@ public class SQLDB {
 			ResultSet rs = conn.executeQuery(statement, query);
 			while (rs.next()) {
 				String uuid = rs.getString("uuid");
-				if (uuid != null && RuntimePPManager.getPPForPlayer(uuid) != null) {
-					allRPPs.add(RuntimePPManager.getPPForPlayer(uuid));
+				if (uuid != null) {
+					UUID uuid2 = UUID.fromString(uuid);
+					PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid2);
+					if (pp == null) {
+						pp = new PlayerPoints(uuid2);
+						pp = getPlayerStatsFromData(uuid2);
+					}
+
+					allRPPs.add(pp);
+
+					allRPPs.add(pp);
 				}
 			}
+
 			rs.close();
 		} catch (SQLException e) {
 		} finally {

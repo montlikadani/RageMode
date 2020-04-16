@@ -131,6 +131,7 @@ public class DatabaseHandler {
 			if (connector == null || !connector.isConnected()) {
 				connectDatabase();
 			} else {
+				RuntimePPManager.loadPPListFromDatabase();
 				MySQLDB.loadPlayerStatistics();
 			}
 
@@ -143,6 +144,7 @@ public class DatabaseHandler {
 			if (connector == null || !connector.isConnected()) {
 				connectDatabase();
 			} else {
+				RuntimePPManager.loadPPListFromDatabase();
 				SQLDB.loadPlayerStatistics();
 			}
 
@@ -153,6 +155,7 @@ public class DatabaseHandler {
 			break;
 		case YAML:
 			YAMLDB.initFile();
+			RuntimePPManager.loadPPListFromDatabase();
 			YAMLDB.loadPlayerStatistics();
 
 			if (startup) {
@@ -163,8 +166,6 @@ public class DatabaseHandler {
 		default:
 			break;
 		}
-
-		RuntimePPManager.loadPPListFromDatabase();
 	}
 
 	public void saveDatabase() {

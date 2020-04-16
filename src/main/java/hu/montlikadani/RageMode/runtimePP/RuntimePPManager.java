@@ -55,8 +55,9 @@ public class RuntimePPManager {
 		int i = 0;
 		int imax = RuntimePPList.size();
 		while (i < imax) {
-			if (RuntimePPList.get(i).getUUID().equals(uuid)) {
-				return RuntimePPList.get(i);
+			PlayerPoints pp = RuntimePPList.get(i);
+			if (pp != null && pp.getUUID().equals(uuid)) {
+				return pp;
 			}
 
 			i++;
