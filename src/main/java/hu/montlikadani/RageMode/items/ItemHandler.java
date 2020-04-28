@@ -164,4 +164,16 @@ public class ItemHandler implements Cloneable {
 
 		return null;
 	}
+
+	@Override
+	public String toString() {
+		return "ItemHandler{" +
+				"displayName='" + displayName + '\'' +
+				", lore='" + lore + '\'' +
+				", item='" + item + '\'' +
+				", amount='" + amount + '\'' +
+				", enchant=''" + enchant + '\'' +
+				", slot='" + slot + '\'' +
+				'}';
+	}
 }
