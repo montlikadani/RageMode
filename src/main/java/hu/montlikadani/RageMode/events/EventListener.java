@@ -30,7 +30,7 @@ public class EventListener implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player p = event.getPlayer();
 		if (p.isOp()) {
-			sendMessage(p, UpdateDownloader.checkFromGithub("player"));
+			UpdateDownloader.checkFromGithub(p);
 		}
 
 		HoloHolder.showAllHolosToPlayer(p);

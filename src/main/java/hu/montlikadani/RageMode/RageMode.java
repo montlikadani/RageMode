@@ -110,7 +110,7 @@ public class RageMode extends JavaPlugin {
 			getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 		}
 
-		Debug.logConsole(UpdateDownloader.checkFromGithub("console"));
+		UpdateDownloader.checkFromGithub(getServer().getConsoleSender());
 
 		registerListeners();
 		registerCommands();
@@ -375,7 +375,7 @@ public class RageMode extends JavaPlugin {
 		}
 
 		path = "lobbyitems.shopitem";
-		if (c.contains(path)) {
+		if (c.contains(path) && c.getBoolean(path + ".enabled")) {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(c.getString(path + ".item"))
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&2Shop")))

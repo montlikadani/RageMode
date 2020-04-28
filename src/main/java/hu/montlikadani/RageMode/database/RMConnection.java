@@ -21,10 +21,12 @@ public class RMConnection {
 	}
 
 	public boolean isConnected() {
-		try {
-			return conn != null && !conn.isClosed();
-		} catch (SQLException e) {
-			Debug.logConsole(e.getMessage());
+		synchronized (conn) {
+			try {
+				return conn != null && !conn.isClosed();
+			} catch (SQLException e) {
+				Debug.logConsole(e.getMessage());
+			}
 		}
 
 		return false;
@@ -35,10 +37,12 @@ public class RMConnection {
 	}
 
 	public boolean isValid(int timeout) {
-		try {
-			return conn != null && conn.isValid(timeout);
-		} catch (SQLException e) {
-			Debug.logConsole(e.getMessage());
+		synchronized (conn) {
+			try {
+				return conn != null && conn.isValid(timeout);
+			} catch (SQLException e) {
+				Debug.logConsole(e.getMessage());
+			}
 		}
 
 		return false;
@@ -46,7 +50,9 @@ public class RMConnection {
 
 	public void close() throws SQLException {
 		if (isConnected()) {
-			conn.close();
+			synchronized (conn) {
+				conn.close();
+			}
 		}
 	}
 
@@ -54,19 +60,19 @@ public class RMConnection {
 		conn.commit();
 	}
 
-	public void executeUpdate(String query) throws SQLException {
+	public synchronized void executeUpdate(String query) throws SQLException {
 		createStatement().executeUpdate(query);
 	}
 
-	public Statement createStatement() throws SQLException {
+	public synchronized Statement createStatement() throws SQLException {
 		return conn.createStatement();
 	}
 
-	public PreparedStatement prepareStatement(String sql) throws SQLException {
+	public synchronized PreparedStatement prepareStatement(String sql) throws SQLException {
 		return conn.prepareStatement(sql);
 	}
 
-	public ResultSet executeQuery(Statement statement, String query) throws SQLException {
+	public synchronized ResultSet executeQuery(Statement statement, String query) throws SQLException {
 		return statement.executeQuery(query);
 	}
 }

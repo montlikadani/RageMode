@@ -41,6 +41,7 @@ lobbyitems:
     - "&7&oLeft/right click"
     slot: 3
   shopitem:
+    enabled: true
     item: emerald
     name: "&2Game shop"
     lore:
@@ -57,10 +58,10 @@ lobbyitems:
           type: potioneffects
           gui:
             title: "&2Buy potion effects"
-            fillEmptyFields: green_stained_glass_pane
-            size: 9
+            fillEmptyFields: blue_stained_glass_pane
+            size: 45
             items:
-              slot-1:
+              slot-10:
                 item: nether_star
                 name: "&6Speed"
                 cost:
@@ -72,24 +73,24 @@ lobbyitems:
                 - "&eCost:&r %cost%"
                 - "&eRequired points:&r %required_points%"
                 - "&7&lThis can be used only once."
-              slot-8:
+              slot-44:
                 item: paper
                 name: "&bInfo"
                 lore:
                 - "&7The potion effects will automatically apply when the game started."
-              slot-7:
+              slot-36:
                 item: diamond
                 name: "&6Money/Points"
                 lore:
                 - "&6You have&e %money%&6$ in your account."
                 - "&6You have&e %points%&6 points"
-              slot-5:
+              slot-41:
                 item: barrier
                 name: "&cClose"
                 lore:
                 - "&7This will close the inventory shop."
                 command: close
-              slot-4:
+              slot-39:
                 item: arrow
                 name: "&bMain page"
                 command: mainpage

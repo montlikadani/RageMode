@@ -175,6 +175,11 @@ public class LobbyShop implements Listener, IShop {
 	@Override
 	public void create(Player player) {
 		Configuration conf = plugin.getConfiguration();
+		if (!conf.getItemsCfg().contains("lobbyitems.shopitem")
+				|| !conf.getItemsCfg().getBoolean("lobbyitems.shopitem.enabled")) {
+			return;
+		}
+
 		String path = "lobbyitems.shopitem.gui.";
 
 		String guiName = Utils.colors(conf.getItemsCfg().getString(path + "title", "&6RageMode shop"));
