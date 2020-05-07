@@ -25,8 +25,6 @@ public class ItemHandler implements Cloneable {
 
 	private double damage = 0;
 
-	private ItemStack result;
-
 	public Material getItem() {
 		return item;
 	}
@@ -136,7 +134,7 @@ public class ItemHandler implements Cloneable {
 			meta.setDisplayName(displayName);
 		}
 
-		if (lore != null && !lore.isEmpty()) {
+		if (lore != null) {
 			meta.setLore(lore);
 		}
 
@@ -145,13 +143,7 @@ public class ItemHandler implements Cloneable {
 		}
 
 		item.setItemMeta(meta);
-
-		result = item;
 		return item;
-	}
-
-	public ItemStack getResult() {
-		return result;
 	}
 
 	@Override

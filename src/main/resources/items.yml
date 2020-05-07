@@ -52,10 +52,16 @@ lobbyitems:
       fillEmptyFields: green_stained_glass_pane
       size: 45
       items:
+        slot-41:
+          item: barrier
+          name: "&cClose"
+          lore:
+          - "&7This will close the inventory shop."
+          command: close
         slot-13:
           item: potion
           name: "&aBuy potion effects"
-          type: potioneffects
+          category: potioneffects
           gui:
             title: "&2Buy potion effects"
             fillEmptyFields: blue_stained_glass_pane
@@ -67,6 +73,8 @@ lobbyitems:
                 cost:
                   value: 450
                   points: 0
+                commands:
+                - "console:msg &aYou paid 450 money."
                 effect: speed:15:1
                 lore:
                 - "&7Giving speed effect to player when the game started."
@@ -93,4 +101,4 @@ lobbyitems:
               slot-39:
                 item: arrow
                 name: "&bMain page"
-                command: mainpage
+                command: main

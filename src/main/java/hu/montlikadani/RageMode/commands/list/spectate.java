@@ -55,7 +55,7 @@ public class spectate implements ICommand {
 			p.setFlying(true);
 			p.setGameMode(GameMode.SPECTATOR);
 			if (Items.getLeaveGameItem() != null) {
-				p.getInventory().setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().getResult());
+				p.getInventory().setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().build());
 			}
 
 			return true;

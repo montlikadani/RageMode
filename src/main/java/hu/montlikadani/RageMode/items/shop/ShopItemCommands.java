@@ -1,26 +1,40 @@
 package hu.montlikadani.ragemode.items.shop;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class ShopItemCommands {
 
 	private String configPath;
-	private String command;
-	private ShopType type;
+	private List<String> commands = new ArrayList<>();
+	private NavigationType navigationType = NavigationType.WITHOUT;
 
-	public ShopItemCommands(String configPath, String command, ShopType type) {
+	public ShopItemCommands(String configPath, String command, NavigationType navigationType) {
+		this(configPath, Arrays.asList(command), navigationType);
+	}
+
+	public ShopItemCommands(String configPath, List<String> commands, NavigationType navigationType) {
 		this.configPath = configPath;
-		this.command = command;
-		this.type = type;
+
+		if (commands != null) {
+			this.commands.addAll(commands);
+		}
+
+		if (navigationType != null) {
+			this.navigationType = navigationType;
+		}
 	}
 
 	public String getConfigPath() {
 		return configPath;
 	}
 
-	public String getCommand() {
-		return command;
+	public List<String> getCommands() {
+		return commands;
 	}
 
-	public ShopType getType() {
-		return type;
+	public NavigationType getNavigationType() {
+		return navigationType;
 	}
 }

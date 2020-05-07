@@ -48,23 +48,8 @@ public class join implements ICommand {
 			return false;
 		}
 
-		if (ConfigValues.isRejoinDelayEnabled() && !p.hasPermission("ragemode.bypass.rejoindelay")) {
-			if (ReJoinDelay.isValid(p)) {
-				sendMessage(p, RageMode.getLang().get("commands.join.rejoin-delay", "%delay%",
-						ReJoinDelay.format(ReJoinDelay.getTimeByPlayer(p) - System.currentTimeMillis())));
-				return false;
-			}
-
-			int hour = ConfigValues.getRejoinDelayHour();
-			int minute = ConfigValues.getRejoinDelayMinute();
-			int second = ConfigValues.getRejoinDelaySecond();
-
-			if (hour != 0 || minute != 0 || second != 0) {
-				ReJoinDelay.resetTime(p);
-				ReJoinDelay.setTime(p, hour, minute, second);
-			} else {
-				hu.montlikadani.ragemode.Debug.logConsole("The rejoin times can't be 0 hour, 0 minute and 0 second.");
-			}
+		if (!ReJoinDelay.checkRejoinDelay(p, "")) {
+			return false;
 		}
 
 		GameUtils.joinPlayer(p, GameUtils.getGame(map));

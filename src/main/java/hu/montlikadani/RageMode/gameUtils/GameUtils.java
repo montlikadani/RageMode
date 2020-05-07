@@ -29,6 +29,8 @@ import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.*;
+import hu.montlikadani.ragemode.gameUtils.modules.ActionBar;
+import hu.montlikadani.ragemode.gameUtils.modules.Titles;
 import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.items.*;
 import hu.montlikadani.ragemode.items.shop.BoughtElements;
@@ -50,7 +52,7 @@ public class GameUtils {
 	/**
 	 * When the game ended and players waiting for teleport.
 	 */
-	public static HashMap<String, Boolean> waitingGames = new HashMap<>();
+	public static final HashMap<String, Boolean> WAITINGGAMES = new HashMap<>();
 
 	/**
 	 * Broadcast a message to the currently playing players for that given game.
@@ -307,9 +309,9 @@ public class GameUtils {
 		PlayerInventory inv = p.getInventory();
 		for (ItemHandler ih : RageMode.getInstance().getGameItems()) {
 			if (ih.getSlot() != -1) {
-				inv.setItem(ih.getSlot(), ih.getResult());
+				inv.setItem(ih.getSlot(), ih.build());
 			} else {
-				inv.addItem(ih.getResult());
+				inv.addItem(ih.build());
 			}
 		}
 	}
@@ -402,7 +404,7 @@ public class GameUtils {
 				p.setGameMode(GameMode.SPECTATOR);
 
 				if (Items.getLeaveGameItem() != null) {
-					inv.setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().getResult());
+					inv.setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().build());
 				}
 			}
 
@@ -488,7 +490,7 @@ public class GameUtils {
 					continue;
 				}
 
-				inv.setItem(items.getSlot(), items.getResult());
+				inv.setItem(items.getSlot(), items.build());
 			}
 		}, 5L);
 
@@ -709,11 +711,11 @@ public class GameUtils {
 	}
 
 	public static void buyElements(Player player) {
-		if (!LobbyShop.boughtItems.containsKey(player)) {
+		if (!LobbyShop.BOUGHTITEMS.containsKey(player)) {
 			return;
 		}
 
-		for (Entry<Player, BoughtElements> elements : LobbyShop.boughtItems.entrySet()) {
+		for (Entry<Player, BoughtElements> elements : LobbyShop.BOUGHTITEMS.entrySet()) {
 			if (elements.getKey().equals(player)) {
 				BoughtElements bought = elements.getValue();
 
@@ -755,7 +757,7 @@ public class GameUtils {
 			}
 		}
 
-		LobbyShop.boughtItems.remove(player);
+		LobbyShop.BOUGHTITEMS.remove(player);
 	}
 
 	/**
@@ -911,10 +913,10 @@ public class GameUtils {
 			final Player p = pm.getPlayer();
 			RageScores.removePointsForPlayer(p.getUniqueId());
 
-			game.removePlayerSynced(p);
 			game.removePlayer(p);
 		}
 
+		game.getActionMessengers().clear();
 		game.setGameNotRunning();
 		game.setStatus(null);
 		SignCreator.updateAllSigns(game.getName());
@@ -990,10 +992,11 @@ public class GameUtils {
 					String wonTime = ConfigValues.getYouWonTitleTime();
 					sendTitleMessages(p, youWonTitle, youWonSubtitle, wonTime);
 				}
-
-				game.removePlayerSynced(p);
 			}
 		}
+
+		players.forEach(pm -> game.removePlayerSynced(pm.getPlayer()));
+		game.getActionMessengers().clear();
 
 		if (!winnervalid) {
 			broadcastToGame(game, RageMode.getLang().get("game.no-won"));
@@ -1013,18 +1016,18 @@ public class GameUtils {
 			return;
 		}
 
-		if (waitingGames.containsKey(name)) {
-			waitingGames.remove(name);
+		if (WAITINGGAMES.containsKey(name)) {
+			WAITINGGAMES.remove(name);
 		}
 
-		waitingGames.put(name, true);
+		WAITINGGAMES.put(name, true);
 
 		game.setStatus(GameStatus.GAMEFREEZE);
 		SignCreator.updateAllSigns(name);
 
 		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
-			if (waitingGames.containsKey(name)) {
-				waitingGames.remove(name);
+			if (WAITINGGAMES.containsKey(name)) {
+				WAITINGGAMES.remove(name);
 			}
 
 			finishStopping(game, winner, true);
@@ -1188,9 +1191,9 @@ public class GameUtils {
 	 * @param item Material
 	 * @return true if similar
 	 */
-	public static boolean isGameItem(ItemStack item) {
+	private static boolean isGameItem(ItemStack item) {
 		for (ItemHandler ih : RageMode.getInstance().getGameItems()) {
-			if (ih != null && ih.getResult().isSimilar(item)) {
+			if (ih != null && ih.build().isSimilar(item)) {
 				return true;
 			}
 		}
@@ -1226,6 +1229,6 @@ public class GameUtils {
 	 * @return true if the game is in
 	 */
 	public static boolean isGameInFreezeRoom(String game) {
-		return waitingGames.containsKey(game) && waitingGames.get(game);
+		return WAITINGGAMES.containsKey(game) && WAITINGGAMES.get(game);
 	}
 }

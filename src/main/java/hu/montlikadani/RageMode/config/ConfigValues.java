@@ -62,6 +62,7 @@ public class ConfigValues {
 	private static boolean playersCanJoinRandomToRunningGames;
 	private static boolean perJoinPermissions;
 	private static boolean damagePlayerFall;
+	private static boolean preventFastBowEvent;
 	private static boolean hidePlayerNameTag;
 	private static boolean cancelRedstoneActivating;
 	private static boolean cancelDoorUse;
@@ -174,6 +175,7 @@ public class ConfigValues {
 		playersCanJoinRandomToRunningGames = f.get("players-can-join-random-to-running-games", true);
 		perJoinPermissions = f.get("per-join-permissions", false);
 		damagePlayerFall = f.get("game.damage-player-fall", false);
+		preventFastBowEvent = f.get("game.prevent-fastbow-event", true);
 		respawnProtectTime = f.get("game.respawn-protection", 3);
 		hidePlayerNameTag = f.get("game.hide-players-name-tag", false);
 		gameEndBc = f.get("game.values-to-send-game-end-broadcast",
@@ -440,6 +442,10 @@ public class ConfigValues {
 
 	public static boolean isDamagePlayerFall() {
 		return damagePlayerFall;
+	}
+
+	public static boolean isPreventFastBowEvent() {
+		return preventFastBowEvent;
 	}
 
 	public static int getRespawnProtectTime() {

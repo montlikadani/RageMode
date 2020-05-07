@@ -2,7 +2,6 @@ package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,9 +21,7 @@ import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameLobby;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
-import hu.montlikadani.ragemode.items.shop.IShop;
 import hu.montlikadani.ragemode.items.shop.LobbyShop;
-import hu.montlikadani.ragemode.items.shop.inventory.CustomInventoryType;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class Game {
@@ -39,7 +36,7 @@ public class Game {
 	private boolean running = false;
 	private LobbyTimer lobbyTimer;
 
-	private IShop shop = new LobbyShop(CustomInventoryType.RAGEMODE);
+	private LobbyShop shop = new LobbyShop();
 
 	private final List<ActionMessengers> acList = new ArrayList<>();
 
@@ -124,7 +121,8 @@ public class Game {
 			return true;
 		}
 
-		// Gets a random player who is in game and kicks from the game to join the VIP player.
+		// Gets a random player who is in game and kicks from the game to join the VIP
+		// player.
 		if (ConfigValues.isKickRandomPlayerIfJoinsVip() && player.hasPermission("ragemode.vip") && hasRoomForVIP()) {
 			boolean isVIP = false;
 			Player playerToKick;
@@ -141,14 +139,7 @@ public class Game {
 			getPlayerManager(playerToKick).addBackTools();
 			players.remove(playerToKick);
 
-			shop.remove(playerToKick);
-
-			for (Iterator<ActionMessengers> it = acList.iterator(); it.hasNext();) {
-				if (it.next().getPlayer().equals(playerToKick)) {
-					it.remove();
-					break;
-				}
-			}
+			shop.removeShop(playerToKick);
 
 			playerToKick.sendMessage(RageMode.getLang().get("game.player-kicked-for-vip"));
 
@@ -215,7 +206,7 @@ public class Game {
 			player.setCustomNameVisible(true);
 		}
 
-		shop.remove(player);
+		shop.removeShop(player);
 
 		player.sendMessage(RageMode.getLang().get("game.player-left"));
 
@@ -237,13 +228,6 @@ public class Game {
 				action.getScoreboard().remove(player);
 				action.getTabTitles().remove();
 				action.getScoreTeam().remove();
-				break;
-			}
-		}
-
-		for (Iterator<ActionMessengers> it = acList.iterator(); it.hasNext();) {
-			if (it.next().getPlayer().equals(player)) {
-				it.remove();
 				break;
 			}
 		}
@@ -414,9 +398,9 @@ public class Game {
 
 	/**
 	 * Gets the lobby shop.
-	 * @return {@link IShop}
+	 * @return {@link LobbyShop}
 	 */
-	public IShop getShop() {
+	public LobbyShop getShop() {
 		return shop;
 	}
 

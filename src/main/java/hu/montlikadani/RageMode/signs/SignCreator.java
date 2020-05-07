@@ -24,10 +24,10 @@ public class SignCreator {
 	private static FileConfiguration fileConf = null;
 	private static SignPlaceholder signPlaceholder = null;
 
-	private static Set<SignData> signData = new HashSet<>();
+	private static final Set<SignData> SIGNDATA = new HashSet<>();
 
 	public synchronized static boolean loadSigns() {
-		signData.clear();
+		SIGNDATA.clear();
 
 		if (fileConf == null) {
 			fileConf = SignConfiguration.getConf();
@@ -69,7 +69,7 @@ public class SignCreator {
 			Location loc = new Location(Bukkit.getWorld(world), x, y, z);
 			SignData data = new SignData(loc, game, signPlaceholder);
 
-			signData.add(data);
+			SIGNDATA.add(data);
 			totalSigns++;
 		}
 
@@ -88,18 +88,18 @@ public class SignCreator {
 		signs.add(index);
 		fileConf.set("signs", signs);
 
-		signData.add(data);
+		SIGNDATA.add(data);
 
 		Configuration.saveFile(fileConf, SignConfiguration.getFile());
 		return true;
 	}
 
 	public synchronized static boolean removeSign(Sign sign) {
-		if (signData.isEmpty()) {
+		if (SIGNDATA.isEmpty()) {
 			return false;
 		}
 
-		for (java.util.Iterator<SignData> it = signData.iterator(); it.hasNext();) {
+		for (java.util.Iterator<SignData> it = SIGNDATA.iterator(); it.hasNext();) {
 			SignData data = it.next();
 			if (data.getLocation().equals(sign.getLocation())) {
 				List<String> signs = fileConf.getStringList("signs");
@@ -141,7 +141,7 @@ public class SignCreator {
 	public static SignData getSignData(Location loc) {
 		Validate.notNull(loc, "Location can't be null!");
 
-		for (SignData data : signData) {
+		for (SignData data : SIGNDATA) {
 			if (data.getLocation().equals(loc)) {
 				return data;
 			}
@@ -159,7 +159,7 @@ public class SignCreator {
 		Validate.notNull(game, "Game name can't be null!");
 		Validate.notEmpty(game, "Game name can't be empty!");
 
-		for (SignData data : signData) {
+		for (SignData data : SIGNDATA) {
 			if (data.getGame().equalsIgnoreCase(game.trim())) {
 				return data;
 			}
@@ -186,7 +186,7 @@ public class SignCreator {
 			return false;
 		}
 
-		SignsUpdateEvent event = new SignsUpdateEvent(signData);
+		SignsUpdateEvent event = new SignsUpdateEvent(SIGNDATA);
 		Utils.callEvent(event);
 		if (event.isCancelled()) {
 			return false;
@@ -206,7 +206,7 @@ public class SignCreator {
 
 				Bukkit.getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 					if (signLocation.getBlock().getState() instanceof Sign) {
-						signData.forEach(data -> data.updateSign());
+						SIGNDATA.forEach(data -> data.updateSign());
 						return true;
 					}
 
@@ -253,7 +253,7 @@ public class SignCreator {
 	 * @return Set of SignData
 	 */
 	public static Set<SignData> getSignData() {
-		return signData;
+		return SIGNDATA;
 	}
 
 	private static String getGameFromString(String raw) {

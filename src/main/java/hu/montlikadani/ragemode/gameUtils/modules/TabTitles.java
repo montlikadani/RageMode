@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.gameUtils;
+package hu.montlikadani.ragemode.gameUtils.modules;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

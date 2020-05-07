@@ -86,19 +86,15 @@ public class Bonus {
 
 				org.bukkit.inventory.PlayerInventory inv = player.getInventory();
 				if (!inv.contains(item.getItem()) && item.getSlot() != -1) {
-					inv.setItem(item.getSlot(), item.getResult());
+					inv.setItem(item.getSlot(), item.build());
 				} else {
-					inv.addItem(item.getResult());
+					inv.addItem(item.build());
 				}
 			}
 		}
 	}
 
-	public static int getPointBonus(Player player) {
-		if (player == null) {
-			return 0;
-		}
-
+	public static int getPointBonus() {
 		List<String> list = ConfigValues.getKillBonuses();
 		for (String b : list) {
 			if (!b.contains("points:")) {

@@ -36,6 +36,7 @@ public class RuntimePPManager {
 
 	/**
 	 * Get the points database for the given player uuid.
+	 * 
 	 * @deprecated converting string to uuid is too long time
 	 * @param sUUID Player uuid
 	 * @see #getPPForPlayer(UUID)
@@ -48,6 +49,7 @@ public class RuntimePPManager {
 
 	/**
 	 * Get the points database for the given player uuid.
+	 * 
 	 * @param uuid Player uuid
 	 * @return {@link PlayerPoints} the player current stats
 	 */
@@ -64,6 +66,18 @@ public class RuntimePPManager {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Checks if the given player have enough points.
+	 * 
+	 * @param uuid   Player uuid
+	 * @param points points
+	 * @return <code>false</code> if the player is in the database and have enough, otherwise <code>false</code>
+	 */
+	public static boolean hasPoints(UUID uuid, int points) {
+		PlayerPoints pp = getPPForPlayer(uuid);
+		return pp != null && pp.hasPoints(points);
 	}
 
 	public synchronized static void updatePlayerEntry(PlayerPoints pp) {

@@ -2,31 +2,20 @@ package hu.montlikadani.ragemode.items.shop;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.Utils;
@@ -35,45 +24,99 @@ import hu.montlikadani.ragemode.API.event.RMGameStartEvent;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.items.shop.inventory.CustomInventoryType;
+import hu.montlikadani.ragemode.items.shop.pages.MainPage;
+import hu.montlikadani.ragemode.items.shop.pages.PotionEffectPage;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
-import hu.montlikadani.ragemode.scores.PlayerPoints;
 
 // it's an ugly class
-public class LobbyShop implements Listener, IShop {
+public class LobbyShop implements Listener {
 
-	public static Map<Player, BoughtElements> boughtItems = new HashMap<>();
+	public static final Map<Player, BoughtElements> BOUGHTITEMS = new HashMap<>();
 
-	private final Set<Player> players = new HashSet<>();
-	private final Map<ShopItem, Player> shopItems = new HashMap<>();
-	private final HashMap<ItemStack, ShopItemCommands> items = new HashMap<>();
+	private final Map<Player, IShop> shops = new HashMap<>();
 
-	private RageMode plugin;
-	private CustomInventoryType type;
+	private RageMode plugin = RageMode.getInstance();
 
-	private Inventory inv;
-
-	public LobbyShop(CustomInventoryType type) {
-		this.type = type;
-		this.plugin = RageMode.getInstance();
-
+	public LobbyShop() {
 		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
+	}
+
+	public Map<Player, IShop> getShops() {
+		return shops;
+	}
+
+	public boolean isOpened(Player player) {
+		return shops.containsKey(player);
+	}
+
+	public IShop getCurrentPage(Player player) {
+		return shops.get(player);
+	}
+
+	public void removeShop(Player player) {
+		if (isOpened(player)) {
+			getCurrentPage(player).getItems().clear();
+			shops.remove(player);
+		}
+	}
+
+	public void openMainPage(Player player) {
+		removeShop(player);
+
+		MainPage main = new MainPage();
+		main.create(player);
+		shops.put(player, main);
+
+		player.openInventory(getCurrentPage(player).getInventory());
+	}
+
+	public void openPotionEffectPage(Player player) {
+		removeShop(player);
+
+		PotionEffectPage main = new PotionEffectPage();
+		main.create(player);
+		shops.put(player, main);
+
+		player.openInventory(getCurrentPage(player).getInventory());
+	}
+
+	public List<ShopItem> getItems(IShop currentPage, ShopCategory category) {
+		List<ShopItem> citems = new ArrayList<>();
+
+		if (currentPage == null || category == null) {
+			return citems;
+		}
+
+		for (ShopItem si : currentPage.getItems()) {
+			if (si.getCategory().equals(category)) {
+				citems.add(si);
+			}
+		}
+
+		return citems;
 	}
 
 	@EventHandler
 	public void onGameLeave(RMGameLeaveAttemptEvent e) {
 		Player player = e.getPlayer();
 
-		remove(player);
-		boughtItems.remove(player);
+		removeShop(player);
+		BOUGHTITEMS.remove(player);
 	}
 
 	@EventHandler
 	public void onGameStart(RMGameStartEvent event) {
 		for (PlayerManager pm : event.getPlayers()) {
-			pm.getPlayer().closeInventory();
-			remove(pm.getPlayer());
+			Player player = pm.getPlayer();
+			removeShop(player);
+		}
+	}
+
+	@EventHandler
+	public void onDrag(InventoryDragEvent event) {
+		if (event.getInventory().getHolder() instanceof IShop) {
+			event.setCancelled(true);
 		}
 	}
 
@@ -83,8 +126,7 @@ public class LobbyShop implements Listener, IShop {
 			return;
 		}
 
-		Player p = (Player) ev.getWhoClicked();
-		if (!isOpened(p)) {
+		if (!(ev.getInventory().getHolder() instanceof IShop)) {
 			return;
 		}
 
@@ -93,13 +135,14 @@ public class LobbyShop implements Listener, IShop {
 			return;
 		}
 
+		Player p = (Player) ev.getWhoClicked();
 		if (!GameUtils.isPlayerPlaying(p)) {
-			remove(p);
+			removeShop(p);
 			return;
 		}
 
 		if (GameUtils.getGameByPlayer(p).getStatus() != GameStatus.WAITING) {
-			remove(p);
+			removeShop(p);
 			return;
 		}
 
@@ -110,335 +153,85 @@ public class LobbyShop implements Listener, IShop {
 		}
 
 		doItemClick(ev);
+		return;
 	}
 
-	@EventHandler
+	/*@EventHandler
 	public void onInventoryClose(InventoryCloseEvent event) {
 		Player p = (Player) event.getPlayer();
-
-		if (event.getInventory().getHolder() instanceof LobbyShop && type == CustomInventoryType.RAGEMODE) {
-			remove(p);
-		}
-	}
-
-	@EventHandler(ignoreCancelled = true)
-	public void onInventoryOpen(InventoryOpenEvent e) {
-		if (!(e.getPlayer() instanceof Player)) {
-			return;
-		}
-
-		Player p = (Player) e.getPlayer();
-
-		if (GameUtils.isPlayerPlaying(p) && GameUtils.getGameByPlayer(p).getStatus() == GameStatus.WAITING
-				&& !players.contains(p) && type == CustomInventoryType.RAGEMODE) {
-			players.add(p);
-		}
-	}
-
-	@Override
-	public CustomInventoryType getType() {
-		return type;
-	}
-
-	@Override
-	public void setType(CustomInventoryType type) {
-		this.type = type;
-	}
-
-	@Override
-	public Set<Player> getPlayers() {
-		return players;
-	}
-
-	@Override
-	public Inventory getInventory() {
-		return inv;
-	}
-
-	@Override
-	public boolean isOpened(Player player) {
-		return player != null && players.contains(player);
-	}
-
-	@Override
-	public void removeAll() {
-		players.clear();
-	}
-
-	@Override
-	public void remove(Player player) {
-		if (isOpened(player)) {
-			players.remove(player);
-		}
-	}
-
-	@Override
-	public void create(Player player) {
-		Configuration conf = plugin.getConfiguration();
-		if (!conf.getItemsCfg().contains("lobbyitems.shopitem")
-				|| !conf.getItemsCfg().getBoolean("lobbyitems.shopitem.enabled")) {
-			return;
-		}
-
-		String path = "lobbyitems.shopitem.gui.";
-
-		String guiName = Utils.colors(conf.getItemsCfg().getString(path + "title", "&6RageMode shop"));
-
-		int size = conf.getItemsCfg().getInt(path + "size", 9);
-		if (size > 54) {
-			size = 54;
-		}
-
-		inv = Bukkit.createInventory(player, size, guiName);
-
-		path += "items.";
-
-		for (int i = 0; i < size; i++) {
-			String item = conf.getItemsCfg().getString(path + "slot-" + i + ".item", "");
-			if (item.isEmpty()) {
-				item = "air";
-			}
-
-			Material mat = Material.getMaterial(item.toUpperCase());
-			if (mat == null) {
-				Debug.logConsole(Level.WARNING, "Unknown item type: " + item);
-				mat = Material.AIR;
-			}
-
-			if (mat == Material.AIR) {
-				String filler = conf.getItemsCfg().getString("lobbyitems.shopitem.gui.fillEmptyFields", "air");
-				if (!filler.isEmpty()) {
-					mat = Material.getMaterial(filler.toUpperCase());
-					if (mat == null) {
-						Debug.logConsole(Level.WARNING, "Unknown filler item type: " + item);
-						mat = Material.AIR;
-					}
-
-					inv.setItem(i, new ItemStack(mat));
-				}
-
-				continue;
-			}
-
-			ItemStack iStack = new ItemStack(mat);
-
-			String t = conf.getItemsCfg().getString(path + "slot-" + i + ".type", "");
-			ShopType type = !t.isEmpty() ? ShopType.valueOf(t.toUpperCase()) : null;
-			if (type == null) {
-				type = ShopType.MAIN;
-			}
-
-			ItemMeta iMeta = iStack.getItemMeta();
-			if (iMeta == null) {
-				inv.setItem(i, new ItemStack(mat));
-				continue;
-			}
-
-			ArrayList<String> lore = new ArrayList<>();
-			List<String> list = conf.getItemsCfg().getStringList(path + "slot-" + i + ".lore");
-			if (!list.isEmpty()) {
-				list.forEach(l -> lore.add(Utils.colors(l)));
-				iMeta.setLore(lore);
-			}
-
-			String itemName = conf.getItemsCfg().getString(path + "slot-" + i + ".name", "");
-			if (!itemName.isEmpty()) {
-				iMeta.setDisplayName(itemName.replace("&", "\u00a7"));
-			}
-
-			hu.montlikadani.ragemode.NMS.setDurability(iStack,
-					(short) conf.getItemsCfg().getDouble(path + "slot-" + i + ".durability", 0));
-
-			iStack.setItemMeta(iMeta);
-			inv.setItem(i, iStack);
-
-			ShopItem shopItem = new ShopItem(iStack, type, guiName);
-			shopItems.put(shopItem, player);
-		}
-	}
-
-	private void openEffectsShop(Player player) {
-		items.clear();
-
-		String mainPath = "lobbyitems.shopitem.gui.";
-		FileConfiguration conf = plugin.getConfiguration().getItemsCfg();
-
-		ConfigurationSection section = conf.getConfigurationSection(mainPath + "items");
-		if (section == null) {
-			return;
-		}
-
-		mainPath += "items.";
-
-		for (String guiItems : section.getKeys(false)) {
-			ShopType shopType = ShopType.valueOf(section.getString(guiItems + ".type").toUpperCase());
-			if (shopType != ShopType.POTIONEFFECTS) {
-				continue;
-			}
-
-			mainPath += guiItems + ".gui";
-
-			String guiName = Utils.colors(conf.getString(mainPath + ".title", "&6RageMode shop"));
-
-			int size = conf.getInt(mainPath + ".size", 9);
-			if (size > 54) {
-				size = 54;
-			}
-
-			inv = Bukkit.createInventory(player, size, guiName);
-
-			ConfigurationSection sec = conf.getConfigurationSection(mainPath + ".items");
-			if (sec == null) {
-				break;
-			}
-
-			for (int i = 0; i < size; i++) {
-				String effectItems = "slot-" + i;
-				String item = sec.getString(effectItems + ".item", "");
-				if (item.isEmpty()) {
-					item = "air";
-				}
-
-				Material mat = Material.getMaterial(item.toUpperCase());
-				if (mat == null) {
-					Debug.logConsole(Level.WARNING, "Unknown item type: " + item);
-					mat = Material.AIR;
-				}
-
-				if (mat == Material.AIR) {
-					String filler = conf.getString(mainPath + ".fillEmptyFields", "air");
-					if (!filler.isEmpty()) {
-						mat = Material.getMaterial(filler.toUpperCase());
-						if (mat == null) {
-							Debug.logConsole(Level.WARNING, "Unknown filler item type: " + item);
-							mat = Material.AIR;
-						}
-
-						inv.setItem(i, new ItemStack(mat));
-					}
-
-					continue;
-				}
-
-				ItemStack iStack = new ItemStack(mat);
-				ItemMeta iMeta = iStack.getItemMeta();
-				if (iMeta == null) {
-					inv.setItem(i, iStack);
-					continue;
-				}
-
-				ArrayList<String> lore = new ArrayList<>();
-				List<String> list = sec.getStringList(effectItems + ".lore");
-				if (!list.isEmpty()) {
-					for (String l : list) {
-						l = Utils.colors(l);
-
-						BoughtElements elements = boughtItems.get(player);
-						double cost = elements != null ? elements.getCost()
-								: sec.getInt(effectItems + ".cost.value", 0);
-						int points = elements != null ? elements.getPoints()
-								: sec.getInt(effectItems + ".cost.points", 0);
-
-						l = l.replace("%cost%", Double.toString(cost));
-						l = l.replace("%required_points%", Integer.toString(points));
-
-						if (plugin.isVaultEnabled()) {
-							l = l.replace("%money%", Double.toString(plugin.getEconomy().getBalance(player)));
-						}
-
-						PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
-						if (pp != null) {
-							l = l.replace("%points%", Integer.toString(pp.getPoints()));
-						}
-
-						lore.add(Utils.colors(l));
-					}
-
-					iMeta.setLore(lore);
-				}
-
-				String itemName = sec.getString(effectItems + ".name", "");
-				if (!itemName.isEmpty()) {
-					iMeta.setDisplayName(itemName.replace("&", "\u00a7"));
-				}
-
-				hu.montlikadani.ragemode.NMS.setDurability(iStack,
-						(short) sec.getDouble(effectItems + ".durability", 0));
-
-				iStack.setItemMeta(iMeta);
-				inv.setItem(i, iStack);
-
-				String command = sec.getString(effectItems + ".command", "");
-				ShopItemCommands itemCmds = new ShopItemCommands(mainPath + ".items." + effectItems, command,
-						ShopType.POTIONEFFECTS);
-				items.put(iStack, itemCmds);
-			}
-		}
-
-		player.openInventory(inv);
-	}
+		removeShop(p);
+	}*/
 
 	private void doItemClick(InventoryClickEvent ev) {
-		ItemStack item = ev.getCurrentItem();
-
-		for (Map.Entry<ShopItem, Player> items : shopItems.entrySet()) {
-			ShopItem si = items.getKey();
-
-			if (!si.getItem().equals(item)) {
-				continue;
-			}
-
-			String title = Version.isCurrentEqualOrHigher(Version.v1_13_R1) ? ev.getView().getTitle()
-					: ((Player) ev.getWhoClicked()).getOpenInventory().getTitle();
-			if (!title.equalsIgnoreCase(si.getInventoryName())) {
-				continue;
-			}
-
-			if (si.getType() == ShopType.POTIONEFFECTS) {
-				openEffectsShop(items.getValue());
-				return;
-			}
+		final Player player = ((Player) ev.getWhoClicked());
+		if (!isOpened(player)) {
+			return;
 		}
 
-		for (Entry<ItemStack, ShopItemCommands> i : items.entrySet()) {
-			ItemStack stack = i.getKey();
-			ShopItemCommands cmds = i.getValue();
+		final ItemStack currentItem = ev.getCurrentItem();
+		final IShop currentPage = getCurrentPage(player);
 
-			if (item.getItemMeta().getDisplayName().equalsIgnoreCase(stack.getItemMeta().getDisplayName())) {
-				if (!cmds.getCommand().isEmpty()) {
-					final Player player = ((Player) ev.getWhoClicked());
+		ShopItem shopItem = currentPage.getShopItem(currentItem);
+		if (shopItem == null || !shopItem.getItem().equals(currentItem)) {
+			return;
+		}
 
-					switch (cmds.getCommand().toLowerCase()) {
-					case "mainpage":
-					case "main":
-						player.closeInventory();
+		String title = Version.isCurrentEqualOrHigher(Version.v1_13_R1) ? ev.getView().getTitle()
+				: player.getOpenInventory().getTitle();
+		if (!title.equalsIgnoreCase(shopItem.getInventoryName())) {
+			return;
+		}
 
-						remove(player);
-						create(player);
+		ShopItemCommands cmds = shopItem.getItemCommands();
+		if (cmds != null) {
+			NavigationType type = cmds.getNavigationType();
 
-						player.openInventory(inv);
-						break;
-					case "close":
-						player.closeInventory();
-						break;
-					default:
-						break;
+			if (type == NavigationType.WITHOUT && currentItem.getItemMeta().getDisplayName()
+					.equalsIgnoreCase(shopItem.getItem().getItemMeta().getDisplayName())) {
+				if (buyElement(ev, cmds.getConfigPath(), shopItem.getCategory())) {
+					for (String c : cmds.getCommands()) {
+						if (c.startsWith("console:")) {
+							c = c.replace("console:", "");
+
+							if (c.startsWith("/")) {
+								c = c.substring(1);
+							}
+
+							c = Utils.setPlaceholders(c, player);
+							c = c.replace("%player%", player.getName());
+
+							Bukkit.dispatchCommand(Bukkit.getConsoleSender(), c);
+						}
 					}
-
-					break;
 				}
 
-				buyElement(ev, cmds.getConfigPath(), cmds.getType());
-				break;
+				return;
 			}
+
+			if (type == NavigationType.MAIN || type == NavigationType.CLOSE) {
+				player.closeInventory();
+			}
+
+			if (type == NavigationType.MAIN) {
+				openMainPage(player);
+			}
+
+			return;
+		}
+
+		if (shopItem.getCategory() == ShopCategory.MAIN) {
+			openPotionEffectPage(player);
 		}
 	}
 
-	private void buyElement(InventoryClickEvent e, String path, ShopType shopType) {
+	private boolean buyElement(InventoryClickEvent e, String path, ShopCategory shopCategory) {
 		Player player = (Player) e.getWhoClicked();
+		if (!isOpened(player)) {
+			return false;
+		}
 
 		Configuration conf = plugin.getConfiguration();
-		BoughtElements elements = boughtItems.get(player);
+		BoughtElements elements = BOUGHTITEMS.get(player);
 
 		double cost = conf.getItemsCfg().getDouble(path + ".cost.value", 0d);
 		double finalCost = elements != null ? elements.getCost() : cost;
@@ -446,21 +239,21 @@ public class LobbyShop implements Listener, IShop {
 		int points = conf.getItemsCfg().getInt(path + "cost.points", 0);
 		int finalPoints = elements != null ? elements.getPoints() : points;
 
-		if (conf.getItemsCfg().contains(path + ".effect") && shopType == ShopType.POTIONEFFECTS) {
+		if (conf.getItemsCfg().contains(path + ".effect") && shopCategory == ShopCategory.POTIONEFFECTS) {
 			String[] effect = conf.getItemsCfg().getString(path + ".effect").split(":");
 			if (effect.length < 1) {
-				return;
+				return false;
 			}
 
 			PotionEffectType type = PotionEffectType.getByName(effect[0]);
 			if (type == null) {
-				return;
+				return false;
 			}
 
 			int duration = effect.length > 1 ? Integer.parseInt(effect[1]) : 5;
 			int amplifier = effect.length > 2 ? Integer.parseInt(effect[2]) : 1;
 
-			if (boughtItems.containsKey(player)) {
+			if (BOUGHTITEMS.containsKey(player)) {
 				finalCost += cost;
 				finalPoints += points;
 				duration += duration;
@@ -468,6 +261,11 @@ public class LobbyShop implements Listener, IShop {
 				if (amplifier < 2) {
 					amplifier++;
 				}
+			}
+
+			if ((plugin.isVaultEnabled() && !plugin.getEconomy().has(player, finalCost))
+					|| !RuntimePPManager.hasPoints(player.getUniqueId(), finalPoints)) {
+				return false;
 			}
 
 			PotionEffect pe = new PotionEffect(type, duration * 20, amplifier);
@@ -480,67 +278,21 @@ public class LobbyShop implements Listener, IShop {
 		}
 
 		if (elements != null) {
-			if (boughtItems.containsKey(player)) {
+			if (BOUGHTITEMS.containsKey(player)) {
 				elements.setCost(finalCost);
 				elements.setPoints(finalPoints);
-
-				changeInventoryItems(player, e.getInventory(), shopType, e.getCurrentItem(), elements,
-						conf.getItemsCfg().getStringList(path + ".lore"));
 			} else {
-				boughtItems.put(player, elements);
+				BOUGHTITEMS.put(player, elements);
 			}
 		}
-	}
 
-	public void changeInventoryItems(Player player, Inventory inv, ShopType shopType, ItemStack item,
-			BoughtElements elements, List<String> lore) {
-		if (!isOpened(player)) {
-			return;
+		// update shop items
+		player.closeInventory();
+
+		if (shopCategory == ShopCategory.POTIONEFFECTS) {
+			openPotionEffectPage(player);
 		}
 
-		ItemStack[] contents = inv.getContents();
-
-		if (shopType == ShopType.POTIONEFFECTS) {
-			for (int i = 0; i < contents.length; i++) {
-				if (contents[i] == null || !contents[i].equals(item)) {
-					continue;
-				}
-
-				ItemMeta iMeta = contents[i].getItemMeta();
-				if (iMeta == null) {
-					break;
-				}
-
-				ArrayList<String> list = new ArrayList<>();
-				if (!lore.isEmpty()) {
-					for (String l : lore) {
-						l = Utils.colors(l);
-
-						if (elements != null) {
-							l = l.replace("%cost%", Double.toString(elements.getCost()));
-							l = l.replace("%required_points%", Integer.toString(elements.getPoints()));
-						}
-
-						if (player != null) {
-							if (plugin.isVaultEnabled()) {
-								l = l.replace("%money%", Double.toString(plugin.getEconomy().getBalance(player)));
-							}
-
-							PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
-							if (pp != null) {
-								l = l.replace("%points%", Integer.toString(pp.getPoints()));
-							}
-						}
-
-						list.add(l);
-					}
-
-					iMeta.setLore(list);
-				}
-
-				contents[i].setItemMeta(iMeta);
-				inv.setItem(i, contents[i]);
-			}
-		}
+		return true;
 	}
 }

@@ -173,15 +173,17 @@ public class DatabaseHandler {
 			return;
 		}
 
-		// TODO: complete this to save the database properly
 		switch (type) {
 		case YAML:
+			YAMLDB.saveData();
 			YAMLDB.saveJoinDelay();
 			break;
 		case SQLITE:
+			SQLDB.saveData();
 			SQLDB.saveJoinDelay();
 			break;
 		case MYSQL:
+			MySQLDB.saveData();
 			MySQLDB.saveJoinDelay();
 			break;
 		default:

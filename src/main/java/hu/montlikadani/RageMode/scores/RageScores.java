@@ -268,7 +268,7 @@ public class RageScores {
 			pointsHolder.setCurrentStreak(currentStreak);
 			pointsHolder.setLongestStreak(longestStreak);
 			pointsHolder.addPoints(
-					killer ? (points + hu.montlikadani.ragemode.gameLogic.Bonus.getPointBonus(player)) : points);
+					killer ? (points + hu.montlikadani.ragemode.gameLogic.Bonus.getPointBonus()) : points);
 
 			return pointsHolder.getPoints();
 		}

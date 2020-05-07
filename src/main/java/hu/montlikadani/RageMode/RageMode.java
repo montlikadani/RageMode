@@ -54,20 +54,20 @@ public class RageMode extends JavaPlugin {
 	private Configuration conf = null;
 	private BungeeUtils bungee = null;
 	private BossbarManager bossManager = null;
-
-	private static RageMode instance = null;
-	private static Language lang = null;
 	private DatabaseHandler dbHandler = null;
-	private static ServerVersion serverVersion = null;
 
 	private Economy econ = null;
 
-	private boolean hologram = false;
-	private boolean vault = false;
+	private static RageMode instance = null;
+	private static Language lang = null;
+	private static ServerVersion serverVersion = null;
+
 	private static boolean isSpigot = false;
 
-	private final List<Game> games = new ArrayList<>();
+	private boolean hologram = false;
+	private boolean vault = false;
 
+	private final List<Game> games = new ArrayList<>();
 	private final Set<GameSpawn> spawns = new HashSet<>();
 
 	private final ItemHandler[] gameItems = new ItemHandler[5];
@@ -75,8 +75,9 @@ public class RageMode extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		instance = this;
+		long load = System.currentTimeMillis();
 
+		instance = this;
 		serverVersion = new ServerVersion();
 
 		if (Version.isCurrentLower(Version.v1_8_R1)) {
@@ -115,7 +116,6 @@ public class RageMode extends JavaPlugin {
 		registerListeners();
 		registerCommands();
 		connectDatabase();
-
 		loadGames();
 
 		bossManager = new BossbarManager();
@@ -149,9 +149,9 @@ public class RageMode extends JavaPlugin {
 			}));
 
 			metrics.addCustomChart(new Metrics.SimplePie("statistic_type", dbHandler.getDBType().name()::toLowerCase));
-
-			Debug.logConsole("Metrics enabled.");
 		}
+
+		Debug.logConsole("Loaded in " + (System.currentTimeMillis() - load) + "ms");
 	}
 
 	@Override
@@ -247,6 +247,7 @@ public class RageMode extends JavaPlugin {
 
 		registerListeners();
 		if (dbHandler != null) {
+			dbHandler.saveDatabase();
 			dbHandler.loadDatabase(false);
 		} else {
 			connectDatabase();
@@ -309,8 +310,7 @@ public class RageMode extends JavaPlugin {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.IRON_AXE)
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&6CombatAxe")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 2))
-					.build();
+					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 2));
 			gameItems[0] = itemHandler;
 		}
 
@@ -320,7 +320,7 @@ public class RageMode extends JavaPlugin {
 			itemHandler.setItem(Material.EGG).setDisplayName(Utils.colors(c.getString(path + ".name", "&8Grenade")))
 					.setCustomName(Utils.colors(c.getString(path + ".custom-name", "")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 6))
-					.setAmount(c.getInt(path + ".amount", 2)).build();
+					.setAmount(c.getInt(path + ".amount", 2));
 			gameItems[1] = itemHandler;
 		}
 
@@ -328,8 +328,7 @@ public class RageMode extends JavaPlugin {
 		if (c.contains(path)) {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.ARROW).setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageArrow")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 9))
-					.build();
+					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 9));
 			gameItems[2] = itemHandler;
 		}
 
@@ -338,7 +337,7 @@ public class RageMode extends JavaPlugin {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.BOW).setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageBow")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 0))
-					.setEnchant(org.bukkit.enchantments.Enchantment.ARROW_INFINITE).build();
+					.setEnchant(org.bukkit.enchantments.Enchantment.ARROW_INFINITE);
 			gameItems[3] = itemHandler;
 		}
 
@@ -348,8 +347,7 @@ public class RageMode extends JavaPlugin {
 			itemHandler.setItem(Material.SHEARS)
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageKnife")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 1))
-					.setDamage(c.getDouble(path + ".damage", 25))
-					.build();
+					.setDamage(c.getDouble(path + ".damage", 25));
 			gameItems[4] = itemHandler;
 		}
 
@@ -359,8 +357,7 @@ public class RageMode extends JavaPlugin {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(c.getString(path + ".item"))
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&2Force the game start")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 3))
-					.build();
+					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 3));
 			lobbyItems[0] = itemHandler;
 		}
 
@@ -369,8 +366,7 @@ public class RageMode extends JavaPlugin {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(c.getString(path + ".item"))
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&cExit")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 5))
-					.build();
+					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 5));
 			lobbyItems[1] = itemHandler;
 		}
 
@@ -379,8 +375,7 @@ public class RageMode extends JavaPlugin {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(c.getString(path + ".item"))
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&2Shop")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 1))
-					.build();
+					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 1));
 			lobbyItems[2] = itemHandler;
 		}
 	}

@@ -5,24 +5,37 @@ import org.bukkit.inventory.ItemStack;
 public class ShopItem {
 
 	private ItemStack item;
-	private ShopType type;
+
+	private ShopCategory category;
+
 	private String inventoryName;
 
-	public ShopItem(ItemStack item, ShopType type, String inventoryName) {
+	private ShopItemCommands itemCommands;
+
+	public ShopItem(ItemStack item, ShopCategory category, String inventoryName) {
+		this(item, category, inventoryName, null);
+	}
+
+	public ShopItem(ItemStack item, ShopCategory category, String inventoryName, ShopItemCommands itemCommands) {
 		this.item = item;
-		this.type = type;
+		this.category = category;
 		this.inventoryName = inventoryName;
+		this.itemCommands = itemCommands;
 	}
 
 	public ItemStack getItem() {
 		return item;
 	}
 
-	public ShopType getType() {
-		return type;
+	public ShopCategory getCategory() {
+		return category;
 	}
 
 	public String getInventoryName() {
 		return inventoryName;
+	}
+
+	public ShopItemCommands getItemCommands() {
+		return itemCommands;
 	}
 }

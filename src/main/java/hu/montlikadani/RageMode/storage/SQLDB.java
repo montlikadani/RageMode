@@ -133,6 +133,16 @@ public class SQLDB {
 	}
 
 	/**
+	 * Saves all players data to the database.
+	 */
+	public static void saveData() {
+		List<PlayerPoints> list = RuntimePPManager.getRuntimePPList();
+		for (PlayerPoints pp : list) {
+			addPlayerStatistics(pp);
+		}
+	}
+
+	/**
 	 * Adds the statistics from the given PlayerPoints instance to the database
 	 * connection from the SQLConnect instance.
 	 * 

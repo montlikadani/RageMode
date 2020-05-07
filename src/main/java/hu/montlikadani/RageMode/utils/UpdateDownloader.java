@@ -56,27 +56,23 @@ public class UpdateDownloader {
 					String cVersion = RageMode.getInstance().getDescription().getVersion().replaceAll("[^0-9]", "");
 					currentVersion = Integer.parseInt(cVersion);
 
+					if (newVersion <= currentVersion || currentVersion >= newVersion) {
+						return;
+					}
+
 					String msg = "";
-					if (newVersion > currentVersion) {
-						if (sender instanceof Player) {
-							msg = Utils.colors("&8&m&l--------------------------------------------------\n"
-									+ "&aA new update is available for RageMode!&4 Version:&7 " + versionString
-									+ (ConfigValues.isDownloadUpdates() ? ""
-											: "\n&6Download:&c &nhttps://www.spigotmc.org/resources/69169/")
-									+ "\n&8&m&l--------------------------------------------------");
-						} else {
-							msg = "New version (" + versionString
-									+ ") is available at https://www.spigotmc.org/resources/69169/";
-						}
-					} else if (!(sender instanceof Player)) {
-						msg = "You're running the latest version.";
+					if (sender instanceof Player) {
+						msg = Utils.colors("&8&m&l--------------------------------------------------\n"
+								+ "&aA new update is available for RageMode!&4 Version:&7 " + versionString
+								+ (ConfigValues.isDownloadUpdates() ? ""
+										: "\n&6Download:&c &nhttps://www.spigotmc.org/resources/69169/")
+								+ "\n&8&m&l--------------------------------------------------");
+					} else {
+						msg = "New version (" + versionString
+								+ ") is available at https://www.spigotmc.org/resources/69169/";
 					}
 
 					sender.sendMessage(msg);
-
-					if (newVersion <= currentVersion) {
-						return;
-					}
 
 					if (!ConfigValues.isDownloadUpdates()) {
 						return;
@@ -99,7 +95,7 @@ public class UpdateDownloader {
 					Debug.logConsole("Downloading new version of RageMode...");
 
 					final URL download = new URL(
-							"https://github.com/montlikadani/RageMode/releases/latest/download/RageMode.jar");
+							"https://github.com/montlikadani/RageMode/releases/latest/download/" + name + ".jar");
 
 					InputStream in = download.openStream();
 					Files.copy(in, jar.toPath(), StandardCopyOption.REPLACE_EXISTING);

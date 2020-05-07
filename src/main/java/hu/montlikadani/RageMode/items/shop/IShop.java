@@ -1,25 +1,16 @@
 package hu.montlikadani.ragemode.items.shop;
 
-import java.util.Set;
+import java.util.List;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
-
-import hu.montlikadani.ragemode.items.shop.inventory.CustomInventoryType;
+import org.bukkit.inventory.ItemStack;
 
 public interface IShop extends InventoryHolder {
 
-	CustomInventoryType getType();
+	List<ShopItem> getItems();
 
-	void setType(CustomInventoryType type);
-
-	Set<Player> getPlayers();
-
-	boolean isOpened(Player player);
-
-	void removeAll();
-
-	void remove(Player player);
+	ShopItem getShopItem(ItemStack item);
 
 	void create(Player player);
 }

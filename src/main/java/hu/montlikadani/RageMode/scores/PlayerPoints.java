@@ -146,6 +146,10 @@ public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 		return points;
 	}
 
+	public boolean hasPoints(int points) {
+		return this.points >= points;
+	}
+
 	public void setPoints(Integer points) {
 		this.points = points;
 	}

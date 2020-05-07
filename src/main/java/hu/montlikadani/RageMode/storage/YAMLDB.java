@@ -106,6 +106,16 @@ public class YAMLDB {
 		}
 	}
 
+	/**
+	 * Saves all players data to the database.
+	 */
+	public static void saveData() {
+		List<PlayerPoints> list = RuntimePPManager.getRuntimePPList();
+		for (PlayerPoints pp : list) {
+			addPlayerStatistics(pp);
+		}
+	}
+
 	public static void addPlayerStatistics(PlayerPoints points) {
 		if (!inited) {
 			return;
@@ -186,15 +196,15 @@ public class YAMLDB {
 	 * @param uuid player uuid
 	 */
 	public static void addPoints(int points, UUID uuid) {
-		if (!inited) {
+		if (!inited || !statsConf.isConfigurationSection("data")) {
 			return;
 		}
 
+		int currentPoints = getPlayerStatsFromData(uuid).getPoints();
 		String path = "data." + uuid.toString() + ".";
 
-		if (statsConf.isConfigurationSection("data")
-				&& statsConf.getConfigurationSection("data").getKeys(false).contains(uuid.toString())) {
-			statsConf.set(path + "score", points);
+		if (statsConf.getConfigurationSection("data").getKeys(false).contains(uuid.toString())) {
+			statsConf.set(path + "score", currentPoints + points);
 		}
 
 		Configuration.saveFile(statsConf, yamlStatsFile);

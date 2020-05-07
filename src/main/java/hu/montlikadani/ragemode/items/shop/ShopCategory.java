@@ -1,6 +1,6 @@
 package hu.montlikadani.ragemode.items.shop;
 
-public enum ShopType {
+public enum ShopCategory {
 
 	MAIN,
 	POTIONEFFECTS;

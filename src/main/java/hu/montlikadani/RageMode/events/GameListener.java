@@ -65,9 +65,11 @@ import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
+import hu.montlikadani.ragemode.gameUtils.AntiCheatChecks;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.items.Items;
+import hu.montlikadani.ragemode.items.shop.IShop;
 import hu.montlikadani.ragemode.libs.Sounds;
 import hu.montlikadani.ragemode.scores.KilledWith;
 import hu.montlikadani.ragemode.scores.RageScores;
@@ -572,6 +574,11 @@ public class GameListener implements Listener {
 			return;
 		}
 
+		if (proj instanceof Arrow && ConfigValues.isPreventFastBowEvent() && AntiCheatChecks.checkBowShoot(shooter)) {
+			ev.setCancelled(true);
+			return;
+		}
+
 		if (proj instanceof Egg) {
 			setTrails(ev.getEntity());
 		}
@@ -726,8 +733,7 @@ public class GameListener implements Listener {
 				}
 
 				if (Items.getShopItem() != null && Items.getShopItem().getDisplayName().equals(meta.getDisplayName())) {
-					game.getShop().create(p);
-					p.openInventory(game.getShop().getInventory());
+					game.getShop().openMainPage(p);
 				}
 			}
 
@@ -852,8 +858,8 @@ public class GameListener implements Listener {
 
 		Player p = (Player) event.getWhoClicked();
 
-		if (GameUtils.isPlayerPlaying(p) && (!GameUtils.getGameByPlayer(p).getShop().isOpened(p)
-				&& GameUtils.getGameByPlayer(p).getStatus() == GameStatus.WAITING)) {
+		if (GameUtils.isPlayerPlaying(p) && GameUtils.getGameByPlayer(p).getStatus() == GameStatus.WAITING
+				&& !(event.getInventory().getHolder() instanceof IShop)) {
 			event.setCancelled(true);
 		}
 	}
@@ -910,16 +916,18 @@ public class GameListener implements Listener {
 	}
 
 	private void setTrails(Projectile proj) {
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				if (proj.isDead() || proj.isOnGround()) {
-					cancel();
-					return;
+		Thread thread = new Thread(() -> {
+			do {
+				try {
+					Thread.sleep(155L);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
 
 				proj.getWorld().playEffect(proj.getLocation(), org.bukkit.Effect.SMOKE, 0);
-			}
-		}.runTaskTimer(plugin, 1, 2L);
+			} while (!proj.isDead() && !proj.isOnGround());
+		});
+
+		thread.start();
 	}
 }

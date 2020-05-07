@@ -172,6 +172,10 @@ game:
   # If this false if player has fallen to ground then not damage.
   damage-player-fall: false
 
+  # This option can be useful when a player is using a FastBow cheat,
+  # so it will be disabled by the plugin if it is enabled.
+  prevent-fastbow-event: true
+
   # Respawn protection when player dead and respawned.
   # Counts in seconds.
   # If the value 0, ignoring the protection.
