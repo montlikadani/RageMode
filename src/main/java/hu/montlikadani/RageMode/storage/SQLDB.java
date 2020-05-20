@@ -36,23 +36,23 @@ public class SQLDB {
 
 		int totalPlayers = 0;
 
-		int kills = 0;
-		int axeKills = 0;
-		int directArrowKills = 0;
-		int explosionKills = 0;
-		int knifeKills = 0;
+		int kills = 0,
+				axeKills = 0,
+				directArrowKills = 0,
+				explosionKills = 0,
+				knifeKills = 0,
 
-		int deaths = 0;
-		int axeDeaths = 0;
-		int directArrowDeaths = 0;
-		int explosionDeaths = 0;
-		int knifeDeaths = 0;
+				deaths = 0,
+				axeDeaths = 0,
+				directArrowDeaths = 0,
+				explosionDeaths = 0,
+				knifeDeaths = 0;
 
 		double kd = 0d;
 
-		int currentWins = 0;
-		int currentScore = 0;
-		int currentGames = 0;
+		int currentWins = 0,
+				currentScore = 0,
+				currentGames = 0;
 
 		String query = "SELECT * FROM `" + sqlConnect.getPrefix() + "stats_players`;";
 		RMConnection conn = sqlConnect.getConnection();
@@ -157,21 +157,21 @@ public class SQLDB {
 		String query = "SELECT * FROM `" + sqlConnect.getPrefix() + "stats_players` WHERE uuid LIKE `"
 				+ playerPoints.getUUID() + "`;";
 
-		int oldKills = 0;
-		int oldAxeKills = 0;
-		int oldDirectArrowKills = 0;
-		int oldExplosionKills = 0;
-		int oldKnifeKills = 0;
+		int oldKills = 0,
+				oldAxeKills = 0,
+				oldDirectArrowKills = 0,
+				oldExplosionKills = 0,
+				oldKnifeKills = 0,
 
-		int oldDeaths = 0;
-		int oldAxeDeaths = 0;
-		int oldDirectArrowDeaths = 0;
-		int oldExplosionDeaths = 0;
-		int oldKnifeDeaths = 0;
+				oldDeaths = 0,
+				oldAxeDeaths = 0,
+				oldDirectArrowDeaths = 0,
+				oldExplosionDeaths = 0,
+				oldKnifeDeaths = 0,
 
-		int oldWins = 0;
-		int oldScore = 0;
-		int oldGames = 0;
+				oldWins = 0,
+				oldScore = 0,
+				oldGames = 0;
 
 		RMConnection conn = sqlConnect.getConnection();
 		Statement statement = null;
@@ -210,21 +210,22 @@ public class SQLDB {
 			}
 		}
 
-		int newKills = oldKills + playerPoints.getKills();
-		int newAxeKills = oldAxeKills + playerPoints.getAxeKills();
-		int newDirectArrowKills = oldDirectArrowKills + playerPoints.getDirectArrowKills();
-		int newExplosionKills = oldExplosionKills + playerPoints.getExplosionKills();
-		int newKnifeKills = oldKnifeKills + playerPoints.getKnifeKills();
+		int newKills = oldKills + playerPoints.getKills(),
+				newAxeKills = oldAxeKills + playerPoints.getAxeKills(),
+				newDirectArrowKills = oldDirectArrowKills + playerPoints.getDirectArrowKills(),
+				newExplosionKills = oldExplosionKills + playerPoints.getExplosionKills(),
+				newKnifeKills = oldKnifeKills + playerPoints.getKnifeKills(),
 
-		int newDeaths = oldDeaths + playerPoints.getDeaths();
-		int newAxeDeaths = oldAxeDeaths + playerPoints.getAxeDeaths();
-		int newDirectArrowDeaths = oldDirectArrowDeaths + playerPoints.getDirectArrowDeaths();
-		int newExplosionDeaths = oldExplosionDeaths + playerPoints.getExplosionDeaths();
-		int newKnifeDeaths = oldKnifeDeaths + playerPoints.getKnifeDeaths();
+				newDeaths = oldDeaths + playerPoints.getDeaths(),
+				newAxeDeaths = oldAxeDeaths + playerPoints.getAxeDeaths(),
+				newDirectArrowDeaths = oldDirectArrowDeaths + playerPoints.getDirectArrowDeaths(),
+				newExplosionDeaths = oldExplosionDeaths + playerPoints.getExplosionDeaths(),
+				newKnifeDeaths = oldKnifeDeaths + playerPoints.getKnifeDeaths(),
 
-		int newWins = (playerPoints.isWinner()) ? oldWins + 1 : oldWins;
-		int newScore = oldScore + playerPoints.getPoints();
-		int newGames = oldGames + 1;
+				newWins = (playerPoints.isWinner()) ? oldWins + 1 : oldWins,
+				newScore = oldScore + playerPoints.getPoints(),
+				newGames = oldGames + 1;
+
 		double newKD = (newDeaths != 0) ? (((double) newKills) / ((double) newDeaths)) : 1;
 
 		PreparedStatement prestt = null;
@@ -413,21 +414,22 @@ public class SQLDB {
 		Statement statement = null;
 		String query = "SELECT * FROM `" + connect.getPrefix() + "stats_players` WHERE uuid LIKE `" + uuid + "`;";
 
-		int currentKills = 0;
-		int currentAxeKills = 0;
-		int currentDirectArrowKills = 0;
-		int currentExplosionKills = 0;
-		int currentKnifeKills = 0;
+		int currentKills = 0,
+				currentAxeKills = 0,
+				currentDirectArrowKills = 0,
+				currentExplosionKills = 0,
+				currentKnifeKills = 0,
 
-		int currentDeaths = 0;
-		int currentAxeDeaths = 0;
-		int currentDirectArrowDeaths = 0;
-		int currentExplosionDeaths = 0;
-		int currentKnifeDeaths = 0;
+				currentDeaths = 0,
+				currentAxeDeaths = 0,
+				currentDirectArrowDeaths = 0,
+				currentExplosionDeaths = 0,
+				currentKnifeDeaths = 0,
 
-		int currentWins = 0;
-		int currentScore = 0;
-		int currentGames = 0;
+				currentWins = 0,
+				currentScore = 0,
+				currentGames = 0;
+
 		double currentKD = 0;
 
 		try {

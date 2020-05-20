@@ -56,14 +56,11 @@ public class Bonus {
 
 				String[] split = b.split(":");
 				String gameItem = split.length > 1 ? split[0].toLowerCase() : null;
-				if (gameItem == null) {
-					continue;
-				}
 
 				ItemHandler item = null;
-				if (gameItem.equals("grenade")) {
+				if ("grenade".equals(gameItem)) {
 					item = Items.getGrenade();
-				} else if (gameItem.equals("combataxe")) {
+				} else if ("combataxe".equals(gameItem)) {
 					item = Items.getCombatAxe();
 				}
 
@@ -72,7 +69,7 @@ public class Bonus {
 				}
 
 				int amount = 1;
-				if (gameItem.equals("grenade")) {
+				if ("grenade".equals(gameItem)) {
 					// clone the item to make sure we are not modifying anything
 					item = (ItemHandler) item.clone();
 

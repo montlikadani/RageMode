@@ -58,6 +58,59 @@ lobbyitems:
           lore:
           - "&7This will close the inventory shop."
           command: close
+        slot-14:
+          item: egg
+          name: "&aBuy game items"
+          category: gameitems
+          gui:
+            title: "&2Buy game items"
+            fillEmptyFields: blue_stained_glass_pane
+            size: 9
+            items:
+              slot-3:
+                item: egg
+                name: "&7Grenade"
+                giveitem: "egg"
+                cost:
+                  value: 300
+                  points: 250
+                lore:
+                - "&7When the game started, gives you some grenades."
+                - "&eCost:&7 %cost%"
+                - "&eRequired points:&r %required_points%"
+              slot-4:
+                item: egg
+                name: "&7Grenade"
+                giveitem: "egg:2"
+                cost:
+                  value: 350
+                  points: 270
+                lore:
+                - "&7When the game started, gives you some grenades."
+                - "&eAmount:&7 %amount%"
+                - "&eCost:&7 %cost%"
+                - "&eRequired points:&r %required_points%"
+              slot-9:
+                item: paper
+                name: "&bInfo"
+                lore:
+                - "&7The potion effects will automatically apply when the game started."
+              slot-1:
+                item: diamond
+                name: "&6Money/Points"
+                lore:
+                - "&6You have&e %money%&6$ in your account."
+                - "&6You have&e %points%&6 points"
+              slot-7:
+                item: barrier
+                name: "&cClose"
+                lore:
+                - "&7This will close the inventory shop."
+                command: close
+              slot-8:
+                item: arrow
+                name: "&bMain page"
+                command: main
         slot-13:
           item: potion
           name: "&aBuy potion effects"
@@ -78,6 +131,18 @@ lobbyitems:
                 effect: speed:15:1
                 lore:
                 - "&7Giving speed effect to player when the game started."
+                - "&eCost:&r %cost%"
+                - "&eRequired points:&r %required_points%"
+                - "&7&lThis can be used only once."
+              slot-11:
+                item: magma_cream
+                name: "&dRegeneration"
+                cost:
+                  value: 200
+                  points: 15
+                effect: regeneration:15:2
+                lore:
+                - "&7Giving regeneration effect to player when the game started."
                 - "&eCost:&r %cost%"
                 - "&eRequired points:&r %required_points%"
                 - "&7&lThis can be used only once."

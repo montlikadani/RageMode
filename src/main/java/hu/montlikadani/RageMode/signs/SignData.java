@@ -138,77 +138,76 @@ public class SignData {
 
 	private void changeBlockBackground() {
 		GameStatus status = GameUtils.getGame(game).getStatus();
-
 		String type = ConfigValues.getSignBackground().toLowerCase();
 
 		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
 			if (status == GameStatus.READY) {
-				if (type.equals("wool"))
+				if (type.contentEquals("wool"))
 					updateBackground(Material.YELLOW_WOOL);
-				else if (type.equals("glass"))
+				else if (type.contentEquals("glass"))
 					updateBackground(Material.YELLOW_STAINED_GLASS);
-				else if (type.equals("terracotta") || type.equals("clay"))
+				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
 					updateBackground(Material.YELLOW_TERRACOTTA);
 			}
 
 			if (status == GameStatus.WAITING
 					&& GameUtils.getGame(game).getPlayers().size() == GetGames.getMaxPlayers(game)) {
-				if (type.equals("wool"))
+				if (type.contentEquals("wool"))
 					updateBackground(Material.BLUE_WOOL);
-				else if (type.equals("glass"))
+				else if (type.contentEquals("glass"))
 					updateBackground(Material.BLUE_STAINED_GLASS);
-				else if (type.equals("terracotta") || type.equals("clay"))
+				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
 					updateBackground(Material.BLUE_TERRACOTTA);
 			}
 
 			if (status == GameStatus.RUNNING && GameUtils.getGame(game).isGameRunning()) {
-				if (type.equals("wool"))
+				if (type.contentEquals("wool"))
 					updateBackground(Material.LIME_WOOL);
-				else if (type.equals("glass"))
+				else if (type.contentEquals("glass"))
 					updateBackground(Material.LIME_STAINED_GLASS);
-				else if (type.equals("terracotta") || type.equals("clay"))
+				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
 					updateBackground(Material.LIME_TERRACOTTA);
 			} else if (status == GameStatus.STOPPED || status == GameStatus.NOTREADY) {
-				if (type.equals("wool"))
+				if (type.contentEquals("wool"))
 					updateBackground(Material.RED_WOOL);
-				else if (type.equals("glass"))
+				else if (type.contentEquals("glass"))
 					updateBackground(Material.RED_STAINED_GLASS);
-				else if (type.equals("terracotta") || type.equals("clay"))
+				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
 					updateBackground(Material.RED_TERRACOTTA);
 			}
 		} else {
 			if (status == GameStatus.READY) {
-				if (type.equals("wool"))
+				if (type.contentEquals("wool"))
 					updateBackground(Material.getMaterial("WOOL"), 4);
-				else if (type.equals("glass"))
+				else if (type.contentEquals("glass"))
 					updateBackground(Material.getMaterial("STAINED_GLASS"), 4);
-				else if (type.equals("terracotta") || type.equals("clay"))
+				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
 					updateBackground(Material.getMaterial("STAINED_CLAY"), 4);
 			}
 
 			if (status == GameStatus.WAITING
 					&& GameUtils.getGame(game).getPlayers().size() == GetGames.getMaxPlayers(game)) {
-				if (type.equals("wool"))
+				if (type.contentEquals("wool"))
 					updateBackground(Material.getMaterial("WOOL"), 11);
-				else if (type.equals("glass"))
+				else if (type.contentEquals("glass"))
 					updateBackground(Material.getMaterial("STAINED_GLASS"), 11);
-				else if (type.equals("terracotta") || type.equals("clay"))
+				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
 					updateBackground(Material.getMaterial("STAINED_CLAY"), 11);
 			}
 
 			if (status == GameStatus.RUNNING && GameUtils.getGame(game).isGameRunning()) {
-				if (type.equals("wool"))
+				if (type.contentEquals("wool"))
 					updateBackground(Material.getMaterial("WOOL"), 5);
-				else if (type.equals("glass"))
+				else if (type.contentEquals("glass"))
 					updateBackground(Material.getMaterial("STAINED_GLASS"), 5);
-				else if (type.equals("terracotta") || type.equals("clay"))
+				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
 					updateBackground(Material.getMaterial("STAINED_CLAY"), 5);
 			} else if (status == GameStatus.STOPPED || status == GameStatus.NOTREADY) {
-				if (type.equals("wool"))
+				if (type.contentEquals("wool"))
 					updateBackground(Material.getMaterial("WOOL"), 14);
-				else if (type.equals("glass"))
+				else if (type.contentEquals("glass"))
 					updateBackground(Material.getMaterial("STAINED_GLASS"), 14);
-				else if (type.equals("terracotta") || type.equals("clay"))
+				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
 					updateBackground(Material.getMaterial("STAINED_CLAY"), 14);
 			}
 		}

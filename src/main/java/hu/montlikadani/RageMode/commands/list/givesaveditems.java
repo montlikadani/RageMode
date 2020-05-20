@@ -49,7 +49,7 @@ public class givesaveditems implements ICommand {
 		}
 
 		FileConfiguration datas = plugin.getConfiguration().getDatasCfg();
-		if (datas.getString("datas." + args[1]) == null) {
+		if (!datas.contains("datas." + args[1])) {
 			sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.player-not-found-in-data-file", "%player%", args[1]));
 			return false;
 		}

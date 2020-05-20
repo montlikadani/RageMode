@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.items.shop.pages;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -26,7 +27,7 @@ import hu.montlikadani.ragemode.items.shop.ShopItemCommands;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 
-public class PotionEffectPage implements IShop {
+public class NextPage implements IShop {
 
 	private final List<ShopItem> items = new ArrayList<>();
 
@@ -38,18 +39,17 @@ public class PotionEffectPage implements IShop {
 	}
 
 	@Override
-	public ShopItem getShopItem(ItemStack item) {
-		if (item == null) {
-			return null;
-		}
+	public Optional<ShopItem> getShopItem(ItemStack item) {
+		ShopItem i = null;
 
 		for (ShopItem si : items) {
 			if (si.getItem().isSimilar(item)) {
-				return si;
+				i = si;
+				break;
 			}
 		}
 
-		return null;
+		return Optional.ofNullable(i);
 	}
 
 	@Override
@@ -59,6 +59,11 @@ public class PotionEffectPage implements IShop {
 
 	@Override
 	public void create(Player player) {
+		create(player, ShopCategory.MAIN);
+	}
+
+	@Override
+	public void create(Player player, ShopCategory type) {
 		String mainPath = "lobbyitems.shopitem.gui.";
 		FileConfiguration conf = RageMode.getInstance().getConfiguration().getItemsCfg();
 
@@ -70,12 +75,14 @@ public class PotionEffectPage implements IShop {
 		mainPath += "items.";
 
 		for (String guiItems : section.getKeys(false)) {
-			String type = section.getString(guiItems + ".category", "").toUpperCase();
-			if (type.isEmpty()) {
+			String category = section.getString(guiItems + ".category", "").toUpperCase();
+			if (category.isEmpty()) {
 				continue;
 			}
 
-			ShopCategory shopCategory = ShopCategory.valueOf(type);
+			if (ShopCategory.valueOf(category) != type) {
+				continue;
+			}
 
 			mainPath += guiItems + ".gui";
 
@@ -94,8 +101,8 @@ public class PotionEffectPage implements IShop {
 			}
 
 			for (int i = 0; i < size; i++) {
-				String effectItems = "slot-" + i;
-				String item = sec.getString(effectItems + ".item", "");
+				String slots = "slot-" + i;
+				String item = sec.getString(slots + ".item", "");
 				if (item.isEmpty()) {
 					item = "air";
 				}
@@ -128,15 +135,19 @@ public class PotionEffectPage implements IShop {
 					continue;
 				}
 
-				List<String> list = sec.getStringList(effectItems + ".lore");
+				List<String> list = sec.getStringList(slots + ".lore");
 				if (!list.isEmpty()) {
 					List<String> lore = new ArrayList<>();
 
 					for (String l : list) {
 						PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
 
-						double costValue = sec.getDouble(effectItems + ".cost.value", 0d);
-						int pointsValue = sec.getInt(effectItems + ".cost.points", 0);
+						int itemAmount = sec.getString(slots + ".giveitem", "").contains(":")
+								? Integer.parseInt(sec.getString(slots + ".giveitem", "").split(":")[1])
+								: 1;
+
+						double costValue = sec.getDouble(slots + ".cost.value", 0d);
+						int pointsValue = sec.getInt(slots + ".cost.points", 0);
 
 						String cost = Double.toString(costValue);
 						String points = Integer.toString(pointsValue);
@@ -163,10 +174,13 @@ public class PotionEffectPage implements IShop {
 							if (pp != null && !pp.hasPoints(elements.getPoints())) {
 								points = "&c" + elements.getPoints();
 							}
+
+							itemAmount = elements.getItem() == null ? itemAmount : elements.getItem().getAmount();
 						}
 
 						l = l.replace("%cost%", cost);
 						l = l.replace("%required_points%", points);
+						l = l.replace("%amount%", String.valueOf(itemAmount));
 
 						if (RageMode.getInstance().isVaultEnabled()) {
 							if (LobbyShop.BOUGHTITEMS.containsKey(player)) {
@@ -189,20 +203,19 @@ public class PotionEffectPage implements IShop {
 					iMeta.setLore(lore);
 				}
 
-				String itemName = sec.getString(effectItems + ".name", "");
+				String itemName = sec.getString(slots + ".name", "");
 				if (!itemName.isEmpty()) {
 					iMeta.setDisplayName(itemName.replace("&", "\u00a7"));
 				}
 
-				hu.montlikadani.ragemode.NMS.setDurability(iStack,
-						(short) sec.getDouble(effectItems + ".durability", 0));
+				hu.montlikadani.ragemode.NMS.setDurability(iStack, (short) sec.getDouble(slots + ".durability", 0));
 
 				iStack.setItemMeta(iMeta);
 				inv.setItem(i, iStack);
 
 				ShopItemCommands itemCmds = null;
-				if (sec.isList(effectItems + ".commands")) {
-					List<String> commands = sec.getStringList(effectItems + ".commands");
+				if (sec.isList(slots + ".commands")) {
+					List<String> commands = sec.getStringList(slots + ".commands");
 
 					NavigationType navigationType = null;
 					for (String n : commands) {
@@ -216,26 +229,27 @@ public class PotionEffectPage implements IShop {
 						}
 					}
 
-					itemCmds = new ShopItemCommands(mainPath + ".items." + effectItems, commands, navigationType);
-				} else if (sec.isString(effectItems + ".command")) {
-					String command = sec.getString(effectItems + ".command", "");
+					itemCmds = new ShopItemCommands(mainPath + ".items." + slots, commands, navigationType);
+				} else if (sec.isString(slots + ".command")) {
+					String command = sec.getString(slots + ".command", "");
 					NavigationType navigationType = NavigationType.getByName(command.toLowerCase());
 					if (navigationType == null) {
 						navigationType = NavigationType.WITHOUT;
 					}
 
-					itemCmds = new ShopItemCommands(mainPath + ".items." + effectItems, command, navigationType);
+					itemCmds = new ShopItemCommands(mainPath + ".items." + slots, command, navigationType);
 				}
 
-				ShopItem shopItem = new ShopItem(iStack, shopCategory, guiName);
+				ShopItem shopItem = new ShopItem(iStack, type, guiName);
 				if (itemCmds != null) {
-					shopItem = new ShopItem(iStack, shopCategory, guiName, itemCmds);
+					shopItem = new ShopItem(iStack, type, guiName, itemCmds);
 				}
 
-				items.add(shopItem);
+				this.items.add(shopItem);
 			}
 		}
 
-		player.openInventory(inv);
+		if (inv != null)
+			player.openInventory(inv);
 	}
 }

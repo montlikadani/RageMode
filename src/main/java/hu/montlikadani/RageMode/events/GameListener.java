@@ -158,9 +158,9 @@ public class GameListener implements Listener {
 
 			if (status == GameStatus.RUNNING) {
 				Location location = arrow.getLocation();
-				double x = location.getX();
-				double y = location.getY();
-				double z = location.getZ();
+				double x = location.getX(),
+						y = location.getY(),
+						z = location.getZ();
 
 				List<Entity> nears = arrow.getNearbyEntities(10, 10, 10);
 
@@ -650,9 +650,9 @@ public class GameListener implements Listener {
 					return;
 				}
 
-				double gX = loc.getX();
-				double gY = loc.getY();
-				double gZ = loc.getZ();
+				double gX = loc.getX(),
+						gY = loc.getY(),
+						gZ = loc.getZ();
 
 				grenade.getWorld().createExplosion(gX, gY, gZ, 3f, false, false);
 				grenade.remove(); // get rid of egg so it can't be picked up
@@ -891,12 +891,12 @@ public class GameListener implements Listener {
 				return;
 			}
 
-			Location from = event.getFrom();
-			Location to = event.getTo();
+			Location from = event.getFrom(),
+					to = event.getTo();
 
-			double x = Math.floor(from.getX());
-			double y = Math.floor(from.getY());
-			double z = Math.floor(from.getZ());
+			double x = Math.floor(from.getX()),
+					y = Math.floor(from.getY()),
+					z = Math.floor(from.getZ());
 
 			if (Math.floor(to.getX()) != x || Math.floor(to.getY()) != y || Math.floor(to.getZ()) != z) {
 				x += .5;

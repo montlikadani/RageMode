@@ -80,9 +80,9 @@ public class LobbyTimer extends TimerTask {
 			List<Integer> titleValues = ConfigValues.getLobbyTitleStartMsgs();
 			for (int val : titleValues) {
 				if (time == val) {
-					String title = ConfigValues.getLobbyTitle();
-					String sTitle = ConfigValues.getLobbySubTitle();
-					String times = ConfigValues.getLobbyTitleTime();
+					String title = ConfigValues.getLobbyTitle(),
+							sTitle = ConfigValues.getLobbySubTitle(),
+							times = ConfigValues.getLobbyTitleTime();
 
 					title = title.replace("%time%", Integer.toString(time));
 					title = title.replace("%game%", game.getName());

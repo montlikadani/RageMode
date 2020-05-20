@@ -102,9 +102,9 @@ public class ReJoinDelay {
 			return false;
 		}
 
-		int hour = ConfigValues.getRejoinDelayHour();
-		int minute = ConfigValues.getRejoinDelayMinute();
-		int second = ConfigValues.getRejoinDelaySecond();
+		int hour = ConfigValues.getRejoinDelayHour(),
+				minute = ConfigValues.getRejoinDelayMinute(),
+				second = ConfigValues.getRejoinDelaySecond();
 
 		if (hour == 0 && minute == 0 && second == 0) {
 			Debug.logConsole("The rejoin times can't be 0 hour, 0 minute and 0 second.");

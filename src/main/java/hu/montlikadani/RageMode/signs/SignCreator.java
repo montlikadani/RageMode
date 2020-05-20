@@ -57,9 +57,9 @@ public class SignCreator {
 				continue;
 			}
 
-			double x = Double.parseDouble(splited[1]);
-			double y = Double.parseDouble(splited[2]);
-			double z = Double.parseDouble(splited[3]);
+			double x = Double.parseDouble(splited[1]),
+					y = Double.parseDouble(splited[2]),
+					z = Double.parseDouble(splited[3]);
 
 			String game = splited[4];
 			if (game == null) {
@@ -142,7 +142,7 @@ public class SignCreator {
 		Validate.notNull(loc, "Location can't be null!");
 
 		for (SignData data : SIGNDATA) {
-			if (data.getLocation().equals(loc)) {
+			if (loc.equals(data.getLocation())) {
 				return data;
 			}
 		}
@@ -160,7 +160,7 @@ public class SignCreator {
 		Validate.notEmpty(game, "Game name can't be empty!");
 
 		for (SignData data : SIGNDATA) {
-			if (data.getGame().equalsIgnoreCase(game.trim())) {
+			if (game.trim().equalsIgnoreCase(data.getGame())) {
 				return data;
 			}
 		}
@@ -270,9 +270,9 @@ public class SignCreator {
 	private static Location stringToLocationSign(String raw) {
 		String[] splited = raw.split(",");
 		String world = splited[0];
-		double x = Double.parseDouble(splited[1]);
-		double y = Double.parseDouble(splited[2]);
-		double z = Double.parseDouble(splited[3]);
+		double x = Double.parseDouble(splited[1]),
+				y = Double.parseDouble(splited[2]),
+				z = Double.parseDouble(splited[3]);
 
 		return Bukkit.getWorld(world) != null ? new Location(Bukkit.getWorld(world), x, y, z) : null;
 	}

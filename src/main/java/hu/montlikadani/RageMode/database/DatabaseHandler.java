@@ -73,17 +73,17 @@ public class DatabaseHandler {
 				break;
 			}
 
-			String host = ConfigValues.getHost();
-			String port = ConfigValues.getPort();
-			String database = ConfigValues.getDatabase();
-			String username = ConfigValues.getUsername();
-			String password = ConfigValues.getPassword();
-			String charEncode = ConfigValues.getEncoding();
+			String host = ConfigValues.getHost(),
+					port = ConfigValues.getPort(),
+					database = ConfigValues.getDatabase(),
+					username = ConfigValues.getUsername(),
+					password = ConfigValues.getPassword(),
+					charEncode = ConfigValues.getEncoding();
 
-			boolean serverCertificate = ConfigValues.isCertificate();
-			boolean useUnicode = ConfigValues.isUnicode();
-			boolean autoReconnect = ConfigValues.isAutoReconnect();
-			boolean useSSL = ConfigValues.isUseSSL();
+			boolean serverCertificate = ConfigValues.isCertificate(),
+					useUnicode = ConfigValues.isUnicode(),
+					autoReconnect = ConfigValues.isAutoReconnect(),
+					useSSL = ConfigValues.isUseSSL();
 
 			if (charEncode.isEmpty()) {
 				charEncode = "UTF-8";

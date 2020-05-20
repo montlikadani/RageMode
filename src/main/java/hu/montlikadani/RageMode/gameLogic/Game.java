@@ -104,9 +104,9 @@ public class Game {
 
 		PlayerManager pm = new PlayerManager(player, name);
 
-		int time = GameLobby.getLobbyTime(name);
-		int maxPlayers = GetGames.getMaxPlayers(name);
-		int minPlayers = GetGames.getMinPlayers(name);
+		int time = GameLobby.getLobbyTime(name),
+				maxPlayers = GetGames.getMaxPlayers(name),
+				minPlayers = GetGames.getMinPlayers(name);
 
 		if (players.size() < maxPlayers) {
 			players.put(player, pm);
@@ -209,7 +209,6 @@ public class Game {
 		shop.removeShop(player);
 
 		player.sendMessage(RageMode.getLang().get("game.player-left"));
-
 		player.setMetadata("Leaving", new FixedMetadataValue(RageMode.getInstance(), true));
 		return true;
 	}

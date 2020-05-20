@@ -32,7 +32,7 @@ public class convertdatabase implements ICommand {
 		}
 
 		String from = plugin.getDatabaseHandler().getDBType().name();
-		if (from.equals(type.toUpperCase())) {
+		if (from.contentEquals(type.toUpperCase())) {
 			sendMessage(sender, RageMode.getLang().get("commands.convertdb.already-set"));
 			return false;
 		}

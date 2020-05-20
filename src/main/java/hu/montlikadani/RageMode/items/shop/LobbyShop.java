@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,7 +26,7 @@ import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.shop.pages.MainPage;
-import hu.montlikadani.ragemode.items.shop.pages.PotionEffectPage;
+import hu.montlikadani.ragemode.items.shop.pages.NextPage;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 
@@ -56,7 +57,7 @@ public class LobbyShop implements Listener {
 
 	public void removeShop(Player player) {
 		if (isOpened(player)) {
-			getCurrentPage(player).getItems().clear();
+			shops.get(player).getItems().clear();
 			shops.remove(player);
 		}
 	}
@@ -68,17 +69,17 @@ public class LobbyShop implements Listener {
 		main.create(player);
 		shops.put(player, main);
 
-		player.openInventory(getCurrentPage(player).getInventory());
+		player.openInventory(shops.get(player).getInventory());
 	}
 
-	public void openPotionEffectPage(Player player) {
+	public void openNextPage(Player player, ShopCategory category) {
 		removeShop(player);
 
-		PotionEffectPage main = new PotionEffectPage();
-		main.create(player);
-		shops.put(player, main);
+		NextPage next = new NextPage();
+		next.create(player, category);
+		shops.put(player, next);
 
-		player.openInventory(getCurrentPage(player).getInventory());
+		player.openInventory(shops.get(player).getInventory());
 	}
 
 	public List<ShopItem> getItems(IShop currentPage, ShopCategory category) {
@@ -89,7 +90,7 @@ public class LobbyShop implements Listener {
 		}
 
 		for (ShopItem si : currentPage.getItems()) {
-			if (si.getCategory().equals(category)) {
+			if (category.equals(si.getCategory())) {
 				citems.add(si);
 			}
 		}
@@ -156,12 +157,6 @@ public class LobbyShop implements Listener {
 		return;
 	}
 
-	/*@EventHandler
-	public void onInventoryClose(InventoryCloseEvent event) {
-		Player p = (Player) event.getPlayer();
-		removeShop(p);
-	}*/
-
 	private void doItemClick(InventoryClickEvent ev) {
 		final Player player = ((Player) ev.getWhoClicked());
 		if (!isOpened(player)) {
@@ -169,59 +164,55 @@ public class LobbyShop implements Listener {
 		}
 
 		final ItemStack currentItem = ev.getCurrentItem();
-		final IShop currentPage = getCurrentPage(player);
 
-		ShopItem shopItem = currentPage.getShopItem(currentItem);
-		if (shopItem == null || !shopItem.getItem().equals(currentItem)) {
-			return;
-		}
+		shops.get(player).getShopItem(currentItem).ifPresent(shopItem -> {
+			if (!shopItem.getItem().equals(currentItem)) {
+				return;
+			}
 
-		String title = Version.isCurrentEqualOrHigher(Version.v1_13_R1) ? ev.getView().getTitle()
-				: player.getOpenInventory().getTitle();
-		if (!title.equalsIgnoreCase(shopItem.getInventoryName())) {
-			return;
-		}
+			String title = Version.isCurrentEqualOrHigher(Version.v1_13_R1) ? ev.getView().getTitle()
+					: player.getOpenInventory().getTitle();
+			if (!title.equalsIgnoreCase(shopItem.getInventoryName())) {
+				return;
+			}
 
-		ShopItemCommands cmds = shopItem.getItemCommands();
-		if (cmds != null) {
-			NavigationType type = cmds.getNavigationType();
+			ShopItemCommands cmds = shopItem.getItemCommands();
+			if (cmds != null) {
+				NavigationType type = cmds.getNavigationType();
 
-			if (type == NavigationType.WITHOUT && currentItem.getItemMeta().getDisplayName()
-					.equalsIgnoreCase(shopItem.getItem().getItemMeta().getDisplayName())) {
-				if (buyElement(ev, cmds.getConfigPath(), shopItem.getCategory())) {
-					for (String c : cmds.getCommands()) {
-						if (c.startsWith("console:")) {
-							c = c.replace("console:", "");
+				if (type == NavigationType.WITHOUT && currentItem.getItemMeta().getDisplayName()
+						.equalsIgnoreCase(shopItem.getItem().getItemMeta().getDisplayName())) {
+					if (buyElement(ev, cmds.getConfigPath(), shopItem.getCategory())) {
+						for (String c : cmds.getCommands()) {
+							if (c.startsWith("console:")) {
+								c = c.replace("console:", "");
 
-							if (c.startsWith("/")) {
-								c = c.substring(1);
+								if (c.startsWith("/")) {
+									c = c.substring(1);
+								}
+
+								c = Utils.setPlaceholders(c, player);
+								c = c.replace("%player%", player.getName());
+
+								Bukkit.dispatchCommand(Bukkit.getConsoleSender(), c);
 							}
-
-							c = Utils.setPlaceholders(c, player);
-							c = c.replace("%player%", player.getName());
-
-							Bukkit.dispatchCommand(Bukkit.getConsoleSender(), c);
 						}
 					}
+
+					return;
+				}
+
+				player.closeInventory();
+
+				if (type == NavigationType.MAIN) {
+					openMainPage(player);
 				}
 
 				return;
 			}
 
-			if (type == NavigationType.MAIN || type == NavigationType.CLOSE) {
-				player.closeInventory();
-			}
-
-			if (type == NavigationType.MAIN) {
-				openMainPage(player);
-			}
-
-			return;
-		}
-
-		if (shopItem.getCategory() == ShopCategory.MAIN) {
-			openPotionEffectPage(player);
-		}
+			openNextPage(player, shopItem.getCategory());
+		});
 	}
 
 	private boolean buyElement(InventoryClickEvent e, String path, ShopCategory shopCategory) {
@@ -239,7 +230,7 @@ public class LobbyShop implements Listener {
 		int points = conf.getItemsCfg().getInt(path + "cost.points", 0);
 		int finalPoints = elements != null ? elements.getPoints() : points;
 
-		if (conf.getItemsCfg().contains(path + ".effect") && shopCategory == ShopCategory.POTIONEFFECTS) {
+		if (shopCategory == ShopCategory.POTIONEFFECTS && conf.getItemsCfg().contains(path + ".effect")) {
 			String[] effect = conf.getItemsCfg().getString(path + ".effect").split(":");
 			if (effect.length < 1) {
 				return false;
@@ -275,6 +266,35 @@ public class LobbyShop implements Listener {
 			} else {
 				elements.setPotion(pe);
 			}
+		} else if (shopCategory == ShopCategory.GAMEITEMS && conf.getItemsCfg().contains(path + ".giveitem")) {
+			String[] splitItem = conf.getItemsCfg().getString(path + ".giveitem").split(":");
+			if (splitItem.length < 1) {
+				return false;
+			}
+
+			int amount = splitItem.length > 1 ? Integer.parseInt(splitItem[1]) : 1;
+			if (amount < 0) {
+				amount = 1;
+			}
+
+			if (BOUGHTITEMS.containsKey(player)) {
+				finalCost += cost;
+				finalPoints += points;
+				amount += amount;
+			}
+
+			if ((plugin.isVaultEnabled() && !plugin.getEconomy().has(player, finalCost))
+					|| !RuntimePPManager.hasPoints(player.getUniqueId(), finalPoints)) {
+				return false;
+			}
+
+			ItemStack item = new ItemStack(Material.valueOf(splitItem[0]), amount);
+
+			if (elements == null) {
+				elements = new BoughtElements(item, finalCost, finalPoints);
+			} else {
+				elements.setItem(item);
+			}
 		}
 
 		if (elements != null) {
@@ -288,11 +308,7 @@ public class LobbyShop implements Listener {
 
 		// update shop items
 		player.closeInventory();
-
-		if (shopCategory == ShopCategory.POTIONEFFECTS) {
-			openPotionEffectPage(player);
-		}
-
+		openNextPage(player, shopCategory);
 		return true;
 	}
 }

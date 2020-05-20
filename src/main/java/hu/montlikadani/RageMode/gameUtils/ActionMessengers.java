@@ -59,8 +59,7 @@ public class ActionMessengers {
 			return;
 		}
 
-		List<String> tabHeader = ConfigValues.getTabHeader();
-		List<String> tabFooter = ConfigValues.getTabFooter();
+		List<String> tabHeader = ConfigValues.getTabHeader(), tabFooter = ConfigValues.getTabFooter();
 
 		String he = "";
 		int s = 0;
@@ -139,8 +138,7 @@ public class ActionMessengers {
 			return;
 		}
 
-		String prefix = ConfigValues.getTabPrefix();
-		String suffix = ConfigValues.getTabSuffix();
+		String prefix = ConfigValues.getTabPrefix(), suffix = ConfigValues.getTabSuffix();
 
 		prefix = Utils.setPlaceholders(prefix, player);
 		suffix = Utils.setPlaceholders(suffix, player);

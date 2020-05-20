@@ -23,11 +23,12 @@ public class GameLobby {
 
 		String path = "arenas." + game + ".lobby.";
 		String world = fi.getString(path + "world");
-		double lobbyX = fi.getDouble(path + "x");
-		double lobbyY = fi.getDouble(path + "y");
-		double lobbyZ = fi.getDouble(path + "z");
-		double lobbyYaw = fi.getDouble(path + "yaw");
-		double lobbyPitch = fi.getDouble(path + "pitch");
+
+		double lobbyX = fi.getDouble(path + "x"),
+				lobbyY = fi.getDouble(path + "y"),
+				lobbyZ = fi.getDouble(path + "z"),
+				lobbyYaw = fi.getDouble(path + "yaw"),
+				lobbyPitch = fi.getDouble(path + "pitch");
 
 		Location lobbyLocation = new Location(Bukkit.getWorld(world), lobbyX, lobbyY, lobbyZ, (float) lobbyYaw,
 				(float) lobbyPitch);

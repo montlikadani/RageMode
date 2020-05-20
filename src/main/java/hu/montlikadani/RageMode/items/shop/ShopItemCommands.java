@@ -11,7 +11,7 @@ public class ShopItemCommands {
 	private NavigationType navigationType = NavigationType.WITHOUT;
 
 	public ShopItemCommands(String configPath, String command, NavigationType navigationType) {
-		this(configPath, Arrays.asList(command), navigationType);
+		this(configPath, Arrays.asList(command == null ? "" : command), navigationType);
 	}
 
 	public ShopItemCommands(String configPath, List<String> commands, NavigationType navigationType) {

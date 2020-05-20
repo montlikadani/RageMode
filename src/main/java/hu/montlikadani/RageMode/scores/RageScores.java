@@ -24,8 +24,8 @@ public class RageScores {
 	private static HashMap<UUID, PlayerPoints> playerpoints = new HashMap<>();
 
 	public static void addPointsToPlayer(Player killer, Player victim, KilledWith killCause) {
-		UUID killerUUID = killer.getUniqueId();
-		UUID victimUUID = victim.getUniqueId();
+		UUID killerUUID = killer.getUniqueId(),
+				victimUUID = victim.getUniqueId();
 
 		// Check if player not killed itself
 		if (killerUUID.equals(victimUUID)) {
@@ -49,12 +49,12 @@ public class RageScores {
 			return;
 		}
 
-		PlayerPoints killerPoints = null;
-		PlayerPoints victimPoints = null;
+		PlayerPoints killerPoints = null,
+				victimPoints = null;
 
-		String killerMessage = "";
-		String victimMsg = "";
-		String killerMsg2 = "";
+		String killerMessage = "",
+				victimMsg = "",
+				killerMsg2 = "";
 
 		int totalPoints = 0;
 
@@ -241,10 +241,10 @@ public class RageScores {
 
 	private static int addPoints(Player player, int points, boolean killer) {
 		UUID playerUUID = player.getUniqueId();
-		int totalKills = 0;
-		int totalDeaths = 0;
-		int currentStreak = 0;
-		int longestStreak = 0;
+		int totalKills = 0,
+				totalDeaths = 0,
+				currentStreak = 0,
+				longestStreak = 0;
 
 		if (playerpoints.containsKey(playerUUID)) {
 			PlayerPoints pointsHolder = getPlayerPoints(playerUUID);
@@ -292,9 +292,9 @@ public class RageScores {
 	}
 
 	public static UUID calculateWinner(String game, List<PlayerManager> players) {
-		UUID highest = UUID.randomUUID();
-		UUID resultPlayer = null;
-		UUID goy = highest;
+		UUID highest = UUID.randomUUID(),
+				resultPlayer = null,
+				goy = highest;
 		int highestPoints = 0;
 		for (PlayerManager pm : players) {
 			UUID uuid = pm.getPlayer().getUniqueId();

@@ -140,7 +140,7 @@ public class RewardManager {
 				if (conf.contains(rewPath + "durability"))
 					NMS.setDurability(itemStack, (short) conf.getDouble(rewPath + "durability"));
 
-				if (conf.getBoolean(rewPath + "meta")) {
+				if (conf.getBoolean(rewPath + "meta", false)) {
 					ItemMeta itemMeta = itemStack.getItemMeta();
 					String name = conf.getString(rewPath + "name", "");
 					if (!name.isEmpty())
@@ -204,7 +204,7 @@ public class RewardManager {
 				}
 
 				try {
-					if (conf.contains(rewPath + "slot"))
+					if (conf.getInt(rewPath + "slot", -1) >= 0)
 						p.getInventory().setItem(conf.getInt(rewPath + "slot"), itemStack);
 					else
 						p.getInventory().addItem(itemStack);

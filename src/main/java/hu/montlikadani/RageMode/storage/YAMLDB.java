@@ -128,21 +128,21 @@ public class YAMLDB {
 				&& statsConf.getConfigurationSection("data").getKeys(false).contains(uuid.toString())) {
 			statsConf.set(path + "name", Bukkit.getPlayer(uuid).getName());
 
-			int kills = statsConf.getInt(path + "kills");
-			int axeKills = statsConf.getInt(path + "axe-kills");
-			int directArrowKills = statsConf.getInt(path + "direct-arrow-kills");
-			int explosionKills = statsConf.getInt(path + "explosion-kills");
-			int knifeKills = statsConf.getInt(path + "knife-kills");
+			int kills = statsConf.getInt(path + "kills"),
+					axeKills = statsConf.getInt(path + "axe-kills"),
+					directArrowKills = statsConf.getInt(path + "direct-arrow-kills"),
+					explosionKills = statsConf.getInt(path + "explosion-kills"),
+					knifeKills = statsConf.getInt(path + "knife-kills"),
 
-			int deaths = statsConf.getInt(path + "deaths");
-			int axeDeaths = statsConf.getInt(path + "axe-deaths");
-			int directArrowDeaths = statsConf.getInt(path + "direct-arrow-deaths");
-			int explosionDeaths = statsConf.getInt(path + "explosion-deaths");
-			int knifeDeaths = statsConf.getInt(path + "knife-deaths");
+					deaths = statsConf.getInt(path + "deaths"),
+					axeDeaths = statsConf.getInt(path + "axe-deaths"),
+					directArrowDeaths = statsConf.getInt(path + "direct-arrow-deaths"),
+					explosionDeaths = statsConf.getInt(path + "explosion-deaths"),
+					knifeDeaths = statsConf.getInt(path + "knife-deaths"),
 
-			int wins = statsConf.getInt(path + "wins");
-			int games = statsConf.getInt(path + "games");
-			int score = statsConf.getInt(path + "score");
+					wins = statsConf.getInt(path + "wins"),
+					games = statsConf.getInt(path + "games"),
+					score = statsConf.getInt(path + "score");
 
 			statsConf.set(path + "kills", (kills + points.getKills()));
 			statsConf.set(path + "axe_kills", (axeKills + points.getAxeKills()));
@@ -262,22 +262,22 @@ public class YAMLDB {
 
 		String path = "data." + uuid + ".";
 
-		int kills = statsConf.getInt(path + "kills");
-		int axeKills = statsConf.getInt(path + "axe-kills");
-		int directArrowKills = statsConf.getInt(path + "direct-arrow-kills");
-		int explosionKills = statsConf.getInt(path + "explosion-kills");
-		int knifeKills = statsConf.getInt(path + "knife-kills");
+		int kills = statsConf.getInt(path + "kills"),
+				axeKills = statsConf.getInt(path + "axe-kills"),
+				directArrowKills = statsConf.getInt(path + "direct-arrow-kills"),
+				explosionKills = statsConf.getInt(path + "explosion-kills"),
+				knifeKills = statsConf.getInt(path + "knife-kills"),
 
-		int deaths = statsConf.getInt(path + "deaths");
-		int axeDeaths = statsConf.getInt(path + "axe-deaths");
-		int directArrowDeaths = statsConf.getInt(path + "direct-arrow-deaths");
-		int explosionDeaths = statsConf.getInt(path + "explosion-deaths");
-		int knifeDeaths = statsConf.getInt(path + "knife-deaths");
+				deaths = statsConf.getInt(path + "deaths"),
+				axeDeaths = statsConf.getInt(path + "axe-deaths"),
+				directArrowDeaths = statsConf.getInt(path + "direct-arrow-deaths"),
+				explosionDeaths = statsConf.getInt(path + "explosion-deaths"),
+				knifeDeaths = statsConf.getInt(path + "knife-deaths"),
 
-		int wins = statsConf.getInt(path + "wins");
-		int games = statsConf.getInt(path + "games");
-		int score = statsConf.getInt(path + "score");
-		int KD = statsConf.getInt(path + "KD");
+				wins = statsConf.getInt(path + "wins"),
+				games = statsConf.getInt(path + "games"),
+				score = statsConf.getInt(path + "score"),
+				KD = statsConf.getInt(path + "KD");
 
 		PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid);
 		if (pp == null) {

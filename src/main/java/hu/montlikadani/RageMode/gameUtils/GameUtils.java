@@ -75,14 +75,14 @@ public class GameUtils {
 		Validate.notNull(game, "Game can't be null!");
 
 		for (PlayerManager pm : game.getPlayersFromList()) {
-			if (pm.getGameName().equalsIgnoreCase(game.getName())) {
-				pm.getPlayer().sendMessage(message);
+			if (game.getName().equalsIgnoreCase(pm.getGameName())) {
+				sendMessage(pm.getPlayer(), message);
 			}
 		}
 
 		for (PlayerManager pm2 : game.getSpectatorPlayersFromList()) {
-			if (pm2.getGameName().equalsIgnoreCase(game.getName())) {
-				pm2.getPlayer().sendMessage(message);
+			if (game.getName().equalsIgnoreCase(pm2.getGameName())) {
+				sendMessage(pm2.getPlayer(), message);
 			}
 		}
 	}
@@ -131,7 +131,7 @@ public class GameUtils {
 		Validate.notNull(game, "Game can't be null!");
 
 		for (GameSpawn gsg : RageMode.getInstance().getSpawns()) {
-			if (gsg.getGame().equals(game)) {
+			if (game.equals(gsg.getGame())) {
 				return gsg;
 			}
 		}
@@ -150,7 +150,7 @@ public class GameUtils {
 		Validate.notEmpty(name, "Game name can't be empty!");
 
 		for (GameSpawn gsg : RageMode.getInstance().getSpawns()) {
-			if (gsg.getGame().getName().equalsIgnoreCase(name)) {
+			if (name.equalsIgnoreCase(gsg.getGame().getName())) {
 				return gsg;
 			}
 		}
@@ -287,7 +287,7 @@ public class GameUtils {
 		Validate.notEmpty(name, "Game name can't be empty!");
 
 		for (Game game : RageMode.getInstance().getGames()) {
-			if (game.getName().equalsIgnoreCase(name)) {
+			if (name.equalsIgnoreCase(game.getName())) {
 				return game;
 			}
 		}
@@ -468,9 +468,9 @@ public class GameUtils {
 		game.setStatus(GameStatus.WAITING);
 		broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
 
-		String title = ConfigValues.getTitleJoinGame();
-		String subtitle = ConfigValues.getSubTitleJoinGame();
-		String times = ConfigValues.getJoinTitleTime();
+		String title = ConfigValues.getTitleJoinGame(),
+				subtitle = ConfigValues.getSubTitleJoinGame(),
+				times = ConfigValues.getJoinTitleTime();
 
 		title = title.replace("%game%", game.getName());
 		subtitle = subtitle.replace("%game%", game.getName());
@@ -541,9 +541,9 @@ public class GameUtils {
 	public static void sendTitleMessages(Player p, String title, String subtitle, String times) {
 		String[] split = times.split(", ");
 
-		int fadeIn = split.length > 1 ? Integer.parseInt(split[0]) : 20;
-		int stay = split.length > 2 ? Integer.parseInt(split[1]) : 30;
-		int fadeOut = split.length > 3 ? Integer.parseInt(split[2]) : 20;
+		int fadeIn = split.length > 1 ? Integer.parseInt(split[0]) : 20,
+				stay = split.length > 2 ? Integer.parseInt(split[1]) : 30,
+				fadeOut = split.length > 3 ? Integer.parseInt(split[2]) : 20;
 
 		Titles.sendTitle(p, fadeIn, stay, fadeOut, title, subtitle);
 	}
@@ -962,11 +962,10 @@ public class GameUtils {
 
 			Player winner = Bukkit.getPlayer(winnerUUID);
 
-			String wonTitle = ConfigValues.getWonTitle();
-			String wonSubtitle = ConfigValues.getWonSubTitle();
-
-			String youWonTitle = ConfigValues.getYouWonTitle();
-			String youWonSubtitle = ConfigValues.getYouWonSubTitle();
+			String wonTitle = ConfigValues.getWonTitle(),
+					wonSubtitle = ConfigValues.getWonSubTitle(),
+					youWonTitle = ConfigValues.getYouWonTitle(),
+					youWonSubtitle = ConfigValues.getYouWonSubTitle();
 
 			wonTitle = wonTitle.replace("%winner%", winner.getName());
 			wonTitle = replaceVariables(wonTitle, winnerUUID);

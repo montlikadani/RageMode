@@ -298,7 +298,6 @@ game:
 
 # Stop the server or restart at the end of the game?
 game-stop:
-  # This supports the Spigot restart script
   restart-server: false
   stop-server: false
 

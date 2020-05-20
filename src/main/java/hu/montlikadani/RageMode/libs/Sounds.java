@@ -1011,7 +1011,7 @@ public enum Sounds {
 
 	public static Sound getSound(String name) {
 		for (Sound so : Sound.values()) {
-			if (name.equals(so.name())) {
+			if (so.name().equals(name)) {
 				return so;
 			}
 		}
@@ -1021,7 +1021,7 @@ public enum Sounds {
 
 	public static Sound getSound(Sounds s) {
 		for (Sound so : Sound.values()) {
-			if (s.name().equals(so.name())) {
+			if (so.name().equals(s.name())) {
 				return so;
 			}
 		}

@@ -115,8 +115,7 @@ public class GetGames {
 	 * @return max players
 	 */
 	public static int getOverallMaxPlayers() {
-		int i = 0;
-		int n = 0;
+		int i = 0, n = 0;
 		int x;
 		String[] names = getGameNames();
 		if (names == null) {
@@ -145,8 +144,7 @@ public class GetGames {
 		Validate.notNull(game, "Game name can't be null!");
 		Validate.notEmpty(game, "Game name can't be empty!");
 
-		int i = 0;
-		int imax = getConfigGamesCount();
+		int i = 0, imax = getConfigGamesCount();
 		String[] games = getGameNames();
 		if (games == null) {
 			return false;

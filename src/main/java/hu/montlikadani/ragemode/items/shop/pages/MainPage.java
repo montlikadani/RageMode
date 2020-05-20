@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.items.shop.pages;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -33,18 +34,17 @@ public class MainPage implements IShop {
 	}
 
 	@Override
-	public ShopItem getShopItem(ItemStack item) {
-		if (item == null) {
-			return null;
-		}
+	public Optional<ShopItem> getShopItem(ItemStack item) {
+		ShopItem i = null;
 
 		for (ShopItem si : items) {
 			if (si.getItem().isSimilar(item)) {
-				return si;
+				i = si;
+				break;
 			}
 		}
 
-		return null;
+		return Optional.ofNullable(i);
 	}
 
 	@Override
@@ -152,12 +152,24 @@ public class MainPage implements IShop {
 				itemCmds = new ShopItemCommands(path + "slot-" + i, command, navigationType);
 			}
 
-			ShopItem shopItem = new ShopItem(iStack, ShopCategory.MAIN, guiName);
+			String type = conf.getItemsCfg().getString(path + "slot-" + i + ".category", "").toUpperCase();
+			if (type.isEmpty()) {
+				type = "MAIN";
+			}
+
+			ShopCategory category = ShopCategory.valueOf(type);
+
+			ShopItem shopItem = new ShopItem(iStack, category, guiName);
 			if (itemCmds != null) {
-				shopItem = new ShopItem(iStack, ShopCategory.MAIN, guiName, itemCmds);
+				shopItem = new ShopItem(iStack, category, guiName, itemCmds);
 			}
 
 			items.add(shopItem);
 		}
+	}
+
+	@Override
+	public void create(Player player, ShopCategory type) {
+		create(player);
 	}
 }

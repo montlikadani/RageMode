@@ -61,11 +61,11 @@ public class GameSpawn {
 
 		for (String spawnName : conf.getConfigurationSection(path).getKeys(false)) {
 			String world = conf.getString(path + "." + spawnName + ".world");
-			double spawnX = conf.getDouble(path + "." + spawnName + ".x");
-			double spawnY = conf.getDouble(path + "." + spawnName + ".y");
-			double spawnZ = conf.getDouble(path + "." + spawnName + ".z");
-			double spawnYaw = conf.getDouble(path + "." + spawnName + ".yaw");
-			double spawnPitch = conf.getDouble(path + "." + spawnName + ".pitch");
+			double spawnX = conf.getDouble(path + "." + spawnName + ".x"),
+					spawnY = conf.getDouble(path + "." + spawnName + ".y"),
+					spawnZ = conf.getDouble(path + "." + spawnName + ".z"),
+					spawnYaw = conf.getDouble(path + "." + spawnName + ".yaw"),
+					spawnPitch = conf.getDouble(path + "." + spawnName + ".pitch");
 
 			Location location = new Location(Bukkit.getWorld(world), spawnX, spawnY, spawnZ);
 			location.setYaw((float) spawnYaw);
@@ -95,7 +95,7 @@ public class GameSpawn {
 		Validate.notNull(loc, "Location can't be null!");
 
 		for (Iterator<Location> it = spawnLocations.iterator(); it.hasNext();) {
-			if (it.next().equals(loc)) {
+			if (loc.equals(it.next())) {
 				it.remove();
 				break;
 			}

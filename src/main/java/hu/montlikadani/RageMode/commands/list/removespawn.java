@@ -72,9 +72,9 @@ public class removespawn implements ICommand {
 		String sPath = path + ".spawns." + i + ".";
 		String world = aFile.getString(sPath + "world");
 
-		double spawnX = aFile.getDouble(sPath + "x");
-		double spawnY = aFile.getDouble(sPath + "y");
-		double spawnZ = aFile.getDouble(sPath + "z");
+		double spawnX = aFile.getDouble(sPath + "x"),
+				spawnY = aFile.getDouble(sPath + "y"),
+				spawnZ = aFile.getDouble(sPath + "z");
 
 		float spawnYaw = (float) aFile.getDouble(sPath + "yaw");
 		float spawnPitch = (float) aFile.getDouble(sPath + "pitch");
