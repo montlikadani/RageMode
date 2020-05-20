@@ -35,16 +35,17 @@ public class MainPage implements IShop {
 
 	@Override
 	public Optional<ShopItem> getShopItem(ItemStack item) {
-		ShopItem i = null;
+		if (item == null) {
+			return Optional.empty();
+		}
 
 		for (ShopItem si : items) {
 			if (si.getItem().isSimilar(item)) {
-				i = si;
-				break;
+				return Optional.ofNullable(si);
 			}
 		}
 
-		return Optional.ofNullable(i);
+		return Optional.empty();
 	}
 
 	@Override

@@ -42,9 +42,12 @@ public class Game {
 
 	// TODO: In the future add ability to work with ids
 	public Game(String name) {
-		this.name = name;
+		this.name = name == null ? "" : name;
 	}
 
+	/**
+	 * @return the game name that can't be null.
+	 */
 	public String getName() {
 		return name;
 	}
@@ -241,7 +244,7 @@ public class Game {
 	}
 
 	/**
-	 * Sets the game to running.
+	 * Sets the game to running state.
 	 * @return true if the game not running currently
 	 */
 	public boolean setGameRunning() {
@@ -254,7 +257,7 @@ public class Game {
 	}
 
 	/**
-	 * Sets the game not running.
+	 * Sets the game to not running state.
 	 * @return true if the game is running currently
 	 */
 	public boolean setGameNotRunning() {

@@ -61,39 +61,39 @@ public class ActionMessengers {
 
 		List<String> tabHeader = ConfigValues.getTabHeader(), tabFooter = ConfigValues.getTabFooter();
 
-		String he = "";
+		String header = "", footer = "";
 		int s = 0;
-
 		for (String line : tabHeader) {
 			s++;
+
 			if (s > 1) {
-				he = he + "\n\u00a7r";
+				header = header + "\n\u00a7r";
 			}
 
-			he = he + line;
+			header = header + line;
 		}
 
-		String fo = "";
 		s = 0;
 
 		for (String line : tabFooter) {
 			s++;
+
 			if (s > 1) {
-				fo = fo + "\n\u00a7r";
+				footer = footer + "\n\u00a7r";
 			}
 
-			fo = fo + line;
+			footer = footer + line;
 		}
 
-		he = Utils.setPlaceholders(he, player);
-		fo = Utils.setPlaceholders(fo, player);
+		header = Utils.setPlaceholders(header, player);
+		footer = Utils.setPlaceholders(footer, player);
 
 		if (time > -1) {
-			he = he.replace("%game-time%", Utils.getFormattedTime(time));
-			fo = fo.replace("%game-time%", Utils.getFormattedTime(time));
+			header = header.replace("%game-time%", Utils.getFormattedTime(time));
+			footer = footer.replace("%game-time%", Utils.getFormattedTime(time));
 		}
 
-		gameTab.sendTabTitle(player, he, fo);
+		gameTab.sendTabTitle(player, header, footer);
 	}
 
 	public void setScoreboard() {
