@@ -2,9 +2,11 @@ package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.lang.Validate;
@@ -38,7 +40,7 @@ public class Game {
 
 	private LobbyShop shop = new LobbyShop();
 
-	private final List<ActionMessengers> acList = new ArrayList<>();
+	private final Set<ActionMessengers> acList = new HashSet<>();
 
 	// TODO: In the future add ability to work with ids
 	public Game(String name) {
@@ -410,7 +412,7 @@ public class Game {
 		return lobbyTimer;
 	}
 
-	public List<ActionMessengers> getActionMessengers() {
+	public Set<ActionMessengers> getActionMessengers() {
 		return acList;
 	}
 

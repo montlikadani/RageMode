@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,12 +24,13 @@ import hu.montlikadani.ragemode.API.event.RMGameStartEvent;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.items.ItemHandler;
+import hu.montlikadani.ragemode.items.Items;
 import hu.montlikadani.ragemode.items.shop.pages.MainPage;
 import hu.montlikadani.ragemode.items.shop.pages.NextPage;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 
-// it's an ugly class
 public class LobbyShop implements Listener {
 
 	public static final Map<Player, BoughtElements> BOUGHTITEMS = new HashMap<>();
@@ -288,12 +288,24 @@ public class LobbyShop implements Listener {
 				return false;
 			}
 
-			ItemStack item = new ItemStack(Material.valueOf(splitItem[0]), amount);
+			ItemHandler item = null;
+			if ("grenade".equals(splitItem[0])) {
+				item = Items.getGrenade();
+			} else if ("combataxe".equals(splitItem[0])) {
+				item = Items.getCombatAxe();
+			}
+
+			if (item == null) {
+				return false;
+			}
+
+			item = (ItemHandler) item.clone();
+			item.setAmount(amount);
 
 			if (elements == null) {
-				elements = new BoughtElements(item, finalCost, finalPoints);
+				elements = new BoughtElements(item.build(), finalCost, finalPoints);
 			} else {
-				elements.setItem(item);
+				elements.setItem(item.build());
 			}
 		}
 

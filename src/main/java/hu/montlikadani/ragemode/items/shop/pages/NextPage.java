@@ -241,11 +241,11 @@ public class NextPage implements IShop {
 					itemCmds = new ShopItemCommands(mainPath + ".items." + slots, command, navigationType);
 				}
 
-				ShopItem shopItem = new ShopItem(iStack, type, guiName);
-				if (itemCmds != null) {
-					shopItem = new ShopItem(iStack, type, guiName, itemCmds);
+				if (itemCmds == null) {
+					itemCmds = new ShopItemCommands(mainPath + ".items." + slots, "", NavigationType.WITHOUT);
 				}
 
+				ShopItem shopItem = new ShopItem(iStack, type, guiName, itemCmds);
 				this.items.add(shopItem);
 			}
 		}
