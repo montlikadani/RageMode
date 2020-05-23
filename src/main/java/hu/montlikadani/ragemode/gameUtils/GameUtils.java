@@ -12,6 +12,7 @@ import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -53,6 +54,8 @@ public class GameUtils {
 	 * When the game ended and players waiting for teleport.
 	 */
 	public static final HashMap<String, Boolean> WAITINGGAMES = new HashMap<>();
+
+	public static final HashMap<UUID, Particle> USERPARTICLES = new HashMap<>();
 
 	/**
 	 * Broadcast a message to the currently playing players for that given game.
@@ -751,6 +754,10 @@ public class GameUtils {
 
 				if (bought.getItem() != null) {
 					player.getInventory().addItem(bought.getItem());
+				}
+
+				if (bought.getTrail() != null) {
+					USERPARTICLES.put(player.getUniqueId(), bought.getTrail());
 				}
 
 				break;

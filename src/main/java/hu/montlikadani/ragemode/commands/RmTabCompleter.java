@@ -53,6 +53,7 @@ public class RmTabCompleter implements TabCompleter {
 						}
 					}
 				}
+
 				partOfCommand = args[1];
 			} else if (args.length < 4) {
 				for (String val : getValueListCmds()) {

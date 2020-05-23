@@ -34,11 +34,11 @@ public class GameTimer extends TimerTask {
 				return;
 			}
 
-			/*if (game.getPlayers().size() < 2) {
+			if (game.getPlayers().size() < 2) {
 				GameUtils.stopGame(game.getName());
 				cancel();
 				return;
-			}*/
+			}
 
 			// Broadcast time message should be in this place, before counting
 			for (int val : ConfigValues.getGameEndBcs()) {

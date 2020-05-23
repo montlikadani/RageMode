@@ -17,6 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.items.shop.BoughtElements;
 import hu.montlikadani.ragemode.items.shop.IShop;
 import hu.montlikadani.ragemode.items.shop.LobbyShop;
@@ -82,6 +83,10 @@ public class NextPage implements IShop {
 			}
 
 			if (ShopCategory.valueOf(category) != type) {
+				continue;
+			}
+
+			if (type == ShopCategory.ITEMTRAILS && !ConfigValues.isUseArrowTrails()) {
 				continue;
 			}
 
@@ -177,6 +182,13 @@ public class NextPage implements IShop {
 							}
 
 							itemAmount = elements.getItem() == null ? itemAmount : elements.getItem().getAmount();
+
+							l = l.replace("%activated%", elements.getTrail() != null
+									&& elements.getTrail().toString().equalsIgnoreCase(sec.getString(slots + ".trail"))
+											? "&a&lActivated!"
+											: "");
+						} else {
+							l = l.replace("%activated%", "");
 						}
 
 						l = l.replace("%cost%", cost);

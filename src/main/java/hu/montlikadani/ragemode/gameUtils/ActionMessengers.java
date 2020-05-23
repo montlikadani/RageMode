@@ -88,10 +88,8 @@ public class ActionMessengers {
 		header = Utils.setPlaceholders(header, player);
 		footer = Utils.setPlaceholders(footer, player);
 
-		if (time > -1) {
-			header = header.replace("%game-time%", Utils.getFormattedTime(time));
-			footer = footer.replace("%game-time%", Utils.getFormattedTime(time));
-		}
+		header = header.replace("%game-time%", time < -1 ? "0" : Utils.getFormattedTime(time));
+		footer = footer.replace("%game-time%", time < -1 ? "0" : Utils.getFormattedTime(time));
 
 		gameTab.sendTabTitle(player, header, footer);
 	}
@@ -107,7 +105,7 @@ public class ActionMessengers {
 
 		String boardTitle = ConfigValues.getSbTitle();
 		if (!boardTitle.isEmpty()) {
-			boardTitle = boardTitle.replace("%game-time%", time > -1 ? "0" : Utils.getFormattedTime(time));
+			boardTitle = boardTitle.replace("%game-time%", time < -1 ? "0" : Utils.getFormattedTime(time));
 			boardTitle = Utils.setPlaceholders(boardTitle, player);
 			gameBoard.setTitle(player, boardTitle);
 		}
@@ -123,7 +121,7 @@ public class ActionMessengers {
 			}
 
 			for (String row : rows) {
-				row = row.replace("%game-time%", time > -1 ? "0" : Utils.getFormattedTime(time));
+				row = row.replace("%game-time%", time < -1 ? "0" : Utils.getFormattedTime(time));
 				row = Utils.setPlaceholders(row, player);
 				gameBoard.setLine(player, row, scores--);
 			}

@@ -58,6 +58,7 @@ import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerKilledEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerPreRespawnEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerRespawnedEvent;
@@ -84,6 +85,15 @@ public class GameListener implements Listener {
 
 	public GameListener(RageMode plugin) {
 		this.plugin = plugin;
+	}
+
+	@EventHandler
+	public void onGameLeave(RMGameLeaveAttemptEvent e) {
+		Player player = e.getPlayer();
+
+		if (GameUtils.USERPARTICLES.containsKey(player.getUniqueId())) {
+			GameUtils.USERPARTICLES.remove(player.getUniqueId());
+		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
@@ -551,20 +561,12 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	public void onProjectileLaunch(ProjectileLaunchEvent ev) {
-		if (!ConfigValues.isUseGrenadeTrails()) {
-			return;
-		}
-
 		Projectile proj = ev.getEntity();
-		if (!(proj.getShooter() instanceof Player)) {
+		if (proj.getShooter() == null || !(proj.getShooter() instanceof Player)) {
 			return;
 		}
 
 		Player shooter = (Player) proj.getShooter();
-		if (shooter == null) {
-			return;
-		}
-
 		if (!GameUtils.isPlayerPlaying(shooter)) {
 			return;
 		}
@@ -579,9 +581,7 @@ public class GameListener implements Listener {
 			return;
 		}
 
-		if (proj instanceof Egg) {
-			setTrails(ev.getEntity());
-		}
+		setTrails(proj);
 	}
 
 	@EventHandler
@@ -780,14 +780,14 @@ public class GameListener implements Listener {
 
 		Action action = ev.getAction();
 		Material t = ev.getClickedBlock().getType();
+		GameStatus status = GameUtils.getGameByPlayer(p).getStatus();
 
 		if (action == Action.PHYSICAL) {
 			if (t == Material.FARMLAND) {
 				ev.setUseInteractedBlock(Event.Result.DENY);
 				ev.setCancelled(true);
-			} else if (ConfigValues.isCancelRedstoneActivate()
-					&& GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING
-					|| GameUtils.getGameByPlayer(p).getStatus() == GameStatus.GAMEFREEZE) {
+			} else if (ConfigValues.isCancelRedstoneActivate() && status == GameStatus.RUNNING
+					|| status == GameStatus.GAMEFREEZE) {
 				if (MaterialUtil.isWoodenPressurePlate(t)) {
 					ev.setUseInteractedBlock(Event.Result.DENY);
 					ev.setCancelled(true);
@@ -800,8 +800,7 @@ public class GameListener implements Listener {
 				}
 			}
 		} else if (ConfigValues.isCancelRedstoneActivate() && action == Action.RIGHT_CLICK_BLOCK) {
-			if (GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING
-					|| GameUtils.getGameByPlayer(p).getStatus() == GameStatus.GAMEFREEZE) {
+			if (status == GameStatus.RUNNING || status == GameStatus.GAMEFREEZE) {
 				if (MaterialUtil.isTrapdoor(t) || MaterialUtil.isButton(t)) {
 					ev.setUseInteractedBlock(Event.Result.DENY);
 					ev.setCancelled(true);
@@ -826,9 +825,8 @@ public class GameListener implements Listener {
 			}
 		}
 
-		if (ConfigValues.isCancelDoorUse() && action == Action.RIGHT_CLICK_BLOCK
-				&& GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING
-				|| GameUtils.getGameByPlayer(p).getStatus() == GameStatus.GAMEFREEZE) {
+		if (ConfigValues.isCancelDoorUse() && action == Action.RIGHT_CLICK_BLOCK && status == GameStatus.RUNNING
+				|| status == GameStatus.GAMEFREEZE) {
 			if (MaterialUtil.isWoodenDoor(t)) {
 				ev.setUseInteractedBlock(Event.Result.DENY);
 				ev.setCancelled(true);
@@ -915,16 +913,38 @@ public class GameListener implements Listener {
 		}
 	}
 
-	private void setTrails(Projectile proj) {
+	private void setTrails(final Projectile proj) {
+		final boolean isArrow = proj instanceof Arrow;
+		final boolean isEgg = proj instanceof Egg;
+
+		if ((!ConfigValues.isUseArrowTrails() || !isArrow) && (!ConfigValues.isUseGrenadeTrails() || !isEgg)) {
+			return;
+		}
+
+		final UUID uuid = ((Player) proj.getShooter()).getUniqueId();
+		if (ConfigValues.isUseArrowTrails() && isArrow && !GameUtils.USERPARTICLES.containsKey(uuid)) {
+			return;
+		}
+
 		Thread thread = new Thread(() -> {
 			do {
-				try {
-					Thread.sleep(155L);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+				if (isEgg) {
+					try {
+						Thread.sleep(155L);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 
-				proj.getWorld().playEffect(proj.getLocation(), org.bukkit.Effect.SMOKE, 0);
+					proj.getWorld().playEffect(proj.getLocation(), org.bukkit.Effect.SMOKE, 0);
+				} else if (ConfigValues.isUseArrowTrails() && isArrow && GameUtils.USERPARTICLES.containsKey(uuid)) {
+					try {
+						Thread.sleep(40L);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+
+					proj.getWorld().spawnParticle(GameUtils.USERPARTICLES.get(uuid), proj.getLocation(), 0);
+				}
 			} while (!proj.isDead() && !proj.isOnGround());
 		});
 

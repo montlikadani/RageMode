@@ -118,6 +118,8 @@ public class ScoreBoard {
 			if (obj != null) {
 				obj.unregister();
 			}
+
+			pl.setScoreboard(board.getScoreboard());
 		});
 
 		scoreboards.remove(pl);

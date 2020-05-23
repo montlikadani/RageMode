@@ -4,5 +4,6 @@ public enum ShopCategory {
 
 	MAIN,
 	POTIONEFFECTS,
-	GAMEITEMS;
+	GAMEITEMS,
+	ITEMTRAILS;
 }
