@@ -17,7 +17,7 @@ public class Configuration {
 	private FileConfiguration config, arenas, rewards, datas, items;
 	private File config_file, arenas_file, rewards_file, datas_file, items_file;
 
-	private double configVersion = 1.7;
+	private double configVersion = 1.8;
 
 	public Configuration(RageMode plugin) {
 		this.plugin = plugin;
