@@ -50,15 +50,15 @@ lobbyitems:
     gui:
       title: "&6RageMode shop"
       fillEmptyFields: green_stained_glass_pane
-      size: 45
+      size: 9
       items:
-        slot-41:
+        slot-8:
           item: barrier
           name: "&cClose"
           lore:
           - "&7This will close the inventory shop."
           command: close
-        slot-14:
+        slot-3:
           item: egg
           name: "&aBuy game items"
           category: gameitems
@@ -70,7 +70,7 @@ lobbyitems:
               slot-3:
                 item: egg
                 name: "&7Grenade"
-                giveitem: "egg"
+                giveitem: "grenade"
                 cost:
                   value: 300
                   points: 250
@@ -81,7 +81,7 @@ lobbyitems:
               slot-4:
                 item: egg
                 name: "&7Grenade"
-                giveitem: "egg:2"
+                giveitem: "grenade:2"
                 cost:
                   value: 350
                   points: 270
@@ -111,14 +111,96 @@ lobbyitems:
                 item: arrow
                 name: "&bMain page"
                 command: main
-        slot-13:
+        slot-5:
+          item: bow
+          name: "&7Buy arrow trails"
+          category: itemtrails
+          gui:
+            title: "&6Buy arrow trails"
+            fillEmptyFields: red_stained_glass_pane
+            size: 27
+            items:
+              slot-0:
+                item: paper
+                name: "&bInfo"
+                lore:
+                - "&7The potion effects will automatically apply when the game started."
+              slot-8:
+                item: diamond
+                name: "&6Money/Points"
+                lore:
+                - "&6You have&e %money%&6$ in your account."
+                - "&6You have&e %points%&6 points"
+              slot-5:
+                item: barrier
+                name: "&cClose"
+                lore:
+                - "&7This will close the inventory shop."
+                command: close
+              slot-4:
+                item: arrow
+                name: "&bMain page"
+                command: main
+              slot-10:
+                item: blaze_rod
+                name: "&cFlame"
+                cost:
+                  value: 100
+                  points: 50
+                trail: flame
+                lore:
+                - "&7Giving &cflame&7 trail to the arrow when the game started."
+                - "&eCost:&r %cost%"
+                - "&eRequired points:&r %required_points%"
+                - "%activated%"
+                - "&7&lThis can only be used in one round."
+              slot-11:
+                item: magma_cream
+                name: "&6Lava"
+                cost:
+                  value: 100
+                  points: 50
+                trail: lava
+                lore:
+                - "&7Giving &6lava&7 trail to the arrow when the game started."
+                - "&eCost:&r %cost%"
+                - "&eRequired points:&r %required_points%"
+                - "%activated%"
+                - "&7&lThis can only be used in one round."
+              slot-12:
+                item: gunpowder
+                name: "&7Smoke normal"
+                cost:
+                  value: 100
+                  points: 50
+                trail: smoke_normal
+                lore:
+                - "&7Giving smoke trail to the arrow when the game started."
+                - "&eCost:&r %cost%"
+                - "&eRequired points:&r %required_points%"
+                - "%activated%"
+                - "&7&lThis can only be used in one round."
+              slot-13:
+                item: ender_pearl
+                name: "&bPortal"
+                cost:
+                  value: 100
+                  points: 50
+                trail: portal
+                lore:
+                - "&7Giving &bportal&7 trail to the arrow when the game started."
+                - "&eCost:&r %cost%"
+                - "&eRequired points:&r %required_points%"
+                - "%activated%"
+                - "&7&lThis can only be used in one round."
+        slot-4:
           item: potion
           name: "&aBuy potion effects"
           category: potioneffects
           gui:
             title: "&2Buy potion effects"
             fillEmptyFields: blue_stained_glass_pane
-            size: 45
+            size: 18
             items:
               slot-10:
                 item: nether_star
@@ -146,24 +228,24 @@ lobbyitems:
                 - "&eCost:&r %cost%"
                 - "&eRequired points:&r %required_points%"
                 - "&7&lThis can be used only once."
-              slot-44:
+              slot-8:
                 item: paper
                 name: "&bInfo"
                 lore:
                 - "&7The potion effects will automatically apply when the game started."
-              slot-36:
+              slot-0:
                 item: diamond
                 name: "&6Money/Points"
                 lore:
                 - "&6You have&e %money%&6$ in your account."
                 - "&6You have&e %points%&6 points"
-              slot-41:
+              slot-3:
                 item: barrier
                 name: "&cClose"
                 lore:
                 - "&7This will close the inventory shop."
                 command: close
-              slot-39:
+              slot-4:
                 item: arrow
                 name: "&bMain page"
                 command: main

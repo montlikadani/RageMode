@@ -689,7 +689,9 @@ public class GameListener implements Listener {
 			return;
 		}
 
-		if (GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING) {
+		Action action = event.getAction();
+		// deny physical action to prevent throwing axe when steps onto a pressure plate
+		if (action != Action.PHYSICAL && GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING) {
 			Player thrower = event.getPlayer();
 			ItemStack hand = NMS.getItemInHand(thrower);
 			ItemMeta meta = hand.getItemMeta();
@@ -701,7 +703,6 @@ public class GameListener implements Listener {
 		}
 
 		ItemStack hand = NMS.getItemInHand(p);
-		Action action = event.getAction();
 
 		/**
 		 * Cancels the rage knife usage, for example with collecting beehives
@@ -782,25 +783,20 @@ public class GameListener implements Listener {
 		Material t = ev.getClickedBlock().getType();
 		GameStatus status = GameUtils.getGameByPlayer(p).getStatus();
 
-		if (action == Action.PHYSICAL) {
-			if (t == Material.FARMLAND) {
-				ev.setUseInteractedBlock(Event.Result.DENY);
-				ev.setCancelled(true);
-			} else if (ConfigValues.isCancelRedstoneActivate() && status == GameStatus.RUNNING
-					|| status == GameStatus.GAMEFREEZE) {
-				if (MaterialUtil.isWoodenPressurePlate(t)) {
+		if (status == GameStatus.RUNNING || status == GameStatus.GAMEFREEZE) {
+			if (action == Action.PHYSICAL) {
+				if (t == Material.FARMLAND) {
 					ev.setUseInteractedBlock(Event.Result.DENY);
 					ev.setCancelled(true);
+				} else if (ConfigValues.isCancelRedstoneActivate()) {
+					if (MaterialUtil.isWoodenPressurePlate(t) || t.equals(Material.STONE_PRESSURE_PLATE)
+							|| t.equals(Material.HEAVY_WEIGHTED_PRESSURE_PLATE)
+							|| t.equals(Material.LIGHT_WEIGHTED_PRESSURE_PLATE)) {
+						ev.setUseInteractedBlock(Event.Result.DENY);
+						ev.setCancelled(true);
+					}
 				}
-
-				if (t.equals(Material.STONE_PRESSURE_PLATE) || t.equals(Material.HEAVY_WEIGHTED_PRESSURE_PLATE)
-						|| t.equals(Material.LIGHT_WEIGHTED_PRESSURE_PLATE)) {
-					ev.setUseInteractedBlock(Event.Result.DENY);
-					ev.setCancelled(true);
-				}
-			}
-		} else if (ConfigValues.isCancelRedstoneActivate() && action == Action.RIGHT_CLICK_BLOCK) {
-			if (status == GameStatus.RUNNING || status == GameStatus.GAMEFREEZE) {
+			} else if (ConfigValues.isCancelRedstoneActivate() && action == Action.RIGHT_CLICK_BLOCK) {
 				if (MaterialUtil.isTrapdoor(t) || MaterialUtil.isButton(t)) {
 					ev.setUseInteractedBlock(Event.Result.DENY);
 					ev.setCancelled(true);
@@ -823,22 +819,18 @@ public class GameListener implements Listener {
 					ev.setCancelled(true);
 				}
 			}
-		}
 
-		if (ConfigValues.isCancelDoorUse() && action == Action.RIGHT_CLICK_BLOCK && status == GameStatus.RUNNING
-				|| status == GameStatus.GAMEFREEZE) {
-			if (MaterialUtil.isWoodenDoor(t)) {
+			if (ConfigValues.isCancelDoorUse() && action == Action.RIGHT_CLICK_BLOCK && MaterialUtil.isWoodenDoor(t)) {
 				ev.setUseInteractedBlock(Event.Result.DENY);
 				ev.setCancelled(true);
 			}
 		}
 
 		// Just prevent usage of bush
-		if (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && action == Action.RIGHT_CLICK_BLOCK) {
-			if (t.equals(Material.SWEET_BERRY_BUSH) || t.equals(Material.COMPOSTER)) {
-				ev.setUseInteractedBlock(Event.Result.DENY);
-				ev.setCancelled(true);
-			}
+		if (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && action == Action.RIGHT_CLICK_BLOCK
+				&& t.equals(Material.SWEET_BERRY_BUSH) || t.equals(Material.COMPOSTER)) {
+			ev.setUseInteractedBlock(Event.Result.DENY);
+			ev.setCancelled(true);
 		}
 	}
 

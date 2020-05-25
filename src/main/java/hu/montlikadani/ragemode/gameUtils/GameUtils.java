@@ -890,12 +890,8 @@ public class GameUtils {
 	 * @param spawn {@link GameSpawn}
 	 */
 	public static void teleportPlayerToGameSpawn(Player p, GameSpawn spawn) {
-		if (spawn.getSpawnLocations().size() > 0) {
-			// Why this always happens?
-			// IllegalStateException: PlayerTeleportEvent may only be triggered
-			// synchronously.
-			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-					() -> p.teleport(spawn.getRandomSpawn()));
+		if (spawn.haveAnySpawn()) {
+			p.teleport(spawn.getRandomSpawn());
 		}
 	}
 
@@ -990,9 +986,7 @@ public class GameUtils {
 					sendTitleMessages(p, wonTitle, wonSubtitle, wonTime);
 
 					if (ConfigValues.isSwitchGMForPlayers()) {
-						// Why?
-						Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-								() -> p.setGameMode(GameMode.SPECTATOR));
+						p.setGameMode(GameMode.SPECTATOR);
 					}
 				} else {
 					String wonTime = ConfigValues.getYouWonTitleTime();
@@ -1008,10 +1002,7 @@ public class GameUtils {
 			broadcastToGame(game, RageMode.getLang().get("game.no-won"));
 
 			for (final PlayerManager pm : players) {
-				// Why?
-				Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-						() -> pm.getPlayer().setGameMode(GameMode.SPECTATOR));
-
+				pm.getPlayer().setGameMode(GameMode.SPECTATOR);
 				game.removePlayerSynced(pm.getPlayer());
 			}
 		}

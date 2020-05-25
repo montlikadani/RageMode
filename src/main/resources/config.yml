@@ -216,8 +216,11 @@ game:
     enable-chat: true
 
   # Do we use grenade effects when a player thrown?
-  # Currently the effect type can't be changed.
   use-grenade-trails: true
+
+  # Do you want to allow for players to buy arrow trails
+  # from lobby shop when in game?
+  use-arrow-trails: true
 
   # Should be enable chat in the game?
   # This ignores with ragemode.bypass.game.lockchat permission.

@@ -123,12 +123,20 @@ public class GameSpawn {
 	}
 
 	/**
+	 * Checks if have any spawn saved.
+	 * @return true if have
+	 */
+	public boolean haveAnySpawn() {
+		return spawnLocations.size() > 0;
+	}
+
+	/**
 	 * Gets a random spawn location from the list.
 	 * <br>This will returns <code>null</code> if there are no spawns added to list.
 	 * @return {@link org.bukkit.Location}
 	 */
 	public Location getRandomSpawn() {
-		if (spawnLocations.size() < 0) {
+		if (!haveAnySpawn()) {
 			return null; // Do NOT use isEmpty() due to getting the 0 element
 		}
 

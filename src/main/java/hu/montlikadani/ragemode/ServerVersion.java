@@ -2,9 +2,6 @@ package hu.montlikadani.ragemode;
 
 public class ServerVersion {
 
-	public ServerVersion() {
-	}
-
 	public Version getVersion() {
 		return Version.getCurrent();
 	}

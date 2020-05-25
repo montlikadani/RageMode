@@ -2,6 +2,8 @@ package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.TimerTask;
 
+import org.bukkit.Bukkit;
+
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
@@ -57,7 +59,7 @@ public class GameTimer extends TimerTask {
 
 			if (time == 0) {
 				cancel();
-				GameUtils.stopGame(game.getName());
+				Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> GameUtils.stopGame(game.getName()));
 				return;
 			}
 
@@ -65,7 +67,7 @@ public class GameTimer extends TimerTask {
 		} catch (Exception e) {
 			e.printStackTrace();
 			cancel();
-			GameUtils.forceStopGame(game);
+			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> GameUtils.forceStopGame(game));
 			return;
 		}
 	}
