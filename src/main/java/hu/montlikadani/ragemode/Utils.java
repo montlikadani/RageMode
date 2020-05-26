@@ -9,6 +9,7 @@ import java.util.Locale;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.API.event.BaseEvent;
@@ -58,6 +59,10 @@ public class Utils {
 		} else {
 			Bukkit.getPluginManager().callEvent(event);
 		}
+	}
+
+	public static void teleportSync(Player player, Location loc) {
+		Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> player.teleport(loc));
 	}
 
 	/**

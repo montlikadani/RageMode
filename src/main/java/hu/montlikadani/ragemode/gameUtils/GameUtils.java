@@ -891,7 +891,7 @@ public class GameUtils {
 	 */
 	public static void teleportPlayerToGameSpawn(Player p, GameSpawn spawn) {
 		if (spawn.haveAnySpawn()) {
-			p.teleport(spawn.getRandomSpawn());
+			Utils.teleportSync(p, spawn.getRandomSpawn());
 		}
 	}
 
@@ -932,7 +932,7 @@ public class GameUtils {
 	 * @param name Game name
 	 */
 	public static void stopGame(String name) {
-		stopGame(getGame(name), true);
+		Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> stopGame(getGame(name), true));
 	}
 
 	/**
