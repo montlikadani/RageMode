@@ -27,6 +27,10 @@ public class Items {
 		return gi[4];
 	}
 
+	public static ItemHandler getFlash() {
+		return gi[5];
+	}
+
 	public static ItemHandler getForceStarter() {
 		return li[0];
 	}

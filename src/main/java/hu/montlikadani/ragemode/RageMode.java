@@ -70,7 +70,7 @@ public class RageMode extends JavaPlugin {
 	private final List<Game> games = new ArrayList<>();
 	private final Set<GameSpawn> spawns = new HashSet<>();
 
-	private final ItemHandler[] gameItems = new ItemHandler[5];
+	private final ItemHandler[] gameItems = new ItemHandler[6];
 	private final ItemHandler[] lobbyItems = new ItemHandler[3];
 
 	@Override
@@ -308,9 +308,9 @@ public class RageMode extends JavaPlugin {
 		String path = "gameitems.combatAxe";
 		if (c.contains(path)) {
 			ItemHandler itemHandler = new ItemHandler();
-			itemHandler.setItem(Material.IRON_AXE)
+			itemHandler.setItem(c.getString(path + ".item", "iron_axe"))
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&6CombatAxe")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 2));
+					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 3));
 			gameItems[0] = itemHandler;
 		}
 
@@ -319,7 +319,7 @@ public class RageMode extends JavaPlugin {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.EGG).setDisplayName(Utils.colors(c.getString(path + ".name", "&8Grenade")))
 					.setCustomName(Utils.colors(c.getString(path + ".custom-name", "")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 6))
+					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 5))
 					.setAmount(c.getInt(path + ".amount", 2));
 			gameItems[1] = itemHandler;
 		}
@@ -349,6 +349,15 @@ public class RageMode extends JavaPlugin {
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 1))
 					.setDamage(c.getDouble(path + ".damage", 25));
 			gameItems[4] = itemHandler;
+		}
+
+		path = "gameitems.flash";
+		if (c.contains(path)) {
+			ItemHandler itemHandler = new ItemHandler();
+			itemHandler.setItem(Material.SNOWBALL)
+					.setDisplayName(Utils.colors(c.getString(path + ".name", "&fFlash")))
+					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 6));
+			gameItems[5] = itemHandler;
 		}
 
 		// Lobby items

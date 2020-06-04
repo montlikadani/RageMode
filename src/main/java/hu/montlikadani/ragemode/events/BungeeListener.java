@@ -15,7 +15,10 @@ public class BungeeListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onJoin(PlayerJoinEvent event) {
-		GameUtils.joinPlayer(event.getPlayer(), GameUtils.getGame(RageMode.getInstance().getGames().get(0).getName()));
+		if (!RageMode.getInstance().getGames().isEmpty()) {
+			GameUtils.joinPlayer(event.getPlayer(),
+					GameUtils.getGame(RageMode.getInstance().getGames().get(0).getName()));
+		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)

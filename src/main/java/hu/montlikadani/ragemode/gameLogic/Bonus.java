@@ -62,6 +62,8 @@ public class Bonus {
 					item = Items.getGrenade();
 				} else if ("combataxe".equals(gameItem)) {
 					item = Items.getCombatAxe();
+				} else if ("flash".equals(gameItem)) {
+					item = Items.getFlash();
 				}
 
 				if (item == null) {

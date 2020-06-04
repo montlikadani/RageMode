@@ -326,6 +326,10 @@ public class GameUtils {
 	 * @param p Player
 	 */
 	public static void savePlayerData(Player p) {
+		if (ConfigValues.isBungee()) {
+			return;
+		}
+
 		if (isPlayerPlaying(p)) {
 			getGameByPlayer(p).getPlayerManager(p).storePlayerTools();
 		}

@@ -52,6 +52,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import hu.montlikadani.ragemode.NMS;
@@ -71,6 +73,7 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.items.Items;
 import hu.montlikadani.ragemode.items.shop.IShop;
+import hu.montlikadani.ragemode.items.threads.CombatAxeThread;
 import hu.montlikadani.ragemode.libs.Sounds;
 import hu.montlikadani.ragemode.scores.KilledWith;
 import hu.montlikadani.ragemode.scores.RageScores;
@@ -148,11 +151,49 @@ public class GameListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onProjectileHit(ProjectileHitEvent event) {
-		// RageArrow explosion event
-		if (event.getEntity().getShooter() != null && event.getEntity().getShooter() instanceof Player
-				&& GameUtils.isPlayerPlaying((Player) event.getEntity().getShooter())
-				&& event.getEntity() instanceof Arrow) {
-			Arrow arrow = (Arrow) event.getEntity();
+		Projectile proj = event.getEntity();
+		if (proj.getShooter() == null || !(proj.getShooter() instanceof Player)
+				|| !GameUtils.isPlayerPlaying((Player) proj.getShooter())) {
+			return;
+		}
+
+		if (proj instanceof Snowball && !GameUtils.isPlayerInFreezeRoom((Player) proj.getShooter())) { // Flash event
+			final Item flash = proj.getWorld().dropItem(proj.getLocation(), new ItemStack(Material.SNOWBALL));
+			if (flash == null) {
+				return;
+			}
+
+			final Player shooter = (Player) proj.getShooter();
+			if (shooter == null) {
+				flash.remove();
+				return;
+			}
+
+			flash.setPickupDelay(41);
+			flash.setVelocity(shooter.getEyeLocation().getDirection());
+			flash.getLocation().add(proj.getVelocity());
+
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					if (!GameUtils.isPlayerPlaying(shooter) || GameUtils.isPlayerInFreezeRoom(shooter)) {
+						flash.remove();
+						cancel();
+						return;
+					}
+
+					for (Entity entity : flash.getNearbyEntities(6D, 6D, 6D)) {
+						if (entity instanceof Player) {
+							((Player) entity).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 2));
+						}
+					}
+
+					proj.getWorld().spawnParticle(org.bukkit.Particle.EXPLOSION_LARGE, proj.getLocation(), 0);
+					flash.remove();
+				}
+			}.runTaskLater(plugin, 40);
+		} else if (proj instanceof Arrow) { // RageArrow explosion event
+			Arrow arrow = (Arrow) proj;
 			Player shooter = (Player) arrow.getShooter();
 			if (shooter == null) {
 				return;
@@ -250,9 +291,6 @@ public class GameListener implements Listener {
 		} else if (event.getDamager() instanceof org.bukkit.entity.Egg) {
 			finalDamage = 2.20d;
 			tool = "grenade";
-		} else if (event.getDamager() instanceof Snowball) {
-			finalDamage = 25d;
-			tool = "snowball";
 		} else if (event.getDamager() instanceof Arrow) {
 			finalDamage = 3.35d;
 			tool = "arrow";
@@ -364,7 +402,7 @@ public class GameListener implements Listener {
 
 					killed = new RMPlayerKilledEvent(game, deceased, deceased.getKiller(), KilledWith.RAGEBOW);
 					break;
-				case "snowball":
+				case "combataxe":
 					if (!killerExists) {
 						message = RageMode.getLang().get("game.broadcast.axe-kill", "%victim%", deceaseName, "%killer%",
 								deceaseName);
@@ -600,15 +638,6 @@ public class GameListener implements Listener {
 			return;
 		}
 
-		// Removes the egg from player inventory and prevent
-		// other item remove when moved the slot to another
-		/*if (p.getInventory().contains(Material.EGG)) {
-			ItemStack item = p.getInventory().getItem(plugin.getConfiguration().getCfg().getInt("items.grenade.slot"));
-			if (item != null) {
-				item.setAmount(item.getAmount() - 1);
-			}
-		}*/
-
 		// no baby chickens
 		event.setHatching(false);
 
@@ -633,7 +662,6 @@ public class GameListener implements Listener {
 		grenade.getLocation().add(event.getEgg().getVelocity());
 
 		final List<Entity> nears = grenade.getNearbyEntities(13, 13, 13);
-
 		final Location loc = grenade.getLocation();
 
 		Sounds.playSound(loc,
@@ -679,7 +707,7 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	public void onInteract(PlayerInteractEvent event) {
-		Player p = event.getPlayer();
+		final Player p = event.getPlayer();
 
 		if (!GameUtils.isPlayerPlaying(p)) {
 			return;
@@ -690,18 +718,6 @@ public class GameListener implements Listener {
 		}
 
 		Action action = event.getAction();
-		// deny physical action to prevent throwing axe when steps onto a pressure plate
-		if (action != Action.PHYSICAL && GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING) {
-			Player thrower = event.getPlayer();
-			ItemStack hand = NMS.getItemInHand(thrower);
-			ItemMeta meta = hand.getItemMeta();
-			if (meta != null && meta.hasDisplayName() && Items.getCombatAxe() != null
-					&& meta.getDisplayName().equals(Items.getCombatAxe().getDisplayName())) {
-				thrower.launchProjectile(Snowball.class);
-				NMS.setItemInHand(thrower, null);
-			}
-		}
-
 		ItemStack hand = NMS.getItemInHand(p);
 
 		/**
@@ -715,30 +731,67 @@ public class GameListener implements Listener {
 			event.setCancelled(true);
 		}
 
-		if ((action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR || action == Action.LEFT_CLICK_AIR
-				|| action == Action.LEFT_CLICK_BLOCK)
-				&& GameUtils.getGameByPlayer(p).getStatus() == GameStatus.WAITING) {
-			ItemMeta meta = hand.getItemMeta();
-			if (meta != null && meta.hasDisplayName()) {
-				Game game = GameUtils.getGameByPlayer(p);
+		if (action != Action.PHYSICAL) {
+			// Combat axe throw
+			if (hand.getType().equals(Items.getCombatAxe().getItem())
+					&& GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING) {
+				final Item item = p.getWorld().dropItem(p.getEyeLocation(), NMS.getItemInHand(p));
 
-				if (hasPerm(p, "ragemode.admin.item.forcestart") && Items.getForceStarter() != null
-						&& Items.getForceStarter().getDisplayName().equals(meta.getDisplayName())) {
-					GameUtils.forceStart(game);
-					sendMessage(p, RageMode.getLang().get("commands.forcestart.game-start", "%game%", game.getName()));
+				item.setCanMobPickup(false);
+				p.getInventory().remove(Items.getCombatAxe().getItem());
+
+				double velocity = plugin.getConfiguration().getItemsCfg().getDouble("gameitems.combatAxe.velocity", 2D);
+				if (velocity > 0D) {
+					item.setVelocity(p.getLocation().getDirection().multiply(velocity));
 				}
 
-				if (Items.getLeaveGameItem() != null
-						&& Items.getLeaveGameItem().getDisplayName().equals(meta.getDisplayName())) {
-					GameUtils.leavePlayer(p, game);
-				}
+				final CombatAxeThread combatAxeThread = new CombatAxeThread(p, item);
+				combatAxeThread.start();
 
-				if (Items.getShopItem() != null && Items.getShopItem().getDisplayName().equals(meta.getDisplayName())) {
-					game.getShop().openMainPage(p);
-				}
+				new Thread(() -> {
+					while (!item.isDead()) {
+						try {
+							Thread.sleep(3000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+
+						if (item.isOnGround()) {
+							item.remove();
+							combatAxeThread.stop();
+							break; // To make sure we're broke the thread
+						}
+					}
+				}).start();
+
+				return;
 			}
 
-			event.setCancelled(true);
+			if (GameUtils.getGameByPlayer(p).getStatus() == GameStatus.WAITING) {
+				ItemMeta meta = hand.getItemMeta();
+				if (meta != null && meta.hasDisplayName()) {
+					Game game = GameUtils.getGameByPlayer(p);
+
+					if (hasPerm(p, "ragemode.admin.item.forcestart") && Items.getForceStarter() != null
+							&& Items.getForceStarter().getDisplayName().equals(meta.getDisplayName())) {
+						GameUtils.forceStart(game);
+						sendMessage(p,
+								RageMode.getLang().get("commands.forcestart.game-start", "%game%", game.getName()));
+					}
+
+					if (Items.getLeaveGameItem() != null
+							&& Items.getLeaveGameItem().getDisplayName().equals(meta.getDisplayName())) {
+						GameUtils.leavePlayer(p, game);
+					}
+
+					if (Items.getShopItem() != null
+							&& Items.getShopItem().getDisplayName().equals(meta.getDisplayName())) {
+						game.getShop().openMainPage(p);
+					}
+				}
+
+				event.setCancelled(true);
+			}
 		}
 	}
 
@@ -909,6 +962,11 @@ public class GameListener implements Listener {
 		final boolean isArrow = proj instanceof Arrow;
 		final boolean isEgg = proj instanceof Egg;
 
+		double velocity = plugin.getConfiguration().getItemsCfg().getDouble("gameitems.grenade.velocity", 2D);
+		if (velocity > 0D && isEgg) {
+			proj.setVelocity(((Player) proj.getShooter()).getLocation().getDirection().multiply(velocity));
+		}
+
 		if ((!ConfigValues.isUseArrowTrails() || !isArrow) && (!ConfigValues.isUseGrenadeTrails() || !isEgg)) {
 			return;
 		}
@@ -918,7 +976,7 @@ public class GameListener implements Listener {
 			return;
 		}
 
-		Thread thread = new Thread(() -> {
+		new Thread(() -> {
 			do {
 				if (isEgg) {
 					try {
@@ -938,8 +996,6 @@ public class GameListener implements Listener {
 					proj.getWorld().spawnParticle(GameUtils.USERPARTICLES.get(uuid), proj.getLocation(), 0);
 				}
 			} while (!proj.isDead() && !proj.isOnGround());
-		});
-
-		thread.start();
+		}).start();
 	}
 }

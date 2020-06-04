@@ -11,10 +11,18 @@ gameitems:
     - "&7One hit, dead."
     slot: 1
   combatAxe:
+    item: iron_axe
     name: "&6CombatAxe"
     lore:
-    - "&7Right click, throws a axe and dead"
-    slot: 2
+    - "&7Right click, throws an axe and dead"
+    slot: 3
+    velocity: 2.0
+  flash:
+    name: "&fFlash"
+    lore:
+    - "&7Right click, throws flash to players who's around 6 blocks"
+    slot: 6
+    velocity: 3.0
   rageArrow:
     name: "&7Rage Arrow"
     slot: 9
@@ -25,6 +33,7 @@ gameitems:
     lore:
     - "&7Right click, throws a grenade and boom!"
     slot: 5
+    velocity: 2.0
     amount: 2
 
 lobbyitems:

@@ -18,6 +18,7 @@ download-updates: true
 # loses his items from inventory.
 # If this is false, we still need some data to save that will not cause any problems 
 # at the end of the game.
+# This will be ignored and the data not saved when the bungee-mode is enabled.
 save-player-datas-to-file: false
 
 # Require empty inventory to join to game?
