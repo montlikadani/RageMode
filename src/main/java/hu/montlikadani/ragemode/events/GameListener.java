@@ -300,8 +300,6 @@ public class GameListener implements Listener {
 			}
 		}
 
-		victim.removeMetadata("killedWith", plugin);
-
 		if (GameUtils.getGameByPlayer(victim).getStatus() != GameStatus.RUNNING) {
 			return;
 		}
@@ -335,6 +333,7 @@ public class GameListener implements Listener {
 		}
 
 		if (!tool.isEmpty()) {
+			victim.removeMetadata("killedWith", plugin);
 			victim.setMetadata("killedWith", new FixedMetadataValue(plugin, tool));
 		}
 	}
@@ -409,7 +408,7 @@ public class GameListener implements Listener {
 			if (plugin.getConfiguration().getArenasCfg().isSet("arenas." + game.getName() + ".death-messages")) {
 				String gameBroadcast = plugin.getConfiguration().getArenasCfg()
 						.getString("arenas." + game.getName() + ".death-messages", "");
-				if (!gameBroadcast.isEmpty() && gameBroadcast.equals("true") || gameBroadcast.equals("false")) {
+				if (gameBroadcast.equals("true") || gameBroadcast.equals("false")) {
 					doDeathBroadcast = Boolean.parseBoolean(gameBroadcast);
 				}
 			}

@@ -33,6 +33,10 @@ public class CombatAxeThread {
 					// To prevent async catch
 					RageMode.getInstance().getServer().getScheduler().runTask(RageMode.getInstance(), () -> {
 						for (Entity entity : item.getNearbyEntities(0.3D, 0.3D, 0.3D)) {
+							if (!running) {
+								break;
+							}
+
 							if (!(entity instanceof Player)) {
 								continue;
 							}
@@ -42,10 +46,10 @@ public class CombatAxeThread {
 								continue;
 							}
 
+							victim.damage(25D, player);
 							victim.removeMetadata("killedWith", RageMode.getInstance());
 							victim.setMetadata("killedWith",
 									new FixedMetadataValue(RageMode.getInstance(), "combataxe"));
-							victim.damage(25D, player);
 							item.remove();
 							stop();
 						}
