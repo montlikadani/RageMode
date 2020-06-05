@@ -71,7 +71,6 @@ public class SignData {
 	@SuppressWarnings("deprecation")
 	public void updateSign() {
 		Location location = getLocation();
-		// TODO: Remove or change that to fix server crash on startup
 		if (!location.getWorld().getChunkAt(location).isLoaded()) {
 			return;
 		}

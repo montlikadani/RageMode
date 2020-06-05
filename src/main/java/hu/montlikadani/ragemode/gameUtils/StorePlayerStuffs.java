@@ -7,6 +7,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.scoreboard.Scoreboard;
 
 public class StorePlayerStuffs {
 
@@ -19,6 +20,7 @@ public class StorePlayerStuffs {
 	public Float oldExp = 0f;
 	public Integer oldExpLevel = Integer.valueOf(0);
 	public Entity oldVehicle;
+	public Scoreboard currentBoard;
 
 	// Spectator datas
 	public boolean fly = false;

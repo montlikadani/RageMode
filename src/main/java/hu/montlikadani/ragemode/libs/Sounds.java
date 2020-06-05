@@ -1054,12 +1054,9 @@ public enum Sounds {
 	public static void playSound(Player player, Sounds sound, float volume, float pitch) {
 		Validate.notNull(player, "Player can't be null!");
 
-		for (Sounds s : values()) {
-			Sound so = getSound(s);
-			if (s != null && s.equals(sound) && so != null) {
-				player.playSound(player.getLocation(), so, volume, pitch);
-				break;
-			}
+		Sound so = getSound(sound);
+		if (so != null) {
+			player.playSound(player.getLocation(), so, volume, pitch);
 		}
 	}
 
@@ -1070,12 +1067,9 @@ public enum Sounds {
 	public static void playSound(Location location, Sounds sound, float volume, float pitch) {
 		Validate.notNull(location, "Location can't be null!");
 
-		for (Sounds s : values()) {
-			Sound so = getSound(s);
-			if (s != null && s.equals(sound) && so != null) {
-				location.getWorld().playSound(location, so, volume, pitch);
-				break;
-			}
+		Sound so = getSound(sound);
+		if (so != null) {
+			location.getWorld().playSound(location, so, volume, pitch);
 		}
 	}
 }

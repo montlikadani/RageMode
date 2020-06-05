@@ -31,6 +31,10 @@ public class Items {
 		return gi[5];
 	}
 
+	public static ItemHandler getPressureMine() {
+		return gi[6];
+	}
+
 	public static ItemHandler getForceStarter() {
 		return li[0];
 	}

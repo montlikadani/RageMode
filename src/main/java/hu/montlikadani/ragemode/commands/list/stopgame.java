@@ -1,12 +1,16 @@
 package hu.montlikadani.ragemode.commands.list;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
+import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -39,10 +43,20 @@ public class stopgame implements ICommand {
 				return false;
 			}
 
-			RageScores.calculateWinner(game, g.getPlayersFromList());
+			List<PlayerManager> players = g.getPlayersFromList();
+			Utils.callEvent(new RMGameStopEvent(g, players));
 
-			for (Iterator<PlayerManager> it = g.getPlayersFromList().iterator(); it.hasNext();) {
+			RageScores.calculateWinner(game, players);
+
+			for (Iterator<PlayerManager> it = players.iterator(); it.hasNext();) {
 				Player player = it.next().getPlayer();
+
+				RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(g, player);
+				Utils.callEvent(gameLeaveEvent);
+				if (gameLeaveEvent.isCancelled()) {
+					continue;
+				}
+
 				g.removePlayer(player);
 			}
 

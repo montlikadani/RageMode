@@ -458,8 +458,10 @@ public class GameUtils {
 
 		if (!ConfigValues.isSavePlayerData()) {
 			// We still need some data saving
-			game.getPlayerManager(p).getStorePlayer().oldLocation = p.getLocation();
-			game.getPlayerManager(p).getStorePlayer().oldGameMode = p.getGameMode();
+			StorePlayerStuffs sp = game.getPlayerManager(p).getStorePlayer();
+			sp.oldLocation = p.getLocation();
+			sp.oldGameMode = p.getGameMode();
+			sp.currentBoard = p.getScoreboard();
 
 			p.setGameMode(GameMode.SURVIVAL);
 		} else {
@@ -638,6 +640,11 @@ public class GameUtils {
 		Utils.clearPlayerInventory(p);
 		p.setGameMode(GameMode.SURVIVAL);
 		p.setFlying(false);
+		p.setSprinting(false);
+		p.setAllowFlight(false);
+		p.setFlying(false);
+		p.setSneaking(false);
+		p.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 		p.setHealth(20);
 		p.setFoodLevel(20);
 		p.setFireTicks(0);

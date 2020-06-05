@@ -309,6 +309,8 @@ public class LobbyShop implements Listener {
 				item = Items.getCombatAxe();
 			} else if ("flash".equals(splitItem[0])) {
 				item = Items.getFlash();
+			} else if ("pressuremine".equals(splitItem[0]) || "mine".equals(splitItem[0])) {
+				item = Items.getPressureMine();
 			}
 
 			if (item == null) {

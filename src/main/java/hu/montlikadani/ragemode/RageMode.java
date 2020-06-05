@@ -70,7 +70,7 @@ public class RageMode extends JavaPlugin {
 	private final List<Game> games = new ArrayList<>();
 	private final Set<GameSpawn> spawns = new HashSet<>();
 
-	private final ItemHandler[] gameItems = new ItemHandler[6];
+	private final ItemHandler[] gameItems = new ItemHandler[7];
 	private final ItemHandler[] lobbyItems = new ItemHandler[3];
 
 	@Override
@@ -356,8 +356,19 @@ public class RageMode extends JavaPlugin {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.SNOWBALL)
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&fFlash")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 6));
+					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 6))
+					.setAmount(c.getInt(path + ".amount", 2));
 			gameItems[5] = itemHandler;
+		}
+
+		path = "gameitems.pressuremine";
+		if (c.contains(path)) {
+			ItemHandler itemHandler = new ItemHandler();
+			itemHandler.setItem(Material.STRING)
+					.setDisplayName(Utils.colors(c.getString(path + ".name", "&8PressureMine")))
+					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 7))
+					.setAmount(c.getInt(path + ".amount", 1));
+			gameItems[6] = itemHandler;
 		}
 
 		// Lobby items

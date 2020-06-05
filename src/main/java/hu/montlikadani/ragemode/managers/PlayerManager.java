@@ -74,6 +74,7 @@ public class PlayerManager {
 				sps.oldVehicle = player.getVehicle();
 		}
 
+		sps.currentBoard = player.getScoreboard();
 		sps.oldLocation = player.getLocation();
 		sps.oldGameMode = player.getGameMode();
 
@@ -134,6 +135,11 @@ public class PlayerManager {
 			player.setAllowFlight(sps.allowFly);
 			player.setFlying(sps.fly);
 		} else {
+			if (sps.currentBoard != null) {
+				player.setScoreboard(sps.currentBoard);
+				sps.currentBoard = null;
+			}
+
 			if (ConfigValues.isSavePlayerData()) {
 				if (sps.oldHealth > 0d) { // Give him his health back.
 					player.setHealth(sps.oldHealth);

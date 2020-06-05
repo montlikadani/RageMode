@@ -22,6 +22,7 @@ gameitems:
     lore:
     - "&7Right click, throws flash to players who's around 6 blocks"
     slot: 6
+    amount: 2
     velocity: 3.0
   rageArrow:
     name: "&7Rage Arrow"
@@ -35,6 +36,12 @@ gameitems:
     slot: 5
     velocity: 2.0
     amount: 2
+  pressuremine:
+    name: "&8PressureMine"
+    lore:
+    - "&7Place a string and if a player steps on it, explode!"
+    slot: 7
+    amount: 1
 
 lobbyitems:
   leavegameitem:
@@ -96,6 +103,18 @@ lobbyitems:
                   points: 270
                 lore:
                 - "&7When the game started, gives you some grenades."
+                - "&eAmount:&7 %amount%"
+                - "&eCost:&7 %cost%"
+                - "&eRequired points:&r %required_points%"
+              slot-5:
+                item: string
+                name: "&8Pressure mine"
+                giveitem: "mine:4"
+                cost:
+                  value: 580
+                  points: 0
+                lore:
+                - "&7When the game started, gives you some mines."
                 - "&eAmount:&7 %amount%"
                 - "&eCost:&7 %cost%"
                 - "&eRequired points:&r %required_points%"

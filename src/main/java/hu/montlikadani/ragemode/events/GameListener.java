@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.events;
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,8 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Egg;
 import org.bukkit.entity.Entity;
@@ -61,6 +64,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
+import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerKilledEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerPreRespawnEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerRespawnedEvent;
@@ -85,6 +89,7 @@ public class GameListener implements Listener {
 
 	private final Map<UUID, UUID> explosionVictims = new HashMap<>();
 	private final Map<UUID, UUID> grenadeExplosionVictims = new HashMap<>();
+	private final Map<Location, UUID> pressureMinesOwner = new HashMap<>();
 
 	public GameListener(RageMode plugin) {
 		this.plugin = plugin;
@@ -97,6 +102,31 @@ public class GameListener implements Listener {
 		if (GameUtils.USERPARTICLES.containsKey(player.getUniqueId())) {
 			GameUtils.USERPARTICLES.remove(player.getUniqueId());
 		}
+
+		Location loc = null;
+		for (Map.Entry<Location, UUID> entry : pressureMinesOwner.entrySet()) {
+			if (entry.getValue().equals(player.getUniqueId())) {
+				loc = entry.getKey();
+				break;
+			}
+		}
+
+		if (loc != null) {
+			loc.getBlock().setType(Material.AIR);
+			pressureMinesOwner.remove(loc);
+		}
+	}
+
+	/**
+	 * @param event 
+	 */
+	@EventHandler
+	public void onGameStop(RMGameStopEvent event) {
+		for (Map.Entry<Location, UUID> entry : pressureMinesOwner.entrySet()) {
+			entry.getKey().getBlock().setType(Material.AIR);
+		}
+
+		pressureMinesOwner.clear();
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
@@ -176,6 +206,10 @@ public class GameListener implements Listener {
 			new BukkitRunnable() {
 				@Override
 				public void run() {
+					if (flash.isDead()) {
+						return;
+					}
+
 					if (!GameUtils.isPlayerPlaying(shooter) || GameUtils.isPlayerInFreezeRoom(shooter)) {
 						flash.remove();
 						cancel();
@@ -552,14 +586,25 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent ev) {
-		if (GameUtils.isPlayerPlaying(ev.getPlayer()))
+		if (GameUtils.isPlayerPlaying(ev.getPlayer())) {
+			if (ev.getBlock().getType().equals(Material.TRIPWIRE)) {
+				pressureMinesOwner.put(ev.getBlock().getLocation(), ev.getPlayer().getUniqueId());
+				return;
+			}
+
 			ev.setCancelled(true);
+		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockBreak(BlockBreakEvent event) {
-		if (GameUtils.isPlayerPlaying(event.getPlayer()))
+		if (GameUtils.isPlayerPlaying(event.getPlayer())) {
+			if (explodeMine(event.getPlayer(), event.getBlock().getLocation())) {
+				return;
+			}
+
 			event.setCancelled(true);
+		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
@@ -929,7 +974,9 @@ public class GameListener implements Listener {
 
 		Game game = GameUtils.getGameByPlayer(p);
 
-		if (game.getStatus() == GameStatus.GAMEFREEZE && GameUtils.isGameInFreezeRoom(game)) {
+		if (game.getStatus() == GameStatus.RUNNING) { // pressure mine
+			explodeMine(p, p.getLocation());
+		} else if (game.getStatus() == GameStatus.GAMEFREEZE && GameUtils.isGameInFreezeRoom(game)) {
 			if (!ConfigValues.isFreezePlayers()) {
 				return;
 			}
@@ -956,6 +1003,53 @@ public class GameListener implements Listener {
 
 			GameUtils.broadcastToGame(game, RageMode.getLang().get("game.void-fall", "%player%", p.getName()));
 		}
+	}
+
+	// TODO: check when the pressure mine is exploded
+	/*@EventHandler
+	public void onExplode(BlockExplodeEvent e) {
+		explodeMine(null, e.getBlock().getLocation());
+	}*/
+
+	private boolean explodeMine(Player p, Location currentLoc) {
+		Block b = currentLoc.getBlock();
+
+		if (b.getRelative(BlockFace.DOWN).getType().equals(Material.TRIPWIRE) || b.getType().equals(Material.TRIPWIRE)) {
+			Collection<Entity> nears = currentLoc.getNearbyEntities(10, 10, 10);
+			Location explodeLoc = new Location(currentLoc.getWorld(), currentLoc.getX(), currentLoc.getY() + 1,
+					currentLoc.getZ());
+
+			explodeLoc.createExplosion(4f, false, false);
+			b.setType(Material.AIR);
+
+			for (Entity entities : nears) {
+				if (entities instanceof Player) {
+					final Player near = (Player) entities;
+
+					if (explosionVictims.containsKey(near.getUniqueId())) {
+						explosionVictims.remove(near.getUniqueId());
+					}
+
+					if (p != null) {
+						explosionVictims.put(near.getUniqueId(), p.getUniqueId());
+					} else {
+						nears.stream().filter(n -> !(n instanceof Player))
+								.forEach(n -> explosionVictims.put(near.getUniqueId(), n.getUniqueId()));
+					}
+
+					near.removeMetadata("killedWith", plugin);
+					near.setMetadata("killedWith", new FixedMetadataValue(plugin, "explosion"));
+				}
+			}
+
+			if (pressureMinesOwner.containsKey(currentLoc)) {
+				pressureMinesOwner.remove(currentLoc);
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private void setTrails(final Projectile proj) {

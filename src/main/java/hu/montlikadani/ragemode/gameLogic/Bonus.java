@@ -64,6 +64,8 @@ public class Bonus {
 					item = Items.getCombatAxe();
 				} else if ("flash".equals(gameItem)) {
 					item = Items.getFlash();
+				} else if ("pressuremine".equals(gameItem) || "mine".equals(gameItem)) {
+					item = Items.getPressureMine();
 				}
 
 				if (item == null) {
@@ -71,7 +73,8 @@ public class Bonus {
 				}
 
 				int amount = 1;
-				if ("grenade".equals(gameItem)) {
+				if ("grenade".equals(gameItem) || "flash".equals(gameItem) || "pressuremine".equals(gameItem)
+						|| "mine".equals(gameItem)) {
 					// clone the item to make sure we are not modifying anything
 					item = (ItemHandler) item.clone();
 
