@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.events;
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -95,7 +96,10 @@ public class EventListener implements Listener {
 				return;
 			}
 
-			GameUtils.joinPlayer(p, GameUtils.getGame(name));
+			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
+				GameUtils.joinPlayer(p, GameUtils.getGame(name));
+Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () ->
+    GameUtils.joinPlayer(p, GameUtils.getGame(name)), 5L);
 		}
 	}
 
