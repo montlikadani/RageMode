@@ -98,7 +98,8 @@ public class EventListener implements Listener {
 
 			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
 				GameUtils.joinPlayer(p, GameUtils.getGame(name));
-			}, 5L);
+Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () ->
+    GameUtils.joinPlayer(p, GameUtils.getGame(name)), 5L);
 		}
 	}
 
