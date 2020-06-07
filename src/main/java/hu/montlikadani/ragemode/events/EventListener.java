@@ -75,8 +75,9 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onInteract(PlayerInteractEvent event) {
-		Player p = event.getPlayer();
-		Block b = event.getClickedBlock();
+		final Player p = event.getPlayer();
+		final Block b = event.getClickedBlock();
+
 		if (ConfigValues.isSignsEnable() && b != null && b.getState() instanceof Sign
 				&& event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			if (!hasPerm(p, "ragemode.join.sign")) {
@@ -88,7 +89,7 @@ public class EventListener implements Listener {
 				return;
 			}
 
-			String name = SignCreator.getSignData(b.getLocation()) != null
+			final String name = SignCreator.getSignData(b.getLocation()) != null
 					? SignCreator.getSignData(b.getLocation()).getGame()
 					: null;
 			if (name == null || !GameUtils.isGameWithNameExists(name)) {
@@ -96,10 +97,8 @@ public class EventListener implements Listener {
 				return;
 			}
 
-			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
-				GameUtils.joinPlayer(p, GameUtils.getGame(name));
-Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () ->
-    GameUtils.joinPlayer(p, GameUtils.getGame(name)), 5L);
+			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () ->
+				GameUtils.joinPlayer(p, GameUtils.getGame(name)), 3L);
 		}
 	}
 
