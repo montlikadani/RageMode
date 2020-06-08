@@ -32,7 +32,7 @@ public class CombatAxeThread {
 
 					// To prevent async catch
 					RageMode.getInstance().getServer().getScheduler().runTask(RageMode.getInstance(), () -> {
-						for (Entity entity : item.getNearbyEntities(0.3D, 0.3D, 0.3D)) {
+						for (Entity entity : item.getNearbyEntities(0.4D, 0.5D, 0.4D)) {
 							if (!running) {
 								break;
 							}

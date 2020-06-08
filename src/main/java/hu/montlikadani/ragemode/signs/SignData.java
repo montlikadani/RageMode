@@ -36,7 +36,7 @@ public class SignData {
 		this.y = loc.getBlockY();
 		this.z = loc.getBlockZ();
 
-		this.game = game;
+		this.game = game == null ? "" : game;
 		this.placeholder = placeholder;
 	}
 
@@ -81,7 +81,7 @@ public class SignData {
 		}
 
 		Sign sign = (Sign) b.getState();
-		if (placeholder != null && game != null && GameUtils.isGameWithNameExists(game)) {
+		if (placeholder != null && GameUtils.isGameWithNameExists(game)) {
 			if (placeholder.getLines().size() > 4 || placeholder.getLines().size() < 4) {
 				Bukkit.getLogger().log(Level.INFO, "In the configuration the signs lines is equal to 4.");
 				return;

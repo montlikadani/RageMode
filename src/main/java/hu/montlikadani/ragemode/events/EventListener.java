@@ -3,7 +3,6 @@ package hu.montlikadani.ragemode.events;
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -16,6 +15,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.EquipmentSlot;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
@@ -75,6 +75,10 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onInteract(PlayerInteractEvent event) {
+		if (event.getHand() != EquipmentSlot.HAND) {
+			return;
+		}
+
 		final Player p = event.getPlayer();
 		final Block b = event.getClickedBlock();
 
@@ -97,8 +101,7 @@ public class EventListener implements Listener {
 				return;
 			}
 
-			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () ->
-				GameUtils.joinPlayer(p, GameUtils.getGame(name)), 3L);
+			GameUtils.joinPlayer(p, GameUtils.getGame(name));
 		}
 	}
 
