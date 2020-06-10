@@ -1,10 +1,5 @@
 package hu.montlikadani.ragemode.config;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * @author montlikadani
  */
@@ -103,20 +98,6 @@ public class ConfigValues {
 	private static int rejoinDelaySecond;
 	private static int killBonusChance;
 
-	private static List<String> signsList;
-	private static List<String> actionBarActions;
-	private static List<String> bossBarActions;
-	private static List<Integer> lobbyTitleStartMsgs;
-	private static List<String> spectatorCmds;
-	private static List<Integer> lobbyTimeMsgs;
-	private static List<Integer> gameEndBc;
-	private static List<String> tabHeader;
-	private static List<String> tabFooter;
-	private static List<String> sbContent;
-	private static List<String> allowedCmds;
-	private static List<String> cmdsForPlayerLeave;
-	private static List<String> killBonuses;
-
 	public static void loadValues(FileConfig f) {
 		lang = f.get("language", "en");
 		checkForUpdates = f.get("check-for-updates", true);
@@ -144,14 +125,8 @@ public class ConfigValues {
 		signGameWaiting = f.get("signs.game.waiting", "&cWaiting...");
 		signGameFull = f.get("signs.game.full", "&4FULL");
 		signGameLocked = f.get("signs.game.locked", "&9Locked");
-		signsList = f.get("signs.list", Arrays.asList("&3[&5RageMode&3]", "&a%game%",
-				"&ePlayers&3 [%current-players%/%max-players%&3]", "%running%"));
 		signBackground = f.get("signs.background.enable", false);
 		signBackgrType = f.get("signs.background.type", "none");
-		actionBarActions = f.get("actionbar-messages.actions",
-				Arrays.asList("start:&aGame has started!&2 We wish you a good game!"));
-		bossBarActions = f.get("bossbar-messages.actions",
-				Arrays.asList("start:&bWelcome&a %player%&b to the&c %game%&b game!:SEGMENTED_6:GREEN"));
 		titleJoinGame = f.get("titles.join-game.title", "&e%game%");
 		subtitleJoinGame = f.get("titles.join-game.subtitle", "&3by yourname");
 		joinTitleTime = f.get("titles.join-game.time", "20, 50, 20");
@@ -159,8 +134,6 @@ public class ConfigValues {
 		lobbyTitle = f.get("titles.lobby-waiting.title", "");
 		subtitleLobby = f.get("titles.lobby-waiting.subtitle", "&9%time%");
 		lobbyTitleTime = f.get("titles.lobby-waiting.time", "10, 30, 10");
-		lobbyTitleStartMsgs = f.get("titles.lobby-waiting.values-to-send-start-message",
-				new ArrayList<Integer>(Arrays.asList(5, 4, 3, 2, 1)));
 		wonTitle = f.get("titles.player-won.title", "&2Congratulations!");
 		wonsubtitle = f.get("titles.player-won.subtitle", "&e%winner%&6 won this round!");
 		wonTitleTime = f.get("titles.player-won.time", "20, 80, 20");
@@ -168,19 +141,14 @@ public class ConfigValues {
 		youwonsubtitle = f.get("titles.you-won.subtitle", "&2You won this round!");
 		youwonTitleTime = f.get("titles.you-won.time", "20, 80, 20");
 		spectatorEnable = f.get("spectator.enable", true);
-		spectatorCmds = f.get("spectator.allowed-spectator-commands", Arrays.asList("/rm leave", "/ragemode leave"));
 		chatEnableinLobby = f.get("lobby.enable-chat-in-lobby", true);
 		playerLevelAsTimeCounter = f.get("lobby.player-level-as-time-counter", false);
-		lobbyTimeMsgs = f.get("lobby.values-to-send-start-message",
-				new ArrayList<Integer>(Arrays.asList(30, 20, 10, 5, 4, 3, 2, 1)));
 		playersCanJoinRandomToRunningGames = f.get("players-can-join-random-to-running-games", true);
 		perJoinPermissions = f.get("per-join-permissions", false);
 		damagePlayerFall = f.get("game.damage-player-fall", false);
 		preventFastBowEvent = f.get("game.prevent-fastbow-event", true);
 		respawnProtectTime = f.get("game.respawn-protection", 3);
 		hidePlayerNameTag = f.get("game.hide-players-name-tag", false);
-		gameEndBc = f.get("game.values-to-send-game-end-broadcast",
-				new ArrayList<Integer>(Arrays.asList(60, 30, 20, 10, 5, 4, 3, 2, 1)));
 		cancelRedstoneActivating = f.get("game.cancel-redstone-activating-blocks", true);
 		cancelDoorUse = f.get("game.cancel-door-use", false);
 		gameFreezeTime = f.get("game.game-freeze.time", 10);
@@ -201,18 +169,10 @@ public class ConfigValues {
 		tabPrefix = f.get("game.tablist.player-format.prefix", "");
 		tabSuffix = f.get("game.tablist.player-format.suffix", "&e %kills%");
 		tabEnable = f.get("game.tablist.list.enable", false);
-		tabHeader = f.get("game.tablist.list.header",
-				Arrays.asList("&cRage&bMode&e minigame stats", "&aYour kills/deaths:&e %kd%"));
-		tabFooter = f.get("game.tablist.list.footer", Arrays.asList("&6Points:&e %points%"));
 		scoreboardEnable = f.get("game.scoreboard.enable", true);
 		sbTitle = f.get("game.scoreboard.title", "&6RageMode");
-		sbContent = f.get("game.scoreboard.content",
-				Arrays.asList("", "&7------", "&aPoints:&e %points%", "", "&5Wins:&e %wins%", "&7------", ""));
 		enableChatFormat = f.get("game.chat-format.enable", false);
 		chatFormat = f.get("game.chat-format.format", "&e[%points%]&r %player%&7:&r %message%");
-		allowedCmds = f.get("game.allowed-commands",
-				Arrays.asList("/rm leave", "/ragemode leave", "/ragemode stopgame"));
-		cmdsForPlayerLeave = f.get("game.run-commands-for-player-left-while-playing", Collections.emptyList());
 		restartServer = f.get("game.game-stop.restart-server", false);
 		stopServer = f.get("game.game-stop.stop-server", false);
 		rejoinDelayEnabled = f.get("rejoin-delay.enabled", false);
@@ -222,8 +182,6 @@ public class ConfigValues {
 		rejoinDelaySecond = f.get("rejoin-delay.times.second", 30);
 		rewardEnable = f.get("rewards.enable", true);
 		killBonusChance = f.get("bonuses.kill-bonuses.chance", 75);
-		killBonuses = f.get("bonuses.kill-bonuses.list",
-				Arrays.asList("effect:regeneration:20:2", "effect:speed:30:1", "points:15"));
 		bowKill = f.get("points.bowkill", 25);
 		axeKill = f.get("points.axekill", 30);
 		axeDeath = f.get("points.axedeath", -50);
@@ -337,10 +295,6 @@ public class ConfigValues {
 		return signGameLocked;
 	}
 
-	public static List<String> getSignsList() {
-		return signsList;
-	}
-
 	@Deprecated
 	public static boolean isSignBackground() {
 		return signBackground;
@@ -348,14 +302,6 @@ public class ConfigValues {
 
 	public static String getSignBackground() {
 		return signBackgrType;
-	}
-
-	public static List<String> getActionbarActions() {
-		return actionBarActions;
-	}
-
-	public static List<String> getBossbarActions() {
-		return bossBarActions;
 	}
 
 	public static String getTitleJoinGame() {
@@ -386,10 +332,6 @@ public class ConfigValues {
 		return lobbyTitleTime;
 	}
 
-	public static List<Integer> getLobbyTitleStartMsgs() {
-		return lobbyTitleStartMsgs;
-	}
-
 	public static String getWonTitle() {
 		return wonTitle;
 	}
@@ -418,10 +360,6 @@ public class ConfigValues {
 		return spectatorEnable;
 	}
 
-	public static List<String> getSpectatorCmds() {
-		return spectatorCmds;
-	}
-
 	public static boolean isChatEnabledinLobby() {
 		return chatEnableinLobby;
 	}
@@ -438,10 +376,6 @@ public class ConfigValues {
 		return perJoinPermissions;
 	}
 
-	public static List<Integer> getLobbyTimeMsgs() {
-		return lobbyTimeMsgs;
-	}
-
 	public static boolean isDamagePlayerFall() {
 		return damagePlayerFall;
 	}
@@ -452,10 +386,6 @@ public class ConfigValues {
 
 	public static int getRespawnProtectTime() {
 		return respawnProtectTime;
-	}
-
-	public static List<Integer> getGameEndBcs() {
-		return gameEndBc;
 	}
 
 	public static boolean isCancelRedstoneActivate() {
@@ -534,14 +464,6 @@ public class ConfigValues {
 		return tabEnable;
 	}
 
-	public static List<String> getTabHeader() {
-		return tabHeader;
-	}
-
-	public static List<String> getTabFooter() {
-		return tabFooter;
-	}
-
 	public static boolean isScoreboardEnabled() {
 		return scoreboardEnable;
 	}
@@ -550,24 +472,12 @@ public class ConfigValues {
 		return sbTitle;
 	}
 
-	public static List<String> getSbContent() {
-		return sbContent;
-	}
-
 	public static boolean isChatFormatEnabled() {
 		return enableChatFormat;
 	}
 
 	public static String getChatFormat() {
 		return chatFormat;
-	}
-
-	public static List<String> getAllowedCmds() {
-		return allowedCmds;
-	}
-
-	public static List<String> getCmdsForPlayerLeave() {
-		return cmdsForPlayerLeave;
 	}
 
 	public static boolean isRestartServerEnabled() {
@@ -600,10 +510,6 @@ public class ConfigValues {
 
 	public static boolean isRewardEnabled() {
 		return rewardEnable;
-	}
-
-	public static List<String> getKillBonuses() {
-		return killBonuses;
 	}
 
 	public static int getKillBonusChance() {

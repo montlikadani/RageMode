@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.config;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.configuration.file.FileConfiguration;
@@ -31,16 +30,6 @@ public class FileConfig {
 
 	public String get(String path, String def) {
 		return c.getString(path, def);
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<String> get(String path, List<String> list) {
-		return (List<String>) c.getList(path, list);
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<Integer> get(String path, ArrayList<Integer> list) {
-		return (List<Integer>) c.getList(path, list);
 	}
 
 	public int get(String path, int def) {

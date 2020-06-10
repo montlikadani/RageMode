@@ -41,7 +41,8 @@ public class SignCreator {
 		if (list.isEmpty())
 			return false;
 
-		signPlaceholder = new SignPlaceholder(ConfigValues.getSignsList());
+		signPlaceholder = new SignPlaceholder(
+				RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list"));
 
 		int totalSigns = 0;
 

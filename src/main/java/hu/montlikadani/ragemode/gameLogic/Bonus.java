@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.items.Items;
 import hu.montlikadani.ragemode.libs.Sounds;
@@ -19,7 +19,8 @@ public class Bonus {
 			return;
 		}
 
-		List<String> list = ConfigValues.getKillBonuses();
+		List<String> list = RageMode.getInstance().getConfiguration().getCfg()
+				.getStringList("bonuses.kill-bonuses.list");
 		for (String b : list) {
 			if (b.contains("effect:")) {
 				b = b.replace("effect:", "");
@@ -56,16 +57,27 @@ public class Bonus {
 
 				String[] split = b.split(":");
 				String gameItem = split.length > 1 ? split[0].toLowerCase() : null;
+				if (gameItem == null) {
+					continue;
+				}
 
 				ItemHandler item = null;
-				if ("grenade".equals(gameItem)) {
+				switch (gameItem) {
+				case "grenade":
 					item = Items.getGrenade();
-				} else if ("combataxe".equals(gameItem)) {
+					break;
+				case "combataxe":
 					item = Items.getCombatAxe();
-				} else if ("flash".equals(gameItem)) {
+					break;
+				case "flash":
 					item = Items.getFlash();
-				} else if ("pressuremine".equals(gameItem) || "mine".equals(gameItem)) {
+					break;
+				case "pressuremine":
+				case "mine":
 					item = Items.getPressureMine();
+					break;
+				default:
+					continue;
 				}
 
 				if (item == null) {
@@ -97,7 +109,8 @@ public class Bonus {
 	}
 
 	public static int getPointBonus() {
-		List<String> list = ConfigValues.getKillBonuses();
+		List<String> list = RageMode.getInstance().getConfiguration().getCfg()
+				.getStringList("bonuses.kill-bonuses.list");
 		for (String b : list) {
 			if (!b.contains("points:")) {
 				continue;

@@ -4,7 +4,6 @@ import java.util.TimerTask;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
@@ -41,8 +40,9 @@ public class GameTimer extends TimerTask {
 			}
 
 			// Broadcast time message should be in this place, before counting
-			for (int val : ConfigValues.getGameEndBcs()) {
-				if (time == val) {
+			for (String val : RageMode.getInstance().getConfiguration().getCfg()
+					.getStringList("game.values-to-send-game-end-broadcast")) {
+				if (time == Integer.parseInt(val)) {
 					GameUtils.broadcastToGame(game,
 							RageMode.getLang().get("game.broadcast.game-end", "%time%", Utils.getFormattedTime(time)));
 					break;

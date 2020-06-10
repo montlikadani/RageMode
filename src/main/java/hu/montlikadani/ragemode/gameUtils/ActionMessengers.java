@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.bukkit.entity.Player;
 
+import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
@@ -59,7 +60,10 @@ public class ActionMessengers {
 			return;
 		}
 
-		List<String> tabHeader = ConfigValues.getTabHeader(), tabFooter = ConfigValues.getTabFooter();
+		List<String> tabHeader = RageMode.getInstance().getConfiguration().getCfg()
+				.getStringList("game.tablist.list.header"),
+				tabFooter = RageMode.getInstance().getConfiguration().getCfg()
+						.getStringList("game.tablist.list.footer");
 
 		String header = "", footer = "";
 		int s = 0;
@@ -110,7 +114,7 @@ public class ActionMessengers {
 			gameBoard.setTitle(player, boardTitle);
 		}
 
-		List<String> rows = ConfigValues.getSbContent();
+		List<String> rows = RageMode.getInstance().getConfiguration().getCfg().getStringList("game.scoreboard.content");
 		if (!rows.isEmpty()) {
 			int scores = rows.size();
 

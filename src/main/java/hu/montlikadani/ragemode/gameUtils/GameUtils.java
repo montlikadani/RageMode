@@ -602,7 +602,8 @@ public class GameUtils {
 			if (status == GameStatus.RUNNING) {
 				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
 
-				List<String> list = ConfigValues.getCmdsForPlayerLeave();
+				List<String> list = RageMode.getInstance().getConfiguration().getCfg()
+						.getStringList("game.run-commands-for-player-left-while-playing");
 				for (String cmds : list) {
 					cmds = cmds.replace("%player%", p.getName());
 					// For ipban
@@ -797,7 +798,7 @@ public class GameUtils {
 		} else if (!ConfigValues.isDefaultActionbarEnabled())
 			return;
 
-		List<String> list = ConfigValues.getActionbarActions();
+		List<String> list = conf.getCfg().getStringList("actionbar-messages.actions");
 		for (String msg : list) {
 			if (msg.split(":").length < 2 && msg.split(":").length > 2) {
 				Debug.logConsole(Level.WARNING,
@@ -844,13 +845,15 @@ public class GameUtils {
 			return;
 		}
 
-		if (RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + game + ".bossbar")) {
-			if (!RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + game + ".bossbar"))
+		Configuration conf = RageMode.getInstance().getConfiguration();
+
+		if (conf.getArenasCfg().isSet("arenas." + game + ".bossbar")) {
+			if (!conf.getArenasCfg().getBoolean("arenas." + game + ".bossbar"))
 				return;
 		} else if (!ConfigValues.isDefaultBossbarEnabled())
 			return;
 
-		List<String> list = ConfigValues.getBossbarActions();
+		List<String> list = conf.getCfg().getStringList("bossbar-messages.actions");
 		for (String msg : list) {
 			String[] split = msg.split(":");
 			if (split.length < 2) {

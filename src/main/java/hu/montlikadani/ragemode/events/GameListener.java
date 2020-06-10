@@ -618,7 +618,7 @@ public class GameListener implements Listener {
 		String arg = event.getMessage().trim().toLowerCase();
 
 		if (ConfigValues.isSpectatorEnabled() && GameUtils.isSpectatorPlaying(p)) {
-			List<String> cmds = ConfigValues.getSpectatorCmds();
+			List<String> cmds = plugin.getConfiguration().getCfg().getStringList("spectator.allowed-spectator-commands");
 			if (!cmds.isEmpty() && !cmds.contains(arg) && !hasPerm(p, "ragemode.bypass.spectatorcommands")) {
 				sendMessage(p, RageMode.getLang().get("game.this-command-is-disabled-in-game"));
 				event.setCancelled(true);
@@ -633,7 +633,7 @@ public class GameListener implements Listener {
 				return;
 			}
 
-			List<String> cmds = ConfigValues.getAllowedCmds();
+			List<String> cmds = plugin.getConfiguration().getCfg().getStringList("game.allowed-commands");
 			if (!cmds.isEmpty() && !cmds.contains(arg) && !hasPerm(p, "ragemode.bypass.disabledcommands")) {
 				sendMessage(p, RageMode.getLang().get("game.this-command-is-disabled-in-game"));
 				event.setCancelled(true);

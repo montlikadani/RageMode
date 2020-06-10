@@ -60,11 +60,11 @@ public class LobbyTimer extends TimerTask {
 			return;
 		}
 
-		List<Integer> values = ConfigValues.getLobbyTimeMsgs();
-		for (int val : values) {
-			if (time == val) {
-				GameUtils.broadcastToGame(game,
-						RageMode.getLang().get("game.lobby.start-message", "%time%", time));
+		List<String> values = RageMode.getInstance().getConfiguration().getCfg()
+				.getStringList("lobby.values-to-send-start-message");
+		for (String val : values) {
+			if (time == Integer.parseInt(val)) {
+				GameUtils.broadcastToGame(game, RageMode.getLang().get("game.lobby.start-message", "%time%", val));
 				break;
 			}
 		}
@@ -77,17 +77,18 @@ public class LobbyTimer extends TimerTask {
 		}
 
 		if (ConfigValues.isLobbyTitle()) {
-			List<Integer> titleValues = ConfigValues.getLobbyTitleStartMsgs();
-			for (int val : titleValues) {
-				if (time == val) {
+			List<String> titleValues = RageMode.getInstance().getConfiguration().getCfg()
+					.getStringList("titles.lobby-waiting.values-to-send-start-message");
+			for (String val : titleValues) {
+				if (time == Integer.parseInt(val)) {
 					String title = ConfigValues.getLobbyTitle(),
 							sTitle = ConfigValues.getLobbySubTitle(),
 							times = ConfigValues.getLobbyTitleTime();
 
-					title = title.replace("%time%", Integer.toString(time));
+					title = title.replace("%time%", val);
 					title = title.replace("%game%", game.getName());
 
-					sTitle = sTitle.replace("%time%", Integer.toString(time));
+					sTitle = sTitle.replace("%time%", val);
 					sTitle = sTitle.replace("%game%", game.getName());
 
 					for (PlayerManager pm : list) {
