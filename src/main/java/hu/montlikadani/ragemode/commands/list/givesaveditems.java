@@ -33,8 +33,49 @@ public class givesaveditems implements ICommand {
 		}
 
 		if (args.length < 2) {
-			sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%", "/rm givesaveditems <player> [true]"));
+			sendMessage(sender,
+					RageMode.getLang().get("missing-arguments", "%usage%", "/rm givesaveditems <player/all> [true]"));
 			return false;
+		}
+
+		if (args[1].equalsIgnoreCase("all")) {
+			for (Player t : Bukkit.getOnlinePlayers()) {
+				if (GameUtils.isPlayerPlaying(t)) {
+					continue;
+				}
+
+				FileConfiguration datas = plugin.getConfiguration().getDatasCfg();
+				if (!datas.contains("datas." + t.getName())) {
+					continue;
+				}
+
+				for (String names : datas.getConfigurationSection("datas").getKeys(false)) {
+					if (names.equalsIgnoreCase(t.getName())) {
+						Utils.clearPlayerInventory(t);
+
+						List<?> contentList = datas.getList("datas." + names + ".contents");
+						t.getInventory().setContents(contentList.toArray(new ItemStack[contentList.size()]));
+
+						List<?> armorList = datas.getList("datas." + names + ".armor-contents");
+						t.getInventory().setArmorContents(armorList.toArray(new ItemStack[armorList.size()]));
+
+						t.setExp(datas.getInt("datas." + names + ".exp"));
+						t.setLevel(datas.getInt("datas." + names + ".level"));
+						t.setGameMode(GameMode.valueOf(datas.getString("datas." + names + ".game-mode")));
+						break;
+					}
+				}
+
+				// Confirmation to remove from file
+				if (args.length == 3) {
+					if (args[2].equalsIgnoreCase("true") || args[2].equalsIgnoreCase("yes")) {
+						datas.set("datas." + t.getName(), null);
+						Configuration.saveFile(datas, plugin.getConfiguration().getDatasFile());
+					}
+				}
+			}
+
+			return true;
 		}
 
 		Player target = Bukkit.getPlayer(args[1]);
@@ -44,13 +85,15 @@ public class givesaveditems implements ICommand {
 		}
 
 		if (GameUtils.isPlayerPlaying(target)) {
-			sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.player-is-in-game", "%player%", args[1]));
+			sendMessage(sender,
+					RageMode.getLang().get("commands.givesaveditems.player-is-in-game", "%player%", args[1]));
 			return false;
 		}
 
 		FileConfiguration datas = plugin.getConfiguration().getDatasCfg();
 		if (!datas.contains("datas." + args[1])) {
-			sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.player-not-found-in-data-file", "%player%", args[1]));
+			sendMessage(sender, RageMode.getLang().get("commands.givesaveditems.player-not-found-in-data-file",
+					"%player%", args[1]));
 			return false;
 		}
 

@@ -139,7 +139,7 @@ public class RmCommand implements CommandExecutor {
 					msg += "&7-&6 /rm forcestart <gameName>&a - Forces the specified game to start.\n";
 
 				if (hasPerm(sender, "ragemode.admin.givesaveditems"))
-					msg += "&7-&6 /rm givesaveditems <player> [true]&a - Returns the saved inventory to the player.\n";
+					msg += "&7-&6 /rm givesaveditems <player/all> [true]&a - Returns the saved inventory to the player.\n";
 
 				if (hasPerm(sender, "ragemode.admin.latestart"))
 					msg += "&7-&6 /rm latestart <timeInSeconds>&a - Increases the current lobby waiting time.\n";

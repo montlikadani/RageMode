@@ -781,7 +781,6 @@ public class GameListener implements Listener {
 					&& GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING) {
 				final Item item = p.getWorld().dropItem(p.getEyeLocation(), NMS.getItemInHand(p));
 
-				item.setCanMobPickup(false);
 				p.getInventory().remove(Items.getCombatAxe().getItem());
 
 				double velocity = plugin.getConfiguration().getItemsCfg().getDouble("gameitems.combatAxe.velocity", 2D);
@@ -1013,12 +1012,13 @@ public class GameListener implements Listener {
 	private boolean explodeMine(Player p, Location currentLoc) {
 		Block b = currentLoc.getBlock();
 
-		if (b.getRelative(BlockFace.DOWN).getType().equals(Material.TRIPWIRE) || b.getType().equals(Material.TRIPWIRE)) {
-			Collection<Entity> nears = currentLoc.getNearbyEntities(10, 10, 10);
+		if (b.getRelative(BlockFace.DOWN).getType().equals(Material.TRIPWIRE)
+				|| b.getType().equals(Material.TRIPWIRE)) {
+			Collection<Entity> nears = currentLoc.getWorld().getNearbyEntities(currentLoc, 10, 10, 10);
 			Location explodeLoc = new Location(currentLoc.getWorld(), currentLoc.getX(), currentLoc.getY() + 1,
 					currentLoc.getZ());
 
-			explodeLoc.createExplosion(4f, false, false);
+			explodeLoc.getWorld().createExplosion(explodeLoc, 4f, false, false);
 			b.setType(Material.AIR);
 
 			for (Entity entities : nears) {
