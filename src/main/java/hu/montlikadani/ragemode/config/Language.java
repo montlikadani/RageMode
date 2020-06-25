@@ -24,8 +24,7 @@ public class Language {
 	private RageMode plugin;
 	private String lang;
 
-	private File localeFolder = null;
-	private File langFile = null;
+	private File localeFolder = null, langFile = null;
 
 	public Language(RageMode plugin) {
 		this.plugin = plugin;

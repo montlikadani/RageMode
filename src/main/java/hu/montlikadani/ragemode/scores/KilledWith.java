@@ -2,12 +2,12 @@ package hu.montlikadani.ragemode.scores;
 
 public enum KilledWith {
 
-	RAGEBOW("ragebow"), COMBATAXE("combataxe"), RAGEKNIFE("rageknife"), EXPLOSION("explosion"), GRENADE("grenade");
+	RAGEBOW, COMBATAXE, RAGEKNIFE, EXPLOSION, GRENADE;
 
 	private String name;
 
-	KilledWith(String name) {
-		this.name = name;
+	KilledWith() {
+		this.name = toString().toLowerCase();
 	}
 
 	public String getName() {

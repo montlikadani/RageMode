@@ -17,7 +17,7 @@ public class ActionMessengers {
 	private Game game;
 	private Player player;
 
-	private final TabTitles gameTab;
+	private final TabTitles gameTab = new TabTitles();
 	private final ScoreBoard gameBoard = new ScoreBoard();
 	private final ScoreTeam scoreTeam;
 
@@ -25,9 +25,7 @@ public class ActionMessengers {
 		this.game = game;
 		this.player = player;
 
-		gameTab = new TabTitles(player);
 		scoreTeam = new ScoreTeam(player);
-
 		gameBoard.loadScoreboard(player);
 	}
 
@@ -144,6 +142,6 @@ public class ActionMessengers {
 		prefix = Utils.setPlaceholders(prefix, player);
 		suffix = Utils.setPlaceholders(suffix, player);
 
-		scoreTeam.setTeam(player, prefix, suffix);
+		scoreTeam.setTeam(prefix, suffix);
 	}
 }

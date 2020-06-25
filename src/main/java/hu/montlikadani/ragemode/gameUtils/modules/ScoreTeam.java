@@ -1,6 +1,12 @@
 package hu.montlikadani.ragemode.gameUtils.modules;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
+
+import hu.montlikadani.ragemode.NMS;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class ScoreTeam {
 
@@ -15,22 +21,56 @@ public class ScoreTeam {
 	}
 
 	/**
-	 * Sets the current player prefix/suffix.
-	 * @param player Player
+	 * Sets the current player prefix/suffix if the player is in game.
 	 * @param prefix String
 	 * @param suffix String
 	 */
-	public void setTeam(Player player, String prefix, String suffix) {
-		// TODO: Work with scoreboard teams to prevent showing formats
-		// without playing in a game
-		player.setPlayerListName(prefix + player.getName() + suffix);
+	public void setTeam(String prefix, String suffix) {
+		if (!GameUtils.isPlayerPlaying(player)) {
+			remove();
+			return;
+		}
+
+		final Scoreboard scoreboard = player.getScoreboard();
+		final String teamName = player.getName();
+		Team team = scoreboard.getTeam(teamName);
+		if (team == null) {
+			team = scoreboard.registerNewTeam(teamName);
+		}
+
+		NMS.addEntry(player, team);
+
+		// Retrieves the last char from prefix
+		ChatColor color = ChatColor.getByChar(prefix.substring(prefix.length() - 1));
+		if (color != null)
+			team.setColor(color);
+
+		prefix = NMS.splitStringByVersion(prefix);
+		suffix = NMS.splitStringByVersion(suffix);
+
+		team.setPrefix(prefix);
+		team.setSuffix(suffix);
+
+		GameUtils.getGameByPlayer(player).getAllPlayers().stream()
+				.filter(pl -> pl.getPlayer().getScoreboard() == scoreboard)
+				.forEach(pl -> pl.getPlayer().setScoreboard(scoreboard));
 	}
 
 	/**
-	 * Removes the team from player
-	 * @param player Player
+	 * Removes the team from player if the team exists.
 	 */
 	public void remove() {
-		player.setPlayerListName(player.getName());
+		final Scoreboard scoreboard = player.getScoreboard();
+		Team team = scoreboard.getTeam(player.getName());
+		if (team == null) {
+			return;
+		}
+
+		NMS.removeEntry(player, scoreboard);
+		team.unregister();
+
+		if (GameUtils.isPlayerPlaying(player)) {
+			GameUtils.getGameByPlayer(player).getAllPlayers().forEach(pl -> pl.getPlayer().setScoreboard(scoreboard));
+		}
 	}
 }

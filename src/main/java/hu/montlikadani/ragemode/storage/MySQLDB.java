@@ -130,10 +130,7 @@ public class MySQLDB {
 	 * Saves all players data to the database.
 	 */
 	public static void saveData() {
-		List<PlayerPoints> list = RuntimePPManager.getRuntimePPList();
-		for (PlayerPoints pp : list) {
-			addPlayerStatistics(pp);
-		}
+		RuntimePPManager.getRuntimePPList().forEach(MySQLDB::addPlayerStatistics);
 	}
 
 	/**

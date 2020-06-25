@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.gameUtils.modules;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -15,7 +16,8 @@ public class ActionBar {
 			return;
 		}
 
-		if (message == null) message = "";
+		if (message == null)
+			message = "";
 
 		String nmsver = Bukkit.getServer().getClass().getPackage().getName();
 		nmsver = nmsver.substring(nmsver.lastIndexOf(".") + 1);
@@ -39,14 +41,27 @@ public class ActionBar {
 					}
 				}
 
-				Object chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[] { String.class }).newInstance(message);
-				packet = packetPlayOutChatClass.getConstructor(new Class<?>[] { iChatBaseComponentClass, chatMessageTypeClass })
-						.newInstance(chatCompontentText, chatMessageType);
-			} catch (ClassNotFoundException cnfe) {
-				Object chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[] { String.class }).newInstance(message);
+				try {
+					Object chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[] { String.class })
+							.newInstance(message);
+					packet = packetPlayOutChatClass
+							.getConstructor(new Class<?>[] { iChatBaseComponentClass, chatMessageTypeClass })
+							.newInstance(chatCompontentText, chatMessageType);
+				} catch (NoSuchMethodException e) {
+					Object chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[] { String.class })
+							.newInstance(message);
+					packet = packetPlayOutChatClass
+							.getConstructor(
+									new Class<?>[] { iChatBaseComponentClass, chatMessageTypeClass, UUID.class })
+							.newInstance(chatCompontentText, chatMessageType, player.getUniqueId());
+				}
+			} catch (ClassNotFoundException e1) {
+				Object chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[] { String.class })
+						.newInstance(message);
 				packet = packetPlayOutChatClass.getConstructor(new Class<?>[] { iChatBaseComponentClass, byte.class })
 						.newInstance(chatCompontentText, (byte) 2);
 			}
+
 			Method craftPlayerHandleMethod = craftPlayerClass.getDeclaredMethod("getHandle");
 			Object craftPlayerHandle = craftPlayerHandleMethod.invoke(craftPlayer);
 			Field playerConnectionField = craftPlayerHandle.getClass().getDeclaredField("playerConnection");

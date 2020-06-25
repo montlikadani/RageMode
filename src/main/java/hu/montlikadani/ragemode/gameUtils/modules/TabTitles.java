@@ -10,16 +10,6 @@ import hu.montlikadani.ragemode.Utils;
 
 public class TabTitles {
 
-	private Player player;
-
-	public TabTitles(Player player) {
-		this.player = player;
-	}
-
-	public Player getPlayer() {
-		return player;
-	}
-
 	/**
 	 * Sends TabList to the specified player that are currently playing in the game.
 	 * 
@@ -28,6 +18,10 @@ public class TabTitles {
 	 * @param footer TabList footer if null sending empty line
 	 */
 	public void sendTabTitle(Player player, String header, String footer) {
+		if (player == null) {
+			return;
+		}
+
 		if (header == null) header = "";
 		if (footer == null) footer = "";
 
@@ -36,8 +30,7 @@ public class TabTitles {
 			Object tabFooter = Utils.getAsIChatBaseComponent(footer);
 			Constructor<?> titleConstructor = Utils.getNMSClass("PacketPlayOutPlayerListHeaderFooter").getConstructor();
 			Object packet = titleConstructor.newInstance();
-			Field aField = null;
-			Field bField = null;
+			Field aField = null, bField = null;
 			if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
 				aField = packet.getClass().getDeclaredField("header");
 				bField = packet.getClass().getDeclaredField("footer");
@@ -54,13 +47,5 @@ public class TabTitles {
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * Removes the tablist from the given player that are currently playing in a game.
-	 * @param player Player
-	 */
-	public void remove() {
-		sendTabTitle(player, null, null);
 	}
 }

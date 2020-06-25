@@ -204,8 +204,8 @@ public class Game {
 		Utils.clearPlayerInventory(player);
 		getPlayerManager(player).addBackTools();
 
-		players.remove(player);
 		removePlayerSynced(player);
+		players.remove(player);
 
 		if (!player.isCustomNameVisible()) {
 			player.setCustomNameVisible(true);
@@ -223,17 +223,13 @@ public class Game {
 	 * @param player Player
 	 */
 	public void removePlayerSynced(Player player) {
-		if (player == null) {
-			return;
-		}
-
 		for (ActionMessengers action : acList) {
 			if (action.getPlayer().equals(player)) {
 				action.getScoreboard().remove(player);
-				action.getTabTitles().remove();
-				action.getScoreTeam().remove();
-				break;
+				action.getTabTitles().sendTabTitle(player, "", "");
 			}
+
+			action.getScoreTeam().remove();
 		}
 	}
 
@@ -348,6 +344,24 @@ public class Game {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Gets all players including spectators from this game.
+	 * @return list of {@link PlayerManager}
+	 */
+	public List<PlayerManager> getAllPlayers() {
+		List<PlayerManager> list = new ArrayList<>();
+
+		for (Entry<Player, PlayerManager> players : players.entrySet()) {
+			list.add(players.getValue());
+		}
+
+		for (Entry<Player, PlayerManager> players : specPlayer.entrySet()) {
+			list.add(players.getValue());
+		}
+
+		return list;
 	}
 
 	/**

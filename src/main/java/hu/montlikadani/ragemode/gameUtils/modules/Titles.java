@@ -20,12 +20,8 @@ public class Titles {
 	 */
 	public static void sendTitle(Player player, Integer fadeIn, Integer stay, Integer fadeOut, String title, String subtitle) {
 		try {
-			Object e;
-			Object chatTitle;
-			Object chatSubtitle;
+			Object e, chatTitle, chatSubtitle, titlePacket, subtitlePacket;
 			Constructor<?> subtitleConstructor;
-			Object titlePacket;
-			Object subtitlePacket;
 
 			if (title == null) title = "";
 

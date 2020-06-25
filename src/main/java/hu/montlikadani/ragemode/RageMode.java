@@ -23,8 +23,6 @@ import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.Language;
 import hu.montlikadani.ragemode.database.DatabaseHandler;
-import hu.montlikadani.ragemode.database.MySQLConnect;
-import hu.montlikadani.ragemode.database.SQLConnect;
 import hu.montlikadani.ragemode.events.BungeeListener;
 import hu.montlikadani.ragemode.events.EventListener;
 import hu.montlikadani.ragemode.events.GameListener;
@@ -483,26 +481,6 @@ public class RageMode extends JavaPlugin {
 	 */
 	public static RageMode getInstance() {
 		return instance;
-	}
-
-	/**
-	 * Gets the {@link MySQLConnect} class
-	 * @deprecated Use {@link #getDatabaseHandler()}
-	 * @return mySQLConnect class
-	 */
-	@Deprecated
-	public static MySQLConnect getMySQL() {
-		return DatabaseHandler.getMySQL();
-	}
-
-	/**
-	 * Gets the {@link SQLConnect} class
-	 * @deprecated Use {@link #getDatabaseHandler()}
-	 * @return SQLConnect class
-	 */
-	@Deprecated
-	public static SQLConnect getSQL() {
-		return DatabaseHandler.getSQL();
 	}
 
 	/**

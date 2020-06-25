@@ -5,98 +5,26 @@ package hu.montlikadani.ragemode.config;
  */
 public class ConfigValues {
 
-	private static String lang;
-	private static String hubName;
-	private static String databaseType;
-	private static String databaseTablePrefix;
-	private static String username;
-	private static String password;
-	private static String database;
-	private static String host;
-	private static String port;
-	private static String encoding;
-	private static String sqlFileName;
-	private static String signGameRunning;
-	private static String signGameWaiting;
-	private static String signGameFull;
-	private static String signGameLocked;
-	private static String signBackgrType;
-	private static String titleJoinGame;
-	private static String subtitleJoinGame;
-	private static String joinTitleTime;
-	private static String lobbyTitle;
-	private static String subtitleLobby;
-	private static String lobbyTitleTime;
-	private static String wonTitle;
-	private static String wonsubtitle;
-	private static String wonTitleTime;
-	private static String youwonTitle;
-	private static String youwonsubtitle;
-	private static String youwonTitleTime;
-	private static String tabPrefix;
-	private static String tabSuffix;
-	private static String sbTitle;
-	private static String chatFormat;
+	private static String lang, hubName, databaseType, databaseTablePrefix, username, password, database, host, port,
+			encoding, sqlFileName, signGameRunning, signGameWaiting, signGameFull, signGameLocked, signBackgrType,
+			titleJoinGame, subtitleJoinGame, joinTitleTime, lobbyTitle, subtitleLobby, lobbyTitleTime, wonTitle,
+			wonsubtitle, wonTitleTime, youwonTitle, youwonsubtitle, youwonTitleTime, tabPrefix, tabSuffix, sbTitle,
+			chatFormat;
 
-	private static boolean checkForUpdates;
-	private static boolean downloadUpdates;
-	private static boolean logConsole;
-	private static boolean savePlayerData;
-	private static boolean requireEmptyInv;
-	private static boolean bungee;
-	private static boolean autoReconnect;
-	private static boolean useSSL;
-	private static boolean unicode;
-	private static boolean certificate;
-	private static boolean signsEnable;
 	@Deprecated private static boolean signBackground;
-	private static boolean enableLobbyTitle;
-	private static boolean spectatorEnable;
-	private static boolean chatEnableinLobby;
-	private static boolean playerLevelAsTimeCounter;
-	private static boolean playersCanJoinRandomToRunningGames;
-	private static boolean perJoinPermissions;
-	private static boolean damagePlayerFall;
-	private static boolean preventFastBowEvent;
-	private static boolean hidePlayerNameTag;
-	private static boolean cancelRedstoneActivating;
-	private static boolean cancelDoorUse;
-	private static boolean useGrenadeTrails;
-	private static boolean useArrowTrails;
-	private static boolean enableChatInGame;
-	private static boolean kickRandomPlayerIfJoinsVipToFullGame;
-	private static boolean deathMsgs;
-	private static boolean bossbarEnable;
-	private static boolean actionbarEnable;
-	private static boolean switchGMForPlayers;
-	private static boolean disableAllCommandsInGameFreeze;
-	private static boolean enableChatAfterEnd;
-	private static boolean tabFormatEnable;
-	private static boolean tabEnable;
-	private static boolean scoreboardEnable;
-	private static boolean enableChatFormat;
-	private static boolean restartServer;
-	private static boolean stopServer;
-	private static boolean rewardEnable;
-	private static boolean rejoinDelayEnabled;
-	private static boolean rememberRejoinDelay;
-	private static boolean freezePlayers;
 
-	private static int gameFreezeTime;
-	private static int lobbyDelay;
-	private static int gameTime;
-	private static int bowKill;
-	private static int axeKill;
-	private static int axeDeath;
-	private static int knifeKill;
-	private static int explosionKill;
-	private static int suicide;
-	private static int grenadeKill;
-	private static int respawnProtectTime;
-	private static int rejoinDelayHour;
-	private static int rejoinDelayMinute;
-	private static int rejoinDelaySecond;
-	private static int killBonusChance;
+	private static boolean checkForUpdates, downloadUpdates, logConsole, savePlayerData, requireEmptyInv, bungee,
+			autoReconnect, useSSL, unicode, certificate, signsEnable, enableLobbyTitle, spectatorEnable,
+			chatEnableinLobby, playerLevelAsTimeCounter, playersCanJoinRandomToRunningGames, perJoinPermissions,
+			damagePlayerFall, preventFastBowEvent, hidePlayerNameTag, cancelRedstoneActivating, cancelDoorUse,
+			useGrenadeTrails, useArrowTrails, enableChatInGame, kickRandomPlayerIfJoinsVipToFullGame, deathMsgs,
+			bossbarEnable, actionbarEnable, switchGMForPlayers, disableAllCommandsInGameFreeze, enableChatAfterEnd,
+			tabFormatEnable, tabEnable, scoreboardEnable, enableChatFormat, restartServer, stopServer, rewardEnable,
+			rejoinDelayEnabled, rememberRejoinDelay, freezePlayers;
+
+	private static int gameFreezeTime, lobbyDelay, gameTime, bowKill, axeKill, axeDeath, knifeKill, explosionKill,
+			suicide, grenadeKill, respawnProtectTime, rejoinDelayHour, rejoinDelayMinute, rejoinDelaySecond,
+			killBonusChance;
 
 	public static void loadValues(FileConfig f) {
 		lang = f.get("language", "en");

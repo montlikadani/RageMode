@@ -110,10 +110,7 @@ public class YAMLDB {
 	 * Saves all players data to the database.
 	 */
 	public static void saveData() {
-		List<PlayerPoints> list = RuntimePPManager.getRuntimePPList();
-		for (PlayerPoints pp : list) {
-			addPlayerStatistics(pp);
-		}
+		RuntimePPManager.getRuntimePPList().forEach(YAMLDB::addPlayerStatistics);
 	}
 
 	public static void addPlayerStatistics(PlayerPoints points) {

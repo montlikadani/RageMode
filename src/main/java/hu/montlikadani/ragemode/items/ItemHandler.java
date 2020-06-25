@@ -58,12 +58,7 @@ public class ItemHandler implements Cloneable {
 	}
 
 	public ItemHandler setSlot(int slot) {
-		if (slot < 0) {
-			org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, "Slot number can't be less than 0!");
-			return null;
-		}
-
-		this.slot = slot;
+		this.slot = slot < 0 ? 1 : slot;
 		return this;
 	}
 
