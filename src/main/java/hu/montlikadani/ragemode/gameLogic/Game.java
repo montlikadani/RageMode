@@ -22,6 +22,7 @@ import hu.montlikadani.ragemode.API.event.SpectatorLeaveGameEvent;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameLobby;
+import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.items.shop.LobbyShop;
 import hu.montlikadani.ragemode.managers.PlayerManager;
@@ -29,11 +30,11 @@ import hu.montlikadani.ragemode.managers.PlayerManager;
 public class Game {
 
 	private String name;
+	private GameType gameType;
 
 	private GameStatus status = GameStatus.STOPPED;
 
-	private final Map<Player, PlayerManager> players = new HashMap<>();
-	private final Map<Player, PlayerManager> specPlayer = new HashMap<>();
+	private final Map<Player, PlayerManager> players = new HashMap<>(), specPlayer = new HashMap<>();
 
 	private boolean running = false;
 	private LobbyTimer lobbyTimer;
@@ -42,9 +43,14 @@ public class Game {
 
 	private final Set<ActionMessengers> acList = new HashSet<>();
 
-	// TODO: In the future add ability to work with ids
 	public Game(String name) {
+		this(name, GameType.NORMAL);
+	}
+
+	// TODO: In the future add ability to work with ids
+	public Game(String name, GameType gameType) {
 		this.name = name == null ? "" : name;
+		setGameType(gameType);
 	}
 
 	/**
@@ -52,6 +58,22 @@ public class Game {
 	 */
 	public String getName() {
 		return name;
+	}
+
+	/**
+	 * @return the {@link GameType} of this game
+	 */
+	public GameType getGameType() {
+		return gameType;
+	}
+
+	/**
+	 * Sets the game type for this game.
+	 * 
+	 * @param gameType {@link GameType}
+	 */
+	public void setGameType(GameType gameType) {
+		this.gameType = gameType == null ? GameType.NORMAL : gameType;
 	}
 
 	/**

@@ -5,6 +5,9 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -12,6 +15,7 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.API.event.BaseEvent;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
@@ -196,7 +200,7 @@ public class Utils {
 	 */
 	public static Object getAsIChatBaseComponent(String name) throws Exception {
 		Class<?> iChatBaseComponent = getNMSClass("IChatBaseComponent");
-		if (ServerVersion.Version.isCurrentEqualOrLower(ServerVersion.Version.v1_8_R2)) {
+		if (Version.isCurrentEqualOrLower(Version.v1_8_R2)) {
 			Class<?> chatSerializer = getNMSClass("ChatSerializer");
 			Method m = chatSerializer.getMethod("a", String.class);
 			Object t = iChatBaseComponent.cast(m.invoke(chatSerializer, "{\"text\":\"" + name + "\"}"));
@@ -231,12 +235,7 @@ public class Utils {
 	 * @return List
 	 */
 	public static List<String> colorList(List<String> list) {
-		List<String> cList = new ArrayList<>();
-		for (String s : list) {
-			cList.add(colors(s));
-		}
-
-		return cList;
+		return list.stream().map(s -> colors(s)).collect(Collectors.toList());
 	}
 
 	/**
@@ -245,7 +244,29 @@ public class Utils {
 	 * @return colored text
 	 */
 	public static String colors(String s) {
+		if (s == null) {
+			return "";
+		}
+
+		if (s.contains("#") && Version.isCurrentEqualOrHigher(Version.v1_16_R1)) {
+			for (String m : matchColorRegex(s)) {
+				s = s.replace("<" + m + ">", net.md_5.bungee.api.ChatColor.of(m).toString());
+			}
+		}
+
 		return ChatColor.translateAlternateColorCodes('&', s);
+	}
+
+	private static List<String> matchColorRegex(String s) {
+		List<String> matches = new ArrayList<>();
+		Matcher matcher = Pattern.compile("<(.*?)>").matcher(s);
+		while (matcher.find()) {
+			for (int i = 1; i <= matcher.groupCount(); i++) {
+				matches.add(matcher.group(i));
+			}
+		}
+
+		return matches;
 	}
 
 	/**

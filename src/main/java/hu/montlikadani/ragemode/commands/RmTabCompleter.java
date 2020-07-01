@@ -6,12 +6,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.util.StringUtil;
 
+import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.database.DBType;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
@@ -35,9 +37,9 @@ public class RmTabCompleter implements TabCompleter {
 				partOfCommand = args[0];
 			} else if (args.length < 3) {
 				if (args[0].equalsIgnoreCase("holostats")) {
-					Arrays.asList("add", "remove", "tp").forEach(cmds::add);
+					Stream.of("add", "remove", "tp").forEach(cmds::add);
 				} else if (args[0].equalsIgnoreCase("points")) {
-					Arrays.asList("set", "add", "take").forEach(cmds::add);
+					Stream.of("set", "add", "take").forEach(cmds::add);
 				} else if (args[0].equalsIgnoreCase("signupdate")) {
 					GetGames.getGames().forEach(cmds::add);
 					cmds.add("all");
@@ -45,6 +47,8 @@ public class RmTabCompleter implements TabCompleter {
 					for (DBType type : DBType.values()) {
 						cmds.add(type.name().toLowerCase());
 					}
+				} else if (args[0].equalsIgnoreCase("area")) {
+					Stream.of("add", "remove", "info", "list").forEach(cmds::add);
 				} else {
 					for (String game : getGameListCmds()) {
 						if (args[0].equalsIgnoreCase(game) && !GetGames.getGames().isEmpty()) {
@@ -57,14 +61,20 @@ public class RmTabCompleter implements TabCompleter {
 			} else if (args.length < 4) {
 				for (String val : getValueListCmds()) {
 					if (args[0].equalsIgnoreCase(val)) {
-						Arrays.asList("true", "false").forEach(cmds::add);
+						Stream.of("true", "false").forEach(cmds::add);
 						partOfCommand = args[2];
 					}
 				}
 
-				if (args[0].equalsIgnoreCase("removespawn")) {
+				if (args[0].equalsIgnoreCase("removespawn") || args[0].equalsIgnoreCase("removezombiespawn")) {
 					cmds.add("all");
 					partOfCommand = args[2];
+				} else if (args[0].equalsIgnoreCase("area")) {
+					if (args[1].equalsIgnoreCase("add")) {
+						GetGames.getGames().forEach(cmds::add);
+					} else if (args[1].equalsIgnoreCase("remove")) {
+						GameAreaManager.getGameAreas().forEach((key, valu) -> cmds.add(key));
+					}
 				}
 			}
 
@@ -105,9 +115,10 @@ public class RmTabCompleter implements TabCompleter {
 
 	private List<String> getAdminCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
-		for (String cmds : Arrays.asList("addgame", "addspawn", "setlobby", "reload", "holostats", "removegame",
-				"resetplayerstats", "forcestart", "kick", "stopgame", "signupdate", "togglegame", "points",
-				"givesaveditems", "removespawn", "latestart", "maxplayers", "minplayers", "convertdatabase")) {
+		for (String cmds : Arrays.asList("addgame", "addspawn", "addzombiespawn", "setlobby", "reload", "holostats",
+				"removegame", "resetplayerstats", "forcestart", "kick", "stopgame", "signupdate", "togglegame",
+				"points", "givesaveditems", "removespawn", "latestart", "maxplayers", "minplayers", "convertdatabase",
+				"area", "setgametype", "removezombiespawn")) {
 			if (hasPerm(sender, "ragemode.admin." + cmds)) {
 				c.add(cmds);
 			}
@@ -129,8 +140,9 @@ public class RmTabCompleter implements TabCompleter {
 
 	private List<String> getGameListCmds() {
 		return Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay", "removegame",
-				"forcestart", "setlobby", "addspawn", "join", "stop", "stopgame", "togglegame", "spectate",
-				"removespawn", "listplayers", "kick", "maxplayers", "minplayers");
+				"forcestart", "setlobby", "addspawn", "addzombiespawn", "join", "stop", "stopgame", "togglegame",
+				"spectate", "removespawn", "removezombiespawn", "listplayers", "kick", "maxplayers", "minplayers",
+				"setgametype");
 	}
 
 	private List<String> getValueListCmds() {

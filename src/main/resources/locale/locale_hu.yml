@@ -65,6 +65,10 @@ commands:
     not-valid-spawn-id: "&cJáték spawn azonosító&e %id%&c nem egy érvényes spawn."
     remove-success: "&cA spawn&e %number%&3 %game%&c játékhoz törölve!"
     no-more-spawn: "&cNincs több spawn, hogy töröld, mert már törölted az összes spawn-t..."
+  removezombiespawn:
+    not-valid-spawn-id: "&cJáték spawn azonosító&e %id%&c nem egy érvényes zombi spawn."
+    remove-success: "&cA zombi spawn&e %number%&3 %game%&c játékhoz törölve!"
+    no-more-spawn: "&cNincs több spawn, hogy töröld, mert már törölted az összes spawn-t..."
   givesaveditems:
     not-enabled: "&cEz az opció nincs engedélyezve a konfigurációs fájlban."
     player-not-found-in-data-file: "&cEz a játékos&7 %player%&c nem található az adat fájlban."
@@ -84,6 +88,17 @@ commands:
     done: "&2Az adatbázis &e%from%&2-ról konvertálva &e%to%&a-ra/re&2.&c Ne felejtsd el megváltoztatni az adatbázist a konfigban!"
     error: "&cValami nincs rendben a konvertálás során. Kérlek, ellenőrizd az adatbázis formátumát."
     already-set: "&cEz az adatbázis már használatban van."
+  area:
+    selected1: "&aKiválasztottad az 1. pontot,&e %x%, %y%, %z%"
+    selected1: "&aKiválasztottad a 2. pontot,&e %x%, %y%, %z%"
+    select: "&2Válassz két pontot a(z)&c %tool%&2 eszközzel."
+    already-exists: "&cEz a terület már létezik."
+    not-exists: "&cEzzel a névvel a terület nem létezik."
+    set: "&aA terület beállítva&e %name%&a névvel."
+    removed: "&cA terület eltávolítva."
+    empty: "&cNincs egy terület sem beállítva."
+  setgametype:
+    set: "&aA játék típus beállítva a(z)&e %game%&a játékra."
 
 hologram-list:
 - "&9Pontszám:&a %points%"
@@ -133,6 +148,7 @@ game:
     start-message: "&9Ez a kör kezdődik&e %time%&9 másodpercen belül."
     chat-is-disabled: "&cA chat jelenleg letiltva a lobbyban!"
   spawns-not-set-properly: "&cEgy vagy több spawn nincs beállítva megfelelően!"
+  areas-not-set: "&cAz arénák nincsenek megfelelően beállítva."
   too-few-spawns: "&4A spawnok számának nagyobbnak kell lennie vagy meg kell egyeznie a max. játékosok értékével!"
   no-spawns-configured: "&cA(z)&e %game%&c játékban nincs spawn konfigurálva!"
   player-could-not-join: "&e%player%&4 nem tud csatlakozni a RageMode&e %game%&4 játékhoz."

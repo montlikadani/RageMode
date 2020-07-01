@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Particle;
@@ -94,19 +95,9 @@ public class LobbyShop implements Listener {
 	}
 
 	public List<ShopItem> getItems(IShop currentPage, ShopCategory category) {
-		List<ShopItem> citems = new ArrayList<>();
-
-		if (currentPage == null || category == null) {
-			return citems;
-		}
-
-		for (ShopItem si : currentPage.getItems()) {
-			if (category.equals(si.getCategory())) {
-				citems.add(si);
-			}
-		}
-
-		return citems;
+		return (currentPage == null || category == null) ? new ArrayList<>()
+				: currentPage.getItems().stream().filter(si -> category.equals(si.getCategory()))
+						.collect(Collectors.toList());
 	}
 
 	@EventHandler
@@ -134,26 +125,12 @@ public class LobbyShop implements Listener {
 
 	@EventHandler
 	public void onClickEvent(InventoryClickEvent ev) {
-		if (!(ev.getWhoClicked() instanceof Player)) {
-			return;
-		}
-
-		if (!(ev.getInventory().getHolder() instanceof IShop)) {
-			return;
-		}
-
-		ItemStack item = ev.getCurrentItem();
-		if (item == null) {
+		if (!(ev.getWhoClicked() instanceof Player) || !(ev.getInventory().getHolder() instanceof IShop)) {
 			return;
 		}
 
 		Player p = (Player) ev.getWhoClicked();
-		if (!GameUtils.isPlayerPlaying(p)) {
-			removeShop(p);
-			return;
-		}
-
-		if (GameUtils.getGameByPlayer(p).getStatus() != GameStatus.WAITING) {
+		if (!GameUtils.isPlayerPlaying(p) || GameUtils.getGameByPlayer(p).getStatus() != GameStatus.WAITING) {
 			removeShop(p);
 			return;
 		}
@@ -165,16 +142,19 @@ public class LobbyShop implements Listener {
 		}
 
 		doItemClick(ev);
-		return;
+		return; // ?
 	}
 
 	private void doItemClick(InventoryClickEvent ev) {
-		final Player player = ((Player) ev.getWhoClicked());
+		final Player player = (Player) ev.getWhoClicked();
 		if (!isOpened(player)) {
 			return;
 		}
 
 		final ItemStack currentItem = ev.getCurrentItem();
+		if (currentItem == null) {
+			return;
+		}
 
 		shops.get(player).getShopItem(currentItem).ifPresent(shopItem -> {
 			if (!shopItem.getItem().equals(currentItem)) {

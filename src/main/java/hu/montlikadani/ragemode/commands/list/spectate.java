@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.Items;
 
@@ -38,7 +39,9 @@ public class spectate implements ICommand {
 			return false;
 		}
 
-		if (!GameUtils.getGame(map).isGameRunning()) {
+		Game game = GameUtils.getGame(map);
+
+		if (!game.isGameRunning()) {
 			sendMessage(p, RageMode.getLang().get("game.not-running"));
 			return false;
 		}
@@ -48,7 +51,7 @@ public class spectate implements ICommand {
 			return false;
 		}
 
-		if (GameUtils.getGame(map).addSpectatorPlayer(p, map)) {
+		if (game.addSpectatorPlayer(p, map)) {
 			p.teleport(GameUtils.getGameSpawn(map).getRandomSpawn());
 
 			p.setAllowFlight(true);

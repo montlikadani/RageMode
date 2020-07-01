@@ -1,15 +1,19 @@
 package hu.montlikadani.ragemode.gameUtils;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
 import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.area.GameArea;
+import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.config.Configuration;
 
 public class MapChecker {
@@ -32,6 +36,8 @@ public class MapChecker {
 			checkLobby();
 		if (isValid)
 			checkSpawns();
+		if (isValid)
+			checkArea();
 	}
 
 	private void checkMapName() {
@@ -51,24 +57,23 @@ public class MapChecker {
 	}
 
 	private void checkBasics() {
+		isValid = false;
+
 		Configuration conf = RageMode.getInstance().getConfiguration();
 		String path = "arenas." + gameName;
 		if (!conf.getArenasCfg().isSet(path + ".maxplayers") || !conf.getArenasCfg().isSet(path + ".world")) {
 			message = RageMode.getLang().get("game.name-or-maxplayers-not-set");
-			isValid = false;
 			return;
 		}
 
 		if (!conf.getArenasCfg().contains(path + ".world") || !GetGames.getWorld(gameName).isPresent()) {
 			message = RageMode.getLang().get("game.worldname-not-set");
-			isValid = false;
 			return;
 		}
 
 		maxPlayers = GetGames.getMaxPlayers(gameName);
 		if (maxPlayers < 0) {
 			message = RageMode.getLang().get("game.maxplayers-not-set", "%game%", gameName);
-			isValid = false;
 			return;
 		}
 
@@ -143,13 +148,11 @@ public class MapChecker {
 		}
 
 		for (String s : spawnNames) {
-			World world = null;
-			try {
-				world = org.bukkit.Bukkit.getWorld(aFile.getString(path + "." + s + ".world"));
-			} catch (Exception e) {
+			World world = Bukkit.getWorld(aFile.getString(path + "." + s + ".world", ""));
+			if (world == null) {
 				isValid = false;
-				world = null;
 			}
+
 			if (world != null && Utils.isDouble(aFile.getString(path + "." + s + ".x"))
 					&& Utils.isDouble(aFile.getString(path + "." + s + ".y"))
 					&& Utils.isDouble(aFile.getString(path + "." + s + ".z"))
@@ -161,6 +164,61 @@ public class MapChecker {
 				isValid = false;
 				break;
 			}
+		}
+
+		hu.montlikadani.ragemode.gameLogic.Game game = GameUtils.getGame(gameName);
+		if (game != null && game.getGameType() == GameType.APOCALYPSE) {
+			path = "arenas." + gameName + ".zombie-spawns";
+			if (!aFile.isSet(path)) {
+				message = RageMode.getLang().get("game.no-spawns-configured", "%game%", gameName);
+				isValid = false;
+				return;
+			}
+
+			spawnNames = aFile.getConfigurationSection(path).getKeys(false);
+			for (String s : spawnNames) {
+				World world = Bukkit.getWorld(aFile.getString(path + "." + s + ".world", ""));
+				if (world == null) {
+					isValid = false;
+				}
+
+				if (world != null && Utils.isDouble(aFile.getString(path + "." + s + ".x"))
+						&& Utils.isDouble(aFile.getString(path + "." + s + ".y"))
+						&& Utils.isDouble(aFile.getString(path + "." + s + ".z")))
+					isValid = true;
+				else {
+					message = RageMode.getLang().get("game.spawns-not-set-properly");
+					isValid = false;
+					break;
+				}
+			}
+		}
+	}
+
+	private void checkArea() {
+		isValid = false;
+
+		if (!RageMode.getInstance().getConfiguration().getAreasFile().exists()) {
+			message = RageMode.getLang().get("game.areas-not-set");
+			return;
+		}
+
+		FileConfiguration areaC = RageMode.getInstance().getConfiguration().getAreasCfg();
+		if (!areaC.isConfigurationSection("areas")) {
+			message = RageMode.getLang().get("game.areas-not-set");
+			return;
+		}
+
+		for (Map.Entry<String, GameArea> map : GameAreaManager.getGameAreas().entrySet()) {
+			// TODO: Add a check for area to make sure that is set in the correct position
+			if (map.getValue().getGame().equalsIgnoreCase(gameName)) {
+				isValid = true;
+				break;
+			}
+		}
+
+		if (!isValid) {
+			message = RageMode.getLang().get("game.areas-not-set");
 		}
 	}
 

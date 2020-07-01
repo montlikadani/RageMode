@@ -26,6 +26,9 @@ save-player-datas-to-file: false
 # loses his items from inventory.
 require-empty-inventory-to-join: true
 
+# Used to select the game area to be protected zone.
+selection-item: golden_shovel
+
 # Hook into bungee
 # For server game join signs use:
 # https://www.spigotmc.org/resources/37446/
@@ -194,6 +197,17 @@ game:
 
   # Cancels the door opening/closing events in game.
   cancel-door-use: false
+
+  # Zombie apocalypse game type settings
+  zombie-apocalypse:
+    # Delay the spawning of zombies before the first wave? (in game current seconds)
+    delay-before-first-spawn: 30
+
+    # Delay after the next zombie wave (in game current seconds)
+    delay-after-next-zombies-spawning: 30
+
+    # Wait for the next zombie wave to spawn until all the zombies have been killed.
+    wait-for-next-spawn-after-zombies-are-dead: true
 
   # Game freeze settings
   game-freeze:

@@ -133,6 +133,9 @@ public class Language {
 		l.getL("commands.removespawn.not-valid-spawn-id", "&cGame spawn with id&e %id%&c is not a valid spawn.");
 		l.getL("commands.removespawn.remove-success", "&cSpawn&e %number%&c for the game&3 %game%&c was removed successfully!");
 		l.getL("commands.removespawn.no-more-spawn", "&cNo more spawn to delete, because you removed all spawns...");
+		l.getL("commands.removezombiespawn.not-valid-spawn-id", "&cGame spawn with id&e %id%&c is not a valid zombie spawn.");
+		l.getL("commands.removezombiespawn.remove-success", "&cZombie spawn&e %number%&c for the game&3 %game%&c was removed successfully!");
+		l.getL("commands.removezombiespawn.no-more-spawn", "&cNo more spawn to delete, because you removed all spawns...");
 		l.getL("commands.givesaveditems.not-enabled", "&cThis option is not enabled in the configuration file.");
 		l.getL("commands.givesaveditems.player-not-found-in-data-file", "&cThis player&7 %player%&c not found in the data file.");
 		l.getL("commands.givesaveditems.player-is-in-game", "&cThis player&7 %player%&c is in game.");
@@ -146,6 +149,15 @@ public class Language {
 		l.getL("commands.convertdb.done", "&2The database has been converted from&e %from%&2 to&e %to%&2.&c Don't forget to change the db type in config!");
 		l.getL("commands.convertdb.error", "&cSomething wrong while converting. Please check your database format.");
 		l.getL("commands.convertdb.already-set", "&cThis database is already in use.");
+		l.getL("commands.area.selected1", "&aYou selected the 1. point,&e %x%, %y%, %z%");
+		l.getL("commands.area.selected2", "&aYou selected the 2. point,&e %x%, %y%, %z%");
+		l.getL("commands.area.select", "&2Select two points with&c %tool%&2 tool.");
+		l.getL("commands.area.already-exists", "&cArea with this name already exists.");
+		l.getL("commands.area.not-exists", "&cArea not found by this name.");
+		l.getL("commands.area.set", "&aArea set with&e %name%&a name.");
+		l.getL("commands.area.removed", "&cArea has been removed.");
+		l.getL("commands.area.empty", "&cThere is no any area set.");
+		l.getL("commands.setgametype.set", "&aGame type set for&e %game%&a.");
 
 		List<String> holoList = Arrays.asList("&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
 				"&5KD:&a %kd%", "&4Kills:&a %kills%", "&7Deaths:&a %deaths%");
@@ -177,6 +189,7 @@ public class Language {
 		l.getL("game.lobby.start-message", "&9This round will start in&e %time%&9 seconds.");
 		l.getL("game.lobby.chat-is-disabled", "&cThe chat currently is disabled in lobby!");
 		l.getL("game.spawns-not-set-properly", "&cOne or more spawns are not set properly!");
+		l.getL("game.areas-not-set", "&cAreas are not set properly.");
 		l.getL("game.too-few-spawns", "&4The number of spawns must be greater than or equal the maxplayers value!");
 		l.getL("game.no-spawns-configured", "&cIn&e %game%&c are no spawns configured!");
 		l.getL("game.player-could-not-join", "&e%player%&4 couldn't join the RageMode game&e %game%.");

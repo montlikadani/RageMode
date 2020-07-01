@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.events;
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -17,6 +18,7 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
+import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
@@ -81,8 +83,28 @@ public class EventListener implements Listener {
 
 		final Player p = event.getPlayer();
 		final Block b = event.getClickedBlock();
+		if (b == null) {
+			return;
+		}
 
-		if (ConfigValues.isSignsEnable() && b != null && b.getState() instanceof Sign
+		if (NMS.getItemInHand(p).getType().equals(Material.getMaterial(ConfigValues.getSelectionItem().toUpperCase()))) {
+			org.bukkit.Location loc = b.getLocation();
+
+			if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
+				RageMode.getInstance().getSelection().placeLoc1(p, loc);
+				sendMessage(p, RageMode.getLang().get("commands.area.selected1", "%x%", loc.getBlockX(), "%y%",
+						loc.getBlockY(), "%z%", loc.getBlockZ()));
+			} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+				RageMode.getInstance().getSelection().placeLoc2(p, loc);
+				sendMessage(p, RageMode.getLang().get("commands.area.selected2", "%x%", loc.getBlockX(), "%y%",
+						loc.getBlockY(), "%z%", loc.getBlockZ()));
+			}
+
+			event.setCancelled(true);
+			return;
+		}
+
+		if (ConfigValues.isSignsEnable() && b.getState() instanceof Sign
 				&& event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			if (!hasPerm(p, "ragemode.join.sign")) {
 				sendMessage(p, RageMode.getLang().get("no-permission"));

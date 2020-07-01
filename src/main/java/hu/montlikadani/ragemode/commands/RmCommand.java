@@ -83,6 +83,9 @@ public class RmCommand implements CommandExecutor {
 				if (hasPerm(sender, "ragemode.admin.addgame"))
 					msg += "&7-&6 /rm addgame <gameName>&a - Adds a new game.\n";
 
+				if (hasPerm(sender, "ragemode.admin.area"))
+					msg += "&7-&6 /rm area add/remove/info/list - Setup area for game\n";
+
 				if (hasPerm(sender, "ragemode.admin.maxplayers"))
 					msg += "&7-&6 /rm maxplayers <gameName> <maxPlayers>&a - Modifies the maxplayers value for the game.\n";
 
@@ -95,8 +98,14 @@ public class RmCommand implements CommandExecutor {
 				if (hasPerm(sender, "ragemode.admin.addspawn"))
 					msg += "&7-&6 /rm addspawn <gameName>&a - Adds a new spawn location.\n";
 
+				if (hasPerm(sender, "ragemode.admin.addzombiespawn"))
+					msg += "&7-&6 /rm addzombiespawn <gameName>&a - Adds a new zombie spawn location.\n";
+
 				if (hasPerm(sender, "ragemode.admin.removespawn"))
 					msg += "&7-&6 /rm removespawn <gameName> <id/all>&a - Removes the game spawn from id, or removes all.\n";
+
+				if (hasPerm(sender, "ragemode.admin.removezombiespawn"))
+					msg += "&7-&6 /rm removezombiespawn <gameName> <id/all>&a - Removes the game zombie spawn from id, or removes all.\n";
 
 				if (hasPerm(sender, "ragemode.admin.holostats"))
 					msg += "&7-&6 /rm holostats <add/remove/tp>&a - Adds/remove/teleports a new hologram.\n";
@@ -115,6 +124,9 @@ public class RmCommand implements CommandExecutor {
 
 				if (hasPerm(sender, "ragemode.admin.setlobbydelay"))
 					msg += "&7-&6 /rm lobbydelay <gameName> <seconds>&a - Lobby waiting time in seconds.\n";
+
+				if (hasPerm(sender, "ragemode.admin.setgametype"))
+					msg += "&7-&6 /rm setgametype <gameName> <gameType>&a - Sets the type of the given game.\n";
 
 				if (hasPerm(sender, "ragemode.admin.removegame"))
 					msg += "&7-&6 /rm removegame <gameName>&a - Removes the specified game.\n";

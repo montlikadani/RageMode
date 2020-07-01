@@ -5,7 +5,7 @@ package hu.montlikadani.ragemode.config;
  */
 public class ConfigValues {
 
-	private static String lang, hubName, databaseType, databaseTablePrefix, username, password, database, host, port,
+	private static String lang, hubName, selectionItem, databaseType, databaseTablePrefix, username, password, database, host, port,
 			encoding, sqlFileName, signGameRunning, signGameWaiting, signGameFull, signGameLocked, signBackgrType,
 			titleJoinGame, subtitleJoinGame, joinTitleTime, lobbyTitle, subtitleLobby, lobbyTitleTime, wonTitle,
 			wonsubtitle, wonTitleTime, youwonTitle, youwonsubtitle, youwonTitleTime, tabPrefix, tabSuffix, sbTitle,
@@ -20,11 +20,11 @@ public class ConfigValues {
 			useGrenadeTrails, useArrowTrails, enableChatInGame, kickRandomPlayerIfJoinsVipToFullGame, deathMsgs,
 			bossbarEnable, actionbarEnable, switchGMForPlayers, disableAllCommandsInGameFreeze, enableChatAfterEnd,
 			tabFormatEnable, tabEnable, scoreboardEnable, enableChatFormat, restartServer, stopServer, rewardEnable,
-			rejoinDelayEnabled, rememberRejoinDelay, freezePlayers;
+			rejoinDelayEnabled, rememberRejoinDelay, freezePlayers, waitForNextSpawnAfterZombiesAreDead;
 
 	private static int gameFreezeTime, lobbyDelay, gameTime, bowKill, axeKill, axeDeath, knifeKill, explosionKill,
 			suicide, grenadeKill, respawnProtectTime, rejoinDelayHour, rejoinDelayMinute, rejoinDelaySecond,
-			killBonusChance;
+			killBonusChance, delayBeforeFirstZombiesSpawn, delayAfterNextZombiesSpawning;
 
 	public static void loadValues(FileConfig f) {
 		lang = f.get("language", "en");
@@ -33,6 +33,7 @@ public class ConfigValues {
 		logConsole = f.get("log-console", true);
 		savePlayerData = f.get("save-player-datas-to-file", false);
 		requireEmptyInv = f.get("require-empty-inventory-to-join", true);
+		selectionItem = f.get("selection-item", "golden_shovel");
 		bungee = f.get("bungee.enable", false);
 		hubName = f.get("bungee.hub-name", "lobby");
 		databaseType = f.get("database.type", "yaml");
@@ -93,6 +94,9 @@ public class ConfigValues {
 		actionbarEnable = f.get("game.defaults.actionbar", true);
 		lobbyDelay = f.get("game.defaults.lobby-delay", 30);
 		gameTime = f.get("game.defaults.gametime", 10);
+		delayBeforeFirstZombiesSpawn = f.get("game.zombie-apocalypse.delay-before-first-spawn", 30);
+		delayAfterNextZombiesSpawning = f.get("game.zombie-apocalypse.delay-after-next-zombies-spawning", 30);
+		waitForNextSpawnAfterZombiesAreDead = f.get("game.zombie-apocalypse.wait-for-next-spawn-after-zombies-are-dead", true);
 		tabFormatEnable = f.get("game.tablist.player-format.enable", false);
 		tabPrefix = f.get("game.tablist.player-format.prefix", "");
 		tabSuffix = f.get("game.tablist.player-format.suffix", "&e %kills%");
@@ -129,6 +133,10 @@ public class ConfigValues {
 
 	public static String getHubName() {
 		return hubName;
+	}
+
+	public static String getSelectionItem() {
+		return selectionItem;
 	}
 
 	public static String getUsername() {
@@ -478,5 +486,17 @@ public class ConfigValues {
 
 	public static boolean isFreezePlayers() {
 		return freezePlayers;
+	}
+
+	public static int getDelayBeforeFirstZombiesSpawn() {
+		return delayBeforeFirstZombiesSpawn;
+	}
+
+	public static int getDelayAfterNextZombiesSpawning() {
+		return delayAfterNextZombiesSpawning;
+	}
+
+	public static boolean isWaitForNextSpawnAfterZombiesAreDead() {
+		return waitForNextSpawnAfterZombiesAreDead;
 	}
 }

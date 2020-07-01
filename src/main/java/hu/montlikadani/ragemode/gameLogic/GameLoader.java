@@ -78,8 +78,14 @@ public class GameLoader {
 			return false;
 		}
 
-		GameSpawn gameSpawn = GameUtils.getGameSpawn(game);
-		if (gameSpawn.isGameReady()) {
+		if (game.getGameType() == hu.montlikadani.ragemode.gameUtils.GameType.APOCALYPSE
+				&& !GameUtils.getGameZombieSpawn(game).isReady()) {
+			GameUtils.broadcastToGame(game, RageMode.getLang().get("game.not-set-up"));
+			return false;
+		}
+
+		IGameSpawn gameSpawn = GameUtils.getGameSpawn(game);
+		if (gameSpawn.isReady()) {
 			GameUtils.teleportPlayersToGameSpawns(gameSpawn);
 			return true;
 		}

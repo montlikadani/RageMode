@@ -17,6 +17,8 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import hu.montlikadani.ragemode.ServerVersion.Version;
+import hu.montlikadani.ragemode.area.GameAreaManager;
+import hu.montlikadani.ragemode.area.Selection;
 import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.commands.RmTabCompleter;
 import hu.montlikadani.ragemode.config.ConfigValues;
@@ -31,7 +33,10 @@ import hu.montlikadani.ragemode.events.Listeners_1_9;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
+import hu.montlikadani.ragemode.gameLogic.GameZombieSpawn;
+import hu.montlikadani.ragemode.gameLogic.IGameSpawn;
 import hu.montlikadani.ragemode.gameUtils.BungeeUtils;
+import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.holder.HoloHolder;
@@ -49,10 +54,11 @@ import net.milkbowl.vault.economy.Economy;
 
 public class RageMode extends JavaPlugin {
 
-	private Configuration conf = null;
-	private BungeeUtils bungee = null;
-	private BossbarManager bossManager = null;
-	private DatabaseHandler dbHandler = null;
+	private Configuration conf;
+	private BungeeUtils bungee;
+	private BossbarManager bossManager;
+	private DatabaseHandler dbHandler;
+	private Selection selection;
 
 	private Economy econ = null;
 
@@ -66,7 +72,7 @@ public class RageMode extends JavaPlugin {
 	private boolean vault = false;
 
 	private final List<Game> games = new ArrayList<>();
-	private final Set<GameSpawn> spawns = new HashSet<>();
+	private final Set<IGameSpawn> spawns = new HashSet<>();
 
 	private final ItemHandler[] gameItems = new ItemHandler[7];
 	private final ItemHandler[] lobbyItems = new ItemHandler[3];
@@ -278,14 +284,26 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void loadGames() {
+		selection = new Selection();
+
 		if (conf.getArenasCfg().contains("arenas")) {
 			for (String game : GetGames.getGameNames()) {
 				if (game == null) {
 					continue;
 				}
 
-				Game g = new Game(game);
+				if (!conf.getArenasCfg().contains("arenas." + game + ".gametype")) {
+					conf.getArenasCfg().set("arenas." + game + ".gametype", "normal");
+				}
+
+				GameType gameType = GameType
+						.valueOf(conf.getArenasCfg().getString("arenas." + game + ".gametype", "normal").toUpperCase());
+				Game g = new Game(game, gameType);
 				games.add(g);
+
+				if (gameType == GameType.APOCALYPSE) {
+					spawns.add(new GameZombieSpawn(g));
+				}
 
 				spawns.add(new GameSpawn(g));
 
@@ -297,6 +315,8 @@ public class RageMode extends JavaPlugin {
 			}
 		}
 
+		Configuration.saveFile(conf.getArenasCfg(), conf.getArenasFile());
+		GameAreaManager.load();
 		loadItems();
 	}
 
@@ -318,7 +338,7 @@ public class RageMode extends JavaPlugin {
 			itemHandler.setItem(Material.EGG).setDisplayName(Utils.colors(c.getString(path + ".name", "&8Grenade")))
 					.setCustomName(Utils.colors(c.getString(path + ".custom-name", "")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 5))
-					.setAmount(c.getInt(path + ".amount", 2));
+					.setAmount(c.getInt(path + ".amount", 2)).setDamage(2.20);
 			gameItems[1] = itemHandler;
 		}
 
@@ -326,7 +346,8 @@ public class RageMode extends JavaPlugin {
 		if (c.contains(path)) {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.ARROW).setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageArrow")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 9));
+					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 9))
+					.setDamage(3.35);
 			gameItems[2] = itemHandler;
 		}
 
@@ -468,7 +489,7 @@ public class RageMode extends JavaPlugin {
 	 * @param name Game name
 	 */
 	public void removeSpawn(String name) {
-		for (Iterator<GameSpawn> it = spawns.iterator(); it.hasNext();) {
+		for (Iterator<IGameSpawn> it = spawns.iterator(); it.hasNext();) {
 			if (it.next().getGame().getName().equalsIgnoreCase(name)) {
 				it.remove();
 			}
@@ -484,16 +505,14 @@ public class RageMode extends JavaPlugin {
 	}
 
 	/**
-	 * Gets the {@link Language} class
-	 * @return Language class
+	 * @return {@link Language}
 	 */
 	public static Language getLang() {
 		return lang;
 	}
 
 	/**
-	 * Gets the {@link ServerVersion} class
-	 * @return ServerVersion class
+	 * @return {@link ServerVersion}
 	 */
 	public static ServerVersion getServerVersion() {
 		return serverVersion;
@@ -527,7 +546,7 @@ public class RageMode extends JavaPlugin {
 		return games;
 	}
 
-	public Set<GameSpawn> getSpawns() {
+	public Set<IGameSpawn> getSpawns() {
 		return spawns;
 	}
 
@@ -545,5 +564,9 @@ public class RageMode extends JavaPlugin {
 
 	public Economy getEconomy() {
 		return econ;
+	}
+
+	public Selection getSelection() {
+		return selection;
 	}
 }

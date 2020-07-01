@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.items.threads;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 
@@ -37,19 +38,20 @@ public class CombatAxeThread {
 								break;
 							}
 
-							if (!(entity instanceof Player)) {
-								continue;
+							if (entity instanceof Player) {
+								final Player victim = (Player) entity;
+								if (victim == player) {
+									continue;
+								}
+
+								victim.damage(25D, player);
+								victim.removeMetadata("killedWith", RageMode.getInstance());
+								victim.setMetadata("killedWith",
+										new FixedMetadataValue(RageMode.getInstance(), "combataxe"));
+							} else {
+								((LivingEntity) entity).damage(25D, player);
 							}
 
-							final Player victim = (Player) entity;
-							if (victim == player) {
-								continue;
-							}
-
-							victim.damage(25D, player);
-							victim.removeMetadata("killedWith", RageMode.getInstance());
-							victim.setMetadata("killedWith",
-									new FixedMetadataValue(RageMode.getInstance(), "combataxe"));
 							item.remove();
 							stop();
 						}

@@ -33,32 +33,29 @@ public class ActionBar {
 			Class<?> iChatBaseComponentClass = Utils.getNMSClass("IChatBaseComponent");
 			try {
 				Class<?> chatMessageTypeClass = Utils.getNMSClass("ChatMessageType");
-				Object[] chatMessageTypes = chatMessageTypeClass.getEnumConstants();
 				Object chatMessageType = null;
-				for (Object obj : chatMessageTypes) {
-					if (obj.toString().equals("GAME_INFO")) {
+				for (Object obj : chatMessageTypeClass.getEnumConstants()) {
+					if (obj.toString().equals("GAME_INFO") || obj.toString().equalsIgnoreCase("ACTION_BAR")) {
 						chatMessageType = obj;
+						break;
 					}
 				}
 
 				try {
-					Object chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[] { String.class })
+					Object chatCompontentText = chatComponentTextClass.getConstructor(String.class)
 							.newInstance(message);
-					packet = packetPlayOutChatClass
-							.getConstructor(new Class<?>[] { iChatBaseComponentClass, chatMessageTypeClass })
+					packet = packetPlayOutChatClass.getConstructor(iChatBaseComponentClass, chatMessageTypeClass)
 							.newInstance(chatCompontentText, chatMessageType);
 				} catch (NoSuchMethodException e) {
-					Object chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[] { String.class })
+					Object chatCompontentText = chatComponentTextClass.getConstructor(String.class)
 							.newInstance(message);
 					packet = packetPlayOutChatClass
-							.getConstructor(
-									new Class<?>[] { iChatBaseComponentClass, chatMessageTypeClass, UUID.class })
+							.getConstructor(iChatBaseComponentClass, chatMessageTypeClass, UUID.class)
 							.newInstance(chatCompontentText, chatMessageType, player.getUniqueId());
 				}
 			} catch (ClassNotFoundException e1) {
-				Object chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[] { String.class })
-						.newInstance(message);
-				packet = packetPlayOutChatClass.getConstructor(new Class<?>[] { iChatBaseComponentClass, byte.class })
+				Object chatCompontentText = chatComponentTextClass.getConstructor(String.class).newInstance(message);
+				packet = packetPlayOutChatClass.getConstructor(iChatBaseComponentClass, byte.class)
 						.newInstance(chatCompontentText, (byte) 2);
 			}
 

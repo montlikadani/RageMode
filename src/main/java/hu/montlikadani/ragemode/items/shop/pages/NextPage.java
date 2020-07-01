@@ -41,17 +41,7 @@ public class NextPage implements IShop {
 
 	@Override
 	public Optional<ShopItem> getShopItem(ItemStack item) {
-		if (item == null) {
-			return Optional.empty();
-		}
-
-		for (ShopItem si : items) {
-			if (si.getItem().isSimilar(item)) {
-				return Optional.ofNullable(si);
-			}
-		}
-
-		return Optional.empty();
+		return Optional.ofNullable(items.stream().filter(si -> si.getItem().isSimilar(item)).findFirst().orElse(null));
 	}
 
 	@Override

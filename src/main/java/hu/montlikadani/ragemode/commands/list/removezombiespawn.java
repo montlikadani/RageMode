@@ -15,18 +15,18 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-public class removespawn implements ICommand {
+public class removezombiespawn implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (!hasPerm(sender, "ragemode.admin.removespawn")) {
+		if (!hasPerm(sender, "ragemode.admin.removezombiespawn")) {
 			sendMessage(sender, RageMode.getLang().get("no-permission"));
 			return false;
 		}
 
 		if (args.length < 3) {
 			sendMessage(sender,
-					RageMode.getLang().get("missing-arguments", "%usage%", "/rm removespawn <gameName> <id/all>"));
+					RageMode.getLang().get("missing-arguments", "%usage%", "/rm removezombiespawn <gameName> <id/all>"));
 			return false;
 		}
 
@@ -36,21 +36,21 @@ public class removespawn implements ICommand {
 			return false;
 		}
 
-		IGameSpawn spawn = GameUtils.getGameSpawn(name);
+		IGameSpawn spawn = GameUtils.getGameZombieSpawn(name);
 		FileConfiguration aFile = plugin.getConfiguration().getArenasCfg();
 
 		if (args[2].equalsIgnoreCase("all")) {
-			if (!aFile.contains("arenas." + name + ".spawns")) {
-				sendMessage(sender, RageMode.getLang().get("commands.removespawn.no-more-spawn"));
+			if (!aFile.contains("arenas." + name + ".zombie-spawns")) {
+				sendMessage(sender, RageMode.getLang().get("commands.removezombiespawn.no-more-spawn"));
 				return false;
 			}
 
-			aFile.set("arenas." + name + ".spawns", null);
+			aFile.set("arenas." + name + ".zombie-spawns", null);
 			Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
 			if (spawn != null) {
 				spawn.removeAllSpawn();
-				sendMessage(sender, RageMode.getLang().get("commands.removespawn.remove-success", "%number%", "all",
+				sendMessage(sender, RageMode.getLang().get("commands.removezombiespawn.remove-success", "%number%", "all",
 						"%game%", name));
 				return true;
 			}
@@ -66,12 +66,12 @@ public class removespawn implements ICommand {
 		int i = Integer.parseInt(args[2]);
 		String path = "arenas." + name;
 
-		if (!aFile.isSet(path + ".spawns." + i)) {
-			sendMessage(sender, RageMode.getLang().get("commands.removespawn.not-valid-spawn-id", "%id%", i));
+		if (!aFile.isSet(path + ".zombie-spawns." + i)) {
+			sendMessage(sender, RageMode.getLang().get("commands.removezombiespawn.not-valid-spawn-id", "%id%", i));
 			return false;
 		}
 
-		String sPath = path + ".spawns." + i + ".";
+		String sPath = path + ".zombie-spawns." + i + ".";
 		String world = aFile.getString(sPath + "world");
 
 		double spawnX = aFile.getDouble(sPath + "x"),
@@ -91,7 +91,7 @@ public class removespawn implements ICommand {
 		Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
 		sendMessage(sender,
-				RageMode.getLang().get("commands.removespawn.remove-success", "%number%", i, "%game%", name));
+				RageMode.getLang().get("commands.removezombiespawn.remove-success", "%number%", i, "%game%", name));
 		return true;
 	}
 }

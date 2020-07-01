@@ -12,14 +12,14 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
 
-public class GameSpawn implements IGameSpawn {
+public class GameZombieSpawn implements IGameSpawn {
 
 	private Game game;
 
 	private boolean isReady = false;
 	private final List<Location> spawnLocations = new ArrayList<>();
 
-	public GameSpawn(Game game) {
+	public GameZombieSpawn(Game game) {
 		this.game = game;
 
 		loadSpawns();
@@ -46,7 +46,7 @@ public class GameSpawn implements IGameSpawn {
 		isReady = false;
 
 		FileConfiguration conf = RageMode.getInstance().getConfiguration().getArenasCfg();
-		String path = "arenas." + game.getName() + ".spawns";
+		String path = "arenas." + game.getName() + ".zombie-spawns";
 		if (!conf.contains(path)) {
 			return;
 		}

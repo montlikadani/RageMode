@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
@@ -30,24 +31,25 @@ public class forcestart implements ICommand {
 			return false;
 		}
 
-		String game = args[1];
-		if (!GameUtils.isGameWithNameExists(game)) {
+		String name = args[1];
+		if (!GameUtils.isGameWithNameExists(name)) {
 			sendMessage(p, RageMode.getLang().get("commands.forcestart.game-not-exist"));
 			return false;
 		}
 
-		if (GameUtils.getGame(game).isGameRunning()) {
+		Game game = GameUtils.getGame(name);
+		if (game.isGameRunning()) {
 			sendMessage(p, RageMode.getLang().get("game.running"));
 			return false;
 		}
 
-		if (GameUtils.getGame(game).getPlayers().size() < 2) {
+		if (game.getPlayers().size() < 2) {
 			sendMessage(p, RageMode.getLang().get("commands.forcestart.not-enough-players"));
 			return false;
 		}
 
-		GameUtils.forceStart(GameUtils.getGame(game));
-		sendMessage(p, RageMode.getLang().get("commands.forcestart.game-start", "%game%", game));
+		GameUtils.forceStart(game);
+		sendMessage(p, RageMode.getLang().get("commands.forcestart.game-start", "%game%", game.getName()));
 		return true;
 	}
 }

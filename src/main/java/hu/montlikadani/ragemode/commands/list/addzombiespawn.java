@@ -1,5 +1,8 @@
 package hu.montlikadani.ragemode.commands.list;
 
+import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
+
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -8,14 +11,12 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.gameLogic.GameSpawn;
+import hu.montlikadani.ragemode.gameLogic.GameZombieSpawn;
 import hu.montlikadani.ragemode.gameLogic.IGameSpawn;
+import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
-import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
-
-public class addspawn implements ICommand {
+public class addzombiespawn implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
@@ -25,18 +26,22 @@ public class addspawn implements ICommand {
 		}
 
 		Player p = (Player) sender;
-		if (!hasPerm(p, "ragemode.admin.addspawn")) {
+		if (!hasPerm(p, "ragemode.admin.addzombiespawn")) {
 			sendMessage(p, RageMode.getLang().get("no-permission"));
 			return false;
 		}
 
 		if (args.length < 2) {
-			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm addspawn <gameName>"));
+			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm addzombiespawn <gameName>"));
 			return false;
 		}
 
 		if (!GameUtils.isGameWithNameExists(args[1])) {
 			sendMessage(p, RageMode.getLang().get("invalid-game"));
+			return false;
+		}
+
+		if (!GameUtils.getGame(args[1]).getGameType().equals(GameType.APOCALYPSE)) {
 			return false;
 		}
 
@@ -47,7 +52,7 @@ public class addspawn implements ICommand {
 			return false;
 		}
 
-		path += ".spawns.";
+		path += ".zombie-spawns.";
 
 		int i = 1;
 		while (aFile.isSet(path + i))
@@ -63,7 +68,7 @@ public class addspawn implements ICommand {
 		Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
 		for (IGameSpawn spawn : plugin.getSpawns()) {
-			if (spawn.getGame().getName().equalsIgnoreCase(args[1]) && spawn instanceof GameSpawn) {
+			if (spawn.getGame().getName().equalsIgnoreCase(args[1]) && spawn instanceof GameZombieSpawn) {
 				spawn.addSpawn(loc);
 				break;
 			}

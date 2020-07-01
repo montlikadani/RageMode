@@ -14,8 +14,8 @@ import hu.montlikadani.ragemode.RageMode;
 public class Configuration {
 
 	private RageMode plugin;
-	private FileConfiguration config, arenas, rewards, datas, items;
-	private File config_file, arenas_file, rewards_file, datas_file, items_file;
+	private FileConfiguration config, arenas, rewards, datas, items, gameAreas;
+	private File config_file, arenas_file, rewards_file, datas_file, items_file, areas_File;
 
 	private double configVersion = 1.8;
 
@@ -43,6 +43,10 @@ public class Configuration {
 
 		if (items_file == null) {
 			items_file = new File(folder, "items.yml");
+		}
+
+		if (areas_File == null) {
+			areas_File = new File(folder, "gameareas.yml");
 		}
 	}
 
@@ -97,6 +101,13 @@ public class Configuration {
 			} else {
 				items = createFile(items_file, "items.yml", false);
 			}
+
+			if (areas_File.exists()) {
+				gameAreas = YamlConfiguration.loadConfiguration(areas_File);
+				loadFile(gameAreas, areas_File);
+			} else {
+				gameAreas = createFile(areas_File, "gameareas.yml", true);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -133,6 +144,14 @@ public class Configuration {
 		return datas;
 	}
 
+	public FileConfiguration getItemsCfg() {
+		return items;
+	}
+
+	public FileConfiguration getAreasCfg() {
+		return gameAreas;
+	}
+
 	public File getCfgFile() {
 		return config_file;
 	}
@@ -149,12 +168,12 @@ public class Configuration {
 		return datas_file;
 	}
 
-	public FileConfiguration getItemsCfg() {
-		return items;
-	}
-
 	public File getItemsFile() {
 		return items_file;
+	}
+
+	public File getAreasFile() {
+		return areas_File;
 	}
 
 	public double getConfigVersion() {

@@ -1,6 +1,7 @@
 package hu.montlikadani.ragemode.commands.list;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -10,6 +11,8 @@ import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
+import hu.montlikadani.ragemode.gameLogic.GameZombieSpawn;
+import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
@@ -31,7 +34,8 @@ public class addgame implements ICommand {
 		}
 
 		if (args.length < 2) {
-			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm addgame <gameName> [maxPlayers] [minPlayers]"));
+			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%",
+					"/rm addgame <gameName> [maxPlayers] [minPlayers] [gameType]"));
 			return false;
 		}
 
@@ -75,15 +79,30 @@ public class addgame implements ICommand {
 			}
 		}
 
-		Game g = new Game(game);
+		GameType type = GameType.NORMAL;
+		if (args.length == 5) {
+			type = GameType.getByName(args[4]);
+
+			if (type == null) {
+				type = GameType.NORMAL;
+			}
+		}
+
+		Game g = new Game(game, type);
 		plugin.getGames().add(g);
 
 		Utils.callEvent(new RMGameCreateEvent(g, x, m));
 
-		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".maxplayers", x);
-		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".minplayers", m);
-		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".world", p.getWorld().getName());
-		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
+		FileConfiguration c = plugin.getConfiguration().getArenasCfg();
+		c.set("arenas." + game + ".maxplayers", x);
+		c.set("arenas." + game + ".minplayers", m);
+		c.set("arenas." + game + ".world", p.getWorld().getName());
+		c.set("arenas." + game + ".gametype", type.getName());
+		Configuration.saveFile(c, plugin.getConfiguration().getArenasFile());
+
+		if (type == GameType.APOCALYPSE) {
+			plugin.getSpawns().add(new GameZombieSpawn(g));
+		}
 
 		plugin.getSpawns().add(new GameSpawn(g));
 

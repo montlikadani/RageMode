@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.boss.BarColor;
@@ -22,6 +23,8 @@ import org.bukkit.inventory.PlayerInventory;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.ServerVersion.Version;
+import hu.montlikadani.ragemode.area.GameArea;
+import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
@@ -124,18 +127,18 @@ public class GameUtils {
 	}
 
 	/**
-	 * Get the game spawn by game.
+	 * Get the game spawn by name.
 	 * 
-	 * @see #getGameSpawn(String)
-	 * @param game {@link Game}
+	 * @param name game name
 	 * @return {@link GameSpawn}
 	 */
-	public static GameSpawn getGameSpawn(Game game) {
-		Validate.notNull(game, "Game can't be null!");
+	public static GameSpawn getGameSpawn(String name) {
+		Validate.notNull(name, "Game name can't be null");
+		Validate.notEmpty(name, "Game name can't be empty");
 
-		for (GameSpawn gsg : RageMode.getInstance().getSpawns()) {
-			if (game.equals(gsg.getGame())) {
-				return gsg;
+		for (IGameSpawn gsg : RageMode.getInstance().getSpawns()) {
+			if (name.equals(gsg.getGame().getName()) && gsg instanceof GameSpawn) {
+				return (GameSpawn) gsg;
 			}
 		}
 
@@ -143,22 +146,48 @@ public class GameUtils {
 	}
 
 	/**
-	 * Get the game spawn by name.
+	 * Get the game spawn by game.
 	 * 
-	 * @param name Game name
+	 * @see #getGameSpawn(String)
+	 * @param game {@link Game}
 	 * @return {@link GameSpawn}
 	 */
-	public static GameSpawn getGameSpawn(String name) {
-		Validate.notNull(name, "Game name can't be null!");
-		Validate.notEmpty(name, "Game name can't be empty!");
+	public static GameSpawn getGameSpawn(Game game) {
+		Validate.notNull(game, "Game can't be null");
 
-		for (GameSpawn gsg : RageMode.getInstance().getSpawns()) {
-			if (name.equalsIgnoreCase(gsg.getGame().getName())) {
-				return gsg;
+		return getGameSpawn(game.getName());
+	}
+
+	/**
+	 * Get the game spawn by game name.
+	 * 
+	 * @param name game name
+	 * @return {@link GameZombieSpawn}
+	 */
+	public static GameZombieSpawn getGameZombieSpawn(String name) {
+		Validate.notNull(name, "Game name can't be null");
+		Validate.notEmpty(name, "Game name can't be empty");
+
+		for (IGameSpawn gsg : RageMode.getInstance().getSpawns()) {
+			if (name.equals(gsg.getGame().getName()) && gsg instanceof GameZombieSpawn) {
+				return (GameZombieSpawn) gsg;
 			}
 		}
 
 		return null;
+	}
+
+	/**
+	 * Get the game spawn by game.
+	 * 
+	 * @see #getGameZombieSpawn(String)
+	 * @param game {@link Game}
+	 * @return {@link GameZombieSpawn}
+	 */
+	public static GameZombieSpawn getGameZombieSpawn(Game game) {
+		Validate.notNull(game, "Game can't be null");
+
+		return getGameZombieSpawn(game.getName());
 	}
 
 	/**
@@ -171,8 +200,8 @@ public class GameUtils {
 	 */
 	@Deprecated
 	public static Game getGameByPlayer(String uuid) {
-		Validate.notNull(uuid, "Player UUID can not be null!");
-		Validate.notEmpty(uuid, "Player UUID can't be empty!");
+		Validate.notNull(uuid, "Player UUID can not be null");
+		Validate.notEmpty(uuid, "Player UUID can't be empty");
 
 		return getGameByPlayer(Bukkit.getPlayer(UUID.fromString(uuid)));
 	}
@@ -185,7 +214,7 @@ public class GameUtils {
 	 * @return Game if player is in game.
 	 */
 	public static Game getGameByPlayer(UUID uuid) {
-		Validate.notNull(uuid, "Player UUID can not be null!");
+		Validate.notNull(uuid, "Player UUID can not be null");
 
 		return getGameByPlayer(Bukkit.getPlayer(uuid));
 	}
@@ -197,7 +226,7 @@ public class GameUtils {
 	 * @return Game if player is in game.
 	 */
 	public static Game getGameByPlayer(Player p) {
-		Validate.notNull(p, "Player can not be null!");
+		Validate.notNull(p, "Player can not be null");
 
 		for (Game game : RageMode.getInstance().getGames()) {
 			for (PlayerManager pl : game.getPlayersFromList()) {
@@ -220,8 +249,8 @@ public class GameUtils {
 	 */
 	@Deprecated
 	public static Game getGameBySpectator(String uuid) {
-		Validate.notNull(uuid, "Player UUID can not be null!");
-		Validate.notEmpty(uuid, "Player UUID can't be empty!");
+		Validate.notNull(uuid, "Player UUID can not be null");
+		Validate.notEmpty(uuid, "Player UUID can't be empty");
 
 		return getGameBySpectator(Bukkit.getPlayer(UUID.fromString(uuid)));
 	}
@@ -234,7 +263,7 @@ public class GameUtils {
 	 * @return Game if player is in game.
 	 */
 	public static Game getGameBySpectator(UUID uuid) {
-		Validate.notNull(uuid, "Player UUID can not be null!");
+		Validate.notNull(uuid, "Player UUID can not be null");
 
 		return getGameBySpectator(Bukkit.getPlayer(uuid));
 	}
@@ -246,7 +275,7 @@ public class GameUtils {
 	 * @return Game if player is in spectator mode and in game.
 	 */
 	public static Game getGameBySpectator(Player p) {
-		Validate.notNull(p, "Player can not be null!");
+		Validate.notNull(p, "Player can not be null");
 
 		for (Game game : RageMode.getInstance().getGames()) {
 			for (PlayerManager pl : game.getSpectatorPlayersFromList()) {
@@ -286,12 +315,29 @@ public class GameUtils {
 	 * @return Game if the given name is exists.
 	 */
 	public static Game getGame(String name) {
-		Validate.notNull(name, "Game name can not be null!");
-		Validate.notEmpty(name, "Game name can't be empty!");
+		Validate.notNull(name, "Game name can not be null");
+		Validate.notEmpty(name, "Game name can't be empty");
 
 		for (Game game : RageMode.getInstance().getGames()) {
 			if (name.equalsIgnoreCase(game.getName())) {
 				return game;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Gets the game by area location.
+	 * 
+	 * @param loc the location
+	 * @return {@link Game}
+	 */
+	public static Game getGame(Location loc) {
+		for (GameArea ga : GameAreaManager.getAreasByLocation(loc)) {
+			Game g = getGame(ga.getGame());
+			if (g != null) {
+				return g;
 			}
 		}
 
@@ -311,6 +357,12 @@ public class GameUtils {
 
 		PlayerInventory inv = p.getInventory();
 		for (ItemHandler ih : RageMode.getInstance().getGameItems()) {
+			// flash do not affect entities
+			if (isPlayerPlaying(p) && getGameByPlayer(p).getGameType() == GameType.APOCALYPSE
+					&& ih.equals(Items.getFlash())) {
+				continue;
+			}
+
 			if (ih.getSlot() != -1) {
 				inv.setItem(ih.getSlot(), ih.build());
 			} else {
@@ -468,6 +520,8 @@ public class GameUtils {
 			savePlayerData(p);
 		}
 		clearPlayerTools(p);
+
+		GameAreaManager.removeEntitiesFromGame(game);
 
 		p.teleport(GameLobby.getLobbyLocation(name));
 
@@ -639,6 +693,7 @@ public class GameUtils {
 	 */
 	public static void clearPlayerTools(Player p) {
 		Utils.clearPlayerInventory(p);
+
 		p.setGameMode(GameMode.SURVIVAL);
 		p.setFlying(false);
 		p.setSprinting(false);
@@ -660,6 +715,22 @@ public class GameUtils {
 
 		p.setDisplayName(p.getName());
 		p.setPlayerListName(p.getName());
+	}
+
+	public static void spawnZombies(Game game, int amount) {
+		if (!game.getStatus().equals(GameStatus.RUNNING) || game.getGameType() != GameType.APOCALYPSE) {
+			return;
+		}
+
+		for (PlayerManager pm : game.getPlayersFromList()) {
+			// Force night
+			pm.getPlayer().getWorld().setTime(14000L);
+
+			for (int i = 0; i <= amount; i++) {
+				pm.getPlayer().getWorld().spawnEntity(getGameZombieSpawn(game).getRandomSpawn(),
+						org.bukkit.entity.EntityType.ZOMBIE);
+			}
+		}
 	}
 
 	/**
@@ -889,11 +960,11 @@ public class GameUtils {
 	/**
 	 * Teleports all players to a random spawn location.
 	 * 
-	 * @see #teleportPlayerToGameSpawn(Player, GameSpawn)
-	 * @param spawn {@link GameSpawn}
+	 * @see #teleportPlayerToGameSpawn(Player, IGameSpawn)
+	 * @param gameSpawn {@link IGameSpawn}
 	 */
-	public static void teleportPlayersToGameSpawns(GameSpawn spawn) {
-		spawn.getGame().getPlayersFromList().forEach(pm -> teleportPlayerToGameSpawn(pm.getPlayer(), spawn));
+	public static void teleportPlayersToGameSpawns(IGameSpawn gameSpawn) {
+		gameSpawn.getGame().getPlayersFromList().forEach(pm -> teleportPlayerToGameSpawn(pm.getPlayer(), gameSpawn));
 	}
 
 	/**
@@ -901,11 +972,11 @@ public class GameUtils {
 	 * there are no spawn added to list.
 	 * 
 	 * @param p     Player
-	 * @param spawn {@link GameSpawn}
+	 * @param gameSpawn {@link IGameSpawn}
 	 */
-	public static void teleportPlayerToGameSpawn(Player p, GameSpawn spawn) {
-		if (spawn.haveAnySpawn()) {
-			Utils.teleportSync(p, spawn.getRandomSpawn());
+	public static void teleportPlayerToGameSpawn(Player p, IGameSpawn gameSpawn) {
+		if (gameSpawn.haveAnySpawn()) {
+			Utils.teleportSync(p, gameSpawn.getRandomSpawn());
 		}
 	}
 
@@ -925,6 +996,8 @@ public class GameUtils {
 		final List<PlayerManager> players = game.getPlayersFromList();
 
 		Utils.callEvent(new RMGameStopEvent(game, players));
+
+		GameAreaManager.removeEntitiesFromGame(game);
 
 		for (PlayerManager pm : players) {
 			final Player p = pm.getPlayer();
@@ -969,6 +1042,8 @@ public class GameUtils {
 		final List<PlayerManager> players = game.getPlayersFromList();
 
 		Utils.callEvent(new RMGameStopEvent(game, players));
+
+		GameAreaManager.removeEntitiesFromGame(game);
 
 		final String name = game.getName();
 
@@ -1147,6 +1222,8 @@ public class GameUtils {
 			List<PlayerManager> pList = g.getPlayersFromList();
 			if (status == GameStatus.RUNNING && g.isGameRunning()) {
 				Debug.logConsole("Stopping " + game + " ...");
+
+				GameAreaManager.removeEntitiesFromGame(g);
 
 				RageScores.calculateWinner(game, pList);
 
