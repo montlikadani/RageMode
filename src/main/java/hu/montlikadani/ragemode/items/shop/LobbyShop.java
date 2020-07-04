@@ -91,8 +91,10 @@ public class LobbyShop implements Listener {
 		}
 
 		removeShop(player);
-		shops.put(player, next);
-		player.openInventory(next.getInventory());
+		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+			player.openInventory(next.getInventory());
+			shops.put(player, next);
+		}, 2L);
 	}
 
 	public List<ShopItem> getItems(IShop currentPage, ShopCategory category) {
