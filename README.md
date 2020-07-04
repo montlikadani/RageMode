@@ -3,3 +3,4 @@ RageMode is an open source and free plugin, that contains a lot of configurable 
 ***
 
 Old plugin page: [spigot](https://www.spigotmc.org/resources/12690/), [github](https://github.com/KWStudios/RageMode)
+New plugin page: [spigot](https://www.spigotmc.org/resources/69169/)

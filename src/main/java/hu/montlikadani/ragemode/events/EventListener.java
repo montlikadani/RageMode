@@ -87,7 +87,8 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		if (NMS.getItemInHand(p).getType().equals(Material.getMaterial(ConfigValues.getSelectionItem().toUpperCase()))) {
+		if (hasPerm(p, "ragemode.admin.area") && NMS.getItemInHand(p).getType()
+				.equals(Material.getMaterial(ConfigValues.getSelectionItem().toUpperCase()))) {
 			org.bukkit.Location loc = b.getLocation();
 
 			if (event.getAction() == Action.LEFT_CLICK_BLOCK) {

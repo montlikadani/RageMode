@@ -239,7 +239,7 @@ public class Utils {
 	 * @return List
 	 */
 	public static List<String> colorList(List<String> list) {
-		return list.stream().map(s -> colors(s)).collect(Collectors.toList());
+		return list.stream().map(Utils::colors).collect(Collectors.toList());
 	}
 
 	/**

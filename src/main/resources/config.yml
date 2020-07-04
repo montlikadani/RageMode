@@ -209,6 +209,10 @@ game:
     # Wait for the next zombie wave to spawn until all the zombies have been killed.
     wait-for-next-spawn-after-zombies-are-dead: true
 
+    # Defines how many times does the player respawn after dead.
+    # If the player dead 3 times, player will not be respawned again.
+    player-lives: 3
+
   # Game freeze settings
   game-freeze:
     # When the game is over, the players will freeze (if the game mode is not in spectator),
@@ -363,4 +367,4 @@ points:
   suicide: -20
 
 # Do NOT edit this!!!
-config-version: 1.8
+config-version: 1.9
