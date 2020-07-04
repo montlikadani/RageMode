@@ -21,6 +21,7 @@ public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 	private int longestStreak = 0;
 	private int wins = 0;
 	private int games = 0;
+	private int zombieKills = 0;
 
 	private double kd = 0d;
 
@@ -84,6 +85,14 @@ public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 
 	public void setKnifeKills(int knifeKills) {
 		this.knifeKills = knifeKills;
+	}
+
+	public int getZombieKills() {
+		return zombieKills;
+	}
+
+	public void setZombieKills(int zombieKills) {
+		this.zombieKills = zombieKills;
 	}
 
 	public int getDeaths() {

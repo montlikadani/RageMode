@@ -51,7 +51,7 @@ public class spectate implements ICommand {
 			return false;
 		}
 
-		if (game.addSpectatorPlayer(p, map)) {
+		if (game.addSpectatorPlayer(p)) {
 			p.teleport(GameUtils.getGameSpawn(map).getRandomSpawn());
 
 			p.setAllowFlight(true);

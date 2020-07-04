@@ -13,6 +13,8 @@ public class PlayerManager {
 	private Player player;
 	private String game;
 
+	private int lives = 0;
+
 	private StorePlayerStuffs sps = new StorePlayerStuffs();
 
 	public PlayerManager(Player player, String game) {
@@ -28,8 +30,50 @@ public class PlayerManager {
 		return game;
 	}
 
+	/**
+	 * @return the player current lives
+	 */
+	public int getPlayerLives() {
+		return lives;
+	}
+
+	public void setPlayerLives(int lives) {
+		this.lives = lives;
+	}
+
 	public StorePlayerStuffs getStorePlayer() {
 		return sps;
+	}
+
+	/**
+	 * Defines if the player can respawn again.
+	 * 
+	 * @return true if have enough lives
+	 */
+	public boolean canRespawn() {
+		return lives <= ConfigValues.getPlayerLives();
+	}
+
+	/**
+	 * Moves another stored player things to the new one.
+	 * 
+	 * @param s {@link StorePlayerStuffs}
+	 */
+	public void storeFrom(StorePlayerStuffs s) {
+		sps.oldHealth = s.oldHealth;
+		sps.oldHunger = s.oldHunger;
+		sps.oldEffects = s.oldEffects;
+		sps.oldDisplayName = s.oldDisplayName;
+		sps.oldListName = s.oldListName;
+		sps.oldFire = s.oldFire;
+		sps.oldExp = s.oldExp;
+		sps.oldExpLevel = s.oldExpLevel;
+		sps.oldVehicle = s.oldVehicle;
+		sps.currentBoard = s.currentBoard;
+		sps.oldLocation = s.oldLocation;
+		sps.oldGameMode = s.oldGameMode;
+		sps.oldInventories = s.oldInventories;
+		sps.oldArmor = s.oldArmor;
 	}
 
 	/**
@@ -41,6 +85,7 @@ public class PlayerManager {
 
 	/**
 	 * Stores the player tools, such as inventory, game mode, location etc.
+	 * 
 	 * @param spectator the player is spectator or not
 	 */
 	public void storePlayerTools(boolean spectator) {
@@ -93,6 +138,7 @@ public class PlayerManager {
 
 	/**
 	 * Adds back the tools to the player if have stored.
+	 * 
 	 * @param spectator the player is spectator or not
 	 */
 	public void addBackTools(boolean spectator) {

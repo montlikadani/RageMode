@@ -60,6 +60,8 @@ public class GameUtils {
 
 	public static final HashMap<UUID, Particle> USERPARTICLES = new HashMap<>();
 
+	public static final LobbyShop LOBBYSHOP = new LobbyShop();
+
 	/**
 	 * Broadcast a message to the currently playing players for that given game.
 	 * 
@@ -79,6 +81,10 @@ public class GameUtils {
 	 */
 	public static void broadcastToGame(Game game, String message) {
 		Validate.notNull(game, "Game can't be null!");
+
+		if (message.trim().isEmpty()) {
+			return;
+		}
 
 		for (PlayerManager pm : game.getPlayersFromList()) {
 			if (game.getName().equalsIgnoreCase(pm.getGameName())) {
@@ -193,22 +199,6 @@ public class GameUtils {
 	/**
 	 * Get the game by player uuid.
 	 * 
-	 * @deprecated converting string to uuid is too long time
-	 * @param uuid UUID
-	 * @see #getGameByPlayer(UUID)
-	 * @return Game if player is in game.
-	 */
-	@Deprecated
-	public static Game getGameByPlayer(String uuid) {
-		Validate.notNull(uuid, "Player UUID can not be null");
-		Validate.notEmpty(uuid, "Player UUID can't be empty");
-
-		return getGameByPlayer(Bukkit.getPlayer(UUID.fromString(uuid)));
-	}
-
-	/**
-	 * Get the game by player uuid.
-	 * 
 	 * @see #getGameByPlayer(Player)
 	 * @param uuid UUID
 	 * @return Game if player is in game.
@@ -237,22 +227,6 @@ public class GameUtils {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Get the game by player uuid.
-	 * 
-	 * @deprecated converting string to uuid is too long time
-	 * @param uuid UUID
-	 * @see #getGameBySpectator(UUID)
-	 * @return Game if player is in game.
-	 */
-	@Deprecated
-	public static Game getGameBySpectator(String uuid) {
-		Validate.notNull(uuid, "Player UUID can not be null");
-		Validate.notEmpty(uuid, "Player UUID can't be empty");
-
-		return getGameBySpectator(Bukkit.getPlayer(UUID.fromString(uuid)));
 	}
 
 	/**
@@ -455,16 +429,16 @@ public class GameUtils {
 				return;
 			}
 
-			if (game.addSpectatorPlayer(p, name)) {
+			if (game.addSpectatorPlayer(p)) {
 				p.teleport(getGameSpawn(name).getRandomSpawn());
-
-				p.setAllowFlight(true);
-				p.setFlying(true);
-				p.setGameMode(GameMode.SPECTATOR);
 
 				if (Items.getLeaveGameItem() != null) {
 					inv.setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().build());
 				}
+
+				// delay to avoid bad work of spectator
+				Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
+						() -> p.setGameMode(org.bukkit.GameMode.SPECTATOR), 5L);
 			}
 
 			return;
@@ -582,13 +556,15 @@ public class GameUtils {
 	public static void leavePlayer(Player p, Game game) {
 		Validate.notNull(game, "Game can't be null!");
 
-		RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
-		Utils.callEvent(gameLeaveEvent);
-		if (!gameLeaveEvent.isCancelled()) {
-			game.removePlayer(p);
+		if (isPlayerPlaying(p)) {
+			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
+			Utils.callEvent(gameLeaveEvent);
+			if (!gameLeaveEvent.isCancelled()) {
+				game.removePlayer(p);
+			}
+		} else if (isSpectatorPlaying(p)) {
+			game.removeSpectatorPlayer(p);
 		}
-
-		game.removeSpectatorPlayer(p);
 
 		SignCreator.updateAllSigns(game.getName());
 	}
@@ -599,7 +575,7 @@ public class GameUtils {
 	 * @param p Player
 	 * @param title Title
 	 * @param subtitle SubTitle
-	 * @param times The times splitting <code>", "</code>
+	 * @param times The times separates with <code>", "</code>
 	 */
 	public static void sendTitleMessages(Player p, String title, String subtitle, String times) {
 		String[] split = times.split(", ");
@@ -1043,81 +1019,102 @@ public class GameUtils {
 
 		Utils.callEvent(new RMGameStopEvent(game, players));
 
-		GameAreaManager.removeEntitiesFromGame(game);
-
 		final String name = game.getName();
+		if (game.getGameType() != GameType.APOCALYPSE) {
+			boolean winnervalid = false;
+			UUID winnerUUID = RageScores.calculateWinner(game, players);
+			if (winnerUUID != null && Bukkit.getPlayer(winnerUUID) != null) {
+				winnervalid = true;
 
-		boolean winnervalid = false;
-		UUID winnerUUID = RageScores.calculateWinner(name, players);
-		if (winnerUUID != null && Bukkit.getPlayer(winnerUUID) != null) {
-			winnervalid = true;
+				Player winner = Bukkit.getPlayer(winnerUUID);
 
-			Player winner = Bukkit.getPlayer(winnerUUID);
+				String wonTitle = ConfigValues.getWonTitle(), wonSubtitle = ConfigValues.getWonSubTitle(),
+						youWonTitle = ConfigValues.getYouWonTitle(), youWonSubtitle = ConfigValues.getYouWonSubTitle();
 
-			String wonTitle = ConfigValues.getWonTitle(),
-					wonSubtitle = ConfigValues.getWonSubTitle(),
-					youWonTitle = ConfigValues.getYouWonTitle(),
-					youWonSubtitle = ConfigValues.getYouWonSubTitle();
+				wonTitle = wonTitle.replace("%winner%", winner.getName());
+				wonTitle = replaceVariables(wonTitle, winnerUUID);
+				youWonTitle = replaceVariables(youWonTitle, winnerUUID);
 
-			wonTitle = wonTitle.replace("%winner%", winner.getName());
-			wonTitle = replaceVariables(wonTitle, winnerUUID);
-			youWonTitle = replaceVariables(youWonTitle, winnerUUID);
+				wonSubtitle = wonSubtitle.replace("%winner%", winner.getName());
+				wonSubtitle = replaceVariables(wonSubtitle, winnerUUID);
+				youWonSubtitle = replaceVariables(youWonSubtitle, winnerUUID);
 
-			wonSubtitle = wonSubtitle.replace("%winner%", winner.getName());
-			wonSubtitle = replaceVariables(wonSubtitle, winnerUUID);
-			youWonSubtitle = replaceVariables(youWonSubtitle, winnerUUID);
+				for (PlayerManager pm : players) {
+					final Player p = pm.getPlayer();
 
-			for (PlayerManager pm : players) {
-				final Player p = pm.getPlayer();
+					if (p != winner) {
+						String wonTime = ConfigValues.getWonTitleTime();
+						sendTitleMessages(p, wonTitle, wonSubtitle, wonTime);
 
-				if (p != winner) {
-					String wonTime = ConfigValues.getWonTitleTime();
-					sendTitleMessages(p, wonTitle, wonSubtitle, wonTime);
-
-					if (ConfigValues.isSwitchGMForPlayers()) {
-						p.setGameMode(GameMode.SPECTATOR);
+						if (ConfigValues.isSwitchGMForPlayers()) {
+							p.setGameMode(GameMode.SPECTATOR);
+						}
+					} else {
+						String wonTime = ConfigValues.getYouWonTitleTime();
+						sendTitleMessages(p, youWonTitle, youWonSubtitle, wonTime);
 					}
-				} else {
-					String wonTime = ConfigValues.getYouWonTitleTime();
-					sendTitleMessages(p, youWonTitle, youWonSubtitle, wonTime);
 				}
 			}
-		}
 
-		players.forEach(pm -> game.removePlayerSynced(pm.getPlayer()));
-		game.getActionMessengers().clear();
+			if (!winnervalid) {
+				broadcastToGame(game, RageMode.getLang().get("game.no-won"));
 
-		if (!winnervalid) {
-			broadcastToGame(game, RageMode.getLang().get("game.no-won"));
-
-			for (final PlayerManager pm : players) {
-				pm.getPlayer().setGameMode(GameMode.SPECTATOR);
-				game.removePlayerSynced(pm.getPlayer());
+				players.forEach(pm -> pm.getPlayer().setGameMode(GameMode.SPECTATOR));
 			}
-		}
 
-		final Player winner = winnerUUID != null ? Bukkit.getPlayer(winnerUUID) : null;
-		if (!useFreeze) {
-			finishStopping(game, winner, false);
-			return;
-		}
+			players.forEach(pm -> game.removePlayerSynced(pm.getPlayer()));
+			game.getActionMessengers().clear();
 
-		if (WAITINGGAMES.containsKey(name)) {
-			WAITINGGAMES.remove(name);
-		}
+			final Player winner = winnerUUID != null ? Bukkit.getPlayer(winnerUUID) : null;
+			if (!useFreeze) {
+				finishStopping(game, winner, false);
+				return;
+			}
 
-		WAITINGGAMES.put(name, true);
-
-		game.setStatus(GameStatus.GAMEFREEZE);
-		SignCreator.updateAllSigns(name);
-
-		RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
 			if (WAITINGGAMES.containsKey(name)) {
 				WAITINGGAMES.remove(name);
 			}
 
-			finishStopping(game, winner, true);
-		}, ConfigValues.getGameFreezeTime() * 20);
+			WAITINGGAMES.put(name, true);
+
+			game.setStatus(GameStatus.GAMEFREEZE);
+			SignCreator.updateAllSigns(name);
+
+			RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
+				if (WAITINGGAMES.containsKey(name)) {
+					WAITINGGAMES.remove(name);
+				}
+
+				finishStopping(game, winner, true);
+			}, ConfigValues.getGameFreezeTime() * 20);
+		} else {
+			GameAreaManager.removeEntitiesFromGame(game);
+
+			players.forEach(pm -> game.removePlayerSynced(pm.getPlayer()));
+			game.getActionMessengers().clear();
+
+			if (!useFreeze) {
+				finishStopping(game, null, false);
+				return;
+			}
+
+			if (WAITINGGAMES.containsKey(name)) {
+				WAITINGGAMES.remove(name);
+			}
+
+			WAITINGGAMES.put(name, true);
+
+			game.setStatus(GameStatus.GAMEFREEZE);
+			SignCreator.updateAllSigns(name);
+
+			RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
+				if (WAITINGGAMES.containsKey(name)) {
+					WAITINGGAMES.remove(name);
+				}
+
+				finishStopping(game, null, true);
+			}, ConfigValues.getGameFreezeTime() * 20);
+		}
 	}
 
 	private static void finishStopping(Game game, Player winner, boolean serverStop) {
@@ -1225,7 +1222,7 @@ public class GameUtils {
 
 				GameAreaManager.removeEntitiesFromGame(g);
 
-				RageScores.calculateWinner(game, pList);
+				RageScores.calculateWinner(g, pList);
 
 				for (PlayerManager players : pList) {
 					Player p = players.getPlayer();

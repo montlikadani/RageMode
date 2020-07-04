@@ -24,7 +24,7 @@ public class ConfigValues {
 
 	private static int gameFreezeTime, lobbyDelay, gameTime, bowKill, axeKill, axeDeath, knifeKill, explosionKill,
 			suicide, grenadeKill, respawnProtectTime, rejoinDelayHour, rejoinDelayMinute, rejoinDelaySecond,
-			killBonusChance, delayBeforeFirstZombiesSpawn, delayAfterNextZombiesSpawning;
+			killBonusChance, delayBeforeFirstZombiesSpawn, delayAfterNextZombiesSpawning, playerLives;
 
 	public static void loadValues(FileConfig f) {
 		lang = f.get("language", "en");
@@ -97,6 +97,7 @@ public class ConfigValues {
 		delayBeforeFirstZombiesSpawn = f.get("game.zombie-apocalypse.delay-before-first-spawn", 30);
 		delayAfterNextZombiesSpawning = f.get("game.zombie-apocalypse.delay-after-next-zombies-spawning", 30);
 		waitForNextSpawnAfterZombiesAreDead = f.get("game.zombie-apocalypse.wait-for-next-spawn-after-zombies-are-dead", true);
+		playerLives = f.get("game.zombie-apocalypse.player-lives", 3);
 		tabFormatEnable = f.get("game.tablist.player-format.enable", false);
 		tabPrefix = f.get("game.tablist.player-format.prefix", "");
 		tabSuffix = f.get("game.tablist.player-format.suffix", "&e %kills%");
@@ -498,5 +499,9 @@ public class ConfigValues {
 
 	public static boolean isWaitForNextSpawnAfterZombiesAreDead() {
 		return waitForNextSpawnAfterZombiesAreDead;
+	}
+
+	public static int getPlayerLives() {
+		return playerLives;
 	}
 }

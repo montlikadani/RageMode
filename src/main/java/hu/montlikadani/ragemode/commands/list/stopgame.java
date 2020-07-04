@@ -11,8 +11,10 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
+import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.scores.RageScores;
@@ -46,7 +48,10 @@ public class stopgame implements ICommand {
 			List<PlayerManager> players = g.getPlayersFromList();
 			Utils.callEvent(new RMGameStopEvent(g, players));
 
-			RageScores.calculateWinner(game, players);
+			if (g.getGameType() != GameType.APOCALYPSE)
+				RageScores.calculateWinner(g, players);
+			else
+				GameAreaManager.removeEntitiesFromGame(g);
 
 			for (Iterator<PlayerManager> it = players.iterator(); it.hasNext();) {
 				Player player = it.next().getPlayer();
@@ -66,6 +71,7 @@ public class stopgame implements ICommand {
 				g.removeSpectatorPlayer(pl);
 			}
 
+			g.getActionMessengers().clear();
 			g.setGameNotRunning();
 			g.setStatus(null);
 			SignCreator.updateAllSigns(game);

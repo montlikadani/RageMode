@@ -41,6 +41,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -324,21 +325,17 @@ public class GameListener implements Listener {
 				arrow.getWorld().createExplosion(x, y, z, 2f, false, false);
 				arrow.remove();
 
-				if (game.getGameType() == GameType.APOCALYPSE) {
-					return;
-				}
-
 				int i = 0;
 				int imax = nears.size();
 				while (i < imax) {
+					Entity near = nears.get(i);
+
+					if (explosionVictims.containsKey(near.getUniqueId())) {
+						explosionVictims.remove(near.getUniqueId());
+					}
+					explosionVictims.put(near.getUniqueId(), shooter.getUniqueId());
+
 					if (nears.get(i) instanceof Player) {
-						Player near = (Player) nears.get(i);
-
-						if (explosionVictims.containsKey(near.getUniqueId())) {
-							explosionVictims.remove(near.getUniqueId());
-						}
-						explosionVictims.put(near.getUniqueId(), shooter.getUniqueId());
-
 						near.removeMetadata("killedWith", plugin);
 						near.setMetadata("killedWith", new FixedMetadataValue(plugin, "explosion"));
 					}
@@ -353,6 +350,12 @@ public class GameListener implements Listener {
 	public void onHit(EntityDamageByEntityEvent event) {
 		if (GameUtils.getGame(event.getEntity().getLocation()) != null
 				&& GameUtils.getGame(event.getEntity().getLocation()).getGameType() == GameType.APOCALYPSE) {
+			// Players do not hurt players, because friendship
+			if (event.getEntity() instanceof Player && event.getDamager() instanceof Player) {
+				event.setCancelled(true);
+				return;
+			}
+
 			double finalDamage = 0d;
 
 			if (event.getDamager() instanceof Player) {
@@ -457,7 +460,7 @@ public class GameListener implements Listener {
 
 		// Hit player event
 		if (GameUtils.getGameByPlayer(victim).getStatus() == GameStatus.RUNNING) {
-			if (event.getCause().equals(DamageCause.FALL) && !ConfigValues.isDamagePlayerFall()) {
+			if (event.getCause() == DamageCause.FALL && !ConfigValues.isDamagePlayerFall()) {
 				event.setCancelled(true);
 				return;
 			}
@@ -490,11 +493,7 @@ public class GameListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		Player deceased = event.getEntity();
-		if (deceased == null) {
-			return;
-		}
-
-		if (!GameUtils.isPlayerPlaying(deceased)) {
+		if (deceased == null || !GameUtils.isPlayerPlaying(deceased)) {
 			return;
 		}
 
@@ -506,18 +505,18 @@ public class GameListener implements Listener {
 		boolean killerExists = deceased.getKiller() != null;
 
 		if ((killerExists && GameUtils.isPlayerPlaying(deceased.getKiller())) || !killerExists) {
-			boolean doDeathBroadcast = ConfigValues.isDefaultDeathMessageEnabled();
-
-			if (plugin.getConfiguration().getArenasCfg()
-					.isSet("arenas." + deceasedGame.getName() + ".death-messages")) {
-				String gameBroadcast = plugin.getConfiguration().getArenasCfg()
-						.getString("arenas." + deceasedGame.getName() + ".death-messages", "");
-				if (gameBroadcast.equals("true") || gameBroadcast.equals("false")) {
-					doDeathBroadcast = Boolean.parseBoolean(gameBroadcast);
-				}
-			}
-
 			if (deceasedGame.getGameType() != GameType.APOCALYPSE) {
+				boolean doDeathBroadcast = ConfigValues.isDefaultDeathMessageEnabled();
+
+				if (plugin.getConfiguration().getArenasCfg()
+						.isSet("arenas." + deceasedGame.getName() + ".death-messages")) {
+					String gameBroadcast = plugin.getConfiguration().getArenasCfg()
+							.getString("arenas." + deceasedGame.getName() + ".death-messages", "");
+					if (gameBroadcast.equals("true") || gameBroadcast.equals("false")) {
+						doDeathBroadcast = Boolean.parseBoolean(gameBroadcast);
+					}
+				}
+
 				String message = "";
 				String deceaseName = deceased.getName();
 				List<MetadataValue> data = deceased.getMetadata("killedWith");
@@ -628,6 +627,9 @@ public class GameListener implements Listener {
 						Utils.callEvent(killed);
 					}
 				}
+			} else if (deceasedGame.getPlayerManager(deceased).canRespawn()) {
+				PlayerManager pl = deceasedGame.getPlayerManager(deceased);
+				pl.setPlayerLives(pl.getPlayerLives() + 1);
 			}
 
 			event.setDroppedExp(0);
@@ -651,14 +653,38 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	public void onMobDeath(EntityDeathEvent event) {
-		if (event.getEntity() instanceof Player) {
+		org.bukkit.entity.LivingEntity entity = event.getEntity();
+		if (entity instanceof Player) {
 			return;
 		}
 
-		Game game = GameUtils.getGame(event.getEntity().getLocation());
-		if (game != null && game.isGameRunning() && game.getGameType() == GameType.APOCALYPSE) {
+		Game game = GameUtils.getGame(entity.getLocation());
+		if (game != null && game.getStatus() == GameStatus.RUNNING && game.getGameType() == GameType.APOCALYPSE) {
 			event.setDroppedExp(0);
 			event.getDrops().clear();
+
+			Player killer = entity.getKiller();
+			UUID entityUUID = entity.getUniqueId();
+			if ((killer != null || explosionVictims.containsKey(entityUUID)
+					|| grenadeExplosionVictims.containsKey(entityUUID)) && entity instanceof org.bukkit.entity.Zombie) {
+				if (killer == null) {
+					killer = Bukkit.getPlayer(explosionVictims.get(entityUUID));
+				}
+
+				if (killer == null) {
+					killer = Bukkit.getPlayer(grenadeExplosionVictims.get(entityUUID));
+				}
+
+				if (killer != null) {
+					GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.zombie-kill", "%entity%",
+							entity.getName(), "%killer%", killer.getName()));
+
+					RageScores.addPointsToPlayer(killer, entity);
+
+					RMPlayerKilledEvent killed = new RMPlayerKilledEvent(game, entity, killer);
+					Utils.callEvent(killed);
+				}
+			}
 		}
 	}
 
@@ -680,7 +706,7 @@ public class GameListener implements Listener {
 	// spawns over plugins
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onRespawn(PlayerRespawnEvent e) {
-		Player p = e.getPlayer();
+		final Player p = e.getPlayer();
 
 		if (!GameUtils.isPlayerPlaying(p)) {
 			return;
@@ -703,6 +729,28 @@ public class GameListener implements Listener {
 
 		IGameSpawn gsg = GameUtils.getGameSpawn(game.getName());
 		if (gsg.getSpawnLocations().size() < 0) {
+			return;
+		}
+
+		// Checks if the player can respawn again in apocalypse
+		if (game.getGameType() == GameType.APOCALYPSE && !game.getPlayerManager(p).canRespawn()) {
+			sendMessage(p, RageMode.getLang().get("game.killed-by-zombies", "%amount%", ConfigValues.getPlayerLives() + 1));
+
+			// Switching to spectate
+			if (game.removePlayer(p, ConfigValues.isSpectatorEnabled())) {
+				e.setRespawnLocation(gsg.getRandomSpawn());
+
+				if (Items.getLeaveGameItem() != null) {
+					p.getInventory().setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().build());
+				}
+
+				// delay to avoid bad work of spectator
+				Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
+						() -> p.setGameMode(org.bukkit.GameMode.SPECTATOR), 5L);
+			} else {
+				game.removePlayer(p);
+			}
+
 			return;
 		}
 
@@ -744,7 +792,7 @@ public class GameListener implements Listener {
 	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent ev) {
 		if (GameUtils.isPlayerPlaying(ev.getPlayer())) {
-			if (ev.getBlock().getType().equals(Material.TRIPWIRE)) {
+			if (ev.getBlock().getType() == Material.TRIPWIRE) {
 				pressureMinesOwner.put(ev.getBlock().getLocation(), ev.getPlayer().getUniqueId());
 				return;
 			}
@@ -893,26 +941,22 @@ public class GameListener implements Listener {
 				grenade.getWorld().createExplosion(gX, gY, gZ, 3f, false, false);
 				grenade.remove(); // get rid of egg so it can't be picked up
 
-				if (game.getGameType() == GameType.APOCALYPSE) {
-					return;
-				}
-
 				int i = 0;
 				int imax = nears.size();
 				while (i < imax) {
+					Entity near = nears.get(i);
+
+					if (grenadeExplosionVictims.containsKey(near.getUniqueId())) {
+						grenadeExplosionVictims.remove(near.getUniqueId());
+					}
+					grenadeExplosionVictims.put(near.getUniqueId(), p.getUniqueId());
+
 					if (nears.get(i) instanceof Player) {
-						Player near = (Player) nears.get(i);
-
-						if (grenadeExplosionVictims.containsKey(near.getUniqueId())) {
-							grenadeExplosionVictims.remove(near.getUniqueId());
-						}
-						grenadeExplosionVictims.put(near.getUniqueId(), p.getUniqueId());
-
 						near.removeMetadata("killedWith", plugin);
 						near.setMetadata("killedWith", new FixedMetadataValue(plugin, "explosion"));
-
-						i++;
 					}
+
+					i++;
 				}
 			}
 		}.runTaskLater(plugin, 40);
@@ -998,7 +1042,7 @@ public class GameListener implements Listener {
 
 					if (Items.getShopItem() != null
 							&& Items.getShopItem().getDisplayName().equals(meta.getDisplayName())) {
-						game.getShop().openMainPage(p);
+						GameUtils.LOBBYSHOP.openMainPage(p);
 					}
 				}
 
@@ -1113,6 +1157,18 @@ public class GameListener implements Listener {
 
 		Player p = (Player) event.getWhoClicked();
 
+		if (GameUtils.isSpectatorPlaying(p) && event.getClickedInventory() != null
+				&& event.getClickedInventory().getType() == org.bukkit.event.inventory.InventoryType.PLAYER) {
+			if ((event.getClick() == ClickType.LEFT || event.getClick() == ClickType.MIDDLE
+					|| event.getClick() == ClickType.RIGHT)
+					&& event.getCurrentItem().isSimilar(Items.getLeaveGameItem().build())) {
+				event.setCancelled(true);
+				GameUtils.leavePlayer(p, GameUtils.getGameBySpectator(p));
+			}
+
+			return;
+		}
+
 		if (GameUtils.isPlayerPlaying(p) && GameUtils.getGameByPlayer(p).getStatus() == GameStatus.WAITING
 				&& !(event.getInventory().getHolder() instanceof IShop)) {
 			event.setCancelled(true);
@@ -1198,23 +1254,26 @@ public class GameListener implements Listener {
 			explodeLoc.getWorld().createExplosion(explodeLoc, 4f, false, false);
 			b.setType(Material.AIR);
 
-			if (GameUtils.getGame(currentLoc) != null
-					&& GameUtils.getGame(currentLoc).getGameType() != GameType.APOCALYPSE) {
-				for (Entity entities : nears) {
-					if (entities instanceof Player) {
-						final Player near = (Player) entities;
+			if (GameUtils.getGame(currentLoc) != null) {
+				for (final Entity near : nears) {
+					if (explosionVictims.containsKey(near.getUniqueId())) {
+						explosionVictims.remove(near.getUniqueId());
+					}
 
-						if (explosionVictims.containsKey(near.getUniqueId())) {
-							explosionVictims.remove(near.getUniqueId());
-						}
+					if (GameUtils.getGame(currentLoc).getGameType() == GameType.APOCALYPSE
+							&& pressureMinesOwner.containsKey(currentLoc)) {
+						explosionVictims.put(near.getUniqueId(), pressureMinesOwner.get(currentLoc));
+						continue;
+					}
 
-						if (p != null) {
-							explosionVictims.put(near.getUniqueId(), p.getUniqueId());
-						} else {
-							nears.stream().filter(n -> !(n instanceof Player))
-									.forEach(n -> explosionVictims.put(near.getUniqueId(), n.getUniqueId()));
-						}
+					if (p != null) {
+						explosionVictims.put(near.getUniqueId(), p.getUniqueId());
+					} else {
+						nears.stream().filter(n -> !(n instanceof Player))
+								.forEach(n -> explosionVictims.put(near.getUniqueId(), n.getUniqueId()));
+					}
 
+					if (near instanceof Player) {
 						near.removeMetadata("killedWith", plugin);
 						near.setMetadata("killedWith", new FixedMetadataValue(plugin, "explosion"));
 					}

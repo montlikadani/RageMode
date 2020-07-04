@@ -194,11 +194,13 @@ public class Language {
 		l.getL("game.no-spawns-configured", "&cIn&e %game%&c are no spawns configured!");
 		l.getL("game.player-could-not-join", "&e%player%&4 couldn't join the RageMode game&e %game%.");
 		l.getL("game.game-stopped-for-reload", "&cThe game has stopped because we reloading the plugin and need to stop the game. Sorry!");
+		l.getL("game.killed-by-zombies", "&cYou were killed&a %amount%&c times by zombies.\n&cYou can leave the game by typing&f /rm leave&c, or watching what happens.");
 		l.getL("game.broadcast.axe-kill", "&a%victim%&3 was killed by&a %killer%&3 with a&6 CombatAxe&3.");
 		l.getL("game.broadcast.arrow-kill", "&a%victim%&3 was killed by a&6 direct arrow hit&3 from&a %killer%&3.");
 		l.getL("game.broadcast.knife-kill", "&a%victim%&3 was killed by&a %killer%&3 with a&6 RageKnife&3.");
 		l.getL("game.broadcast.explosion-kill", "&a%victim%&3 was&6 blown up&3 by&a %killer%&3.");
 		l.getL("game.broadcast.grenade-kill", "&a%victim%&3 was killed by&a %killer%&3 with a&7 Grenade&3. LOL");
+		l.getL("game.broadcast.zombie-kill", "&a%entity%&3 killed by&a %killer%&3.");
 		l.getL("game.broadcast.error-kill", "&cWhoops, that shouldn't happen normally...");
 		l.getL("game.broadcast.game-end", "&9The game ends in&e %time%&9.");
 		l.getL("game.unknown-killer", "&cDo you know who killed you? Because we don't know it...");
@@ -232,6 +234,7 @@ public class Language {
 		l.getL("game.message.knife-kill", "&3You killed&6&l %victim%&3 with your RageKnife.&6&l %points%");
 		l.getL("game.message.explosion-kill", "&3You killed&6&l %victim%&3 by causing heavy explosions with your RageBow.&6&l %points%");
 		l.getL("game.message.grenade-kill", "&3You killed&6&l %victim%&3 with your Grenade.&6&l %points%");
+		l.getL("game.message.zombie-kill", "&3You killed a&6&l %entity%&a %points%&3");
 		l.getL("game.message.arrow-death", "&3You were killed by&6&l %killer%&3 with a direct arrow hit.&4&l %points%");
 		l.getL("game.message.axe-death", "&3You were killed by&6&l %killer%&3 with a CombatAxe.&4&l %points%");
 		l.getL("game.message.knife-death", "&3You were killed by&6&l %killer%&3 with a RageKnife.&4&l %points%");

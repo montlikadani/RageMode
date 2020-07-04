@@ -28,7 +28,7 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 		String query = "CREATE TABLE IF NOT EXISTS `" + getPrefix()
 				+ "stats_players` (`id` INT AUTO_INCREMENT PRIMARY KEY, `name` VARCHAR(255) NOT NULL, `uuid` VARCHAR(255) NOT NULL, "
 				+ "`kills` INTEGER, `axe_kills` INTEGER, `direct_arrow_kills` INTEGER, `explosion_kills` INTEGER, "
-				+ "`knife_kills` INTEGER, `deaths` INTEGER, `axe_deaths` INTEGER, `direct_arrow_deaths` INTEGER, "
+				+ "`knife_kills` INTEGER, `zombie_kills` INTEGER, `deaths` INTEGER, `axe_deaths` INTEGER, `direct_arrow_deaths` INTEGER, "
 				+ "`explosion_deaths` INTEGER, `knife_deaths` INTEGER, `wins` INTEGER, `score` INTEGER, `games` INTEGER, "
 				+ "`kd` DOUBLE, UNIQUE(uuid));";
 		createTable(query);

@@ -108,7 +108,7 @@ public class ScoreBoard {
 
 	/**
 	 * Removes the ScoreBoard and the player who exist in the list for the given Player.
-	 * @param player The Player instance for which the ScoreBoard should be removed.
+	 * @param pl The Player instance for which the ScoreBoard should be removed.
 	 */
 	public void remove(Player pl) {
 		getScoreboard(pl).ifPresent(board -> {
@@ -135,8 +135,8 @@ public class ScoreBoard {
 
 	/**
 	 * Returns an {@link Optional} player scoreboard which is saved.
-	 * @param player Player
-	 * @return {@link Optional} scoreboard
+	 * @param player {@link Player}
+	 * @return {@link Optional}
 	 */
 	public Optional<ScoreBoardHolder> getScoreboard(Player player) {
 		return Optional.ofNullable(scoreboards.get(player));

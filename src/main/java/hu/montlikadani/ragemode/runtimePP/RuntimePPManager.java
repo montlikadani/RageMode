@@ -96,6 +96,7 @@ public class RuntimePPManager {
 			newPP.setKnifeDeaths(pp.getKnifeDeaths());
 			newPP.setKnifeKills(pp.getKnifeKills());
 			newPP.setLongestStreak(pp.getLongestStreak());
+			newPP.setZombieKills(pp.getZombieKills());
 			newPP.setPoints(pp.getPoints());
 
 			if (pp.isWinner())
@@ -130,6 +131,7 @@ public class RuntimePPManager {
 				newPP.setKnifeDeaths(oldPP.getKnifeDeaths() + pp.getKnifeDeaths());
 				newPP.setKnifeKills(oldPP.getKnifeKills() + pp.getKnifeKills());
 				newPP.setLongestStreak(oldPP.getLongestStreak() + pp.getLongestStreak());
+				newPP.setZombieKills(oldPP.getZombieKills() + pp.getZombieKills());
 				newPP.setPoints(oldPP.getPoints() + pp.getPoints());
 
 				if (pp.isWinner())

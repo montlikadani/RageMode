@@ -2,7 +2,7 @@ package hu.montlikadani.ragemode.scores;
 
 public enum KilledWith {
 
-	RAGEBOW, COMBATAXE, RAGEKNIFE, EXPLOSION, GRENADE;
+	RAGEBOW, COMBATAXE, RAGEKNIFE, EXPLOSION, GRENADE, UNKNOWN;
 
 	private String name;
 

@@ -91,6 +91,7 @@ public class YAMLDB {
 			plPo.setKills(statsConf.getInt(path + "kills"));
 			plPo.setKnifeDeaths(statsConf.getInt(path + "knife-deaths"));
 			plPo.setKnifeKills(statsConf.getInt(path + "knife-kills"));
+			plPo.setZombieKills(statsConf.getInt(path + "zombie-kills"));
 
 			plPo.setKD(statsConf.getDouble(path + "KD"));
 
@@ -130,6 +131,7 @@ public class YAMLDB {
 					directArrowKills = statsConf.getInt(path + "direct-arrow-kills"),
 					explosionKills = statsConf.getInt(path + "explosion-kills"),
 					knifeKills = statsConf.getInt(path + "knife-kills"),
+					zombieKills = statsConf.getInt(path + "zombie-kills"),
 
 					deaths = statsConf.getInt(path + "deaths"),
 					axeDeaths = statsConf.getInt(path + "axe-deaths"),
@@ -146,6 +148,7 @@ public class YAMLDB {
 			statsConf.set(path + "direct_arrow_kills", (directArrowKills + points.getDirectArrowKills()));
 			statsConf.set(path + "explosion_kills", (explosionKills + points.getExplosionKills()));
 			statsConf.set(path + "knife_kills", (knifeKills + points.getKnifeKills()));
+			statsConf.set(path + "zombie-kills", (zombieKills + points.getZombieKills()));
 
 			statsConf.set(path + "deaths", (deaths + points.getDeaths()));
 			statsConf.set(path + "axe_deaths", (axeDeaths + points.getAxeDeaths()));
@@ -169,6 +172,7 @@ public class YAMLDB {
 			statsConf.set(path + "direct_arrow_kills", points.getDirectArrowKills());
 			statsConf.set(path + "explosion_kills", points.getExplosionKills());
 			statsConf.set(path + "knife_kills", points.getKnifeKills());
+			statsConf.set(path + "zombie-kills", points.getZombieKills());
 
 			statsConf.set(path + "deaths", points.getDeaths());
 			statsConf.set(path + "axe_deaths", points.getAxeDeaths());
@@ -264,6 +268,7 @@ public class YAMLDB {
 				directArrowKills = statsConf.getInt(path + "direct-arrow-kills"),
 				explosionKills = statsConf.getInt(path + "explosion-kills"),
 				knifeKills = statsConf.getInt(path + "knife-kills"),
+				zombieKills = statsConf.getInt(path + "zombie-kills"),
 
 				deaths = statsConf.getInt(path + "deaths"),
 				axeDeaths = statsConf.getInt(path + "axe-deaths"),
@@ -289,6 +294,7 @@ public class YAMLDB {
 		pp.setDirectArrowKills(directArrowKills);
 		pp.setExplosionKills(explosionKills);
 		pp.setKnifeKills(knifeKills);
+		pp.setZombieKills(zombieKills);
 
 		pp.setDeaths(deaths);
 		pp.setAxeDeaths(axeDeaths);
@@ -335,6 +341,7 @@ public class YAMLDB {
 			statsConf.set(path + "direct_arrow_kills", 0);
 			statsConf.set(path + "explosion_kills", 0);
 			statsConf.set(path + "knife_kills", 0);
+			statsConf.set(path + "zombie-kills", 0);
 
 			statsConf.set(path + "deaths", 0);
 			statsConf.set(path + "axe_deaths", 0);

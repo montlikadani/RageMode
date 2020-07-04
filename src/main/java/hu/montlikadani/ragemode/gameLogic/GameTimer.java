@@ -20,6 +20,7 @@ public class GameTimer extends TimerTask {
 	private final int time;
 	private int timer;
 
+	private int timeElapsed = -1;
 	private int zombieSpawnAmount = 5;
 	private boolean firstZombieSpawned = false;
 
@@ -68,30 +69,32 @@ public class GameTimer extends TimerTask {
 			if (game.getGameType().equals(GameType.APOCALYPSE)) {
 				if (!firstZombieSpawned) {
 					if (ConfigValues.getDelayBeforeFirstZombiesSpawn() > 0) {
-						Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-								() -> GameUtils.spawnZombies(game, zombieSpawnAmount),
-								ConfigValues.getDelayBeforeFirstZombiesSpawn() * 20);
+						Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
+							GameUtils.spawnZombies(game, zombieSpawnAmount);
+							firstZombieSpawned = true;
+						}, ConfigValues.getDelayBeforeFirstZombiesSpawn() * 20);
 					} else {
 						GameUtils.spawnZombies(game, zombieSpawnAmount);
 					}
 
-					firstZombieSpawned = true;
-				} else {
+				} else if (timeElapsed == -1) { // wait for the scheduler task
 					for (PlayerManager pm : game.getPlayersFromList()) {
 						org.bukkit.Location loc = pm.getPlayer().getLocation();
 						if (GameAreaManager.inArea(loc)) {
 							if (ConfigValues.isWaitForNextSpawnAfterZombiesAreDead()
 									&& !GameAreaManager.getAreaByLocation(loc)
 											.getEntities(GameAreaManager.getAreaByLocation(loc).getEntities())
-											.map(e -> e instanceof org.bukkit.entity.Zombie)
+											.filter(e -> e instanceof org.bukkit.entity.Zombie)
 											.collect(Collectors.toList()).isEmpty()) {
 								break;
 							}
 
 							if (ConfigValues.getDelayAfterNextZombiesSpawning() > 0) {
-								Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-										() -> GameUtils.spawnZombies(game, zombieSpawnAmount),
-										ConfigValues.getDelayAfterNextZombiesSpawning() * 20);
+								timeElapsed = Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
+										() -> {
+											GameUtils.spawnZombies(game, zombieSpawnAmount);
+											timeElapsed = -1;
+										}, ConfigValues.getDelayAfterNextZombiesSpawning() * 20);
 							} else {
 								GameUtils.spawnZombies(game, zombieSpawnAmount);
 							}
@@ -103,6 +106,10 @@ public class GameTimer extends TimerTask {
 			}
 
 			for (ActionMessengers ac : game.getActionMessengers()) {
+				if (game.isSpectatorInList(ac.getPlayer())) {
+					continue;
+				}
+
 				ac.setScoreboard(timer);
 				ac.setTabList(timer);
 				ac.setTeam();

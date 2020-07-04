@@ -2,7 +2,6 @@ package hu.montlikadani.ragemode;
 
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -115,6 +114,11 @@ public class Utils {
 		if (s.contains("%knife-kills%")) {
 			int knifeKills = pp == null ? 0 : pp.getKnifeKills();
 			s = s.replace("%knife-kills%", Integer.toString(knifeKills));
+		}
+
+		if (s.contains("%zombie-kills%")) {
+			int zombieKills = pp == null ? 0 : pp.getZombieKills();
+			s = s.replace("%zombie-kills%", Integer.toString(zombieKills));
 		}
 
 		if (s.contains("%deaths%")) {
@@ -249,24 +253,27 @@ public class Utils {
 		}
 
 		if (s.contains("#") && Version.isCurrentEqualOrHigher(Version.v1_16_R1)) {
-			for (String m : matchColorRegex(s)) {
-				s = s.replace("<" + m + ">", net.md_5.bungee.api.ChatColor.of(m).toString());
-			}
+			s = matchColorRegex(s);
 		}
 
 		return ChatColor.translateAlternateColorCodes('&', s);
 	}
 
-	private static List<String> matchColorRegex(String s) {
-		List<String> matches = new ArrayList<>();
-		Matcher matcher = Pattern.compile("<(.*?)>").matcher(s);
+	private static String matchColorRegex(String s) {
+		String regex = "&?#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})";
+		Matcher matcher = Pattern.compile(regex).matcher(s);
 		while (matcher.find()) {
-			for (int i = 1; i <= matcher.groupCount(); i++) {
-				matches.add(matcher.group(i));
+			String group = matcher.group(0);
+			String group2 = matcher.group(1);
+
+			try {
+				s = s.replace(group, net.md_5.bungee.api.ChatColor.of("#" + group2) + "");
+			} catch (Exception e) {
+				Debug.logConsole(java.util.logging.Level.WARNING, "Bad hex color: " + group);
 			}
 		}
 
-		return matches;
+		return s;
 	}
 
 	/**

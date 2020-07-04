@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -113,6 +114,7 @@ public class LobbyShop implements Listener {
 		for (PlayerManager pm : event.getPlayers()) {
 			Player player = pm.getPlayer();
 			removeShop(player);
+			player.closeInventory();
 		}
 	}
 
@@ -121,6 +123,11 @@ public class LobbyShop implements Listener {
 		if (event.getInventory().getHolder() instanceof IShop) {
 			event.setCancelled(true);
 		}
+	}
+
+	@EventHandler
+	public void onClose(InventoryCloseEvent e) {
+		removeShop((Player) e.getPlayer());
 	}
 
 	@EventHandler

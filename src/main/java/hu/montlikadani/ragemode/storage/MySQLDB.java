@@ -41,6 +41,7 @@ public class MySQLDB {
 				directArrowKills = 0,
 				explosionKills = 0,
 				knifeKills = 0,
+				zombieKills = 0,
 
 				deaths = 0,
 				axeDeaths = 0,
@@ -66,6 +67,7 @@ public class MySQLDB {
 				directArrowKills = rs.getInt("direct_arrow_kills");
 				explosionKills = rs.getInt("explosion_kills");
 				knifeKills = rs.getInt("knife_kills");
+				zombieKills = rs.getInt("zombie_kills");
 
 				deaths = rs.getInt("deaths");
 				axeDeaths = rs.getInt("axe_deaths");
@@ -96,6 +98,7 @@ public class MySQLDB {
 				rPP.setKills(kills);
 				rPP.setKnifeDeaths(knifeDeaths);
 				rPP.setKnifeKills(knifeKills);
+				rPP.setZombieKills(zombieKills);
 
 				rPP.setKD(kd);
 
@@ -153,6 +156,7 @@ public class MySQLDB {
 				oldDirectArrowKills = 0,
 				oldExplosionKills = 0,
 				oldKnifeKills = 0,
+				oldZombieKills = 0,
 
 				oldDeaths = 0,
 				oldAxeDeaths = 0,
@@ -175,6 +179,7 @@ public class MySQLDB {
 				oldDirectArrowKills = rs.getInt("direct_arrow_kills");
 				oldExplosionKills = rs.getInt("explosion_kills");
 				oldKnifeKills = rs.getInt("knife_kills");
+				oldZombieKills = rs.getInt("zombie_kills");
 
 				oldDeaths = rs.getInt("deaths");
 				oldAxeDeaths = rs.getInt("axe_deaths");
@@ -206,6 +211,7 @@ public class MySQLDB {
 				newDirectArrowKills = oldDirectArrowKills + playerPoints.getDirectArrowKills(),
 				newExplosionKills = oldExplosionKills + playerPoints.getExplosionKills(),
 				newKnifeKills = oldKnifeKills + playerPoints.getKnifeKills(),
+				newZombieKills = oldZombieKills + playerPoints.getZombieKills(),
 
 				newDeaths = oldDeaths + playerPoints.getDeaths(),
 				newAxeDeaths = oldAxeDeaths + playerPoints.getAxeDeaths(),
@@ -223,8 +229,8 @@ public class MySQLDB {
 		try {
 			prestt = conn.prepareStatement("REPLACE INTO `" + mySQL.getPrefix()
 					+ "stats_players` (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills,"
-					+ " knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
-					+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+					+ " knife_kills, zombie_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
+					+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 			if (prestt == null) {
 				return;
 			}
@@ -236,15 +242,16 @@ public class MySQLDB {
 			prestt.setInt(5, newDirectArrowKills);
 			prestt.setInt(6, newExplosionKills);
 			prestt.setInt(7, newKnifeKills);
-			prestt.setInt(8, newDeaths);
-			prestt.setInt(9, newAxeDeaths);
-			prestt.setInt(10, newDirectArrowDeaths);
-			prestt.setInt(11, newExplosionDeaths);
-			prestt.setInt(12, newKnifeDeaths);
-			prestt.setInt(13, newWins);
-			prestt.setInt(14, newScore);
-			prestt.setInt(15, newGames);
-			prestt.setDouble(16, newKD);
+			prestt.setInt(8, newZombieKills);
+			prestt.setInt(9, newDeaths);
+			prestt.setInt(10, newAxeDeaths);
+			prestt.setInt(11, newDirectArrowDeaths);
+			prestt.setInt(12, newExplosionDeaths);
+			prestt.setInt(13, newKnifeDeaths);
+			prestt.setInt(14, newWins);
+			prestt.setInt(15, newScore);
+			prestt.setInt(16, newGames);
+			prestt.setDouble(17, newKD);
 			prestt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -408,6 +415,7 @@ public class MySQLDB {
 				currentDirectArrowKills = 0,
 				currentExplosionKills = 0,
 				currentKnifeKills = 0,
+				currentZombieKills = 0,
 
 				currentDeaths = 0,
 				currentAxeDeaths = 0,
@@ -430,6 +438,7 @@ public class MySQLDB {
 				currentDirectArrowKills = rs.getInt("direct_arrow_kills");
 				currentExplosionKills = rs.getInt("explosion_kills");
 				currentKnifeKills = rs.getInt("knife_kills");
+				currentZombieKills = rs.getInt("zombie_kills");
 
 				currentDeaths = rs.getInt("deaths");
 				currentAxeDeaths = rs.getInt("axe_deaths");
@@ -447,6 +456,7 @@ public class MySQLDB {
 				pp.setDirectArrowKills(currentDirectArrowKills);
 				pp.setExplosionKills(currentExplosionKills);
 				pp.setKnifeKills(currentKnifeKills);
+				pp.setZombieKills(currentZombieKills);
 
 				pp.setDeaths(currentDeaths);
 				pp.setAxeDeaths(currentAxeDeaths);
@@ -502,6 +512,7 @@ public class MySQLDB {
 		rpp.setDirectArrowKills(0);
 		rpp.setExplosionKills(0);
 		rpp.setKnifeKills(0);
+		rpp.setZombieKills(0);
 
 		rpp.setDeaths(0);
 		rpp.setAxeDeaths(0);
@@ -523,15 +534,15 @@ public class MySQLDB {
 		try {
 			prestt = conn.prepareStatement("REPLACE INTO `" + DatabaseHandler.getMySQL().getPrefix()
 					+ "stats_players` (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills,"
-					+ " knife_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
-					+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+					+ " knife_kills, zombie_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
+					+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 			if (prestt == null) {
 				return false;
 			}
 
 			prestt.setString(1, Bukkit.getPlayer(rpp.getUUID()).getName());
 			prestt.setString(2, rpp.getUUID().toString());
-			for (int i = 3; i <= 15; i++) {
+			for (int i = 3; i <= 16; i++) {
 				prestt.setInt(i, 0);
 			}
 			prestt.setDouble(16, 0d);

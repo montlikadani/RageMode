@@ -24,7 +24,6 @@ import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameLobby;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
-import hu.montlikadani.ragemode.items.shop.LobbyShop;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class Game {
@@ -38,8 +37,6 @@ public class Game {
 
 	private boolean running = false;
 	private LobbyTimer lobbyTimer;
-
-	private LobbyShop shop = new LobbyShop();
 
 	private final Set<ActionMessengers> acList = new HashSet<>();
 
@@ -166,8 +163,6 @@ public class Game {
 			getPlayerManager(playerToKick).addBackTools();
 			players.remove(playerToKick);
 
-			shop.removeShop(playerToKick);
-
 			playerToKick.sendMessage(RageMode.getLang().get("game.player-kicked-for-vip"));
 
 			players.put(player, pm);
@@ -186,8 +181,8 @@ public class Game {
 		return false;
 	}
 
-	public boolean addSpectatorPlayer(Player player, String game) {
-		PlayerManager pm = new PlayerManager(player, game);
+	public boolean addSpectatorPlayer(Player player) {
+		PlayerManager pm = new PlayerManager(player, name);
 		specPlayer.put(player, pm);
 
 		if (!ConfigValues.isBungee()) {
@@ -218,41 +213,62 @@ public class Game {
 	}
 
 	public boolean removePlayer(final Player player) {
+		return removePlayer(player, false);
+	}
+
+	public boolean removePlayer(final Player player, boolean switchToSpec) {
 		if (!isPlayerInList(player)) {
 			player.sendMessage(RageMode.getLang().get("game.player-not-ingame"));
 			return false;
 		}
 
-		Utils.clearPlayerInventory(player);
-		getPlayerManager(player).addBackTools();
+		hu.montlikadani.ragemode.gameUtils.StorePlayerStuffs oldStuffs = getPlayerManager(player).getStorePlayer();
 
-		removePlayerSynced(player);
+		Utils.clearPlayerInventory(player);
+		if (!switchToSpec) {
+			getPlayerManager(player).addBackTools();
+		}
+
+		acList.remove(removePlayerSynced(player));
 		players.remove(player);
 
 		if (!player.isCustomNameVisible()) {
 			player.setCustomNameVisible(true);
 		}
 
-		shop.removeShop(player);
+		if (!switchToSpec) {
+			player.sendMessage(RageMode.getLang().get("game.player-left"));
+			player.setMetadata("Leaving", new FixedMetadataValue(RageMode.getInstance(), true));
+		}
 
-		player.sendMessage(RageMode.getLang().get("game.player-left"));
-		player.setMetadata("Leaving", new FixedMetadataValue(RageMode.getInstance(), true));
+		if (switchToSpec) {
+			PlayerManager pm = new PlayerManager(player, name);
+			pm.storeFrom(oldStuffs);
+			specPlayer.put(player, pm);
+		}
+
 		return true;
 	}
 
 	/**
-	 * Removes all of scoreboard, tablist and score teams things from player.
+	 * Removes all of scoreboard, tablist and score team things from player.
 	 * @param player Player
+	 * @return {@link ActionMessengers}
 	 */
-	public void removePlayerSynced(Player player) {
+	public ActionMessengers removePlayerSynced(Player player) {
 		for (ActionMessengers action : acList) {
 			if (action.getPlayer().equals(player)) {
-				action.getScoreboard().remove(player);
-				action.getTabTitles().sendTabTitle(player, "", "");
-			}
+				org.bukkit.Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
+					action.getScoreboard().remove(player);
+					action.getTabTitles().sendTabTitle(player, "", "");
+					action.getScoreTeam().remove();
+				}, 5L);
 
-			action.getScoreTeam().remove();
+				return action;
+			}
 		}
+
+		return null;
 	}
 
 	/**
@@ -434,14 +450,6 @@ public class Game {
 		Validate.notNull(p, "Player can't be null!");
 
 		return players.get(p);
-	}
-
-	/**
-	 * Gets the lobby shop.
-	 * @return {@link LobbyShop}
-	 */
-	public LobbyShop getShop() {
-		return shop;
 	}
 
 	public LobbyTimer getLobbyTimer() {

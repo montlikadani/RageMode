@@ -122,7 +122,7 @@ public class GetGames {
 		}
 
 		while (i < names.length) {
-			x = RageMode.getInstance().getConfiguration().getArenasCfg().getInt("arenas." + names[i] + ".maxplayers");
+			x = RageMode.getInstance().getConfiguration().getArenasCfg().getInt("arenas." + names[i] + ".maxplayers", 0);
 
 			if (n < x) {
 				n = x;
