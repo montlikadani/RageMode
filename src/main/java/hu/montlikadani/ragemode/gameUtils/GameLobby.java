@@ -18,8 +18,8 @@ public class GameLobby {
 	 * @return the lobby location
 	 */
 	public static Location getLobbyLocation(String game) {
-		Validate.notNull(game, "Game name can't be null!");
-		Validate.notEmpty(game, "Game name can't be empty!");
+		Validate.notNull(game, "Game name can't be null");
+		Validate.notEmpty(game, "Game name can't be empty");
 
 		String path = "arenas." + game + ".lobby.";
 		String world = fi.getString(path + "world");

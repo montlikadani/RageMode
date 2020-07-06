@@ -51,6 +51,7 @@ public class GameTimer extends TimerTask {
 			}
 
 			if (game.getPlayers().size() < 2) {
+				GameUtils.broadcastToGame(game, RageMode.getLang().get("not-enough-players"));
 				GameUtils.stopGame(game.getName());
 				cancel();
 				return;

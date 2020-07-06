@@ -90,12 +90,12 @@ public class ItemHandler implements Cloneable {
 	}
 
 	public ItemHandler setDisplayName(String displayName) {
-		this.displayName = displayName;
+		this.displayName = displayName == null ? "" : displayName;
 		return this;
 	}
 
 	public ItemHandler setCustomName(String customName) {
-		this.customName = customName;
+		this.customName = customName == null ? "" : customName;
 		return this;
 	}
 
@@ -125,7 +125,7 @@ public class ItemHandler implements Cloneable {
 		ItemMeta meta = item.getItemMeta();
 		assert meta != null;
 
-		if (displayName != null && !displayName.trim().isEmpty()) {
+		if (!displayName.trim().isEmpty()) {
 			meta.setDisplayName(displayName);
 		}
 

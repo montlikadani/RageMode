@@ -11,7 +11,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.area.Area;
 import hu.montlikadani.ragemode.area.GameArea;
 import hu.montlikadani.ragemode.area.GameAreaManager;
@@ -97,15 +96,16 @@ public class area implements ICommand {
 				return false;
 			}
 
-			if (!GameAreaManager.isAreaExist(args[2])) {
+			String area = args[2];
+			if (!GameAreaManager.isAreaExist(area)) {
 				sendMessage(p, RageMode.getLang().get("commands.area.not-exists"));
 				return false;
 			}
 
-			GameAreaManager.getGameAreas().remove(args[2]);
-			plugin.getConfiguration().getAreasCfg().set("areas." + args[2], null);
+			GameAreaManager.getGameAreas().remove(area);
+			plugin.getConfiguration().getAreasCfg().set("areas." + area, null);
 			Configuration.saveFile(plugin.getConfiguration().getAreasCfg(), plugin.getConfiguration().getAreasFile());
-			sendMessage(p, RageMode.getLang().get("commands.area.removed", "%name%", args[3]));
+			sendMessage(p, RageMode.getLang().get("commands.area.removed", "%name%", area));
 		} else if (args.length >= 1) {
 			if (args[1].equalsIgnoreCase("info")) {
 				String t = "";
@@ -120,7 +120,11 @@ public class area implements ICommand {
 					}
 				}
 
-				sendMessage(p, !t.isEmpty() ? t : RageMode.getLang().get("commands.area.not-exists"));
+				sendMessage(p,
+						!t.isEmpty()
+								? RageMode.getLang().get("commands.area.info", "%area%", t, "%location%",
+										p.getLocation())
+								: RageMode.getLang().get("commands.area.not-exists"));
 			} else if (args[1].equalsIgnoreCase("list")) {
 				Map<String, GameArea> map = GameAreaManager.getGameAreas();
 				if (map.isEmpty()) {
@@ -132,10 +136,10 @@ public class area implements ICommand {
 				for (Map.Entry<String, GameArea> area : map.entrySet()) {
 					Area a = area.getValue().getArea();
 					sendMessage(p,
-							Utils.colors("&eArea list:\n&a" + ++i + ". " + area.getKey() + "\n  &eLow:\n  - &cx:"
-									+ a.getLowLoc().getBlockX() + ", y:" + a.getLowLoc().getBlockY() + ", z:"
-									+ a.getLowLoc().getBlockZ() + "\n  &eHigh:\n  - &cx:" + a.getHighLoc().getBlockX()
-									+ ", y:" + a.getHighLoc().getBlockY() + ", z:" + a.getHighLoc().getBlockZ()));
+							RageMode.getLang().get("commands.area.list", "%num%", ++i, "%area%", area.getKey(),
+									"%lowx%", a.getLowLoc().getBlockX(), "%lowy%", a.getLowLoc().getBlockY(), "%lowz%",
+									a.getLowLoc().getBlockZ(), "%highx%", a.getHighLoc().getBlockX(), "%highy%",
+									a.getHighLoc().getBlockY(), "%highz%", a.getHighLoc().getBlockZ()));
 				}
 			}
 		}

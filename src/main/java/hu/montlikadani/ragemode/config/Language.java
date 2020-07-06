@@ -95,6 +95,7 @@ public class Language {
 		l.getL("bad-ragemode-name", "&cThe game name may contains special characters, ragemode commands, or the the name greater than 20.");
 		l.getL("no-games", "&cThere are no games available.");
 		l.getL("invalid-database-name", "&cThere is no database type with this name.");
+		l.getL("not-enough-players", "&cNot enough player to run this game!");
 
 		l.getL("commands.listgames.listing-games", "&6Listing all available ragemode games... There are&a %games%&6 available.");
 		l.getL("commands.listgames.no-games-available", "&cThere are currently no RageMode maps on this server.");
@@ -102,7 +103,6 @@ public class Language {
 		l.getL("commands.listgames.game-stopped", "%number%.) %game%&7 idle");
 		l.getL("commands.reload.success", "&aRageMode was reloaded successfully!");
 		l.getL("commands.forcestart.game-start", "&aStarting the&e %game%&a game...");
-		l.getL("commands.forcestart.not-enough-players", "&cNot enough player to run this game!");
 		l.getL("commands.forcestart.game-not-exist", "&cThis game not exists. Please add correctly name.");
 		l.getL("commands.holostats.no-holo-found", "&cThere is no hologram saved.");
 		l.getL("commands.stats.player-not-null", "&cThe player couldn't be null!");
@@ -156,7 +156,9 @@ public class Language {
 		l.getL("commands.area.not-exists", "&cArea not found by this name.");
 		l.getL("commands.area.set", "&aArea set with&e %name%&a name.");
 		l.getL("commands.area.removed", "&cArea has been removed.");
+		l.getL("commands.area.info", "&6Area info:\n&6Names:&e %area%\n&6Location:&e %location%");
 		l.getL("commands.area.empty", "&cThere is no any area set.");
+		l.getL("commands.area.list", "&6Area list:\n&a%num%. %area%\n  &eLow:&c x:%lowx%, y:%lowy%, z:%lowz%\n  &eHigh:&c x:%highx%, y:%highy%, z:%highz%");
 		l.getL("commands.setgametype.set", "&aGame type set for&e %game%&a.");
 
 		List<String> holoList = Arrays.asList("&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",

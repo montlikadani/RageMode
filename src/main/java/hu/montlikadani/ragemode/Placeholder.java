@@ -46,6 +46,8 @@ public class Placeholder extends PlaceholderExpansion {
 			return Integer.toString(rpp.getExplosionKills());
 		case "knife_kills":
 			return Integer.toString(rpp.getKnifeKills());
+		case "zombie_kills":
+			return Integer.toString(rpp.getZombieKills());
 		case "deaths":
 			return Integer.toString(rpp.getDeaths());
 		case "axe_deaths":

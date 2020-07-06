@@ -2,11 +2,9 @@ package hu.montlikadani.ragemode.holder;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -19,6 +17,7 @@ import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.gmail.filoghost.holographicdisplays.api.VisibilityManager;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
@@ -123,23 +122,7 @@ public class HoloHolder {
 
 	private static void setHologramLines(Hologram hologram, PlayerPoints pp) {
 		for (String hList : RageMode.getLang().getList("hologram-list")) {
-			if (pp != null) {
-				NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
-
-				hList = hList.replace("%points%", pp.getPoints() + "");
-				hList = hList.replace("%wins%", pp.getWins() + "");
-				hList = hList.replace("%games%", pp.getGames() + "");
-				hList = hList.replace("%kd%", format.format(pp.getKD()));
-				hList = hList.replace("%kills%", pp.getKills() + "");
-				hList = hList.replace("%deaths%", pp.getDeaths() + "");
-			} else {
-				hList = hList.replace("%points%", "0");
-				hList = hList.replace("%wins%", "0");
-				hList = hList.replace("%games%", "0");
-				hList = hList.replace("%kd%", "0");
-				hList = hList.replace("%kills%", "0");
-				hList = hList.replace("%deaths%", "0");
-			}
+			hList = Utils.setPlaceholders(hList, pp);
 			hologram.appendTextLine(hList);
 		}
 	}

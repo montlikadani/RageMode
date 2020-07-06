@@ -78,17 +78,35 @@ public class Utils {
 	}
 
 	/**
-	 * Sets the available placeholders to that string, that manages from RageMode
-	 * <p>If the <code>fromDatabase</code> false, will gets the statistic from class instance.
+	 * Sets the available placeholders to that string, that manages from RageMode.<br><br>
+	 * If the player is playing currently it will replaces the placeholders to the current score.
+	 * @param s String to replace the variables
+	 * @param pp {@link PlayerPoints}
+	 * @see #setPlaceholders(String, Player)
+	 * @return The replaced placeholders
+	 */
+	public static String setPlaceholders(String s, PlayerPoints pp) {
+		return setPlaceholders(s, Bukkit.getPlayer(pp.getUUID()));
+	}
+
+	/**
+	 * Sets the available placeholders to that string, that manages from RageMode.<br><br>
+	 * If the player is playing currently it will replaces the placeholders to the current score.
 	 * @param s String to replace the variables
 	 * @param player Player
 	 * @return The replaced placeholders
 	 */
 	public static String setPlaceholders(String s, Player player) {
-		java.util.UUID uuid = player.getUniqueId();
-		PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid);
-		if (GameUtils.isPlayerPlaying(player)) {
-			pp = RageScores.getPlayerPoints(uuid);
+		PlayerPoints pp = null;
+		java.util.UUID uuid = null;
+
+		if (player != null) {
+			uuid = player.getUniqueId();
+			pp = RuntimePPManager.getPPForPlayer(uuid);
+
+			if (GameUtils.isPlayerPlaying(player)) {
+				pp = RageScores.getPlayerPoints(uuid);
+			}
 		}
 
 		if (s.contains("%kills%")) {
@@ -163,11 +181,11 @@ public class Utils {
 
 		PlayerPoints plp = RageMode.getPPFromDatabase(uuid);
 		if (s.contains("%games%")) {
-			s = s.replace("%games%", plp == null ? "0" : Integer.toString(plp.getGames()));
+			s = s.replace("%games%", Integer.toString(plp == null ? pp == null ? 0 : pp.getGames() : plp.getGames()));
 		}
 
 		if (s.contains("%wins%")) {
-			s = s.replace("%wins%", plp == null ? "0" : Integer.toString(plp.getWins()));
+			s = s.replace("%wins%", Integer.toString(plp == null ? pp == null ? 0 : pp.getWins() : plp.getWins()));
 		}
 
 		return colors(s);
@@ -182,8 +200,7 @@ public class Utils {
 	public static void sendPacket(Player player, Object packet) throws Exception {
 		Object handle = player.getClass().getMethod("getHandle").invoke(player);
 		Object playerConnection = handle.getClass().getField("playerConnection").get(handle);
-		playerConnection.getClass().getMethod("sendPacket", new Class[] { getNMSClass("Packet") })
-				.invoke(playerConnection, new Object[] { packet });
+		playerConnection.getClass().getMethod("sendPacket", getNMSClass("Packet")).invoke(playerConnection, packet);
 	}
 
 	/**

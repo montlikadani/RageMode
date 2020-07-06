@@ -80,7 +80,7 @@ public class GameUtils {
 	 * @param message The message
 	 */
 	public static void broadcastToGame(Game game, String message) {
-		Validate.notNull(game, "Game can't be null!");
+		Validate.notNull(game, "Game can't be null");
 
 		if (message.trim().isEmpty()) {
 			return;
@@ -554,7 +554,7 @@ public class GameUtils {
 	 * @param game {@link Game}
 	 */
 	public static void leavePlayer(Player p, Game game) {
-		Validate.notNull(game, "Game can't be null!");
+		Validate.notNull(game, "Game can't be null");
 
 		if (isPlayerPlaying(p)) {
 			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
@@ -590,15 +590,34 @@ public class GameUtils {
 	/**
 	 * Forces the given game start.
 	 * 
+	 * @see #forceStart(org.bukkit.command.CommandSender, Game)
 	 * @param game {@link Game}
+	 * @return true if success
 	 */
-	public static void forceStart(Game game) {
-		Validate.notNull(game, "Game can't be null!");
+	public static boolean forceStart(Game game) {
+		return forceStart(null, game);
+	}
+
+	/**
+	 * Forces the given game start.
+	 * 
+	 * @param sender {@link org.bukkit.command.CommandSender}
+	 * @param game {@link Game}
+	 * @return true if enough players are in the game
+	 */
+	public static boolean forceStart(org.bukkit.command.CommandSender sender, Game game) {
+		Validate.notNull(game, "Game can't be null");
+
+		if (sender != null && game.getPlayers().size() < 2) {
+			sendMessage(sender, RageMode.getLang().get("not-enough-players"));
+			return false;
+		}
 
 		GameLoader loader = new GameLoader(game);
 		loader.startGame();
 
 		SignCreator.updateAllSigns(game.getName());
+		return true;
 	}
 
 	/**
@@ -617,7 +636,7 @@ public class GameUtils {
 	 * @param game {@link Game}
 	 */
 	public static void kickPlayer(Player p, Game game) {
-		Validate.notNull(p, "Player can't be null!");
+		Validate.notNull(p, "Player can't be null");
 
 		if (game == null) {
 			return;
@@ -654,7 +673,7 @@ public class GameUtils {
 	 * @param game the game where kick from
 	 */
 	public static void kickSpectator(Player p, Game game) {
-		Validate.notNull(p, "Player can't be null!");
+		Validate.notNull(p, "Player can't be null");
 
 		if (game != null) {
 			game.removeSpectatorPlayer(p);
@@ -963,7 +982,7 @@ public class GameUtils {
 	 * @param game Game
 	 */
 	public static void forceStopGame(Game game) {
-		Validate.notNull(game, "Game can't be null!");
+		Validate.notNull(game, "Game can't be null");
 
 		if (!game.isGameRunning()) {
 			return;
@@ -1009,7 +1028,7 @@ public class GameUtils {
 	 * @param useFreeze if true using game freeze
 	 */
 	public static void stopGame(final Game game, boolean useFreeze) {
-		Validate.notNull(game, "Game can't be null!");
+		Validate.notNull(game, "Game can't be null");
 
 		if (!game.isGameRunning()) {
 			return;

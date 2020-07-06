@@ -441,6 +441,10 @@ public class RageMode extends JavaPlugin {
 	 * @return {@link PlayerPoints}
 	 */
 	public static PlayerPoints getPPFromDatabase(UUID uuid) {
+		if (uuid == null) {
+			return null;
+		}
+
 		switch (instance.getDatabaseHandler().getDBType()) {
 		case SQLITE:
 			return SQLDB.getPlayerStatsFromData(uuid);

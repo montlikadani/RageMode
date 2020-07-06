@@ -737,7 +737,7 @@ public class GameListener implements Listener {
 			sendMessage(p, RageMode.getLang().get("game.killed-by-zombies", "%amount%", ConfigValues.getPlayerLives() + 1));
 
 			// Switching to spectate
-			if (game.removePlayer(p, ConfigValues.isSpectatorEnabled())) {
+			if (ConfigValues.isSpectatorEnabled() && game.removePlayer(p, true)) {
 				e.setRespawnLocation(gsg.getRandomSpawn());
 
 				if (Items.getLeaveGameItem() != null) {
@@ -1029,8 +1029,8 @@ public class GameListener implements Listener {
 					Game game = GameUtils.getGameByPlayer(p);
 
 					if (hasPerm(p, "ragemode.admin.item.forcestart") && Items.getForceStarter() != null
-							&& Items.getForceStarter().getDisplayName().equals(meta.getDisplayName())) {
-						GameUtils.forceStart(game);
+							&& Items.getForceStarter().getDisplayName().equals(meta.getDisplayName())
+							&& GameUtils.forceStart(p, game)) {
 						sendMessage(p,
 								RageMode.getLang().get("commands.forcestart.game-start", "%game%", game.getName()));
 					}
@@ -1198,8 +1198,12 @@ public class GameListener implements Listener {
 	public void onPlayerTeleport(PlayerTeleportEvent ev) {
 		Player p = ev.getPlayer();
 
+		if (!GameUtils.isPlayerPlaying(p) || GameUtils.getGameByPlayer(p).getStatus() != GameStatus.RUNNING) {
+			return;
+		}
+
 		// when the player is not in the area
-		if (GameUtils.isPlayerPlaying(p) && ev.getTo() != null && !GameAreaManager.inArea(ev.getTo())) {
+		if (ev.getTo() != null && !GameAreaManager.inArea(ev.getTo())) {
 			ev.setCancelled(true);
 		}
 	}

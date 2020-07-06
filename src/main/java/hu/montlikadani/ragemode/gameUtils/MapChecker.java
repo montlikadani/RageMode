@@ -149,10 +149,6 @@ public class MapChecker {
 
 		for (String s : spawnNames) {
 			World world = Bukkit.getWorld(aFile.getString(path + "." + s + ".world", ""));
-			if (world == null) {
-				isValid = false;
-			}
-
 			if (world != null && Utils.isDouble(aFile.getString(path + "." + s + ".x"))
 					&& Utils.isDouble(aFile.getString(path + "." + s + ".y"))
 					&& Utils.isDouble(aFile.getString(path + "." + s + ".z"))
@@ -178,10 +174,6 @@ public class MapChecker {
 			spawnNames = aFile.getConfigurationSection(path).getKeys(false);
 			for (String s : spawnNames) {
 				World world = Bukkit.getWorld(aFile.getString(path + "." + s + ".world", ""));
-				if (world == null) {
-					isValid = false;
-				}
-
 				if (world != null && Utils.isDouble(aFile.getString(path + "." + s + ".x"))
 						&& Utils.isDouble(aFile.getString(path + "." + s + ".y"))
 						&& Utils.isDouble(aFile.getString(path + "." + s + ".z")))
