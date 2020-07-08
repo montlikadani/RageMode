@@ -590,26 +590,13 @@ public class GameUtils {
 	/**
 	 * Forces the given game start.
 	 * 
-	 * @see #forceStart(org.bukkit.command.CommandSender, Game)
-	 * @param game {@link Game}
-	 * @return true if success
-	 */
-	public static boolean forceStart(Game game) {
-		return forceStart(null, game);
-	}
-
-	/**
-	 * Forces the given game start.
-	 * 
-	 * @param sender {@link org.bukkit.command.CommandSender}
 	 * @param game {@link Game}
 	 * @return true if enough players are in the game
 	 */
-	public static boolean forceStart(org.bukkit.command.CommandSender sender, Game game) {
+	public static boolean forceStart(Game game) {
 		Validate.notNull(game, "Game can't be null");
 
-		if (sender != null && game.getPlayers().size() < 2) {
-			sendMessage(sender, RageMode.getLang().get("not-enough-players"));
+		if (game.getPlayers().size() < 2) {
 			return false;
 		}
 

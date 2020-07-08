@@ -6,6 +6,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import hu.montlikadani.ragemode.NMS;
+import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class ScoreTeam {
@@ -40,10 +41,12 @@ public class ScoreTeam {
 
 		NMS.addEntry(player, team);
 
-		// Retrieves the last char from prefix
-		ChatColor color = ChatColor.getByChar(prefix.substring(prefix.length() - 1));
-		if (color != null)
-			team.setColor(color);
+		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
+			// Retrieves the last char from prefix
+			ChatColor color = ChatColor.getByChar(prefix.substring(prefix.length() - 1));
+			if (color != null)
+				team.setColor(color);
+		}
 
 		prefix = NMS.splitStringByVersion(prefix);
 		suffix = NMS.splitStringByVersion(suffix);

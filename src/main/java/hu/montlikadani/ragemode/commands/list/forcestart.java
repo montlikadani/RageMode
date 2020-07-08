@@ -43,11 +43,12 @@ public class forcestart implements ICommand {
 			return false;
 		}
 
-		if (GameUtils.forceStart(p, game)) {
-			sendMessage(p, RageMode.getLang().get("commands.forcestart.game-start", "%game%", game.getName()));
-			return true;
+		if (!GameUtils.forceStart(game)) {
+			sendMessage(p, RageMode.getLang().get("not-enough-players"));
+			return false;
 		}
 
-		return false;
+		sendMessage(p, RageMode.getLang().get("commands.forcestart.game-start", "%game%", game.getName()));
+		return true;
 	}
 }

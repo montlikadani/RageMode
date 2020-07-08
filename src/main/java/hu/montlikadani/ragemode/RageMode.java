@@ -373,7 +373,9 @@ public class RageMode extends JavaPlugin {
 		path = "gameitems.flash";
 		if (c.contains(path)) {
 			ItemHandler itemHandler = new ItemHandler();
-			itemHandler.setItem(Material.SNOWBALL)
+			itemHandler
+					.setItem(Version.isCurrentLower(Version.v1_9_R1) ? Material.getMaterial("SNOW_BALL")
+							: Material.SNOWBALL)
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&fFlash")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 6))
 					.setAmount(c.getInt(path + ".amount", 2));

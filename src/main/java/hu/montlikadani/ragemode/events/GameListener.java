@@ -175,8 +175,10 @@ public class GameListener implements Listener {
 				}
 
 				// pressure mine
-				GameAreaManager.getAreaByLocation(p.getLocation()).getEntities()
-						.forEach(e -> explodeMine(null, e.getLocation()));
+				hu.montlikadani.ragemode.area.GameArea area = GameAreaManager.getAreaByLocation(p.getLocation());
+				if (area != null) {
+					area.getEntities().forEach(e -> explodeMine(null, e.getLocation()));
+				}
 			}
 		}, 2, 2);
 	}
@@ -258,7 +260,8 @@ public class GameListener implements Listener {
 		// flash event
 		if (proj instanceof Snowball && (!GameUtils.isPlayerInFreezeRoom((Player) proj.getShooter())
 				|| GameUtils.getGameByPlayer((Player) proj.getShooter()).getGameType() != GameType.APOCALYPSE)) {
-			final Item flash = proj.getWorld().dropItem(proj.getLocation(), new ItemStack(Material.SNOWBALL));
+			final Item flash = proj.getWorld().dropItem(proj.getLocation(), new ItemStack(
+					Version.isCurrentLower(Version.v1_9_R1) ? Material.getMaterial("SNOW_BALL") : Material.SNOWBALL));
 			if (flash == null) {
 				return;
 			}
@@ -292,7 +295,10 @@ public class GameListener implements Listener {
 						}
 					}
 
-					proj.getWorld().spawnParticle(org.bukkit.Particle.EXPLOSION_LARGE, proj.getLocation(), 0);
+					if (Version.isCurrentEqualOrHigher(Version.v1_9_R1)) {
+						proj.getWorld().spawnParticle(org.bukkit.Particle.EXPLOSION_LARGE, proj.getLocation(), 0);
+					}
+
 					flash.remove();
 				}
 			}.runTaskLater(plugin, 40);
@@ -1029,10 +1035,13 @@ public class GameListener implements Listener {
 					Game game = GameUtils.getGameByPlayer(p);
 
 					if (hasPerm(p, "ragemode.admin.item.forcestart") && Items.getForceStarter() != null
-							&& Items.getForceStarter().getDisplayName().equals(meta.getDisplayName())
-							&& GameUtils.forceStart(p, game)) {
-						sendMessage(p,
-								RageMode.getLang().get("commands.forcestart.game-start", "%game%", game.getName()));
+							&& Items.getForceStarter().getDisplayName().equals(meta.getDisplayName())) {
+						if (GameUtils.forceStart(game)) {
+							sendMessage(p,
+									RageMode.getLang().get("commands.forcestart.game-start", "%game%", game.getName()));
+						} else {
+							sendMessage(p, RageMode.getLang().get("not-enough-players"));
+						}
 					}
 
 					if (Items.getLeaveGameItem() != null
@@ -1136,8 +1145,8 @@ public class GameListener implements Listener {
 		}
 
 		// Just prevent usage of bush
-		if (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && action == Action.RIGHT_CLICK_BLOCK
-				&& t.equals(Material.SWEET_BERRY_BUSH) || t.equals(Material.COMPOSTER)) {
+		if (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && (action == Action.RIGHT_CLICK_BLOCK
+				&& (t.equals(Material.SWEET_BERRY_BUSH) || t.equals(Material.COMPOSTER)))) {
 			ev.setUseInteractedBlock(Event.Result.DENY);
 			ev.setCancelled(true);
 		}
@@ -1251,11 +1260,15 @@ public class GameListener implements Listener {
 
 		if (b.getRelative(BlockFace.DOWN).getType().equals(Material.TRIPWIRE)
 				|| b.getType().equals(Material.TRIPWIRE)) {
-			Collection<Entity> nears = currentLoc.getWorld().getNearbyEntities(currentLoc, 10, 10, 10);
-			Location explodeLoc = new Location(currentLoc.getWorld(), currentLoc.getX(), currentLoc.getY() + 1,
-					currentLoc.getZ());
+			org.bukkit.World w = currentLoc.getWorld();
+			double x = currentLoc.getX(),
+					y = currentLoc.getY(),
+					z = currentLoc.getZ();
 
-			explodeLoc.getWorld().createExplosion(explodeLoc, 4f, false, false);
+			Collection<Entity> nears = w.getNearbyEntities(currentLoc, 10, 10, 10);
+			Location explodeLoc = new Location(w, x, y + 1, z);
+
+			explodeLoc.getWorld().createExplosion(x, y + 1, z, 4f, false, false);
 			b.setType(Material.AIR);
 
 			if (GameUtils.getGame(currentLoc) != null) {

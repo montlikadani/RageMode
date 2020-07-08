@@ -20,6 +20,7 @@ import org.bukkit.inventory.EquipmentSlot;
 
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -77,7 +78,7 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onInteract(PlayerInteractEvent event) {
-		if (event.getHand() != EquipmentSlot.HAND) {
+		if (Version.isCurrentEqualOrHigher(Version.v1_9_R1) && event.getHand() != EquipmentSlot.HAND) {
 			return;
 		}
 
@@ -105,8 +106,8 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		if (ConfigValues.isSignsEnable() && b.getState() instanceof Sign
-				&& event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+		if (ConfigValues.isSignsEnable() && event.getAction() == Action.RIGHT_CLICK_BLOCK
+				&& b.getState() instanceof Sign) {
 			if (!hasPerm(p, "ragemode.join.sign")) {
 				sendMessage(p, RageMode.getLang().get("no-permission"));
 				return;

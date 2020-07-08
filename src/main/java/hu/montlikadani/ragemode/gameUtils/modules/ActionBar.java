@@ -41,14 +41,11 @@ public class ActionBar {
 					}
 				}
 
+				Object chatCompontentText = chatComponentTextClass.getConstructor(String.class).newInstance(message);
 				try {
-					Object chatCompontentText = chatComponentTextClass.getConstructor(String.class)
-							.newInstance(message);
 					packet = packetPlayOutChatClass.getConstructor(iChatBaseComponentClass, chatMessageTypeClass)
 							.newInstance(chatCompontentText, chatMessageType);
 				} catch (NoSuchMethodException e) {
-					Object chatCompontentText = chatComponentTextClass.getConstructor(String.class)
-							.newInstance(message);
 					packet = packetPlayOutChatClass
 							.getConstructor(iChatBaseComponentClass, chatMessageTypeClass, UUID.class)
 							.newInstance(chatCompontentText, chatMessageType, player.getUniqueId());

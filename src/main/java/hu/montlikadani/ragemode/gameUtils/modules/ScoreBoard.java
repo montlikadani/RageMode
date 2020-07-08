@@ -78,9 +78,13 @@ public class ScoreBoard {
 				board.getObjective().getScore(entry).setScore(dummyScore);
 			}
 
-			// TODO: Do we need to limit the text length?
-			team.setPrefix(line);
-			team.setSuffix(ChatColor.getLastColors(line));
+			String l = line;
+			if (Version.isCurrentLower(Version.v1_9_R1) && l.length() > 16) {
+				l = l.substring(0, 16);
+			}
+
+			team.setPrefix(l);
+			team.setSuffix(ChatColor.getLastColors(l));
 		});
 	}
 
