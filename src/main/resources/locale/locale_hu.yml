@@ -13,6 +13,7 @@ not-played-yet: "&cEz a játékos&7 %player%&c nem játszot ezen a szerveren mé
 bad-ragemode-name: "&cA játék név nem tartalmazhat speciális karaktert, ragemode parancsot vagy nem lehet 20-nál nagyobb."
 no-games: "&cNincs egy elérhető játék sem."
 invalid-database-name: "&cNincs ilyen névvel lévő adatbázis."
+not-enough-players: "&cNincs elég játékos, hogy futtassa ezt a játékot!"
 
 commands:
   listgames:
@@ -24,7 +25,6 @@ commands:
     success: "&aRageMode sikeresen újratöltve!"
   forcestart:
     game-start: "&e%game%&a játék indítása..."
-    not-enough-players: "&cNincs elég játékos, hogy futtassa ezt a játékot!"
   holostats:
     no-holo-found: "&cNincs hologram elmentve."
   stats:
@@ -96,6 +96,8 @@ commands:
     not-exists: "&cEzzel a névvel a terület nem létezik."
     set: "&aA terület beállítva&e %name%&a névvel."
     removed: "&cA terület eltávolítva."
+    info: "&6Terület infók:\n&6Nevek:&e %area%\n&6Hely:&e %location%"
+    list: "&6Területek:\n&a%num%. %area%\n  &eAlacsonyabb:&c x:%lowx%, y:%lowy%, z:%lowz%\n  &eMagasabb:&c x:%highx%, y:%highy%, z:%highz%"
     empty: "&cNincs egy terület sem beállítva."
   setgametype:
     set: "&aA játék típus beállítva a(z)&e %game%&a játékra."
