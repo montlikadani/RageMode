@@ -129,7 +129,7 @@ public class RewardManager {
 					continue;
 				}
 
-				if (mat.equals(Material.AIR)) {
+				if (mat == Material.AIR) {
 					Debug.logConsole("AIR is not supported.");
 					continue;
 				}
@@ -156,32 +156,6 @@ public class RewardManager {
 							((LeatherArmorMeta) itemMeta).setColor(Utils.getColorFromString(color));
 						}
 					}
-
-					/**
-					String bannerColor = conf.getString(rewPath + "banner.color", "");
-					String bannerType = conf.getString(rewPath + "banner.type", "");
-					if (!bannerColor.isEmpty() && !bannerType.isEmpty()) {
-						if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
-							if (mat.equals(Material.valueOf("BANNER")) && itemMeta instanceof BannerMeta) {
-								List<Pattern> patterns = new ArrayList<>();
-								patterns.add(
-										new Pattern(DyeColor.valueOf(bannerColor), PatternType.valueOf(bannerType)));
-
-								((BannerMeta) itemMeta).setBaseColor(DyeColor.valueOf(bannerColor));
-								((BannerMeta) itemMeta).setPatterns(patterns);
-							}
-						} else if (type.endsWith("_BANNER")) {
-							if (itemMeta instanceof BannerMeta) {
-								List<Pattern> patterns = new ArrayList<>();
-								patterns.add(
-										new Pattern(DyeColor.valueOf(bannerColor), PatternType.valueOf(bannerType)));
-
-								((Banner) itemStack).setBaseColor(DyeColor.valueOf(bannerColor));
-								((BannerMeta) itemMeta).setPatterns(patterns);
-							}
-						}
-					}
-					**/
 
 					itemStack.setItemMeta(itemMeta);
 

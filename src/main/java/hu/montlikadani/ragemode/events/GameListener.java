@@ -1107,9 +1107,9 @@ public class GameListener implements Listener {
 					ev.setUseInteractedBlock(Event.Result.DENY);
 					ev.setCancelled(true);
 				} else if (ConfigValues.isCancelRedstoneActivate()) {
-					if (MaterialUtil.isWoodenPressurePlate(t) || t.equals(Material.STONE_PRESSURE_PLATE)
-							|| t.equals(Material.HEAVY_WEIGHTED_PRESSURE_PLATE)
-							|| t.equals(Material.LIGHT_WEIGHTED_PRESSURE_PLATE)) {
+					if (MaterialUtil.isPressurePlate(t) || t == Material.STONE_PRESSURE_PLATE
+							|| t == Material.HEAVY_WEIGHTED_PRESSURE_PLATE
+							|| t == Material.LIGHT_WEIGHTED_PRESSURE_PLATE) {
 						ev.setUseInteractedBlock(Event.Result.DENY);
 						ev.setCancelled(true);
 					}
@@ -1121,32 +1121,32 @@ public class GameListener implements Listener {
 				}
 
 				if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
-					if (t.equals(Material.valueOf("REDSTONE_COMPARATOR"))
-							|| t.equals(Material.valueOf("REDSTONE_COMPARATOR_ON"))
-							|| t.equals(Material.valueOf("REDSTONE_COMPARATOR_OFF"))) {
+					if (t == Material.valueOf("REDSTONE_COMPARATOR") || t == Material.valueOf("REDSTONE_COMPARATOR_ON")
+							|| t == Material.valueOf("REDSTONE_COMPARATOR_OFF")) {
 						ev.setUseInteractedBlock(Event.Result.DENY);
 						ev.setCancelled(true);
 					}
-				} else if (t.equals(Material.COMPARATOR) || t.equals(Material.REPEATER)) {
+				} else if (t == Material.COMPARATOR || t == Material.REPEATER) {
 					ev.setUseInteractedBlock(Event.Result.DENY);
 					ev.setCancelled(true);
 				}
 
-				if (t.equals(Material.LEVER) || t.equals(Material.DAYLIGHT_DETECTOR)) {
+				if (t == Material.LEVER || t == Material.DAYLIGHT_DETECTOR) {
 					ev.setUseInteractedBlock(Event.Result.DENY);
 					ev.setCancelled(true);
 				}
 			}
 
-			if (ConfigValues.isCancelDoorUse() && action == Action.RIGHT_CLICK_BLOCK && MaterialUtil.isWoodenDoor(t)) {
+			if (ConfigValues.isCancelDoorUse() && action == Action.RIGHT_CLICK_BLOCK && MaterialUtil.isDoor(t)) {
 				ev.setUseInteractedBlock(Event.Result.DENY);
 				ev.setCancelled(true);
 			}
 		}
 
 		// Just prevent usage of bush
-		if (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && (action == Action.RIGHT_CLICK_BLOCK
-				&& (t.equals(Material.SWEET_BERRY_BUSH) || t.equals(Material.COMPOSTER)))) {
+		if (Version.isCurrentEqualOrHigher(Version.v1_14_R1)
+				&& (action == Action.RIGHT_CLICK_BLOCK && (t == Material.SWEET_BERRY_BUSH)
+						|| t == Material.COMPOSTER)) {
 			ev.setUseInteractedBlock(Event.Result.DENY);
 			ev.setCancelled(true);
 		}

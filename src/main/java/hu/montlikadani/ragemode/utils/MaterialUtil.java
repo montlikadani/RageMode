@@ -17,9 +17,11 @@ public class MaterialUtil {
 			add(getMat("JUNGLE_WALL_SIGN"));
 			add(getMat("OAK_WALL_SIGN"));
 			add(getMat("SPRUCE_WALL_SIGN"));
+			add(getMat("WARPED_WALL_SIGN"));
+			add(getMat("CRIMSON_WALL_SIGN"));
 		}
 	};
-	private static Set<Material> WOODEN_PRESSURE_PLATES = new HashSet<Material>() {
+	private static Set<Material> PRESSURE_PLATES = new HashSet<Material>() {
 		{
 			add(getMat("WOODEN_PRESSURE_PLATE"));
 			add(getMat("OAK_PRESSURE_PLATE"));
@@ -28,9 +30,12 @@ public class MaterialUtil {
 			add(getMat("DARK_OAK_PRESSURE_PLATE"));
 			add(getMat("JUNGLE_PRESSURE_PLATE"));
 			add(getMat("SPRUCE_PRESSURE_PLATE"));
+			add(getMat("WARPED_PRESSURE_PLATE"));
+			add(getMat("POLISHED_BLACKSTONE_PRESSURE_PLATE"));
+			add(getMat("CRIMSON_PRESSURE_PLATE"));
 		}
 	};
-	private static Set<Material> TRAPWOODEN_DOORS = new HashSet<Material>() {
+	private static Set<Material> TRAPDOORS = new HashSet<Material>() {
 		{
 			add(getMat("TRAP_DOOR"));
 			add(getMat("IRON_TRAPDOOR"));
@@ -40,6 +45,8 @@ public class MaterialUtil {
 			add(getMat("DARK_OAK_TRAPDOOR"));
 			add(getMat("JUNGLE_TRAPDOOR"));
 			add(getMat("SPRUCE_TRAPDOOR"));
+			add(getMat("WARPED_TRAPDOOR"));
+			add(getMat("CRIMSON_TRAPDOOR"));
 		}
 	};
 	private static Set<Material> BUTTONS = new HashSet<Material>() {
@@ -52,9 +59,12 @@ public class MaterialUtil {
 			add(getMat("DARK_OAK_BUTTON"));
 			add(getMat("JUNGLE_BUTTON"));
 			add(getMat("SPRUCE_BUTTON"));
+			add(getMat("WARPED_BUTTON"));
+			add(getMat("POLISHED_BLACKSTONE_BUTTON"));
+			add(getMat("CRIMSON_BUTTON"));
 		}
 	};
-	private static Set<Material> WOODEN_DOORS = new HashSet<Material>() {
+	private static Set<Material> DOORS = new HashSet<Material>() {
 		{
 			add(getMat("WOODEN_DOOR"));
 			add(getMat("ACACIA_DOOR"));
@@ -63,6 +73,9 @@ public class MaterialUtil {
 			add(getMat("JUNGLE_DOOR"));
 			add(getMat("SPRUCE_DOOR"));
 			add(getMat("OAK_DOOR"));
+			add(getMat("OAK_DOOR"));
+			add(getMat("WARPED_DOOR"));
+			add(getMat("CRIMSON_DOOR"));
 		}
 	};
 
@@ -70,20 +83,20 @@ public class MaterialUtil {
 		return WALL_SIGNS.contains(mat);
 	}
 
-	public static boolean isWoodenPressurePlate(Material mat) {
-		return WOODEN_PRESSURE_PLATES.contains(mat);
+	public static boolean isPressurePlate(Material mat) {
+		return PRESSURE_PLATES.contains(mat);
 	}
 
 	public static boolean isTrapdoor(Material mat) {
-		return TRAPWOODEN_DOORS.contains(mat);
+		return TRAPDOORS.contains(mat);
 	}
 
 	public static boolean isButton(Material mat) {
 		return BUTTONS.contains(mat);
 	}
 
-	public static boolean isWoodenDoor(Material mat) {
-		return WOODEN_DOORS.contains(mat);
+	public static boolean isDoor(Material mat) {
+		return DOORS.contains(mat);
 	}
 
 	private static Material getMat(String name) {

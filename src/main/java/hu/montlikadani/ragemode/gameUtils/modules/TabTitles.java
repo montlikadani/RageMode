@@ -25,12 +25,18 @@ public class TabTitles {
 		if (header == null) header = "";
 		if (footer == null) footer = "";
 
+		if (Version.isCurrentEqualOrHigher(Version.v1_16_R1)) {
+			player.setPlayerListHeaderFooter(header, footer);
+			return;
+		}
+
 		try {
 			Object tabHeader = Utils.getAsIChatBaseComponent(header);
 			Object tabFooter = Utils.getAsIChatBaseComponent(footer);
 			Constructor<?> titleConstructor = Utils.getNMSClass("PacketPlayOutPlayerListHeaderFooter").getConstructor();
 			Object packet = titleConstructor.newInstance();
 			Field aField = null, bField = null;
+
 			if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
 				aField = packet.getClass().getDeclaredField("header");
 				bField = packet.getClass().getDeclaredField("footer");
