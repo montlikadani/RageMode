@@ -157,8 +157,7 @@ public class SignCreator {
 	 * @return {@link SignData} if the game is equal
 	 */
 	public static SignData getSignData(String game) {
-		Validate.notNull(game, "Game name can't be null!");
-		Validate.notEmpty(game, "Game name can't be empty!");
+		Validate.notEmpty(game, "Game name can't be empty/null");
 
 		for (SignData data : SIGNDATA) {
 			if (game.trim().equalsIgnoreCase(data.getGame())) {
@@ -175,8 +174,7 @@ public class SignCreator {
 	 * @return True if at least one sign was updated successfully for the given game.
 	 */
 	public static boolean updateAllSigns(String gameName) {
-		Validate.notNull(gameName, "Game name can't be null!");
-		Validate.notEmpty(gameName, "Game name can't be empty!");
+		Validate.notEmpty(gameName, "Game name can't be empty/null");
 
 		if (!ConfigValues.isSignsEnable()) {
 			return false;

@@ -45,8 +45,7 @@ public class SQLConnect extends DBConnector implements DBMethods {
 
 	@Override
 	public boolean createTable(String query) {
-		Validate.notNull(query, "The query can't be null!");
-		Validate.notEmpty(query, "The query can't be empty!");
+		Validate.notEmpty(query, "The query can't be empty/null");
 
 		if (isConnected()) {
 			try {
@@ -62,8 +61,7 @@ public class SQLConnect extends DBConnector implements DBMethods {
 
 	@Override
 	public boolean truncate(String table) {
-		Validate.notNull(table, "The table name can't be null!");
-		Validate.notEmpty(table, "The table name can't be empty!");
+		Validate.notEmpty(table, "The table name can't be empty/null");
 
 		if (!isConnected()) {
 			return false;
@@ -86,8 +84,7 @@ public class SQLConnect extends DBConnector implements DBMethods {
 
 	@Override
 	public boolean drop(String table) {
-		Validate.notNull(table, "The table name can't be null!");
-		Validate.notEmpty(table, "The table name can't be empty!");
+		Validate.notEmpty(table, "The table name can't be empty/null");
 
 		if (isConnected()) {
 			try {
@@ -103,8 +100,7 @@ public class SQLConnect extends DBConnector implements DBMethods {
 
 	@Override
 	public boolean isTable(String name) {
-		Validate.notNull(name, "The table name can't be null!");
-		Validate.notEmpty(name, "The table name can't be empty!");
+		Validate.notEmpty(name, "The table name can't be empty/null");
 
 		if (isConnected()) {
 			try {
@@ -125,10 +121,8 @@ public class SQLConnect extends DBConnector implements DBMethods {
 
 	@Override
 	public boolean isCollumn(String table, String collumn) {
-		Validate.notNull(table, "The table name can't be null!");
-		Validate.notNull(collumn, "The collumn can't be null!");
-		Validate.notEmpty(table, "The table name can't be empty!");
-		Validate.notEmpty(collumn, "The collumn can't be empty!");
+		Validate.notEmpty(table, "The table name can't be empty/null");
+		Validate.notEmpty(collumn, "The collumn can't be empty/null");
 
 		if (isConnected()) {
 			try {

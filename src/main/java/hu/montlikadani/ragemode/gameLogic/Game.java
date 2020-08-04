@@ -47,6 +47,7 @@ public class Game {
 	// TODO: In the future add ability to work with ids
 	public Game(String name, GameType gameType) {
 		this.name = name == null ? "" : name;
+
 		setGameType(gameType);
 	}
 
@@ -258,12 +259,9 @@ public class Game {
 	public ActionMessengers removePlayerSynced(Player player) {
 		for (ActionMessengers action : acList) {
 			if (action.getPlayer().equals(player)) {
-				org.bukkit.Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
-					action.getScoreboard().remove(player);
-					action.getTabTitles().sendTabTitle(player, "", "");
-					action.getScoreTeam().remove();
-				}, 5L);
-
+				action.getScoreboard().remove(player);
+				action.getTabTitles().sendTabTitle(player, "", "");
+				action.getScoreTeam().remove();
 				return action;
 			}
 		}
@@ -354,8 +352,7 @@ public class Game {
 	 * @return Player
 	 */
 	public Player getPlayer(String name) {
-		Validate.notNull(name, "Name can't be null!");
-		Validate.notEmpty(name, "Name can't be empty!");
+		Validate.notEmpty(name, "Name can't be empty/null");
 
 		for (Entry<Player, PlayerManager> players : players.entrySet()) {
 			if (players.getKey().getName().equalsIgnoreCase(name)) {
@@ -372,8 +369,7 @@ public class Game {
 	 * @return Player
 	 */
 	public Player getSpectatorPlayer(String name) {
-		Validate.notNull(name, "Name can't be null!");
-		Validate.notEmpty(name, "Name can't be empty!");
+		Validate.notEmpty(name, "Name can't be empty/null");
 
 		for (Entry<Player, PlayerManager> specs : specPlayer.entrySet()) {
 			if (specs.getKey().getName().equalsIgnoreCase(name)) {

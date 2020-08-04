@@ -140,8 +140,7 @@ public class GetGames {
 	 * @return true if the game is exists
 	 */
 	public static boolean isGameExistent(String game) {
-		Validate.notNull(game, "Game name can't be null!");
-		Validate.notEmpty(game, "Game name can't be empty!");
+		Validate.notEmpty(game, "Game name can't be empty/null");
 
 		String[] games = getGameNames();
 		if (games == null) {

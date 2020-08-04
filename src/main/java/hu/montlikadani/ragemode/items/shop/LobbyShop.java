@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Effect;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,7 +15,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -43,7 +43,7 @@ public class LobbyShop implements Listener {
 
 	private final Map<Player, IShop> shops = new HashMap<>();
 
-	private RageMode plugin = RageMode.getInstance();
+	private final RageMode plugin = RageMode.getInstance();
 
 	public LobbyShop() {
 		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
@@ -109,6 +109,7 @@ public class LobbyShop implements Listener {
 
 		removeShop(player);
 		BOUGHTITEMS.remove(player);
+		player.closeInventory();
 	}
 
 	@EventHandler
@@ -120,12 +121,13 @@ public class LobbyShop implements Listener {
 		}
 	}
 
-	@EventHandler
+	/*@EventHandler
 	public void onDrag(InventoryDragEvent event) {
-		if (event.getInventory().getHolder() instanceof IShop) {
+		if (event.getInventory().geth(getCurrentPage((Player) event.getWhoClicked()).getInventory().getHolder())) {
 			event.setCancelled(true);
 		}
-	}
+		//ev.getInventory().getHolder() instanceof IShop
+	}*/
 
 	@EventHandler
 	public void onClose(InventoryCloseEvent e) {
@@ -134,13 +136,18 @@ public class LobbyShop implements Listener {
 
 	@EventHandler
 	public void onClickEvent(InventoryClickEvent ev) {
-		if (!(ev.getWhoClicked() instanceof Player) || !(ev.getInventory().getHolder() instanceof IShop)) {
+		if (!(ev.getWhoClicked() instanceof Player)) {
 			return;
 		}
 
 		Player p = (Player) ev.getWhoClicked();
+		if (!isOpened(p)) {
+			return;
+		}
+
 		if (!GameUtils.isPlayerPlaying(p) || GameUtils.getGameByPlayer(p).getStatus() != GameStatus.WAITING) {
 			removeShop(p);
+			p.closeInventory();
 			return;
 		}
 
@@ -321,11 +328,27 @@ public class LobbyShop implements Listener {
 				return false;
 			}
 
-			Particle particle = null;
-			for (Particle p : Particle.values()) {
-				if (p.toString().equalsIgnoreCase(name)) {
-					particle = p;
-					break;
+			Object particle = null;
+			if (Version.isCurrentLower(Version.v1_9_R1)) {
+				try {
+					for (Effect effect : Effect.values()) {
+						Object effectType = Effect.class.getDeclaredClasses()[0].getDeclaredField("PARTICLE")
+								.get(effect);
+						if (effect.toString().equalsIgnoreCase(name)
+								&& effect.getClass().getDeclaredMethod("getType").invoke(effect) == effectType) {
+							particle = effect;
+							break;
+						}
+					}
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			} else {
+				for (Particle p : Particle.values()) {
+					if (p.toString().equalsIgnoreCase(name)) {
+						particle = p;
+						break;
+					}
 				}
 			}
 
@@ -334,7 +357,7 @@ public class LobbyShop implements Listener {
 				return false;
 			}
 
-			if (elements != null && particle.equals(elements.getTrail())) {
+			if (elements != null && particle == elements.getTrail()) {
 				return false;
 			}
 

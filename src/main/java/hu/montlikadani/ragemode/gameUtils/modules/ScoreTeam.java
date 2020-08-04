@@ -41,7 +41,7 @@ public class ScoreTeam {
 
 		NMS.addEntry(player, team);
 
-		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
+		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1) && !prefix.isEmpty()) {
 			// Retrieves the last char from prefix
 			ChatColor color = ChatColor.getByChar(prefix.substring(prefix.length() - 1));
 			if (color != null)

@@ -50,9 +50,7 @@ public class HoloHolder {
 			return;
 
 		Collection<Hologram> holos = HologramsAPI.getHolograms(RageMode.getInstance());
-		for (Hologram holo : holos) {
-			holo.delete();
-		}
+		holos.forEach(Hologram::delete);
 
 		@SuppressWarnings("unchecked")
 		List<Location> loc = (List<Location>) holosConf.get("data.holos");
@@ -60,10 +58,7 @@ public class HoloHolder {
 			return;
 		}
 
-		for (Location l : loc) {
-			HoloHolder.holos.add(l);
-		}
-
+		loc.forEach(HoloHolder.holos::add);
 		Bukkit.getOnlinePlayers().forEach(HoloHolder::showAllHolosToPlayer);
 	}
 
@@ -132,20 +127,11 @@ public class HoloHolder {
 			return;
 
 		Collection<Hologram> holos = HologramsAPI.getHolograms(RageMode.getInstance());
-		for (Hologram holo : holos) {
-			if (holo.getVisibilityManager().isVisibleTo(player))
-				holo.delete();
-		}
+		holos.stream().filter(holo -> holo.getVisibilityManager().isVisibleTo(player)).forEach(Hologram::delete);
 	}
 
 	public static boolean deleteHologram(Hologram holo) {
-		if (!RageMode.getInstance().isHologramEnabled())
-			return false;
-
-		if (holo == null)
-			return false;
-
-		if (!holos.contains(holo.getLocation()))
+		if (!RageMode.getInstance().isHologramEnabled() || holo == null || !holos.contains(holo.getLocation()))
 			return false;
 
 		holos.remove(holo.getLocation());
@@ -160,10 +146,7 @@ public class HoloHolder {
 	}
 
 	public static Location getHologramLocation(Hologram holo) {
-		if (holo == null)
-			return null;
-
-		return holo.getLocation();
+		return holo == null ? null : holo.getLocation();
 	}
 
 	/**

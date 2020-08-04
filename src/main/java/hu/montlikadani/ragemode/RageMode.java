@@ -60,11 +60,11 @@ public class RageMode extends JavaPlugin {
 	private DatabaseHandler dbHandler;
 	private Selection selection;
 
-	private Economy econ = null;
+	private Economy econ;
 
-	private static RageMode instance = null;
-	private static Language lang = null;
-	private static ServerVersion serverVersion = null;
+	private static RageMode instance;
+	private static Language lang;
+	private static ServerVersion serverVersion;
 
 	private static boolean isSpigot = false;
 
@@ -171,7 +171,7 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void loadHooks() {
-		if (getManager().isPluginEnabled("HolographicDisplays")) {
+		if (isPluginEnabled("HolographicDisplays")) {
 			hologram = true;
 			HoloHolder.initHoloHolder();
 		} else {
@@ -180,7 +180,7 @@ public class RageMode extends JavaPlugin {
 
 		vault = initEconomy();
 
-		if (getManager().isPluginEnabled("PlaceholderAPI")) {
+		if (isPluginEnabled("PlaceholderAPI")) {
 			new Placeholder().register();
 		}
 	}
@@ -211,7 +211,7 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private boolean initEconomy() {
-		if (!getManager().isPluginEnabled("Vault")) {
+		if (!isPluginEnabled("Vault")) {
 			return false;
 		}
 
@@ -230,7 +230,7 @@ public class RageMode extends JavaPlugin {
 
 			if (game.isGameRunning()) {
 				GameUtils.stopGame(game, false);
-				GameUtils.broadcastToGame(game, RageMode.getLang().get("game.game-stopped-for-reload"));
+				GameUtils.broadcastToGame(game, getLang().get("game.game-stopped-for-reload"));
 			} else if (game.getStatus() == GameStatus.WAITING) {
 				GameUtils.kickAllPlayers(game);
 			}
@@ -500,6 +500,10 @@ public class RageMode extends JavaPlugin {
 				it.remove();
 			}
 		}
+	}
+
+	public boolean isPluginEnabled(String name) {
+		return getManager().getPlugin(name) != null && getManager().isPluginEnabled(name);
 	}
 
 	/**

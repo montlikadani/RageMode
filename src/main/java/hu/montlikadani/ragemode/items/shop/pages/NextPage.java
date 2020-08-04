@@ -114,7 +114,7 @@ public class NextPage implements IShop {
 					if (!filler.isEmpty()) {
 						mat = Material.getMaterial(filler.toUpperCase());
 						if (mat == null) {
-							Debug.logConsole(Level.WARNING, "Unknown filler item type: " + item);
+							Debug.logConsole(Level.WARNING, "Unknown filler item type: " + filler);
 							mat = Material.AIR;
 						}
 

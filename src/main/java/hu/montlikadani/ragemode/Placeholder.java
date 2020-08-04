@@ -1,6 +1,7 @@
 package hu.montlikadani.ragemode;
 
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
@@ -13,7 +14,7 @@ public class Placeholder extends PlaceholderExpansion {
 
 	@Override
 	public String getAuthor() {
-		return RageMode.getInstance().getDescription().getAuthors().toString();
+		return JavaPlugin.getPlugin(RageMode.class).getDescription().getAuthors().toString();
 	}
 
 	@Override
@@ -27,7 +28,7 @@ public class Placeholder extends PlaceholderExpansion {
 	}
 
 	@Override
-	public String onPlaceholderRequest(Player p, String var) {
+	public String onPlaceholderRequest(Player p, String v) {
 		if (p == null)
 			return "";
 
@@ -35,7 +36,7 @@ public class Placeholder extends PlaceholderExpansion {
 		if (rpp == null)
 			return "";
 
-		switch (var.toLowerCase()) {
+		switch (v.toLowerCase()) {
 		case "kills":
 			return Integer.toString(rpp.getKills());
 		case "axe_kills":

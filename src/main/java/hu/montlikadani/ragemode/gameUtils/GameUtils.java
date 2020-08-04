@@ -13,7 +13,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -58,7 +57,7 @@ public class GameUtils {
 	 */
 	public static final HashMap<String, Boolean> WAITINGGAMES = new HashMap<>();
 
-	public static final HashMap<UUID, Particle> USERPARTICLES = new HashMap<>();
+	public static final HashMap<UUID, Object> USERPARTICLES = new HashMap<>();
 
 	public static final LobbyShop LOBBYSHOP = new LobbyShop();
 
@@ -139,8 +138,7 @@ public class GameUtils {
 	 * @return {@link GameSpawn}
 	 */
 	public static GameSpawn getGameSpawn(String name) {
-		Validate.notNull(name, "Game name can't be null");
-		Validate.notEmpty(name, "Game name can't be empty");
+		Validate.notEmpty(name, "Game name can't be empty/null");
 
 		for (IGameSpawn gsg : RageMode.getInstance().getSpawns()) {
 			if (name.equals(gsg.getGame().getName()) && gsg instanceof GameSpawn) {
@@ -171,8 +169,7 @@ public class GameUtils {
 	 * @return {@link GameZombieSpawn}
 	 */
 	public static GameZombieSpawn getGameZombieSpawn(String name) {
-		Validate.notNull(name, "Game name can't be null");
-		Validate.notEmpty(name, "Game name can't be empty");
+		Validate.notEmpty(name, "Game name can't be empty/null");
 
 		for (IGameSpawn gsg : RageMode.getInstance().getSpawns()) {
 			if (name.equals(gsg.getGame().getName()) && gsg instanceof GameZombieSpawn) {
@@ -289,8 +286,7 @@ public class GameUtils {
 	 * @return Game if the given name is exists.
 	 */
 	public static Game getGame(String name) {
-		Validate.notNull(name, "Game name can not be null");
-		Validate.notEmpty(name, "Game name can't be empty");
+		Validate.notEmpty(name, "Game name can't be empty/null");
 
 		for (Game game : RageMode.getInstance().getGames()) {
 			if (name.equalsIgnoreCase(game.getName())) {
@@ -462,14 +458,14 @@ public class GameUtils {
 
 		if (ConfigValues.isRequireEmptyInv()) {
 			for (ItemStack armor : inv.getArmorContents()) {
-				if (armor != null && !armor.getType().equals(Material.AIR)) {
+				if (armor != null && armor.getType() != Material.AIR) {
 					sendMessage(p, RageMode.getLang().get("commands.join.empty-inventory.armor"));
 					return;
 				}
 			}
 
 			for (ItemStack content : inv.getContents()) {
-				if (content != null && !content.getType().equals(Material.AIR)) {
+				if (content != null && content.getType() != Material.AIR) {
 					sendMessage(p, RageMode.getLang().get("commands.join.empty-inventory.contents"));
 					return;
 				}
@@ -700,7 +696,7 @@ public class GameUtils {
 	}
 
 	public static void spawnZombies(Game game, int amount) {
-		if (!game.getStatus().equals(GameStatus.RUNNING) || game.getGameType() != GameType.APOCALYPSE) {
+		if (game.getStatus() != GameStatus.RUNNING || game.getGameType() != GameType.APOCALYPSE) {
 			return;
 		}
 

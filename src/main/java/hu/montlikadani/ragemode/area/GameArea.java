@@ -1,10 +1,11 @@
 package hu.montlikadani.ragemode.area;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 
 public class GameArea {
@@ -12,9 +13,18 @@ public class GameArea {
 	private String game;
 	private Area area;
 
+	private int x1, y1, z1, x2, y2, z2;
+
 	public GameArea(String game, Area area) {
 		this.game = game;
 		this.area = area;
+
+		x1 = Math.min(area.getLowLoc().getBlockX(), area.getHighLoc().getBlockX());
+		y1 = Math.min(area.getLowLoc().getBlockY(), area.getHighLoc().getBlockY());
+		z1 = Math.min(area.getLowLoc().getBlockZ(), area.getHighLoc().getBlockZ());
+		x2 = Math.max(area.getLowLoc().getBlockX(), area.getHighLoc().getBlockX());
+		y2 = Math.max(area.getLowLoc().getBlockY(), area.getHighLoc().getBlockY());
+		z2 = Math.max(area.getLowLoc().getBlockZ(), area.getHighLoc().getBlockZ());
 	}
 
 	public String getGame() {
@@ -51,15 +61,23 @@ public class GameArea {
 	}
 
 	/**
-	 * Converts the list of entities to {@link Stream}<br>
-	 * <br>
-	 * This includes {@link Player} as entity.
+	 * Collects all blocks into a list from the area.
 	 * 
-	 * @param entities the list of entities
-	 * @return {@link Stream}
+	 * @return an unmodifiable list of {@link Block}
+	 * @deprecated This method makes no sense until there is no feature to change ragemode area blocks.
 	 */
-	public Stream<Entity> getEntities(List<Entity> entities) {
-		return entities == null ? Stream.empty() : entities.stream();
+	@Deprecated
+	public List<Block> getBlocks() {
+		List<Block> blocks = new java.util.ArrayList<>();
+		for (int x = x1; x <= x2; x++) {
+			for (int z = z1; z <= z2; z++) {
+				for (int y = y1; y <= y2; y++) {
+					blocks.add(area.getLowLoc().getWorld().getBlockAt(x, y, z));
+				}
+			}
+		}
+
+		return Collections.unmodifiableList(blocks);
 	}
 
 	/**
@@ -69,18 +87,11 @@ public class GameArea {
 	 * @return true if yes
 	 */
 	public boolean inArea(Location loc) {
-		if (loc == null || area == null) {
+		if (loc == null) {
 			return false;
 		}
 
-		int x = loc.getBlockX(), y = loc.getBlockY(), z = loc.getBlockZ(),
-				x1 = Math.min(area.getLowLoc().getBlockX(), area.getHighLoc().getBlockX()),
-				y1 = Math.min(area.getLowLoc().getBlockY(), area.getHighLoc().getBlockY()),
-				z1 = Math.min(area.getLowLoc().getBlockZ(), area.getHighLoc().getBlockZ()),
-				x2 = Math.max(area.getLowLoc().getBlockX(), area.getHighLoc().getBlockX()),
-				y2 = Math.max(area.getLowLoc().getBlockY(), area.getHighLoc().getBlockY()),
-				z2 = Math.max(area.getLowLoc().getBlockZ(), area.getHighLoc().getBlockZ());
-
+		int x = loc.getBlockX(), y = loc.getBlockY(), z = loc.getBlockZ();
 		return (x >= x1 && x <= x2 && y >= y1 && y <= y2 && z >= z1 && z <= z2);
 	}
 }

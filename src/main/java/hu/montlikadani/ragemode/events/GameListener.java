@@ -8,10 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Arrow;
@@ -71,7 +74,6 @@ import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
-import hu.montlikadani.ragemode.API.event.RMGameStartEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerKilledEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerPreRespawnEvent;
@@ -127,76 +129,16 @@ public class GameListener implements Listener {
 		}
 	}
 
-	private int task = -1;
-
-	@EventHandler
-	public void onGameStart(final RMGameStartEvent ev) {
-		// just for optimisation (someone suggestion)
-		task = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
-			Game game = ev.getGame();
-
-			for (PlayerManager pm : ev.getPlayers()) {
-				Player p = pm.getPlayer();
-
-				if (p.getLocation().getY() < 0) {
-					p.teleport(GameUtils.getGameSpawn(game).getRandomSpawn());
-
-					// Prevent damaging player when respawned
-					p.setFallDistance(0);
-
-					GameUtils.broadcastToGame(game, RageMode.getLang().get("game.void-fall", "%player%", p.getName()));
-					continue;
-				}
-
-				if (game.getStatus() == GameStatus.RUNNING) {
-					// prevent player moving outside of game area
-					Location loc = p.getLocation();
-					org.bukkit.util.Vector vector = loc.getDirection();
-
-					if (!GameAreaManager.inArea(loc)) {
-						if (vector.getX() == 0) {
-							vector.setX(0.01);
-						}
-
-						if (vector.getY() == 0) {
-							vector.setY(0.01);
-						}
-
-						if (vector.getZ() == 0) {
-							vector.setZ(0.01);
-						}
-
-						loc = loc.subtract(vector.multiply(1));
-						loc.setY(loc.getBlockY() + 1); // +1 to prevent player teleporting into block
-
-						p.teleport(loc);
-						continue;
-					}
-				}
-
-				// pressure mine
-				hu.montlikadani.ragemode.area.GameArea area = GameAreaManager.getAreaByLocation(p.getLocation());
-				if (area != null) {
-					area.getEntities().forEach(e -> explodeMine(null, e.getLocation()));
-				}
-			}
-		}, 2, 2);
-	}
-
 	/**
 	 * @param event
 	 */
 	@EventHandler
 	public void onGameStop(RMGameStopEvent event) {
-		for (Map.Entry<Location, UUID> entry : pressureMinesOwner.entrySet()) {
-			entry.getKey().getBlock().setType(Material.AIR);
+		for (Location loc : pressureMinesOwner.keySet()) {
+			loc.getBlock().setType(Material.AIR);
 		}
 
 		pressureMinesOwner.clear();
-
-		if (task != -1) {
-			Bukkit.getScheduler().cancelTask(task);
-		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
@@ -564,20 +506,21 @@ public class GameListener implements Listener {
 						break;
 					case "explosion":
 						if (explosionVictims.containsKey(deceased.getUniqueId())) {
-							message = RageMode.getLang().get("game.broadcast.explosion-kill", "%victim%", deceaseName,
-									"%killer%",
-									Bukkit.getPlayer(explosionVictims.get(deceased.getUniqueId())).getName());
+							Player v = Bukkit.getPlayer(explosionVictims.get(deceased.getUniqueId()));
+							if (v != null) {
+								message = RageMode.getLang().get("game.broadcast.explosion-kill", "%victim%",
+										deceaseName, "%killer%", v.getName());
 
-							RageScores.addPointsToPlayer(Bukkit.getPlayer(explosionVictims.get(deceased.getUniqueId())),
-									deceased, KilledWith.EXPLOSION);
+								RageScores.addPointsToPlayer(v, deceased, KilledWith.EXPLOSION);
+							}
 						} else if (grenadeExplosionVictims.containsKey(deceased.getUniqueId())) {
-							message = RageMode.getLang().get("game.broadcast.explosion-kill", "%victim%", deceaseName,
-									"%killer%",
-									Bukkit.getPlayer(grenadeExplosionVictims.get(deceased.getUniqueId())).getName());
+							Player vic = Bukkit.getPlayer(grenadeExplosionVictims.get(deceased.getUniqueId()));
+							if (vic != null) {
+								message = RageMode.getLang().get("game.broadcast.explosion-kill", "%victim%",
+										deceaseName, "%killer%", vic.getName());
 
-							RageScores.addPointsToPlayer(
-									Bukkit.getPlayer(grenadeExplosionVictims.get(deceased.getUniqueId())), deceased,
-									KilledWith.EXPLOSION);
+								RageScores.addPointsToPlayer(vic, deceased, KilledWith.EXPLOSION);
+							}
 						} else {
 							message = RageMode.getLang().get("game.broadcast.error-kill");
 
@@ -1010,7 +953,7 @@ public class GameListener implements Listener {
 				final CombatAxeThread combatAxeThread = new CombatAxeThread(p, item);
 				combatAxeThread.start();
 
-				new Thread(() -> {
+				CompletableFuture.supplyAsync(() -> {
 					while (!item.isDead()) {
 						try {
 							Thread.sleep(3000);
@@ -1024,7 +967,9 @@ public class GameListener implements Listener {
 							break; // To make sure we're broke the thread
 						}
 					}
-				}).start();
+
+					return true;
+				});
 
 				return;
 			}
@@ -1227,6 +1172,49 @@ public class GameListener implements Listener {
 
 		Game game = GameUtils.getGameByPlayer(p);
 
+		if (p.getLocation().getY() < 0) {
+			p.teleport(GameUtils.getGameSpawn(game).getRandomSpawn());
+
+			// Prevent damaging player when respawned
+			p.setFallDistance(0);
+
+			GameUtils.broadcastToGame(game, RageMode.getLang().get("game.void-fall", "%player%", p.getName()));
+			return;
+		}
+
+		if (game.getStatus() == GameStatus.RUNNING) {
+			// prevent player moving outside of game area
+			Location loc = p.getLocation();
+
+			if (!GameAreaManager.inArea(loc)) {
+				org.bukkit.util.Vector vector = loc.getDirection();
+
+				if (vector.getX() == 0) {
+					vector.setX(0.01);
+				}
+
+				if (vector.getY() == 0) {
+					vector.setY(0.01);
+				}
+
+				if (vector.getZ() == 0) {
+					vector.setZ(0.01);
+				}
+
+				loc = loc.subtract(vector.multiply(1));
+				loc.setY(loc.getBlockY() + 1); // +1 to prevent player teleporting into block
+
+				p.teleport(loc);
+				return;
+			}
+
+			// pressure mine
+			hu.montlikadani.ragemode.area.GameArea area = GameAreaManager.getAreaByLocation(p.getLocation());
+			if (area != null) {
+				area.getEntities().forEach(e -> explodeMine(null, e.getLocation()));
+			}
+		}
+
 		if (game.getStatus() == GameStatus.GAMEFREEZE && GameUtils.isGameInFreezeRoom(game)) {
 			if (!ConfigValues.isFreezePlayers()) {
 				return;
@@ -1325,7 +1313,7 @@ public class GameListener implements Listener {
 			return;
 		}
 
-		new Thread(() -> {
+		CompletableFuture.supplyAsync(() -> {
 			do {
 				if (isEgg) {
 					try {
@@ -1342,9 +1330,16 @@ public class GameListener implements Listener {
 						e.printStackTrace();
 					}
 
-					proj.getWorld().spawnParticle(GameUtils.USERPARTICLES.get(uuid), proj.getLocation(), 0);
+					if (Version.isCurrentLower(Version.v1_9_R1)) {
+						proj.getWorld().playEffect(proj.getLocation(), (Effect) GameUtils.USERPARTICLES.get(uuid), 0);
+					} else {
+						proj.getWorld().spawnParticle((Particle) GameUtils.USERPARTICLES.get(uuid), proj.getLocation(),
+								0);
+					}
 				}
 			} while (!proj.isDead() && !proj.isOnGround());
-		}).start();
+
+			return true;
+		});
 	}
 }

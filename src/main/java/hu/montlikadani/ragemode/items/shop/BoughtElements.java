@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.items.shop;
 
-import org.bukkit.Particle;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
@@ -12,7 +11,7 @@ public class BoughtElements {
 	private int points;
 
 	private PotionEffect potion;
-	private Particle trail;
+	private Object trail;
 
 	public BoughtElements(double cost, int points) {
 		this.cost = cost;
@@ -31,7 +30,7 @@ public class BoughtElements {
 		this.potion = potion;
 	}
 
-	public BoughtElements(Particle trail, double cost, int points) {
+	public BoughtElements(Object trail, double cost, int points) {
 		this(cost, points);
 
 		this.trail = trail;
@@ -69,11 +68,11 @@ public class BoughtElements {
 		this.potion = potion;
 	}
 
-	public Particle getTrail() {
+	public Object getTrail() {
 		return trail;
 	}
 
-	public void setTrail(Particle trail) {
+	public void setTrail(Object trail) {
 		this.trail = trail;
 	}
 }

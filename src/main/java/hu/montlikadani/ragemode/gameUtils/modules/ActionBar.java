@@ -24,13 +24,16 @@ public class ActionBar {
 
 		try {
 			Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + nmsver + ".entity.CraftPlayer");
+
 			Object craftPlayer = craftPlayerClass.cast(player);
 			Object packet;
-			Class<?> packetPlayOutChatClass = Utils.getNMSClass("PacketPlayOutChat");
-			Class<?> packetClass = Utils.getNMSClass("Packet");
 
-			Class<?> chatComponentTextClass = Utils.getNMSClass("ChatComponentText");
-			Class<?> iChatBaseComponentClass = Utils.getNMSClass("IChatBaseComponent");
+			Class<?> packetPlayOutChatClass = Utils.getNMSClass("PacketPlayOutChat"),
+					packetClass = Utils.getNMSClass("Packet"),
+					chatComponentTextClass = Utils.getNMSClass("ChatComponentText"),
+					iChatBaseComponentClass = Utils.getNMSClass("IChatBaseComponent");
+
+			Object chatCompontentText = chatComponentTextClass.getConstructor(String.class).newInstance(message);
 			try {
 				Class<?> chatMessageTypeClass = Utils.getNMSClass("ChatMessageType");
 				Object chatMessageType = null;
@@ -41,7 +44,6 @@ public class ActionBar {
 					}
 				}
 
-				Object chatCompontentText = chatComponentTextClass.getConstructor(String.class).newInstance(message);
 				try {
 					packet = packetPlayOutChatClass.getConstructor(iChatBaseComponentClass, chatMessageTypeClass)
 							.newInstance(chatCompontentText, chatMessageType);
@@ -51,7 +53,6 @@ public class ActionBar {
 							.newInstance(chatCompontentText, chatMessageType, player.getUniqueId());
 				}
 			} catch (ClassNotFoundException e1) {
-				Object chatCompontentText = chatComponentTextClass.getConstructor(String.class).newInstance(message);
 				packet = packetPlayOutChatClass.getConstructor(iChatBaseComponentClass, byte.class)
 						.newInstance(chatCompontentText, (byte) 2);
 			}

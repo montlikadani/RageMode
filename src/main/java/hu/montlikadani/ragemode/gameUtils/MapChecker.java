@@ -24,8 +24,7 @@ public class MapChecker {
 	private int maxPlayers;
 
 	public MapChecker(String gameName) {
-		Validate.notNull(gameName, "Game name can't be null!");
-		Validate.notEmpty(gameName, "Game name can't be empty!");
+		Validate.notEmpty(gameName, "Game name can't be empty/null");
 
 		this.gameName = gameName;
 
@@ -223,9 +222,8 @@ public class MapChecker {
 	}
 
 	public static boolean isGameWorld(String gameName, World world) {
-		Validate.notNull(gameName, "Game name can't be null!");
-		Validate.notEmpty(gameName, "Game name can't be empty!");
-		Validate.notNull(world, "World can't be null!");
+		Validate.notEmpty(gameName, "Game name can't be empty/null");
+		Validate.notNull(world, "World can't be null");
 
 		FileConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
 		String spawnsPath = "arenas." + gameName + ".spawns";

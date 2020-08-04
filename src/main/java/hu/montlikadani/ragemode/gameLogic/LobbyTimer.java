@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.bukkit.entity.Player;
-
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -70,10 +68,7 @@ public class LobbyTimer extends TimerTask {
 		}
 
 		if (ConfigValues.isPlayerLevelAsTimeCounter()) {
-			for (PlayerManager pm : list) {
-				Player player = pm.getPlayer();
-				player.setLevel(time);
-			}
+			list.forEach(pm -> pm.getPlayer().setLevel(time));
 		}
 
 		if (ConfigValues.isLobbyTitle()) {

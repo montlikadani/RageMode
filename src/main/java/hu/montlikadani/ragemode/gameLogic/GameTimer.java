@@ -81,27 +81,27 @@ public class GameTimer extends TimerTask {
 				} else if (timeElapsed == -1) { // wait for the scheduler task
 					for (PlayerManager pm : game.getPlayersFromList()) {
 						org.bukkit.Location loc = pm.getPlayer().getLocation();
-						if (GameAreaManager.inArea(loc)) {
-							if (ConfigValues.isWaitForNextSpawnAfterZombiesAreDead()
-									&& !GameAreaManager.getAreaByLocation(loc)
-											.getEntities(GameAreaManager.getAreaByLocation(loc).getEntities())
-											.filter(e -> e instanceof org.bukkit.entity.Zombie)
-											.collect(Collectors.toList()).isEmpty()) {
-								break;
-							}
-
-							if (ConfigValues.getDelayAfterNextZombiesSpawning() > 0) {
-								timeElapsed = Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-										() -> {
-											GameUtils.spawnZombies(game, zombieSpawnAmount);
-											timeElapsed = -1;
-										}, ConfigValues.getDelayAfterNextZombiesSpawning() * 20);
-							} else {
-								GameUtils.spawnZombies(game, zombieSpawnAmount);
-							}
-
-							zombieSpawnAmount += 5;
+						if (!GameAreaManager.inArea(loc)) {
+							continue;
 						}
+
+						if (ConfigValues.isWaitForNextSpawnAfterZombiesAreDead()
+								&& !GameAreaManager.getAreaByLocation(loc).getEntities().stream()
+										.filter(e -> e instanceof org.bukkit.entity.Zombie).collect(Collectors.toList())
+										.isEmpty()) {
+							break;
+						}
+
+						if (ConfigValues.getDelayAfterNextZombiesSpawning() > 0) {
+							timeElapsed = Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
+								GameUtils.spawnZombies(game, zombieSpawnAmount);
+								timeElapsed = -1;
+							}, ConfigValues.getDelayAfterNextZombiesSpawning() * 20);
+						} else {
+							GameUtils.spawnZombies(game, zombieSpawnAmount);
+						}
+
+						zombieSpawnAmount += 5;
 					}
 				}
 			}

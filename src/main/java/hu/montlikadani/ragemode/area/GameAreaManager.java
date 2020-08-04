@@ -1,10 +1,9 @@
 package hu.montlikadani.ragemode.area;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -76,9 +75,9 @@ public class GameAreaManager {
 			return;
 		}
 
-		for (Entry<String, GameArea> map : GAMEAREAS.entrySet()) {
-			if (map.getValue().getGame().equals(game.getName())) {
-				map.getValue().getEntities().forEach(Entity::remove);
+		for (GameArea area : GAMEAREAS.values()) {
+			if (area.getGame().equals(game.getName())) {
+				area.getEntities().forEach(Entity::remove);
 			}
 		}
 	}
@@ -89,9 +88,9 @@ public class GameAreaManager {
 	 * @return {@link GameArea}
 	 */
 	public static GameArea getAreaByLocation(Location loc) {
-		for (Entry<String, GameArea> map : GAMEAREAS.entrySet()) {
-			if (map.getValue().inArea(loc)) {
-				return map.getValue();
+		for (GameArea area : GAMEAREAS.values()) {
+			if (area.inArea(loc)) {
+				return area;
 			}
 		}
 
@@ -104,13 +103,7 @@ public class GameAreaManager {
 	 * @return true if yes
 	 */
 	public static boolean inArea(Location loc) {
-		for (Entry<String, GameArea> map : GAMEAREAS.entrySet()) {
-			if (map.getValue().inArea(loc)) {
-				return true;
-			}
-		}
-
-		return false;
+		return getAreaByLocation(loc) != null;
 	}
 
 	/**
@@ -119,14 +112,6 @@ public class GameAreaManager {
 	 * @return the list of {@link GameArea}
 	 */
 	public static List<GameArea> getAreasByLocation(Location loc) {
-		List<GameArea> list = new ArrayList<>();
-
-		for (Entry<String, GameArea> map : GAMEAREAS.entrySet()) {
-			if (map.getValue().inArea(loc)) {
-				list.add(map.getValue());
-			}
-		}
-
-		return list;
+		return GAMEAREAS.values().stream().filter(area -> area.inArea(loc)).collect(Collectors.toList());
 	}
 }

@@ -69,10 +69,10 @@ public class ActionMessengers {
 			s++;
 
 			if (s > 1) {
-				header = header + "\n\u00a7r";
+				header += "\n\u00a7r";
 			}
 
-			header = header + line;
+			header += line;
 		}
 
 		s = 0;
@@ -81,10 +81,10 @@ public class ActionMessengers {
 			s++;
 
 			if (s > 1) {
-				footer = footer + "\n\u00a7r";
+				footer += "\n\u00a7r";
 			}
 
-			footer = footer + line;
+			footer += line;
 		}
 
 		header = Utils.setPlaceholders(header, player);
@@ -115,7 +115,6 @@ public class ActionMessengers {
 		List<String> rows = RageMode.getInstance().getConfiguration().getCfg().getStringList("game.scoreboard.content");
 		if (!rows.isEmpty()) {
 			int scores = rows.size();
-
 			if (scores < 15) {
 				for (int i = (scores + 1); i <= 15; i++) {
 					gameBoard.resetScores(player, i);

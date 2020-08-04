@@ -326,11 +326,7 @@ public class YAMLDB {
 	 * @return true if the class inited and player found in database
 	 */
 	public static boolean resetPlayerStatistic(UUID uuid) {
-		if (!inited) {
-			return false;
-		}
-
-		if (!statsConf.contains("data")) {
+		if (!inited || !statsConf.contains("data")) {
 			return false;
 		}
 

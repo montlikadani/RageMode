@@ -7,7 +7,7 @@ import java.util.List;
 public class ShopItemCommands {
 
 	private String configPath;
-	private List<String> commands = new ArrayList<>();
+	private final List<String> commands = new ArrayList<>();
 	private NavigationType navigationType = NavigationType.WITHOUT;
 
 	public ShopItemCommands(String configPath, String command, NavigationType navigationType) {
