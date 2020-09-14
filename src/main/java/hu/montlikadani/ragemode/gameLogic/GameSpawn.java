@@ -71,9 +71,7 @@ public class GameSpawn implements IGameSpawn {
 	public void addSpawn(Location loc) {
 		Validate.notNull(loc, "Location can't be null!");
 
-		if (spawnLocations.add(loc)) {
-			isReady = true;
-		}
+		isReady = spawnLocations.add(loc);
 	}
 
 	@Override

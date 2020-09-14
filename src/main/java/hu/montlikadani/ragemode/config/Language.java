@@ -35,6 +35,7 @@ public class Language {
 			lang = "en";
 		}
 
+		lang = lang.toLowerCase();
 		this.lang = lang;
 
 		if (localeFolder == null) {
@@ -59,7 +60,7 @@ public class Language {
 			}
 		}
 
-		if (lang.equalsIgnoreCase("en")) {
+		if (lang.equals("en")) {
 			FileConfiguration lf = YamlConfiguration.loadConfiguration(langFile);
 			loadMessages(langFile, new FileConfig(lf));
 		} else {
@@ -295,14 +296,12 @@ public class Language {
 		if (key == null || key.isEmpty())
 			return Collections.emptyList();
 
-		List<String> ls = null;
 		if (!yc.contains(key) || !yc.isList(key)) {
-			ls = Arrays.asList(missing);
 			Debug.sendMessage("[RageMode]&c Can't read language file for:&7 " + key);
-			return ls;
+			return Arrays.asList(missing);
 		}
 
-		ls = Utils.colorList(yc.getStringList(key));
+		List<String> ls = Utils.colorList(yc.getStringList(key));
 
 		if (variables != null && variables.length > 0) {
 			for (int i = 0; i < ls.size(); i++) {

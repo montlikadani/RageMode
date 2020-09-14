@@ -25,23 +25,19 @@ public class listgames implements ICommand {
 		}
 
 		String[] games = GetGames.getGameNames();
-		if (games == null) {
-			return false;
-		}
-
-		int i = 0;
 		int imax = games.length;
 
 		sendMessage(sender, RageMode.getLang().get("commands.listgames.listing-games", "%games%", imax));
 
-		while (i < imax) {
-			if (GameUtils.getGame(games[i]).isGameRunning())
-				sendMessage(sender, RageMode.getLang().get("commands.listgames.game-running", "%number%", i + 1,
-						"%game%", games[i]));
-			else
-				sendMessage(sender, RageMode.getLang().get("commands.listgames.game-stopped", "%number%", i + 1,
-						"%game%", games[i]));
-			i++;
+		for (int i = 0; i < imax; i++) {
+			String game = games[i];
+			if (game == null || game.isEmpty()) {
+				continue;
+			}
+
+			String running = GameUtils.getGame(game).isGameRunning() ? "running" : "stopped";
+			sendMessage(sender,
+					RageMode.getLang().get("commands.listgames.game-" + running, "%number%", i + 1, "%game%", game));
 		}
 
 		return true;

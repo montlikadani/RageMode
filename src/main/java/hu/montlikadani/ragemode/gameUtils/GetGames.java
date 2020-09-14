@@ -1,7 +1,6 @@
 package hu.montlikadani.ragemode.gameUtils;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -96,9 +95,9 @@ public class GetGames {
 	public static String[] getGameNames() {
 		FileConfiguration c = RageMode.getInstance().getConfiguration().getArenasCfg();
 
-		return c.contains("arenas")
+		return c.isConfigurationSection("arenas")
 				? c.getConfigurationSection("arenas").getKeys(false).toArray(new String[getConfigGamesCount()])
-				: null;
+				: new String[0];
 	}
 
 	/**
@@ -107,7 +106,7 @@ public class GetGames {
 	 * @return all games
 	 */
 	public static List<String> getGames() {
-		return getGameNames() != null ? Arrays.asList(getGameNames()) : Collections.emptyList();
+		return Arrays.asList(getGameNames());
 	}
 
 	/**
@@ -117,9 +116,6 @@ public class GetGames {
 	public static int getOverallMaxPlayers() {
 		int i = 0, n = 0, x;
 		String[] names = getGameNames();
-		if (names == null) {
-			return 0;
-		}
 
 		while (i < names.length) {
 			x = RageMode.getInstance().getConfiguration().getArenasCfg().getInt("arenas." + names[i] + ".maxplayers", 0);
@@ -142,12 +138,7 @@ public class GetGames {
 	public static boolean isGameExistent(String game) {
 		Validate.notEmpty(game, "Game name can't be empty/null");
 
-		String[] games = getGameNames();
-		if (games == null) {
-			return false;
-		}
-
-		for (String g : games) {
+		for (String g : getGameNames()) {
 			if (g.equalsIgnoreCase(game.trim())) {
 				return true;
 			}

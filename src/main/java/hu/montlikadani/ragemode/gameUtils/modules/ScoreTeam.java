@@ -54,9 +54,7 @@ public class ScoreTeam {
 		team.setPrefix(prefix);
 		team.setSuffix(suffix);
 
-		GameUtils.getGameByPlayer(player).getAllPlayers().stream()
-				.filter(pl -> pl.getPlayer().getScoreboard() == scoreboard)
-				.forEach(pl -> pl.getPlayer().setScoreboard(scoreboard));
+		GameUtils.getGameByPlayer(player).getAllPlayers().forEach(pl -> pl.getPlayer().setScoreboard(scoreboard));
 	}
 
 	/**

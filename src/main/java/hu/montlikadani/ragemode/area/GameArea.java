@@ -1,30 +1,31 @@
 package hu.montlikadani.ragemode.area;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+
+import com.google.common.collect.ImmutableList;
 
 public class GameArea {
 
 	private String game;
 	private Area area;
 
-	private int x1, y1, z1, x2, y2, z2;
+	private double x1, y1, z1, x2, y2, z2;
 
 	public GameArea(String game, Area area) {
 		this.game = game;
 		this.area = area;
 
-		x1 = Math.min(area.getLowLoc().getBlockX(), area.getHighLoc().getBlockX());
-		y1 = Math.min(area.getLowLoc().getBlockY(), area.getHighLoc().getBlockY());
-		z1 = Math.min(area.getLowLoc().getBlockZ(), area.getHighLoc().getBlockZ());
-		x2 = Math.max(area.getLowLoc().getBlockX(), area.getHighLoc().getBlockX());
-		y2 = Math.max(area.getLowLoc().getBlockY(), area.getHighLoc().getBlockY());
-		z2 = Math.max(area.getLowLoc().getBlockZ(), area.getHighLoc().getBlockZ());
+		x1 = Math.min(area.getLowLoc().getX(), area.getHighLoc().getX());
+		y1 = Math.min(area.getLowLoc().getY(), area.getHighLoc().getY());
+		z1 = Math.min(area.getLowLoc().getZ(), area.getHighLoc().getZ());
+		x2 = Math.max(area.getLowLoc().getX(), area.getHighLoc().getX());
+		y2 = Math.max(area.getLowLoc().getY(), area.getHighLoc().getY());
+		z2 = Math.max(area.getLowLoc().getZ(), area.getHighLoc().getZ());
 	}
 
 	public String getGame() {
@@ -44,7 +45,7 @@ public class GameArea {
 	 * @see #getEntities(boolean)
 	 * @return the list of {@link Entity}
 	 */
-	public List<Entity> getEntities() {
+	public ImmutableList<Entity> getEntities() {
 		return getEntities(true);
 	}
 
@@ -54,30 +55,39 @@ public class GameArea {
 	 * @param ignorePlayers ignore players or not
 	 * @return the list of {@link Entity}
 	 */
-	public List<Entity> getEntities(boolean ignorePlayers) {
-		return area.getLowLoc().getWorld().getEntities().stream()
-				.filter(e -> ignorePlayers && !(e instanceof org.bukkit.entity.Player))
-				.filter(e -> inArea(e.getLocation())).collect(Collectors.toList());
+	public ImmutableList<Entity> getEntities(boolean ignorePlayers) {
+		// NOTE: don't use stream in here (memory allocation)
+
+		List<Entity> entities = new ArrayList<>();
+
+		for (Entity e : area.getLowLoc().getWorld().getEntities()) {
+			if ((ignorePlayers && !(e instanceof org.bukkit.entity.Player)) && inArea(e.getLocation())) {
+				entities.add(e);
+			}
+		}
+
+		return ImmutableList.copyOf(entities);
 	}
 
 	/**
 	 * Collects all blocks into a list from the area.
 	 * 
-	 * @return an unmodifiable list of {@link Block}
+	 * @return a list of {@link Block}
 	 * @deprecated This method makes no sense until there is no feature to change ragemode area blocks.
 	 */
 	@Deprecated
-	public List<Block> getBlocks() {
-		List<Block> blocks = new java.util.ArrayList<>();
-		for (int x = x1; x <= x2; x++) {
-			for (int z = z1; z <= z2; z++) {
-				for (int y = y1; y <= y2; y++) {
-					blocks.add(area.getLowLoc().getWorld().getBlockAt(x, y, z));
+	public ImmutableList<Block> getBlocks() {
+		List<Block> blocks = new ArrayList<>();
+
+		for (double x = x1; x <= x2; x++) {
+			for (double z = z1; z <= z2; z++) {
+				for (double y = y1; y <= y2; y++) {
+					blocks.add(area.getLowLoc().getWorld().getBlockAt((int) x, (int) y, (int) z));
 				}
 			}
 		}
 
-		return Collections.unmodifiableList(blocks);
+		return ImmutableList.copyOf(blocks);
 	}
 
 	/**
@@ -91,7 +101,7 @@ public class GameArea {
 			return false;
 		}
 
-		int x = loc.getBlockX(), y = loc.getBlockY(), z = loc.getBlockZ();
+		double x = loc.getX(), y = loc.getY(), z = loc.getZ();
 		return (x >= x1 && x <= x2 && y >= y1 && y <= y2 && z >= z1 && z <= z2);
 	}
 }

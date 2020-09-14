@@ -30,9 +30,7 @@ public class signupdate implements ICommand {
 
 		if (args[1].equalsIgnoreCase("all")) {
 			for (String game : GetGames.getGameNames()) {
-				if (game != null) {
-					SignCreator.updateAllSigns(game);
-				}
+				SignCreator.updateAllSigns(game);
 			}
 		} else {
 			String name = args[1];

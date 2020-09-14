@@ -39,9 +39,9 @@ public class Area {
 	}
 
 	public long getSize() {
-		int xsize = (highPoints.getBlockX() - lowPoints.getBlockX()) + 1,
-				zsize = (highPoints.getBlockZ() - lowPoints.getBlockZ()) + 1,
-				ysize = (highPoints.getBlockY() - lowPoints.getBlockY()) + 1;
+		int xsize = (Math.abs(highPoints.getBlockX() - lowPoints.getBlockX())) + 1,
+				zsize = (Math.abs(highPoints.getBlockZ() - lowPoints.getBlockZ())) + 1,
+				ysize = (Math.abs(highPoints.getBlockY() - lowPoints.getBlockY())) + 1;
 		return xsize * ysize * zsize;
 	}
 

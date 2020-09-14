@@ -12,22 +12,22 @@ import hu.montlikadani.ragemode.storage.YAMLDB;
 
 public class RuntimePPManager {
 
-	private static List<PlayerPoints> RuntimePPList = new ArrayList<>();
+	private static final List<PlayerPoints> RUNTIMEPPLIST = new ArrayList<>();
 
 	public static List<PlayerPoints> getRuntimePPList() {
-		return RuntimePPList;
+		return RUNTIMEPPLIST;
 	}
 
 	public static void loadPPListFromDatabase() {
 		switch (RageMode.getInstance().getDatabaseHandler().getDBType()) {
 		case SQLITE:
-			RuntimePPList.addAll(SQLDB.getAllPlayerStatistics());
+			RUNTIMEPPLIST.addAll(SQLDB.getAllPlayerStatistics());
 			break;
 		case MYSQL:
-			RuntimePPList.addAll(MySQLDB.getAllPlayerStatistics());
+			RUNTIMEPPLIST.addAll(MySQLDB.getAllPlayerStatistics());
 			break;
 		case YAML:
-			RuntimePPList.addAll(YAMLDB.getAllPlayerStatistics());
+			RUNTIMEPPLIST.addAll(YAMLDB.getAllPlayerStatistics());
 			break;
 		default:
 			break;
@@ -55,9 +55,9 @@ public class RuntimePPManager {
 	 */
 	public static PlayerPoints getPPForPlayer(UUID uuid) {
 		int i = 0;
-		int imax = RuntimePPList.size();
+		int imax = RUNTIMEPPLIST.size();
 		while (i < imax) {
-			PlayerPoints pp = RuntimePPList.get(i);
+			PlayerPoints pp = RUNTIMEPPLIST.get(i);
 			if (pp != null && pp.getUUID().equals(uuid)) {
 				return pp;
 			}
@@ -99,10 +99,7 @@ public class RuntimePPManager {
 			newPP.setZombieKills(pp.getZombieKills());
 			newPP.setPoints(pp.getPoints());
 
-			if (pp.isWinner())
-				newPP.setWins(1);
-			else
-				newPP.setWins(0);
+			newPP.setWins(pp.isWinner() ? 1 : 0);
 
 			if (pp.getDeaths() != 0)
 				newPP.setKD(((double) (pp.getKills())) / ((double) (pp.getDeaths())));
@@ -111,13 +108,14 @@ public class RuntimePPManager {
 
 			newPP.setGames(1);
 
-			RuntimePPList.add(newPP);
+			RUNTIMEPPLIST.add(newPP);
 			return;
 		}
 
 		int i = 0;
-		while (i < RuntimePPList.size()) {
-			if (RuntimePPList.get(i).getUUID().equals(pp.getUUID())) {
+		while (i < RUNTIMEPPLIST.size()) {
+			PlayerPoints plp = RUNTIMEPPLIST.get(i);
+			if (plp != null && plp.getUUID().equals(pp.getUUID())) {
 				PlayerPoints newPP = new PlayerPoints(pp.getUUID());
 				newPP.setAxeDeaths(oldPP.getAxeDeaths() + pp.getAxeDeaths());
 				newPP.setAxeKills(oldPP.getAxeKills() + pp.getAxeKills());
@@ -147,7 +145,7 @@ public class RuntimePPManager {
 
 				newPP.setGames(oldPP.getGames() + 1);
 
-				RuntimePPList.set(i, newPP);
+				RUNTIMEPPLIST.set(i, newPP);
 				break;
 			}
 

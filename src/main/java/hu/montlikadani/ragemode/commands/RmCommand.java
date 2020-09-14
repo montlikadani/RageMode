@@ -6,12 +6,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class RmCommand implements CommandExecutor {
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length == 0) {
@@ -188,11 +190,16 @@ public class RmCommand implements CommandExecutor {
 			String path = "hu.montlikadani.ragemode.commands.list";
 			ICommand command = null;
 			try {
-				command = (ICommand) RageMode.class.getClassLoader().loadClass(path + "." + args[0].toLowerCase())
-						.newInstance();
+				if (Utils.Reflections.getCurrentJavaVersion() >= 9) {
+					command = (ICommand) RageMode.class.getClassLoader().loadClass(path + "." + args[0].toLowerCase())
+							.getDeclaredConstructor().newInstance();
+				} else {
+					command = (ICommand) RageMode.class.getClassLoader().loadClass(path + "." + args[0].toLowerCase())
+							.newInstance();
+				}
 			} catch (ClassNotFoundException e) {
 				sendMessage(sender, RageMode.getLang().get("wrong-command"));
-			} catch (IllegalAccessException | InstantiationException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 

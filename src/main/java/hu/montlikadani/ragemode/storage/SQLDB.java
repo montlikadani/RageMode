@@ -26,11 +26,7 @@ public class SQLDB {
 
 	public static void loadPlayerStatistics() {
 		SQLConnect sqlConnect = DatabaseHandler.getSQL();
-		if (!sqlConnect.isConnected()) {
-			return;
-		}
-
-		if (!sqlConnect.isValid()) {
+		if (!sqlConnect.isConnected() || !sqlConnect.isValid()) {
 			return;
 		}
 

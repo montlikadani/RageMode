@@ -201,10 +201,10 @@ game:
   # Zombie apocalypse game type settings
   zombie-apocalypse:
     # Delay the spawning of zombies before the first wave? (in game current seconds)
-    delay-before-first-spawn: 30
+    delay-before-first-spawn: 10
 
     # Delay after the next zombie wave (in game current seconds)
-    delay-after-next-zombies-spawning: 30
+    delay-after-next-zombies-spawning: 20
 
     # Wait for the next zombie wave to spawn until all the zombies have been killed.
     wait-for-next-spawn-after-zombies-are-dead: true

@@ -131,11 +131,7 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onSignChange(SignChangeEvent event) {
-		if (event.isCancelled()) {
-			return;
-		}
-
-		if (!ConfigValues.isSignsEnable()) {
+		if (event.isCancelled() || !ConfigValues.isSignsEnable()) {
 			return;
 		}
 

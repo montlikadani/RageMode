@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -21,7 +22,7 @@ public class RewardManager {
 
 	private String game;
 
-	private FileConfiguration conf = RageMode.getInstance().getConfiguration().getRewardsCfg();
+	private final FileConfiguration conf = RageMode.getInstance().getConfiguration().getRewardsCfg();
 
 	public RewardManager(String game) {
 		this.game = game;
@@ -64,10 +65,7 @@ public class RewardManager {
 		addItems("winner", winner);
 	}
 
-	public void rewardForPlayers(Player winner, Player pls) {
-		if (winner != null && winner.equals(pls))
-			return;
-
+	public void rewardForPlayers(Player pls) {
 		List<String> cmds = conf.getStringList("rewards.end-game.players.commands");
 		for (String path : cmds) {
 			String[] arg = path.split(": ");
@@ -153,7 +151,7 @@ public class RewardManager {
 					if (type.startsWith("LEATHER_")) {
 						String color = conf.getString(rewPath + "color", "");
 						if (!color.isEmpty() && itemMeta instanceof LeatherArmorMeta) {
-							((LeatherArmorMeta) itemMeta).setColor(Utils.getColorFromString(color));
+							((LeatherArmorMeta) itemMeta).setColor(getColorFromString(color));
 						}
 					}
 
@@ -189,5 +187,10 @@ public class RewardManager {
 				Debug.logConsole(Level.WARNING, "Problem occured with your item: " + e.getMessage());
 			}
 		}
+	}
+
+	private Color getColorFromString(String paramString) {
+		String[] color = paramString.split(",");
+		return Color.fromRGB(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
 	}
 }

@@ -6,18 +6,11 @@ import java.lang.reflect.Field;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.ServerVersion.Version;
-import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.Utils.Reflections;
 
-public class TabTitles {
+public abstract class TabTitles {
 
-	/**
-	 * Sends TabList to the specified player that are currently playing in the game.
-	 * 
-	 * @param player Player name to send tablist for the specified player
-	 * @param header TabList header if null sending empty line
-	 * @param footer TabList footer if null sending empty line
-	 */
-	public void sendTabTitle(Player player, String header, String footer) {
+	public static void sendTabTitle(Player player, String header, String footer) {
 		if (player == null) {
 			return;
 		}
@@ -31,9 +24,10 @@ public class TabTitles {
 		}
 
 		try {
-			Object tabHeader = Utils.getAsIChatBaseComponent(header);
-			Object tabFooter = Utils.getAsIChatBaseComponent(footer);
-			Constructor<?> titleConstructor = Utils.getNMSClass("PacketPlayOutPlayerListHeaderFooter").getConstructor();
+			Object tabHeader = Reflections.getAsIChatBaseComponent(header);
+			Object tabFooter = Reflections.getAsIChatBaseComponent(footer);
+			Constructor<?> titleConstructor = Reflections.getNMSClass("PacketPlayOutPlayerListHeaderFooter")
+					.getConstructor();
 			Object packet = titleConstructor.newInstance();
 			Field aField = null, bField = null;
 
@@ -49,7 +43,7 @@ public class TabTitles {
 
 			bField.setAccessible(true);
 			bField.set(packet, tabFooter);
-			Utils.sendPacket(player, packet);
+			Reflections.sendPacket(player, packet);
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}

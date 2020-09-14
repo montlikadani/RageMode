@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -27,7 +28,7 @@ public class HoloHolder {
 	private static File holosFile;
 	private static YamlConfiguration holosConf;
 
-	private static List<Location> holos = new ArrayList<>();
+	private static final List<Location> HOLOS = new ArrayList<>();
 
 	public static void addHolo(Location loc) {
 		if (!RageMode.getInstance().isHologramEnabled())
@@ -37,8 +38,8 @@ public class HoloHolder {
 		loc.setPitch(0f);
 		loc.setYaw(0f);
 
-		holos.add(loc);
-		holosConf.set("data.holos", holos);
+		HOLOS.add(loc);
+		holosConf.set("data.holos", HOLOS);
 
 		Configuration.saveFile(holosConf, holosFile);
 
@@ -49,8 +50,7 @@ public class HoloHolder {
 		if (!RageMode.getInstance().isHologramEnabled())
 			return;
 
-		Collection<Hologram> holos = HologramsAPI.getHolograms(RageMode.getInstance());
-		holos.forEach(Hologram::delete);
+		HologramsAPI.getHolograms(RageMode.getInstance()).forEach(Hologram::delete);
 
 		@SuppressWarnings("unchecked")
 		List<Location> loc = (List<Location>) holosConf.get("data.holos");
@@ -58,7 +58,7 @@ public class HoloHolder {
 			return;
 		}
 
-		loc.forEach(HoloHolder.holos::add);
+		loc.forEach(HoloHolder.HOLOS::add);
 		Bukkit.getOnlinePlayers().forEach(HoloHolder::showAllHolosToPlayer);
 	}
 
@@ -77,7 +77,7 @@ public class HoloHolder {
 
 		switch (RageMode.getInstance().getDatabaseHandler().getDBType()) {
 		case MYSQL:
-			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
+			CompletableFuture.supplyAsync(() -> {
 				final PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
 
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
@@ -85,10 +85,13 @@ public class HoloHolder {
 						setHologramLines(dataHologram, rpp);
 					return "Done";
 				});
+
+				return true;
 			});
+
 			break;
 		case YAML:
-			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
+			CompletableFuture.supplyAsync(() -> {
 				final PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
 
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
@@ -96,10 +99,13 @@ public class HoloHolder {
 						setHologramLines(dataHologram, rpp);
 					return "Done";
 				});
+
+				return true;
 			});
+
 			break;
 		case SQLITE:
-			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
+			CompletableFuture.supplyAsync(() -> {
 				final PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
 
 				Bukkit.getServer().getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
@@ -108,7 +114,10 @@ public class HoloHolder {
 
 					return "Done";
 				});
+
+				return true;
 			});
+
 			break;
 		default:
 			break;
@@ -117,13 +126,12 @@ public class HoloHolder {
 
 	private static void setHologramLines(Hologram hologram, PlayerPoints pp) {
 		for (String hList : RageMode.getLang().getList("hologram-list")) {
-			hList = Utils.setPlaceholders(hList, pp);
-			hologram.appendTextLine(hList);
+			hologram.appendTextLine(Utils.setPlaceholders(hList, pp));
 		}
 	}
 
 	public static void deleteHoloObjectsOfPlayer(Player player) {
-		if (!RageMode.getInstance().isHologramEnabled())
+		if (!RageMode.getInstance().isHologramEnabled() || player == null)
 			return;
 
 		Collection<Hologram> holos = HologramsAPI.getHolograms(RageMode.getInstance());
@@ -131,11 +139,11 @@ public class HoloHolder {
 	}
 
 	public static boolean deleteHologram(Hologram holo) {
-		if (!RageMode.getInstance().isHologramEnabled() || holo == null || !holos.contains(holo.getLocation()))
+		if (!RageMode.getInstance().isHologramEnabled() || holo == null || !HOLOS.contains(holo.getLocation()))
 			return false;
 
-		holos.remove(holo.getLocation());
-		holosConf.set("data.holos", holos);
+		HOLOS.remove(holo.getLocation());
+		holosConf.set("data.holos", HOLOS);
 
 		Configuration.saveFile(holosConf, holosFile);
 
@@ -151,6 +159,7 @@ public class HoloHolder {
 
 	/**
 	 * Getting the hologram around the player.
+	 * 
 	 * @param player Player
 	 * @param eyeLoc player eye location or current location
 	 * @return Hologram if found around the player
@@ -159,24 +168,23 @@ public class HoloHolder {
 		if (!RageMode.getInstance().isHologramEnabled())
 			return null;
 
-		Collection<Hologram> holos = HologramsAPI.getHolograms(RageMode.getInstance());
 		Hologram closest = null;
 		double lowestDist = Double.MAX_VALUE;
 
-		for (Hologram holo : holos) {
+		for (Hologram holo : HologramsAPI.getHolograms(RageMode.getInstance())) {
 			double dist = holo.getLocation().distance(eyeLoc ? player.getEyeLocation() : player.getLocation());
 			if (dist < lowestDist) {
 				lowestDist = dist;
 				closest = holo;
 			}
 		}
+
 		return closest;
 	}
 
 	public static void initHoloHolder() {
 		File file = new File(RageMode.getInstance().getFolder(), "holos.yml");
 		YamlConfiguration config = null;
-		holosFile = file;
 
 		if (!file.exists()) {
 			file.getParentFile().mkdirs();
@@ -194,25 +202,27 @@ public class HoloHolder {
 		} else
 			config = YamlConfiguration.loadConfiguration(file);
 
+		holosFile = file;
 		holosConf = config;
+
 		Configuration.saveFile(config, file);
 		loadHolos();
 	}
 
 	public static void showAllHolosToPlayer(Player player) {
-		if (!RageMode.getInstance().isHologramEnabled())
+		if (!RageMode.getInstance().isHologramEnabled() || player == null)
 			return;
 
 		int i = 0;
-		int imax = holos.size();
+		int imax = HOLOS.size();
 		while (i < imax) {
-			displayHoloToPlayer(player, holos.get(i));
+			displayHoloToPlayer(player, HOLOS.get(i));
 			i++;
 		}
 	}
 
 	public static void updateHolosForPlayer(Player player) {
-		if (!RageMode.getInstance().isHologramEnabled())
+		if (!RageMode.getInstance().isHologramEnabled() || player == null)
 			return;
 
 		deleteHoloObjectsOfPlayer(player);

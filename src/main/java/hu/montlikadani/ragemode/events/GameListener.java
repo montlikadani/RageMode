@@ -39,6 +39,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -88,9 +89,9 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.items.Items;
 import hu.montlikadani.ragemode.items.shop.IShop;
+import hu.montlikadani.ragemode.items.shop.LobbyShop;
 import hu.montlikadani.ragemode.items.threads.CombatAxeThread;
 import hu.montlikadani.ragemode.libs.Sounds;
-import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.scores.KilledWith;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.utils.MaterialUtil;
@@ -98,6 +99,8 @@ import hu.montlikadani.ragemode.utils.MaterialUtil;
 public class GameListener implements Listener {
 
 	private RageMode plugin;
+
+	private final LobbyShop lobbyShop = new LobbyShop();
 
 	private final Map<UUID, UUID> explosionVictims = new HashMap<>();
 	private final Map<UUID, UUID> grenadeExplosionVictims = new HashMap<>();
@@ -139,6 +142,10 @@ public class GameListener implements Listener {
 		}
 
 		pressureMinesOwner.clear();
+
+		if (event.getGame().getGameType() == GameType.APOCALYPSE) {
+			event.getPlayers().get(0).getPlayer().getWorld().setTime(event.getGame().worldTime);
+		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
@@ -194,8 +201,7 @@ public class GameListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onProjectileHit(ProjectileHitEvent event) {
 		Projectile proj = event.getEntity();
-		if (proj.getShooter() == null || !(proj.getShooter() instanceof Player)
-				|| !GameUtils.isPlayerPlaying((Player) proj.getShooter())) {
+		if (!(proj.getShooter() instanceof Player) || !GameUtils.isPlayerPlaying((Player) proj.getShooter())) {
 			return;
 		}
 
@@ -231,7 +237,7 @@ public class GameListener implements Listener {
 						return;
 					}
 
-					for (Entity entity : flash.getNearbyEntities(6D, 6D, 6D)) {
+					for (Entity entity : Utils.getNearbyEntities(flash, 6)) {
 						if (entity instanceof Player) {
 							((Player) entity).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 2));
 						}
@@ -268,7 +274,7 @@ public class GameListener implements Listener {
 
 				double x = location.getX(), y = location.getY(), z = location.getZ();
 
-				List<Entity> nears = arrow.getNearbyEntities(10, 10, 10);
+				List<Entity> nears = Utils.getNearbyEntities(arrow, 10);
 
 				arrow.getWorld().createExplosion(x, y, z, 2f, false, false);
 				arrow.remove();
@@ -340,6 +346,7 @@ public class GameListener implements Listener {
 			// Prevent player damage in lobby
 			if (victimGame.getStatus() == GameStatus.WAITING) {
 				event.setCancelled(true);
+				return;
 			}
 
 			if (event.getDamager() instanceof Player) {
@@ -348,7 +355,8 @@ public class GameListener implements Listener {
 					return; // Preventing non-playing players damaging to playing players
 				}
 
-				if (GameUtils.isPlayerInFreezeRoom(damager)) {
+				if (GameUtils.getGameByPlayer(damager).getStatus() == GameStatus.GAMEFREEZE
+						&& GameUtils.isPlayerInFreezeRoom(damager)) {
 					event.setCancelled(true);
 					return;
 				}
@@ -381,9 +389,11 @@ public class GameListener implements Listener {
 				tool = "arrow";
 			}
 
-			if (finalDamage > 0d) {
-				event.setDamage(finalDamage);
+			if (finalDamage <= 0d) {
+				return;
 			}
+
+			event.setDamage(finalDamage);
 
 			if (!tool.isEmpty()) {
 				victim.removeMetadata("killedWith", plugin);
@@ -407,22 +417,13 @@ public class GameListener implements Listener {
 		Game game = GameUtils.getGameByPlayer(victim);
 
 		// Hit player event
-		if (GameUtils.getGameByPlayer(victim).getStatus() == GameStatus.RUNNING) {
+		if (game.getStatus() == GameStatus.RUNNING) {
 			if (event.getCause() == DamageCause.FALL && !ConfigValues.isDamagePlayerFall()) {
 				event.setCancelled(true);
-				return;
 			}
-
-			if (GameUtils.isGameInFreezeRoom(game)) {
-				event.setCancelled(true);
-			}
-		} else if (GameUtils.getGameByPlayer(victim).getStatus() == GameStatus.GAMEFREEZE) {
-			// Prevent damage in game freeze
-			if (GameUtils.isGameInFreezeRoom(game)) {
-				event.setCancelled(true);
-			}
-		} else if (GameUtils.getGameByPlayer(victim).getStatus() == GameStatus.WAITING) {
-			event.setCancelled(true); // Prevent player damage in lobby
+		} else if ((game.getStatus() == GameStatus.GAMEFREEZE && GameUtils.isGameInFreezeRoom(game))
+				|| game.getStatus() == GameStatus.WAITING) {
+			event.setCancelled(true); // Prevent damage in lobby or game freeze
 		}
 	}
 
@@ -441,7 +442,7 @@ public class GameListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		Player deceased = event.getEntity();
-		if (deceased == null || !GameUtils.isPlayerPlaying(deceased)) {
+		if (!GameUtils.isPlayerPlaying(deceased)) {
 			return;
 		}
 
@@ -576,9 +577,12 @@ public class GameListener implements Listener {
 						Utils.callEvent(killed);
 					}
 				}
-			} else if (deceasedGame.getPlayerManager(deceased).canRespawn()) {
-				PlayerManager pl = deceasedGame.getPlayerManager(deceased);
-				pl.setPlayerLives(pl.getPlayerLives() + 1);
+			} else {
+				deceasedGame.getPlayerManager(deceased).ifPresent(pl -> {
+					if (pl.canRespawn()) {
+						pl.setPlayerLives(pl.getPlayerLives() + 1);
+					}
+				});
 			}
 
 			event.setDroppedExp(0);
@@ -608,7 +612,7 @@ public class GameListener implements Listener {
 		}
 
 		Game game = GameUtils.getGame(entity.getLocation());
-		if (game != null && game.getStatus() == GameStatus.RUNNING && game.getGameType() == GameType.APOCALYPSE) {
+		if (game != null && game.getGameType() == GameType.APOCALYPSE && game.getStatus() == GameStatus.RUNNING) {
 			event.setDroppedExp(0);
 			event.getDrops().clear();
 
@@ -639,7 +643,7 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	public void onEntityExplode(EntityExplodeEvent ev) {
-		if (GameAreaManager.inArea(ev.getLocation())) {
+		if ((!(ev.getEntity() instanceof Arrow) || !(ev.getEntity() instanceof Egg)) && GameAreaManager.inArea(ev.getLocation())) {
 			ev.setCancelled(true);
 		}
 	}
@@ -682,8 +686,10 @@ public class GameListener implements Listener {
 		}
 
 		// Checks if the player can respawn again in apocalypse
-		if (game.getGameType() == GameType.APOCALYPSE && !game.getPlayerManager(p).canRespawn()) {
-			sendMessage(p, RageMode.getLang().get("game.killed-by-zombies", "%amount%", ConfigValues.getPlayerLives() + 1));
+		if (game.getGameType() == GameType.APOCALYPSE && game.getPlayerManager(p).isPresent()
+				&& !game.getPlayerManager(p).get().canRespawn()) {
+			sendMessage(p,
+					RageMode.getLang().get("game.killed-by-zombies", "%amount%", ConfigValues.getPlayerLives() + 1));
 
 			// Switching to spectate
 			if (ConfigValues.isSpectatorEnabled() && game.removePlayer(p, true)) {
@@ -708,7 +714,7 @@ public class GameListener implements Listener {
 			int amountEntities = 0;
 
 			// simulate the respawn from monsters
-			for (Entity nearby : randomSpawn.getWorld().getNearbyEntities(randomSpawn, 15, 15, 15)) {
+			for (Entity nearby : Utils.getNearbyEntities(randomSpawn.getWorld(), randomSpawn, 15)) {
 				if (!(nearby instanceof Player)) {
 					amountEntities++;
 
@@ -740,19 +746,33 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent ev) {
-		if (GameUtils.isPlayerPlaying(ev.getPlayer())) {
-			if (ev.getBlock().getType() == Material.TRIPWIRE) {
-				pressureMinesOwner.put(ev.getBlock().getLocation(), ev.getPlayer().getUniqueId());
-				return;
-			}
+		Player p = ev.getPlayer();
 
-			ev.setCancelled(true);
+		if (!GameUtils.isPlayerPlaying(p)) {
+			return;
 		}
+
+		if (GameUtils.isPlayerInFreezeRoom(p)) {
+			ev.setCancelled(true);
+			return;
+		}
+
+		if (ev.getBlock().getType() == Material.TRIPWIRE) {
+			pressureMinesOwner.put(ev.getBlock().getLocation(), ev.getPlayer().getUniqueId());
+			return;
+		}
+
+		ev.setCancelled(true);
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockBreak(BlockBreakEvent event) {
 		if (GameUtils.isPlayerPlaying(event.getPlayer())) {
+			if (GameUtils.isPlayerInFreezeRoom(event.getPlayer())) {
+				event.setCancelled(true);
+				return;
+			}
+
 			if (explodeMine(event.getPlayer(), event.getBlock().getLocation())) {
 				return;
 			}
@@ -800,7 +820,7 @@ public class GameListener implements Listener {
 	@EventHandler
 	public void onProjectileLaunch(ProjectileLaunchEvent ev) {
 		Projectile proj = ev.getEntity();
-		if (proj.getShooter() == null || !(proj.getShooter() instanceof Player)) {
+		if (!(proj.getShooter() instanceof Player)) {
 			return;
 		}
 
@@ -846,12 +866,11 @@ public class GameListener implements Listener {
 			return;
 		}
 
-		final Item grenade = p.getWorld().dropItem(event.getEgg().getLocation(), new ItemStack(Material.EGG));
-
 		if (!GameAreaManager.inArea(p.getLocation())) {
-			grenade.remove();
 			return;
 		}
+
+		final Item grenade = p.getWorld().dropItem(event.getEgg().getLocation(), new ItemStack(Material.EGG));
 
 		// Cancel egg pick up
 		grenade.setPickupDelay(41);
@@ -866,7 +885,7 @@ public class GameListener implements Listener {
 		// move egg from land location to simulate bounce
 		grenade.getLocation().add(event.getEgg().getVelocity());
 
-		final List<Entity> nears = grenade.getNearbyEntities(13, 13, 13);
+		final List<Entity> nears = Utils.getNearbyEntities(grenade, 13);
 		final Location loc = grenade.getLocation();
 
 		Sounds.playSound(loc,
@@ -915,11 +934,7 @@ public class GameListener implements Listener {
 	public void onInteract(PlayerInteractEvent event) {
 		final Player p = event.getPlayer();
 
-		if (!GameUtils.isPlayerPlaying(p)) {
-			return;
-		}
-
-		if (GameUtils.isPlayerInFreezeRoom(p)) {
+		if (!GameUtils.isPlayerPlaying(p) || GameUtils.isPlayerInFreezeRoom(p)) {
 			return;
 		}
 
@@ -933,13 +948,13 @@ public class GameListener implements Listener {
 		 * possibility to change the item types from config.
 		 */
 		if (action == Action.RIGHT_CLICK_BLOCK && Items.getRageKnife() != null
-				&& hand.getType().equals(Items.getRageKnife().getItem())) {
+				&& hand.getType() == Items.getRageKnife().getItem()) {
 			event.setCancelled(true);
 		}
 
 		if (action != Action.PHYSICAL) {
 			// Combat axe throw
-			if (hand.getType().equals(Items.getCombatAxe().getItem())
+			if (hand.getType() == Items.getCombatAxe().getItem()
 					&& GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING) {
 				final Item item = p.getWorld().dropItem(p.getEyeLocation(), NMS.getItemInHand(p));
 
@@ -996,7 +1011,7 @@ public class GameListener implements Listener {
 
 					if (Items.getShopItem() != null
 							&& Items.getShopItem().getDisplayName().equals(meta.getDisplayName())) {
-						GameUtils.LOBBYSHOP.openMainPage(p);
+						lobbyShop.openMainPage(p);
 					}
 				}
 
@@ -1025,8 +1040,7 @@ public class GameListener implements Listener {
 	// To prevent removing paintings
 	@EventHandler
 	public void onHanging(HangingBreakByEntityEvent ev) {
-		if (ev.getRemover() != null && ev.getRemover() instanceof Player
-				&& GameUtils.isPlayerPlaying((Player) ev.getRemover())) {
+		if (ev.getRemover() instanceof Player && GameUtils.isPlayerPlaying((Player) ev.getRemover())) {
 			ev.setCancelled(true);
 		}
 	}
@@ -1046,52 +1060,35 @@ public class GameListener implements Listener {
 		Material t = ev.getClickedBlock().getType();
 		GameStatus status = GameUtils.getGameByPlayer(p).getStatus();
 
-		if (status == GameStatus.RUNNING || status == GameStatus.GAMEFREEZE) {
-			if (action == Action.PHYSICAL) {
-				if (t == Material.FARMLAND) {
-					ev.setUseInteractedBlock(Event.Result.DENY);
-					ev.setCancelled(true);
-				} else if (ConfigValues.isCancelRedstoneActivate()) {
-					if (MaterialUtil.isPressurePlate(t) || t == Material.STONE_PRESSURE_PLATE
-							|| t == Material.HEAVY_WEIGHTED_PRESSURE_PLATE
-							|| t == Material.LIGHT_WEIGHTED_PRESSURE_PLATE) {
-						ev.setUseInteractedBlock(Event.Result.DENY);
-						ev.setCancelled(true);
-					}
-				}
-			} else if (ConfigValues.isCancelRedstoneActivate() && action == Action.RIGHT_CLICK_BLOCK) {
-				if (MaterialUtil.isTrapdoor(t) || MaterialUtil.isButton(t)) {
-					ev.setUseInteractedBlock(Event.Result.DENY);
-					ev.setCancelled(true);
-				}
+		if (status != GameStatus.RUNNING && status != GameStatus.GAMEFREEZE) {
+			return;
+		}
 
-				if (Version.isCurrentEqualOrLower(Version.v1_12_R1)) {
-					if (t == Material.valueOf("REDSTONE_COMPARATOR") || t == Material.valueOf("REDSTONE_COMPARATOR_ON")
-							|| t == Material.valueOf("REDSTONE_COMPARATOR_OFF")) {
-						ev.setUseInteractedBlock(Event.Result.DENY);
-						ev.setCancelled(true);
-					}
-				} else if (t == Material.COMPARATOR || t == Material.REPEATER) {
-					ev.setUseInteractedBlock(Event.Result.DENY);
-					ev.setCancelled(true);
-				}
-
-				if (t == Material.LEVER || t == Material.DAYLIGHT_DETECTOR) {
-					ev.setUseInteractedBlock(Event.Result.DENY);
-					ev.setCancelled(true);
-				}
+		if (action == Action.PHYSICAL) {
+			if (t == Material.FARMLAND) {
+				ev.setUseInteractedBlock(Event.Result.DENY);
+				ev.setCancelled(true);
+			} else if (ConfigValues.isCancelRedstoneActivate() && MaterialUtil.isPressurePlate(t)) {
+				ev.setUseInteractedBlock(Event.Result.DENY);
+				ev.setCancelled(true);
 			}
-
-			if (ConfigValues.isCancelDoorUse() && action == Action.RIGHT_CLICK_BLOCK && MaterialUtil.isDoor(t)) {
+		} else if (ConfigValues.isCancelRedstoneActivate() && action == Action.RIGHT_CLICK_BLOCK) {
+			if (MaterialUtil.isTrapdoor(t) || MaterialUtil.isButton(t) || MaterialUtil.isComparator(t)
+					|| (Version.isCurrentEqualOrHigher(Version.v1_12_R1) && t == Material.REPEATER)
+					|| t == Material.LEVER || t == Material.DAYLIGHT_DETECTOR) {
 				ev.setUseInteractedBlock(Event.Result.DENY);
 				ev.setCancelled(true);
 			}
 		}
 
+		if (ConfigValues.isCancelDoorUse() && action == Action.RIGHT_CLICK_BLOCK && MaterialUtil.isDoor(t)) {
+			ev.setUseInteractedBlock(Event.Result.DENY);
+			ev.setCancelled(true);
+		}
+
 		// Just prevent usage of bush
-		if (Version.isCurrentEqualOrHigher(Version.v1_14_R1)
-				&& (action == Action.RIGHT_CLICK_BLOCK && (t == Material.SWEET_BERRY_BUSH)
-						|| t == Material.COMPOSTER)) {
+		if (Version.isCurrentEqualOrHigher(Version.v1_14_R1) && (action == Action.RIGHT_CLICK_BLOCK
+				&& (t == Material.SWEET_BERRY_BUSH || t == Material.COMPOSTER))) {
 			ev.setUseInteractedBlock(Event.Result.DENY);
 			ev.setCancelled(true);
 		}
@@ -1112,7 +1109,7 @@ public class GameListener implements Listener {
 		Player p = (Player) event.getWhoClicked();
 
 		if (GameUtils.isSpectatorPlaying(p) && event.getClickedInventory() != null
-				&& event.getClickedInventory().getType() == org.bukkit.event.inventory.InventoryType.PLAYER) {
+				&& event.getClickedInventory().getType() == InventoryType.PLAYER) {
 			if ((event.getClick() == ClickType.LEFT || event.getClick() == ClickType.MIDDLE
 					|| event.getClick() == ClickType.RIGHT)
 					&& event.getCurrentItem().isSimilar(Items.getLeaveGameItem().build())) {
@@ -1182,46 +1179,30 @@ public class GameListener implements Listener {
 			return;
 		}
 
+		Location from = event.getFrom(), to = event.getTo();
+		if (to == null) {
+			return;
+		}
+
 		if (game.getStatus() == GameStatus.RUNNING) {
+			if (to.getX() == from.getX() && to.getY() == from.getY() && to.getZ() == from.getZ()) {
+				return;
+			}
+
 			// prevent player moving outside of game area
 			Location loc = p.getLocation();
 
 			if (!GameAreaManager.inArea(loc)) {
-				org.bukkit.util.Vector vector = loc.getDirection();
-
-				if (vector.getX() == 0) {
-					vector.setX(0.01);
-				}
-
-				if (vector.getY() == 0) {
-					vector.setY(0.01);
-				}
-
-				if (vector.getZ() == 0) {
-					vector.setZ(0.01);
-				}
-
-				loc = loc.subtract(vector.multiply(1));
-				loc.setY(loc.getBlockY() + 1); // +1 to prevent player teleporting into block
-
-				p.teleport(loc);
+				event.setTo(from.subtract(loc.clone().getDirection().multiply(1)));
 				return;
 			}
 
 			// pressure mine
-			hu.montlikadani.ragemode.area.GameArea area = GameAreaManager.getAreaByLocation(p.getLocation());
-			if (area != null) {
-				area.getEntities().forEach(e -> explodeMine(null, e.getLocation()));
-			}
+			GameAreaManager.getAreaByLocation(loc).ifPresent(area -> explodeMine(p, p.getLocation()));
 		}
 
 		if (game.getStatus() == GameStatus.GAMEFREEZE && GameUtils.isGameInFreezeRoom(game)) {
 			if (!ConfigValues.isFreezePlayers()) {
-				return;
-			}
-
-			Location from = event.getFrom(), to = event.getTo();
-			if (to == null) {
 				return;
 			}
 
@@ -1237,62 +1218,59 @@ public class GameListener implements Listener {
 		}
 	}
 
-	// TODO: check when the pressure mine is exploded
-	/*@EventHandler
-	public void onExplode(BlockExplodeEvent e) {
-		explodeMine(null, e.getBlock().getLocation());
-	}*/
+	@EventHandler
+	public void onExplode(ExplosionPrimeEvent e) {
+		explodeMine(null, e.getEntity().getLocation());
+	}
 
 	private boolean explodeMine(Player p, Location currentLoc) {
 		Block b = currentLoc.getBlock();
 
-		if (b.getRelative(BlockFace.DOWN).getType().equals(Material.TRIPWIRE)
-				|| b.getType().equals(Material.TRIPWIRE)) {
-			org.bukkit.World w = currentLoc.getWorld();
-			double x = currentLoc.getX(),
-					y = currentLoc.getY(),
-					z = currentLoc.getZ();
-
-			Collection<Entity> nears = w.getNearbyEntities(currentLoc, 10, 10, 10);
-			Location explodeLoc = new Location(w, x, y + 1, z);
-
-			explodeLoc.getWorld().createExplosion(x, y + 1, z, 4f, false, false);
-			b.setType(Material.AIR);
-
-			if (GameUtils.getGame(currentLoc) != null) {
-				for (final Entity near : nears) {
-					if (explosionVictims.containsKey(near.getUniqueId())) {
-						explosionVictims.remove(near.getUniqueId());
-					}
-
-					if (GameUtils.getGame(currentLoc).getGameType() == GameType.APOCALYPSE
-							&& pressureMinesOwner.containsKey(currentLoc)) {
-						explosionVictims.put(near.getUniqueId(), pressureMinesOwner.get(currentLoc));
-						continue;
-					}
-
-					if (p != null) {
-						explosionVictims.put(near.getUniqueId(), p.getUniqueId());
-					} else {
-						nears.stream().filter(n -> !(n instanceof Player))
-								.forEach(n -> explosionVictims.put(near.getUniqueId(), n.getUniqueId()));
-					}
-
-					if (near instanceof Player) {
-						near.removeMetadata("killedWith", plugin);
-						near.setMetadata("killedWith", new FixedMetadataValue(plugin, "explosion"));
-					}
-				}
-			}
-
-			if (pressureMinesOwner.containsKey(currentLoc)) {
-				pressureMinesOwner.remove(currentLoc);
-			}
-
-			return true;
+		if (b.getRelative(BlockFace.DOWN).getType() != Material.TRIPWIRE && b.getType() != Material.TRIPWIRE) {
+			return false;
 		}
 
-		return false;
+		org.bukkit.World w = currentLoc.getWorld();
+		double x = currentLoc.getX(),
+				y = currentLoc.getY(),
+				z = currentLoc.getZ();
+
+		Collection<Entity> nears = Utils.getNearbyEntities(w, currentLoc, 10);
+
+		Location explodeLoc = new Location(w, x, y + 1, z);
+		explodeLoc.getWorld().createExplosion(x, y + 1, z, 4f, false, false);
+		b.setType(Material.AIR);
+
+		if (GameUtils.getGame(currentLoc) != null) {
+			for (final Entity near : nears) {
+				if (explosionVictims.containsKey(near.getUniqueId())) {
+					explosionVictims.remove(near.getUniqueId());
+				}
+
+				if (GameUtils.getGame(currentLoc).getGameType() == GameType.APOCALYPSE
+						&& pressureMinesOwner.containsKey(currentLoc)) {
+					explosionVictims.put(near.getUniqueId(), pressureMinesOwner.get(currentLoc));
+					continue;
+				}
+
+				if (p != null) {
+					explosionVictims.put(near.getUniqueId(), p.getUniqueId());
+				} else if (near instanceof Player) {
+					explosionVictims.put(near.getUniqueId(), near.getUniqueId());
+				}
+
+				if (near instanceof Player) {
+					near.removeMetadata("killedWith", plugin);
+					near.setMetadata("killedWith", new FixedMetadataValue(plugin, "explosion"));
+				}
+			}
+		}
+
+		if (pressureMinesOwner.containsKey(currentLoc)) {
+			pressureMinesOwner.remove(currentLoc);
+		}
+
+		return true;
 	}
 
 	private void setTrails(final Projectile proj) {

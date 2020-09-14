@@ -72,11 +72,7 @@ public class ItemHandler implements Cloneable {
 	}
 
 	public ItemHandler setItem(String name) {
-		if (name == null || name.isEmpty()) {
-			return null;
-		}
-
-		return setItem(Material.valueOf(name.toUpperCase()));
+		return (name == null || name.isEmpty()) ? null : setItem(Material.valueOf(name.toUpperCase()));
 	}
 
 	public ItemHandler setItem(Material item) {

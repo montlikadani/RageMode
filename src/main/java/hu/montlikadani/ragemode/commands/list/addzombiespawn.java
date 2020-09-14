@@ -41,7 +41,7 @@ public class addzombiespawn implements ICommand {
 			return false;
 		}
 
-		if (!GameUtils.getGame(args[1]).getGameType().equals(GameType.APOCALYPSE)) {
+		if (GameUtils.getGame(args[1]).getGameType() != GameType.APOCALYPSE) {
 			return false;
 		}
 

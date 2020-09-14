@@ -1,5 +1,10 @@
 package hu.montlikadani.ragemode;
 
+import org.bukkit.Color;
+import org.bukkit.Effect;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.Particle.DustOptions;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -130,5 +135,22 @@ public class NMS {
 		}
 
 		return s;
+	}
+
+	public static void spawnParticle(Particle particle, Object effect, Location loc, int count) {
+		if (Version.isCurrentLower(Version.v1_9_R1)) {
+			loc.getWorld().playEffect(loc, (Effect) effect, 1);
+		} else if (particle == Particle.REDSTONE) {
+			DustOptions dustOptions = new DustOptions(Color.RED, 2);
+			loc.getWorld().spawnParticle(particle, loc, count, dustOptions);
+		} else if (particle == Particle.ITEM_CRACK) {
+			ItemStack itemCrackData = new ItemStack(loc.getBlock().getType());
+			loc.getWorld().spawnParticle(particle, loc, count, itemCrackData);
+		} else if (particle == Particle.BLOCK_CRACK || particle == Particle.BLOCK_DUST
+				|| particle == Particle.FALLING_DUST) {
+			loc.getWorld().spawnParticle(particle, loc, count, loc.getBlock().getType().createBlockData());
+		} else {
+			loc.getWorld().spawnParticle(particle, loc, count);
+		}
 	}
 }

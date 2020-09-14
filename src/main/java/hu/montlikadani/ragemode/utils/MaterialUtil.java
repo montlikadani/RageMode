@@ -33,6 +33,9 @@ public class MaterialUtil {
 			add(getMat("WARPED_PRESSURE_PLATE"));
 			add(getMat("POLISHED_BLACKSTONE_PRESSURE_PLATE"));
 			add(getMat("CRIMSON_PRESSURE_PLATE"));
+			add(getMat("STONE_PRESSURE_PLATE"));
+			add(getMat("HEAVY_WEIGHTED_PRESSURE_PLATE"));
+			add(getMat("LIGHT_WEIGHTED_PRESSURE_PLATE"));
 		}
 	};
 	private static Set<Material> TRAPDOORS = new HashSet<Material>() {
@@ -78,6 +81,14 @@ public class MaterialUtil {
 			add(getMat("CRIMSON_DOOR"));
 		}
 	};
+	private static Set<Material> COMPARATORS = new HashSet<Material>() {
+		{
+			add(getMat("REDSTONE_COMPARATOR"));
+			add(getMat("REDSTONE_COMPARATOR_ON"));
+			add(getMat("REDSTONE_COMPARATOR_OFF"));
+			add(getMat("COMPARATOR"));
+		}
+	};
 
 	public static boolean isWallSign(Material mat) {
 		return WALL_SIGNS.contains(mat);
@@ -97,6 +108,10 @@ public class MaterialUtil {
 
 	public static boolean isDoor(Material mat) {
 		return DOORS.contains(mat);
+	}
+
+	public static boolean isComparator(Material mat) {
+		return COMPARATORS.contains(mat);
 	}
 
 	private static Material getMat(String name) {

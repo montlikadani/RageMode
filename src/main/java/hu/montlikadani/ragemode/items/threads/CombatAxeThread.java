@@ -48,7 +48,7 @@ public class CombatAxeThread {
 								victim.removeMetadata("killedWith", RageMode.getInstance());
 								victim.setMetadata("killedWith",
 										new FixedMetadataValue(RageMode.getInstance(), "combataxe"));
-							} else {
+							} else if (entity instanceof LivingEntity) {
 								((LivingEntity) entity).damage(25D, player);
 							}
 

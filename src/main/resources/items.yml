@@ -27,6 +27,7 @@ gameitems:
   rageArrow:
     name: "&7Rage Arrow"
     slot: 9
+    damage: 3.35
   grenade:
     name: "&7Grenade"
     # The name of the egg hologram appears when the player throws it
@@ -152,7 +153,8 @@ lobbyitems:
                 item: paper
                 name: "&bInfo"
                 lore:
-                - "&7The potion effects will automatically apply when the game started."
+                - "&7The potion effects will automatically"
+                - "&7apply when the game started."
               slot-8:
                 item: diamond
                 name: "&6Money/Points"
@@ -177,7 +179,8 @@ lobbyitems:
                   points: 50
                 trail: flame
                 lore:
-                - "&7Giving &cflame&7 trail to the arrow when the game started."
+                - "&7Giving &cflame&7 trail to the"
+                - "&7arrow when the game started."
                 - "&eCost:&r %cost%"
                 - "&eRequired points:&r %required_points%"
                 - "%activated%"
@@ -190,7 +193,8 @@ lobbyitems:
                   points: 50
                 trail: lava
                 lore:
-                - "&7Giving &6lava&7 trail to the arrow when the game started."
+                - "&7Giving &6lava&7 trail"
+                - "&7to the arrow when the game started."
                 - "&eCost:&r %cost%"
                 - "&eRequired points:&r %required_points%"
                 - "%activated%"
@@ -203,7 +207,8 @@ lobbyitems:
                   points: 50
                 trail: smoke_normal
                 lore:
-                - "&7Giving smoke trail to the arrow when the game started."
+                - "&7Giving smoke trail"
+                - "&7to the arrow when the game started."
                 - "&eCost:&r %cost%"
                 - "&eRequired points:&r %required_points%"
                 - "%activated%"
@@ -216,7 +221,8 @@ lobbyitems:
                   points: 50
                 trail: portal
                 lore:
-                - "&7Giving &bportal&7 trail to the arrow when the game started."
+                - "&7Giving &bportal&7 trail"
+                - "&7to the arrow when the game started."
                 - "&eCost:&r %cost%"
                 - "&eRequired points:&r %required_points%"
                 - "%activated%"

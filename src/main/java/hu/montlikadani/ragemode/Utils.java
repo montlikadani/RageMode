@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode;
 
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -10,8 +11,8 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.ServerVersion.Version;
@@ -48,7 +49,7 @@ public class Utils {
 
 	/**
 	 * Calls an event.
-	 * <p>If the event is Asynchronous then delays the calling, preventing an error.
+	 * <p>If the event is Asynchronous then runs in the main thread, preventing an error.
 	 * @param event BaseEvent
 	 */
 	public static void callEvent(BaseEvent event) {
@@ -66,6 +67,41 @@ public class Utils {
 
 	public static void teleportSync(Player player, Location loc) {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> player.teleport(loc));
+	}
+
+	public static Collection<Entity> getNearbyEntities(org.bukkit.World w, Location loc, int radius) {
+		return Version.isCurrentHigher(Version.v1_8_R1) ? w.getNearbyEntities(loc, radius, radius, radius)
+				: getNearbyList(loc, radius);
+	}
+
+	public static List<Entity> getNearbyEntities(org.bukkit.entity.Entity e, int radius) {
+		return Version.isCurrentHigher(Version.v1_8_R1) ? e.getNearbyEntities(radius, radius, radius)
+				: getNearbyList(e.getLocation(), radius);
+	}
+
+	private static List<Entity> getNearbyList(Location loc, int radius) {
+		int chunkRadius = radius < 16 ? 1 : radius / 16;
+		List<Entity> radiusEntities = new java.util.ArrayList<>();
+
+		for (int chunkX = 0 - chunkRadius; chunkX <= chunkRadius; chunkX++) {
+			for (int chunkZ = 0 - chunkRadius; chunkZ <= chunkRadius; chunkZ++) {
+				int x = (int) loc.getX(), y = (int) loc.getY(), z = (int) loc.getZ();
+
+				for (Entity e : new Location(loc.getWorld(), x + chunkX * 16, y, z + chunkZ * 16).getChunk()
+						.getEntities()) {
+					if (!(loc.getWorld().getName().equalsIgnoreCase(e.getWorld().getName()))) {
+						continue;
+					}
+
+					if (e.getLocation().distanceSquared(loc) <= radius * radius
+							&& e.getLocation().getBlock() != loc.getBlock()) {
+						radiusEntities.add(e);
+					}
+				}
+			}
+		}
+
+		return radiusEntities;
 	}
 
 	/**
@@ -192,56 +228,6 @@ public class Utils {
 	}
 
 	/**
-	 * Sends the packet to the given player
-	 * @param player Player
-	 * @param packet Packet name
-	 * @throws Exception if something wrong
-	 */
-	public static void sendPacket(Player player, Object packet) throws Exception {
-		Object handle = player.getClass().getMethod("getHandle").invoke(player);
-		Object playerConnection = handle.getClass().getField("playerConnection").get(handle);
-		playerConnection.getClass().getMethod("sendPacket", getNMSClass("Packet")).invoke(playerConnection, packet);
-	}
-
-	/**
-	 * Gets the NMS class with packet name
-	 * @param name Packet class
-	 * @throws ClassNotFoundException if the given class name not found
-	 * @return Returns class name from the current version
-	 */
-	public static Class<?> getNMSClass(String name) throws ClassNotFoundException {
-		return Class.forName("net.minecraft.server." + getClassVersion() + "." + name);
-	}
-
-	/**
-	 * Invoke the IChatBaseComponent
-	 * @param name Text to be invoke
-	 * @return A json format
-	 * @throws Exception if something wrong
-	 */
-	public static Object getAsIChatBaseComponent(String name) throws Exception {
-		Class<?> iChatBaseComponent = getNMSClass("IChatBaseComponent");
-		if (Version.isCurrentEqualOrLower(Version.v1_8_R2)) {
-			Class<?> chatSerializer = getNMSClass("ChatSerializer");
-			Method m = chatSerializer.getMethod("a", String.class);
-			Object t = iChatBaseComponent.cast(m.invoke(chatSerializer, "{\"text\":\"" + name + "\"}"));
-			return t;
-		}
-
-		Class<?> declaredClass = iChatBaseComponent.getDeclaredClasses()[0];
-		Method m = declaredClass.getMethod("a", String.class);
-		return m.invoke(iChatBaseComponent, "{\"text\":\"" + name + "\"}");
-	}
-
-	/**
-	 * Gets the current class mc version.
-	 * @return version
-	 */
-	public static String getClassVersion() {
-		return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-	}
-
-	/**
 	 * Gets the Bukkit version
 	 * <p>Example: 1.8, 1.13.2
 	 * @return Bukkit version
@@ -294,16 +280,6 @@ public class Utils {
 	}
 
 	/**
-	 * Gets the Bukkit RGB color from string
-	 * @param paramString String
-	 * @return Bukkit RGB color from string
-	 */
-	public static Color getColorFromString(String paramString) {
-		String[] color = paramString.split(",");
-		return Color.fromRGB(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
-	}
-
-	/**
 	 * Check if number is an integer
 	 * @param str Number as string
 	 * @return true if the number as double
@@ -331,5 +307,53 @@ public class Utils {
 		}
 
 		return true;
+	}
+
+	public abstract static class Reflections {
+
+		public static void sendPacket(Player player, Object packet) throws Exception {
+			Object handle = player.getClass().getMethod("getHandle").invoke(player);
+			Object playerConnection = handle.getClass().getField("playerConnection").get(handle);
+			playerConnection.getClass().getMethod("sendPacket", getNMSClass("Packet")).invoke(playerConnection, packet);
+		}
+
+		public static Class<?> getNMSClass(String name) throws ClassNotFoundException {
+			return Class.forName("net.minecraft.server." + getClassVersion() + "." + name);
+		}
+
+		public static Object getAsIChatBaseComponent(String name) throws Exception {
+			Class<?> iChatBaseComponent = getNMSClass("IChatBaseComponent");
+			if (Version.isCurrentEqualOrLower(Version.v1_8_R2)) {
+				Class<?> chatSerializer = getNMSClass("ChatSerializer");
+				Method m = chatSerializer.getMethod("a", String.class);
+				Object t = iChatBaseComponent.cast(m.invoke(chatSerializer, "{\"text\":\"" + name + "\"}"));
+				return t;
+			}
+
+			Class<?> declaredClass = iChatBaseComponent.getDeclaredClasses()[0];
+			Method m = declaredClass.getMethod("a", String.class);
+			return m.invoke(iChatBaseComponent, "{\"text\":\"" + name + "\"}");
+		}
+
+		public static String getClassVersion() {
+			return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+		}
+
+		public static int getCurrentJavaVersion() {
+			String currentVersion = System.getProperty("java.version");
+			if (currentVersion.contains("_")) {
+				currentVersion = currentVersion.split("_")[0];
+			}
+
+			currentVersion = currentVersion.replaceAll("[^\\d]|_", "");
+
+			for (int i = 8; i <= 18; i++) {
+				if (currentVersion.contains(Integer.toString(i))) {
+					return i;
+				}
+			}
+
+			return 0;
+		}
 	}
 }

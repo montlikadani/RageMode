@@ -35,7 +35,7 @@ public class MainPage implements IShop {
 
 	@Override
 	public Optional<ShopItem> getShopItem(ItemStack item) {
-		return Optional.ofNullable(items.stream().filter(si -> si.getItem().isSimilar(item)).findFirst().orElse(null));
+		return items.stream().filter(si -> si.getItem().isSimilar(item)).findFirst();
 	}
 
 	@Override

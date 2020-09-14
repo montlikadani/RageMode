@@ -32,15 +32,17 @@ public class ReJoinDelay {
 	}
 
 	public static void setTime(OfflinePlayer p, int hour, int minute, int second) {
+		if (p == null || PLAYERTIMES.containsKey(p)) {
+			return;
+		}
+
 		Calendar cal = getCal(new Date());
 
 		cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) + hour);
 		cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE) + minute);
 		cal.set(Calendar.SECOND, cal.get(Calendar.SECOND) + second);
 
-		if (p != null && !PLAYERTIMES.containsKey(p)) {
-			PLAYERTIMES.put(p, cal.getTimeInMillis());
-		}
+		PLAYERTIMES.put(p, cal.getTimeInMillis());
 	}
 
 	public static String format(Long ticks) {
@@ -121,7 +123,7 @@ public class ReJoinDelay {
 	}
 
 	public static boolean isValid(Player pl, Long time) {
-		return PLAYERTIMES.containsKey(pl) && time != null && time > System.currentTimeMillis() ? true : false;
+		return PLAYERTIMES.containsKey(pl) && time != null && time > System.currentTimeMillis();
 	}
 
 	public static Long getTimeByPlayer(Player p) {

@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.area;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -87,14 +88,8 @@ public class GameAreaManager {
 	 * @param loc {@link Location}
 	 * @return {@link GameArea}
 	 */
-	public static GameArea getAreaByLocation(Location loc) {
-		for (GameArea area : GAMEAREAS.values()) {
-			if (area.inArea(loc)) {
-				return area;
-			}
-		}
-
-		return null;
+	public static Optional<GameArea> getAreaByLocation(Location loc) {
+		return GAMEAREAS.values().stream().filter(area -> area.inArea(loc)).findFirst();
 	}
 
 	/**
@@ -103,7 +98,7 @@ public class GameAreaManager {
 	 * @return true if yes
 	 */
 	public static boolean inArea(Location loc) {
-		return getAreaByLocation(loc) != null;
+		return getAreaByLocation(loc).isPresent();
 	}
 
 	/**

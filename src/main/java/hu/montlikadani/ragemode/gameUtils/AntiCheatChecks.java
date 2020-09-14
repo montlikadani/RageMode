@@ -21,7 +21,7 @@ public class AntiCheatChecks {
 
 		PLAYERS.add(uuid);
 
-		Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> PLAYERS.remove(uuid), 8L);
+		Bukkit.getScheduler().runTaskLater(RageMode.getInstance(), () -> PLAYERS.remove(uuid), 8L);
 		return false;
 	}
 }

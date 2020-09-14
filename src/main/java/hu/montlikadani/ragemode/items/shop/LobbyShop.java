@@ -91,7 +91,7 @@ public class LobbyShop implements Listener {
 		}
 
 		removeShop(player);
-		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+		Bukkit.getScheduler().runTaskLater(plugin, () -> {
 			player.openInventory(next.getInventory());
 			shops.put(player, next);
 		}, 2L);
@@ -173,7 +173,7 @@ public class LobbyShop implements Listener {
 		}
 
 		shops.get(player).getShopItem(currentItem).ifPresent(shopItem -> {
-			if (!shopItem.getItem().equals(currentItem)) {
+			if (shopItem.getItem().getType() != currentItem.getType()) {
 				return;
 			}
 
@@ -332,8 +332,7 @@ public class LobbyShop implements Listener {
 			if (Version.isCurrentLower(Version.v1_9_R1)) {
 				try {
 					for (Effect effect : Effect.values()) {
-						Object effectType = Effect.class.getDeclaredClasses()[0].getDeclaredField("PARTICLE")
-								.get(effect);
+						Object effectType = Effect.class.getDeclaredClasses()[0].getDeclaredField("PARTICLE").get(effect);
 						if (effect.toString().equalsIgnoreCase(name)
 								&& effect.getClass().getDeclaredMethod("getType").invoke(effect) == effectType) {
 							particle = effect;

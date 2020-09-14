@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.Utils.Reflections;
 
 public class ActionBar {
 
@@ -28,20 +28,24 @@ public class ActionBar {
 			Object craftPlayer = craftPlayerClass.cast(player);
 			Object packet;
 
-			Class<?> packetPlayOutChatClass = Utils.getNMSClass("PacketPlayOutChat"),
-					packetClass = Utils.getNMSClass("Packet"),
-					chatComponentTextClass = Utils.getNMSClass("ChatComponentText"),
-					iChatBaseComponentClass = Utils.getNMSClass("IChatBaseComponent");
+			Class<?> packetPlayOutChatClass = Reflections.getNMSClass("PacketPlayOutChat"),
+					packetClass = Reflections.getNMSClass("Packet"),
+					chatComponentTextClass = Reflections.getNMSClass("ChatComponentText"),
+					iChatBaseComponentClass = Reflections.getNMSClass("IChatBaseComponent");
 
 			Object chatCompontentText = chatComponentTextClass.getConstructor(String.class).newInstance(message);
 			try {
-				Class<?> chatMessageTypeClass = Utils.getNMSClass("ChatMessageType");
+				Class<?> chatMessageTypeClass = Reflections.getNMSClass("ChatMessageType");
 				Object chatMessageType = null;
 				for (Object obj : chatMessageTypeClass.getEnumConstants()) {
 					if (obj.toString().equals("GAME_INFO") || obj.toString().equalsIgnoreCase("ACTION_BAR")) {
 						chatMessageType = obj;
 						break;
 					}
+				}
+
+				if (chatMessageType == null) {
+					return;
 				}
 
 				try {

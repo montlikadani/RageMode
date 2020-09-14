@@ -6,10 +6,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 
@@ -24,6 +27,7 @@ import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameLobby;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.gameUtils.modules.TabTitles;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class Game {
@@ -33,10 +37,12 @@ public class Game {
 
 	private GameStatus status = GameStatus.STOPPED;
 
-	private final Map<Player, PlayerManager> players = new HashMap<>(), specPlayer = new HashMap<>();
+	private final Map<UUID, PlayerManager> players = new HashMap<>(), specPlayer = new HashMap<>();
 
 	private boolean running = false;
 	private LobbyTimer lobbyTimer;
+
+	public long worldTime = 0L;
 
 	private final Set<ActionMessengers> acList = new HashSet<>();
 
@@ -78,7 +84,7 @@ public class Game {
 	 * Get the players who added to the list.
 	 * @return Modifiable map, {@link #players}
 	 */
-	public Map<Player, PlayerManager> getPlayers() {
+	public Map<UUID, PlayerManager> getPlayers() {
 		return players;
 	}
 
@@ -86,7 +92,7 @@ public class Game {
 	 * Gets the spectator players who added to the list.
 	 * @return Modifiable map, {@link #specPlayer}
 	 */
-	public Map<Player, PlayerManager> getSpectatorPlayers() {
+	public Map<UUID, PlayerManager> getSpectatorPlayers() {
 		return specPlayer;
 	}
 
@@ -96,7 +102,7 @@ public class Game {
 	 * @return true if in the list
 	 */
 	public boolean isSpectatorInList(Player p) {
-		return specPlayer.containsKey(p);
+		return specPlayer.containsKey(p.getUniqueId());
 	}
 
 	/**
@@ -105,7 +111,7 @@ public class Game {
 	 * @return true if in the list
 	 */
 	public boolean isPlayerInList(Player p) {
-		return players.containsKey(p);
+		return players.containsKey(p.getUniqueId());
 	}
 
 	public boolean addPlayer(Player player) {
@@ -134,7 +140,7 @@ public class Game {
 				minPlayers = GetGames.getMinPlayers(name);
 
 		if (players.size() < maxPlayers) {
-			players.put(player, pm);
+			players.put(player.getUniqueId(), pm);
 
 			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
 
@@ -161,12 +167,12 @@ public class Game {
 			playerToKick.setMetadata("Leaving", new FixedMetadataValue(RageMode.getInstance(), true));
 
 			Utils.clearPlayerInventory(playerToKick);
-			getPlayerManager(playerToKick).addBackTools();
-			players.remove(playerToKick);
+			getPlayerManager(playerToKick).ifPresent(PlayerManager::addBackTools);
+			players.remove(playerToKick.getUniqueId());
 
 			playerToKick.sendMessage(RageMode.getLang().get("game.player-kicked-for-vip"));
 
-			players.put(player, pm);
+			players.put(player.getUniqueId(), pm);
 
 			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
 
@@ -184,7 +190,7 @@ public class Game {
 
 	public boolean addSpectatorPlayer(Player player) {
 		PlayerManager pm = new PlayerManager(player, name);
-		specPlayer.put(player, pm);
+		specPlayer.put(player.getUniqueId(), pm);
 
 		if (!ConfigValues.isBungee()) {
 			pm.storePlayerTools(true);
@@ -205,12 +211,11 @@ public class Game {
 		}
 
 		Utils.clearPlayerInventory(player);
-		getSpectatorPlayerManager(player).addBackTools(true);
+		getSpectatorPlayerManager(player).ifPresent(p -> p.addBackTools(true));
 
 		Utils.callEvent(new SpectatorLeaveGameEvent(this, player));
 
-		specPlayer.remove(player);
-		return true;
+		return specPlayer.remove(player.getUniqueId()) != null;
 	}
 
 	public boolean removePlayer(final Player player) {
@@ -223,15 +228,18 @@ public class Game {
 			return false;
 		}
 
-		hu.montlikadani.ragemode.gameUtils.StorePlayerStuffs oldStuffs = getPlayerManager(player).getStorePlayer();
+		hu.montlikadani.ragemode.gameUtils.StorePlayerStuffs oldStuffs = null;
+		if (getPlayerManager(player).isPresent()) {
+			oldStuffs = getPlayerManager(player).get().getStorePlayer();
+		}
 
 		Utils.clearPlayerInventory(player);
 		if (!switchToSpec) {
-			getPlayerManager(player).addBackTools();
+			getPlayerManager(player).ifPresent(PlayerManager::addBackTools);
 		}
 
 		acList.remove(removePlayerSynced(player));
-		players.remove(player);
+		players.remove(player.getUniqueId());
 
 		if (!player.isCustomNameVisible()) {
 			player.setCustomNameVisible(true);
@@ -244,8 +252,12 @@ public class Game {
 
 		if (switchToSpec) {
 			PlayerManager pm = new PlayerManager(player, name);
-			pm.storeFrom(oldStuffs);
-			specPlayer.put(player, pm);
+
+			if (oldStuffs != null) {
+				pm.storeFrom(oldStuffs);
+			}
+
+			specPlayer.put(player.getUniqueId(), pm);
 		}
 
 		return true;
@@ -260,7 +272,7 @@ public class Game {
 		for (ActionMessengers action : acList) {
 			if (action.getPlayer().equals(player)) {
 				action.getScoreboard().remove(player);
-				action.getTabTitles().sendTabTitle(player, "", "");
+				TabTitles.sendTabTitle(player, "", "");
 				action.getScoreTeam().remove();
 				return action;
 			}
@@ -333,9 +345,9 @@ public class Game {
 	public boolean hasRoomForVIP() {
 		int vipsInGame = 0;
 
-		for (Entry<Player, PlayerManager> players : players.entrySet()) {
+		for (Entry<UUID, PlayerManager> players : players.entrySet()) {
 			if (players.getValue().getGameName().equalsIgnoreCase(name)
-					&& players.getKey().hasPermission("ragemode.vip")) {
+					&& Bukkit.getPlayer(players.getKey()).hasPermission("ragemode.vip")) {
 				vipsInGame++;
 			}
 		}
@@ -354,9 +366,10 @@ public class Game {
 	public Player getPlayer(String name) {
 		Validate.notEmpty(name, "Name can't be empty/null");
 
-		for (Entry<Player, PlayerManager> players : players.entrySet()) {
-			if (players.getKey().getName().equalsIgnoreCase(name)) {
-				return players.getKey();
+		for (UUID uuid : players.keySet()) {
+			Player player = Bukkit.getPlayer(uuid);
+			if (player != null && player.getName().equalsIgnoreCase(name)) {
+				return player;
 			}
 		}
 
@@ -371,9 +384,10 @@ public class Game {
 	public Player getSpectatorPlayer(String name) {
 		Validate.notEmpty(name, "Name can't be empty/null");
 
-		for (Entry<Player, PlayerManager> specs : specPlayer.entrySet()) {
-			if (specs.getKey().getName().equalsIgnoreCase(name)) {
-				return specs.getKey();
+		for (UUID uuid : specPlayer.keySet()) {
+			Player specs = Bukkit.getPlayer(uuid);
+			if (specs != null && specs.getName().equalsIgnoreCase(name)) {
+				return specs;
 			}
 		}
 
@@ -386,15 +400,8 @@ public class Game {
 	 */
 	public List<PlayerManager> getAllPlayers() {
 		List<PlayerManager> list = new ArrayList<>();
-
-		for (Entry<Player, PlayerManager> players : players.entrySet()) {
-			list.add(players.getValue());
-		}
-
-		for (Entry<Player, PlayerManager> players : specPlayer.entrySet()) {
-			list.add(players.getValue());
-		}
-
+		players.values().forEach(list::add);
+		specPlayer.values().forEach(list::add);
 		return list;
 	}
 
@@ -403,13 +410,7 @@ public class Game {
 	 * @return list of {@link PlayerManager}
 	 */
 	public List<PlayerManager> getPlayersFromList() {
-		List<PlayerManager> list = new ArrayList<>();
-
-		for (Entry<Player, PlayerManager> players : players.entrySet()) {
-			list.add(players.getValue());
-		}
-
-		return list;
+		return new ArrayList<>(players.values());
 	}
 
 	/**
@@ -417,13 +418,7 @@ public class Game {
 	 * @return list of {@link PlayerManager}
 	 */
 	public List<PlayerManager> getSpectatorPlayersFromList() {
-		List<PlayerManager> list = new ArrayList<>();
-
-		for (Entry<Player, PlayerManager> players : specPlayer.entrySet()) {
-			list.add(players.getValue());
-		}
-
-		return list;
+		return new ArrayList<>(specPlayer.values());
 	}
 
 	/**
@@ -431,10 +426,10 @@ public class Game {
 	 * @param p Spectator player
 	 * @return {@link PlayerManager} by spectator player
 	 */
-	public PlayerManager getSpectatorPlayerManager(Player p) {
+	public Optional<PlayerManager> getSpectatorPlayerManager(Player p) {
 		Validate.notNull(p, "Player can't be null!");
 
-		return specPlayer.get(p);
+		return Optional.ofNullable(specPlayer.get(p.getUniqueId()));
 	}
 
 	/**
@@ -442,10 +437,10 @@ public class Game {
 	 * @param p Player
 	 * @return {@link PlayerManager} by player
 	 */
-	public PlayerManager getPlayerManager(Player p) {
+	public Optional<PlayerManager> getPlayerManager(Player p) {
 		Validate.notNull(p, "Player can't be null!");
 
-		return players.get(p);
+		return Optional.ofNullable(players.get(p.getUniqueId()));
 	}
 
 	public LobbyTimer getLobbyTimer() {

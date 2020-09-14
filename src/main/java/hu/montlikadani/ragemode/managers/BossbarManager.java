@@ -63,11 +63,7 @@ public class BossbarManager {
 	public void showBossbar(final Player p, int secAfterRemove) {
 		Validate.notNull(p, "Player can't be null!");
 
-		if (!bossbarTask.containsKey(p)) {
-			return;
-		}
-
-		final BossBar boss = bossbarTask.get(p);
+		final BossBar boss = bossbarTask.getOrDefault(p, null);
 		if (boss == null) {
 			return;
 		}
@@ -100,18 +96,16 @@ public class BossbarManager {
 	public void removeBossbar(Player p) {
 		Validate.notNull(p, "Player can't be null!");
 
-		if (bossbarTask.containsKey(p)) {
-			BossBar boss = bossbarTask.get(p);
-			if (boss == null) {
-				return;
-			}
-
-			if (boss.getPlayers().contains(p)) {
-				boss.removePlayer(p);
-			}
-
-			boss.setVisible(false);
-			bossbarTask.remove(p);
+		BossBar boss = bossbarTask.getOrDefault(p, null);
+		if (boss == null) {
+			return;
 		}
+
+		if (boss.getPlayers().contains(p)) {
+			boss.removePlayer(p);
+		}
+
+		boss.setVisible(false);
+		bossbarTask.remove(p);
 	}
 }

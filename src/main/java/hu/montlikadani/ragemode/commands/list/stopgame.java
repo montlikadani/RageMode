@@ -3,7 +3,9 @@ package hu.montlikadani.ragemode.commands.list;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -65,10 +67,12 @@ public class stopgame implements ICommand {
 				g.removePlayer(player);
 			}
 
-			for (Iterator<Entry<Player, PlayerManager>> it = g.getSpectatorPlayers().entrySet().iterator(); it
+			for (Iterator<Entry<UUID, PlayerManager>> it = g.getSpectatorPlayers().entrySet().iterator(); it
 					.hasNext();) {
-				Player pl = it.next().getKey();
-				g.removeSpectatorPlayer(pl);
+				Player pl = Bukkit.getPlayer(it.next().getKey());
+				if (pl != null) {
+					g.removeSpectatorPlayer(pl);
+				}
 			}
 
 			g.getActionMessengers().clear();

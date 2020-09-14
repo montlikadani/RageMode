@@ -26,11 +26,7 @@ public class MySQLDB {
 
 	public static void loadPlayerStatistics() {
 		MySQLConnect mySQL = DatabaseHandler.getMySQL();
-		if (!mySQL.isConnected()) {
-			return;
-		}
-
-		if (!mySQL.isValid()) {
+		if (!mySQL.isConnected() || !mySQL.isValid()) {
 			return;
 		}
 

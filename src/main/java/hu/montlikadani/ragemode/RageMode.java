@@ -2,13 +2,13 @@ package hu.montlikadani.ragemode;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
-import java.util.stream.Stream;
 
 import org.bukkit.Material;
 import org.bukkit.event.HandlerList;
@@ -84,7 +84,7 @@ public class RageMode extends JavaPlugin {
 		instance = this;
 		serverVersion = new ServerVersion();
 
-		if (Version.isCurrentLower(Version.v1_8_R1)) {
+		if (serverVersion.getVersion().isLower(Version.v1_8_R1)) {
 			getLogger().log(Level.SEVERE,
 					"[RageMode] This version is not supported by this plugin! Please use larger 1.8+");
 			getManager().disablePlugin(this);
@@ -98,7 +98,7 @@ public class RageMode extends JavaPlugin {
 			isSpigot = false;
 		}
 
-		if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
+		if (serverVersion.getVersion().isEqualOrLower(Version.v1_8_R3))
 			getLogger().log(Level.INFO,
 					"[RageMode] This version not fully supported by this plugin, so some options will not work.");
 
@@ -224,9 +224,7 @@ public class RageMode extends JavaPlugin {
 		HandlerList.unregisterAll(this);
 
 		for (Game game : games) {
-			if (game == null) {
-				continue;
-			}
+			assert game != null;
 
 			if (game.isGameRunning()) {
 				GameUtils.stopGame(game, false);
@@ -270,14 +268,14 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void registerListeners() {
-		Stream.of(new EventListener(), new GameListener(this))
+		Arrays.asList(new EventListener(), new GameListener(this))
 				.forEach(l -> getServer().getPluginManager().registerEvents(l, this));
 
 		if (ConfigValues.isBungee()) {
 			getManager().registerEvents(new BungeeListener(), this);
 		}
 
-		if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
+		if (serverVersion.getVersion().isEqualOrLower(Version.v1_8_R3))
 			getManager().registerEvents(new Listeners_1_8(), this);
 		else
 			getManager().registerEvents(new Listeners_1_9(), this);
@@ -288,10 +286,6 @@ public class RageMode extends JavaPlugin {
 
 		if (conf.getArenasCfg().contains("arenas")) {
 			for (String game : GetGames.getGameNames()) {
-				if (game == null) {
-					continue;
-				}
-
 				if (!conf.getArenasCfg().contains("arenas." + game + ".gametype")) {
 					conf.getArenasCfg().set("arenas." + game + ".gametype", "normal");
 				}
@@ -347,7 +341,7 @@ public class RageMode extends JavaPlugin {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler.setItem(Material.ARROW).setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageArrow")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 9))
-					.setDamage(3.35);
+					.setDamage(c.getDouble(path + ".damage", 3.35));
 			gameItems[2] = itemHandler;
 		}
 
@@ -374,7 +368,7 @@ public class RageMode extends JavaPlugin {
 		if (c.contains(path)) {
 			ItemHandler itemHandler = new ItemHandler();
 			itemHandler
-					.setItem(Version.isCurrentLower(Version.v1_9_R1) ? Material.getMaterial("SNOW_BALL")
+					.setItem(serverVersion.getVersion().isLower(Version.v1_9_R1) ? Material.getMaterial("SNOW_BALL")
 							: Material.SNOWBALL)
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&fFlash")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 6))

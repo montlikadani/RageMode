@@ -17,7 +17,6 @@ public class ActionMessengers {
 	private Game game;
 	private Player player;
 
-	private final TabTitles gameTab = new TabTitles();
 	private final ScoreBoard gameBoard = new ScoreBoard();
 	private final ScoreTeam scoreTeam;
 
@@ -35,10 +34,6 @@ public class ActionMessengers {
 
 	public Player getPlayer() {
 		return player;
-	}
-
-	public TabTitles getTabTitles() {
-		return gameTab;
 	}
 
 	public ScoreBoard getScoreboard() {
@@ -93,7 +88,7 @@ public class ActionMessengers {
 		header = header.replace("%game-time%", time < -1 ? "0" : Utils.getFormattedTime(time));
 		footer = footer.replace("%game-time%", time < -1 ? "0" : Utils.getFormattedTime(time));
 
-		gameTab.sendTabTitle(player, header, footer);
+		TabTitles.sendTabTitle(player, header, footer);
 	}
 
 	public void setScoreboard() {

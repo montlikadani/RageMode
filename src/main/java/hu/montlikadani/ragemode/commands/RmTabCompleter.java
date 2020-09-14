@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -15,6 +14,7 @@ import org.bukkit.util.StringUtil;
 
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.database.DBType;
+import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class RmTabCompleter implements TabCompleter {
@@ -37,9 +37,9 @@ public class RmTabCompleter implements TabCompleter {
 				partOfCommand = args[0];
 			} else if (args.length < 3) {
 				if (args[0].equalsIgnoreCase("holostats")) {
-					Stream.of("add", "remove", "tp").forEach(cmds::add);
+					Arrays.asList("add", "remove", "tp").forEach(cmds::add);
 				} else if (args[0].equalsIgnoreCase("points")) {
-					Stream.of("set", "add", "take").forEach(cmds::add);
+					Arrays.asList("set", "add", "take").forEach(cmds::add);
 				} else if (args[0].equalsIgnoreCase("signupdate")) {
 					GetGames.getGames().forEach(cmds::add);
 					cmds.add("all");
@@ -48,7 +48,7 @@ public class RmTabCompleter implements TabCompleter {
 						cmds.add(type.name().toLowerCase());
 					}
 				} else if (args[0].equalsIgnoreCase("area")) {
-					Stream.of("add", "remove", "info", "list").forEach(cmds::add);
+					Arrays.asList("add", "remove", "info", "list").forEach(cmds::add);
 				} else {
 					for (String game : getGameListCmds()) {
 						if (args[0].equalsIgnoreCase(game) && !GetGames.getGames().isEmpty()) {
@@ -61,7 +61,7 @@ public class RmTabCompleter implements TabCompleter {
 			} else if (args.length < 4) {
 				for (String val : getValueListCmds()) {
 					if (args[0].equalsIgnoreCase(val)) {
-						Stream.of("true", "false").forEach(cmds::add);
+						Arrays.asList("true", "false").forEach(cmds::add);
 						partOfCommand = args[2];
 					}
 				}
@@ -75,6 +75,11 @@ public class RmTabCompleter implements TabCompleter {
 					} else if (args[1].equalsIgnoreCase("remove")) {
 						GameAreaManager.getGameAreas().forEach((key, valu) -> cmds.add(key));
 					}
+
+					partOfCommand = args[2];
+				} else if (args[0].equalsIgnoreCase("setgametype")) {
+					Arrays.asList(GameType.values()).forEach(t -> cmds.add(t.toString().toLowerCase()));
+					partOfCommand = args[2];
 				}
 			}
 

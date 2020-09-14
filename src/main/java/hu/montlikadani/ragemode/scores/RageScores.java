@@ -34,9 +34,9 @@ public class RageScores {
 		int totalPoints = addPoints(killer, 1, true);
 
 		// To avoid spam
-		if (java.util.concurrent.ThreadLocalRandom.current().nextInt(0, 100) < 60) {
+		if (java.util.concurrent.ThreadLocalRandom.current().nextInt(0, 100) < 30) {
 			sendMessage(killer, RageMode.getLang().get("game.message.zombie-kill", "%entity%", entity.getName(),
-					"%points%", "+" + 1));
+					"%points%", "+1"));
 			sendMessage(killer, RageMode.getLang().get("game.message.current-points", "%points%", totalPoints));
 		}
 	}

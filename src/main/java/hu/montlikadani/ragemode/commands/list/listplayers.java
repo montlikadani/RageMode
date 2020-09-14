@@ -2,7 +2,10 @@ package hu.montlikadani.ragemode.commands.list;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -36,9 +39,8 @@ public class listplayers implements ICommand {
 				return false;
 			}
 
-			StringBuilder sb = null;
 			if (!GameUtils.getGameByPlayer(p).getPlayersFromList().isEmpty()) {
-				sb = new StringBuilder();
+				StringBuilder sb = new StringBuilder();
 
 				for (Iterator<PlayerManager> e = GameUtils.getGameByPlayer(p).getPlayersFromList().iterator(); e
 						.hasNext();) {
@@ -49,7 +51,7 @@ public class listplayers implements ICommand {
 			}
 
 			if (!GameUtils.getGameBySpectator(p).getPlayersFromList().isEmpty()) {
-				sb = new StringBuilder();
+				StringBuilder sb = new StringBuilder();
 
 				for (Iterator<PlayerManager> e = GameUtils.getGameBySpectator(p).getPlayersFromList().iterator(); e
 						.hasNext();) {
@@ -75,9 +77,8 @@ public class listplayers implements ICommand {
 				return false;
 			}
 
-			StringBuilder sb = null;
 			if (!GameUtils.getGame(game).getPlayers().isEmpty()) {
-				sb = new StringBuilder();
+				StringBuilder sb = new StringBuilder();
 
 				for (PlayerManager pm : GameUtils.getGame(game).getPlayersFromList()) {
 					Player player = pm.getPlayer();
@@ -92,11 +93,14 @@ public class listplayers implements ICommand {
 			}
 
 			if (!GameUtils.getGame(game).getSpectatorPlayers().isEmpty()) {
-				sb = new StringBuilder();
+				StringBuilder sb = new StringBuilder();
 
-				for (java.util.Map.Entry<Player, PlayerManager> spec : GameUtils.getGame(game).getSpectatorPlayers()
+				for (Entry<UUID, PlayerManager> spec : GameUtils.getGame(game).getSpectatorPlayers()
 						.entrySet()) {
-					sb.append("\n&7-&6 " + spec.getKey().getName() + "&a - " + spec.getValue());
+					Player pl = Bukkit.getPlayer(spec.getKey());
+					if (pl != null) {
+						sb.append("\n&7-&6 " + pl.getName() + "&a - " + spec.getValue());
+					}
 				}
 
 				sendMessage(sender, "&7Spectator players:\n" + sb, true);

@@ -103,10 +103,10 @@ public class PlayerManager {
 			if (!player.getActivePotionEffects().isEmpty())
 				sps.oldEffects = player.getActivePotionEffects();
 
-			if (!player.getDisplayName().equals(player.getDisplayName()))
+			if (!player.getDisplayName().equals(player.getName()))
 				sps.oldDisplayName = player.getDisplayName();
 
-			if (!player.getPlayerListName().equals(player.getPlayerListName()))
+			if (!player.getPlayerListName().equals(player.getName()))
 				sps.oldListName = player.getPlayerListName();
 
 			if (player.getFireTicks() > 0)

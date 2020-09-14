@@ -17,6 +17,7 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
@@ -59,7 +60,8 @@ public class GameUtils {
 
 	public static final HashMap<UUID, Object> USERPARTICLES = new HashMap<>();
 
-	public static final LobbyShop LOBBYSHOP = new LobbyShop();
+	private GameUtils() {
+	}
 
 	/**
 	 * Broadcast a message to the currently playing players for that given game.
@@ -213,7 +215,9 @@ public class GameUtils {
 	 * @return Game if player is in game.
 	 */
 	public static Game getGameByPlayer(Player p) {
-		Validate.notNull(p, "Player can not be null");
+		if (p == null) {
+			return null;
+		}
 
 		for (Game game : RageMode.getInstance().getGames()) {
 			for (PlayerManager pl : game.getPlayersFromList()) {
@@ -234,9 +238,7 @@ public class GameUtils {
 	 * @return Game if player is in game.
 	 */
 	public static Game getGameBySpectator(UUID uuid) {
-		Validate.notNull(uuid, "Player UUID can not be null");
-
-		return getGameBySpectator(Bukkit.getPlayer(uuid));
+		return uuid == null ? null : getGameBySpectator(Bukkit.getPlayer(uuid));
 	}
 
 	/**
@@ -246,7 +248,9 @@ public class GameUtils {
 	 * @return Game if player is in spectator mode and in game.
 	 */
 	public static Game getGameBySpectator(Player p) {
-		Validate.notNull(p, "Player can not be null");
+		if (p == null) {
+			return null;
+		}
 
 		for (Game game : RageMode.getInstance().getGames()) {
 			for (PlayerManager pl : game.getSpectatorPlayersFromList()) {
@@ -304,6 +308,10 @@ public class GameUtils {
 	 * @return {@link Game}
 	 */
 	public static Game getGame(Location loc) {
+		if (loc == null) {
+			return null;
+		}
+
 		for (GameArea ga : GameAreaManager.getAreasByLocation(loc)) {
 			Game g = getGame(ga.getGame());
 			if (g != null) {
@@ -353,7 +361,7 @@ public class GameUtils {
 		}
 
 		if (isPlayerPlaying(p)) {
-			getGameByPlayer(p).getPlayerManager(p).storePlayerTools();
+			getGameByPlayer(p).getPlayerManager(p).ifPresent(PlayerManager::storePlayerTools);
 		}
 
 		Configuration conf = RageMode.getInstance().getConfiguration();
@@ -409,10 +417,9 @@ public class GameUtils {
 	 * @param game {@link Game}
 	 */
 	public static void joinPlayer(Player p, Game game) {
-		PlayerInventory inv = p.getInventory();
-		String name = game.getName();
-
-		GameStatus status = game.getStatus();
+		final PlayerInventory inv = p.getInventory();
+		final String name = game.getName();
+		final GameStatus status = game.getStatus();
 
 		if (status == GameStatus.RUNNING) {
 			if (!ConfigValues.isSpectatorEnabled()) {
@@ -480,10 +487,12 @@ public class GameUtils {
 
 		if (!ConfigValues.isSavePlayerData()) {
 			// We still need some data saving
-			StorePlayerStuffs sp = game.getPlayerManager(p).getStorePlayer();
-			sp.oldLocation = p.getLocation();
-			sp.oldGameMode = p.getGameMode();
-			sp.currentBoard = p.getScoreboard();
+			game.getPlayerManager(p).ifPresent(pl -> {
+				StorePlayerStuffs sp = pl.getStorePlayer();
+				sp.oldLocation = p.getLocation();
+				sp.oldGameMode = p.getGameMode();
+				sp.currentBoard = p.getScoreboard();
+			});
 
 			p.setGameMode(GameMode.SURVIVAL);
 		} else {
@@ -492,6 +501,10 @@ public class GameUtils {
 		clearPlayerTools(p);
 
 		GameAreaManager.removeEntitiesFromGame(game);
+
+		if (game.getGameType() == GameType.APOCALYPSE) {
+			game.worldTime = p.getWorld().getFullTime();
+		}
 
 		p.teleport(GameLobby.getLobbyLocation(name));
 
@@ -580,6 +593,9 @@ public class GameUtils {
 				stay = split.length > 2 ? Integer.parseInt(split[1]) : 30,
 				fadeOut = split.length > 3 ? Integer.parseInt(split[2]) : 20;
 
+		title = Utils.colors(title);
+		subtitle = Utils.colors(subtitle);
+
 		Titles.sendTitle(p, fadeIn, stay, fadeOut, title, subtitle);
 	}
 
@@ -629,8 +645,7 @@ public class GameUtils {
 
 		if ((status == GameStatus.RUNNING || status == GameStatus.WAITING) && game.removePlayer(p)) {
 
-			// Will execute some tasks when the player left the server, while the game
-			// running
+			// Will execute some tasks when the player left the server, while the game running
 			if (status == GameStatus.RUNNING) {
 				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
 
@@ -638,9 +653,6 @@ public class GameUtils {
 						.getStringList("game.run-commands-for-player-left-while-playing");
 				for (String cmds : list) {
 					cmds = cmds.replace("%player%", p.getName());
-					// For ipban
-					// cmds = cmds.replace("%player-ip%",
-					// p.getAddress().getAddress().getHostAddress());
 					Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), Utils.colors(cmds));
 				}
 			}
@@ -685,6 +697,10 @@ public class GameUtils {
 		p.setExp(0);
 		p.setLevel(0);
 
+		if (Version.isCurrentEqualOrHigher(Version.v1_16_R2)) {
+			p.setArrowsInBody(0);
+		}
+
 		if (p.isInsideVehicle())
 			p.leaveVehicle();
 
@@ -695,20 +711,41 @@ public class GameUtils {
 		p.setPlayerListName(p.getName());
 	}
 
+	@SuppressWarnings("deprecation")
 	public static void spawnZombies(Game game, int amount) {
 		if (game.getStatus() != GameStatus.RUNNING || game.getGameType() != GameType.APOCALYPSE) {
 			return;
 		}
 
-		for (PlayerManager pm : game.getPlayersFromList()) {
+		GetGames.getWorld(game.getName()).ifPresent(world -> {
+			org.bukkit.World w = Bukkit.getWorld(world);
+			if (w == null) {
+				return;
+			}
+
 			// Force night
-			pm.getPlayer().getWorld().setTime(14000L);
+			w.setTime(14000L);
 
 			for (int i = 0; i <= amount; i++) {
-				pm.getPlayer().getWorld().spawnEntity(getGameZombieSpawn(game).getRandomSpawn(),
-						org.bukkit.entity.EntityType.ZOMBIE);
+				Location location = getGameZombieSpawn(game).getRandomSpawn().clone();
+				org.bukkit.util.Vector vec = location.getDirection();
+				location.add(vec.setY(0).normalize().multiply(3));
+				while (!w.getBlockAt(location).getType().isAir()) {
+					location.add(vec.setY(0).normalize().multiply(3));
+				}
+
+				Zombie zombie = (Zombie) w.spawnEntity(location, org.bukkit.entity.EntityType.ZOMBIE);
+
+				// Do not spawn too much baby zombie
+				if (Version.isCurrentEqualOrHigher(Version.v1_16_R2)) {
+					if (!zombie.isAdult() && ThreadLocalRandom.current().nextInt(0, 10) < 2) {
+						zombie.setAdult();
+					}
+				} else if (zombie.isBaby() && ThreadLocalRandom.current().nextInt(0, 10) < 2) {
+					zombie.setBaby(false);
+				}
 			}
-		}
+		});
 	}
 
 	/**
@@ -780,49 +817,51 @@ public class GameUtils {
 		}
 
 		for (Entry<Player, BoughtElements> elements : LobbyShop.BOUGHTITEMS.entrySet()) {
-			if (elements.getKey().equals(player)) {
-				BoughtElements bought = elements.getValue();
+			if (!elements.getKey().equals(player)) {
+				continue;
+			}
 
-				boolean enough = false;
-				if (RageMode.getInstance().isVaultEnabled()) {
-					Economy economy = RageMode.getInstance().getEconomy();
-					double cost = bought.getCost();
+			BoughtElements bought = elements.getValue();
 
-					if (cost > 0d && economy.has(player, cost)) {
-						economy.withdrawPlayer(player, cost);
-						enough = true;
-					}
+			boolean enough = false;
+			if (RageMode.getInstance().isVaultEnabled()) {
+				Economy economy = RageMode.getInstance().getEconomy();
+				double cost = bought.getCost();
+
+				if (cost > 0d && economy.has(player, cost)) {
+					economy.withdrawPlayer(player, cost);
+					enough = true;
 				}
+			}
 
-				if (bought.getPoints() > 0) {
-					PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
-					if (pp != null && pp.getPoints() >= bought.getPoints()) {
-						pp.takePoints(bought.getPoints());
-						enough = true;
-					} else {
-						enough = false;
-					}
+			if (bought.getPoints() > 0) {
+				PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
+				if (pp != null && pp.getPoints() >= bought.getPoints()) {
+					pp.takePoints(bought.getPoints());
+					enough = true;
+				} else {
+					enough = false;
 				}
+			}
 
-				if (!enough) {
-					sendMessage(player, RageMode.getLang().get("game.cant-bought-elements"));
-					break;
-				}
-
-				if (bought.getPotion() != null) {
-					player.addPotionEffect(bought.getPotion());
-				}
-
-				if (bought.getItem() != null) {
-					player.getInventory().addItem(bought.getItem());
-				}
-
-				if (bought.getTrail() != null) {
-					USERPARTICLES.put(player.getUniqueId(), bought.getTrail());
-				}
-
+			if (!enough) {
+				sendMessage(player, RageMode.getLang().get("game.cant-bought-elements"));
 				break;
 			}
+
+			if (bought.getPotion() != null) {
+				player.addPotionEffect(bought.getPotion());
+			}
+
+			if (bought.getItem() != null) {
+				player.getInventory().addItem(bought.getItem());
+			}
+
+			if (bought.getTrail() != null) {
+				USERPARTICLES.put(player.getUniqueId(), bought.getTrail());
+			}
+
+			break;
 		}
 
 		LobbyShop.BOUGHTITEMS.remove(player);
@@ -913,9 +952,7 @@ public class GameUtils {
 
 			if (split[0].equalsIgnoreCase(type)) {
 				String message = split[1];
-				if (message == null) {
-					continue;
-				}
+				assert message != null;
 
 				message = message.replace("%game%", game).replace("%player%", p.getName());
 				message = Utils.colors(message);
@@ -1133,10 +1170,12 @@ public class GameUtils {
 			RuntimePPManager.loadPPListFromDatabase();
 		}
 
-		for (Iterator<Entry<Player, PlayerManager>> it = game.getSpectatorPlayers().entrySet().iterator(); it
+		for (Iterator<UUID> it = game.getSpectatorPlayers().keySet().iterator(); it
 				.hasNext();) {
-			Player pl = it.next().getKey();
-			game.removeSpectatorPlayer(pl);
+			Player pl = Bukkit.getPlayer(it.next());
+			if (pl != null) {
+				game.removeSpectatorPlayer(pl);
+			}
 		}
 
 		RewardManager reward = new RewardManager(gName);
@@ -1172,9 +1211,10 @@ public class GameUtils {
 				if (ConfigValues.isRewardEnabled()) {
 					if (winner != null && winner.equals(p)) {
 						reward.rewardForWinner(winner);
+						continue;
 					}
 
-					reward.rewardForPlayers(winner, p);
+					reward.rewardForPlayers(p);
 				}
 			}
 		}
@@ -1202,12 +1242,8 @@ public class GameUtils {
 	public static void stopAllGames() {
 		Debug.logConsole("Searching games to stop...");
 
-		String[] games = GetGames.getGameNames();
-		if (games == null)
-			return;
-
-		for (String game : games) {
-			if (game == null) {
+		for (String game : GetGames.getGameNames()) {
+			if (game == null || game.isEmpty()) {
 				continue;
 			}
 
@@ -1233,9 +1269,12 @@ public class GameUtils {
 					RageScores.removePointsForPlayer(p.getUniqueId());
 				}
 
-				for (Iterator<Entry<Player, PlayerManager>> it = g.getSpectatorPlayers().entrySet().iterator(); it
+				for (Iterator<UUID> it = g.getSpectatorPlayers().keySet().iterator(); it
 						.hasNext();) {
-					g.removeSpectatorPlayer(it.next().getKey());
+					Player pl = Bukkit.getPlayer(it.next());
+					if (pl != null) {
+						g.removeSpectatorPlayer(pl);
+					}
 				}
 
 				g.setGameNotRunning();
@@ -1316,6 +1355,6 @@ public class GameUtils {
 	 * @return true if the game is in
 	 */
 	public static boolean isGameInFreezeRoom(String game) {
-		return WAITINGGAMES.containsKey(game) && WAITINGGAMES.get(game);
+		return WAITINGGAMES.getOrDefault(game, false);
 	}
 }
