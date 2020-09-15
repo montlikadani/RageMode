@@ -73,7 +73,7 @@ public class RmTabCompleter implements TabCompleter {
 					if (args[1].equalsIgnoreCase("add")) {
 						GetGames.getGames().forEach(cmds::add);
 					} else if (args[1].equalsIgnoreCase("remove")) {
-						GameAreaManager.getGameAreas().forEach((key, valu) -> cmds.add(key));
+						GameAreaManager.getGameAreas().keySet().forEach(cmds::add);
 					}
 
 					partOfCommand = args[2];

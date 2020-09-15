@@ -34,10 +34,10 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
@@ -102,9 +102,9 @@ public class GameListener implements Listener {
 
 	private final LobbyShop lobbyShop = new LobbyShop();
 
-	private final Map<UUID, UUID> explosionVictims = new HashMap<>();
-	private final Map<UUID, UUID> grenadeExplosionVictims = new HashMap<>();
-	private final Map<Location, UUID> pressureMinesOwner = new HashMap<>();
+	private final Map<UUID, UUID> explosionVictims = new HashMap<>(), grenadeExplosionVictims = new HashMap<>();
+
+	public static final Map<Location, UUID> PRESSUREMINESOWNER = new HashMap<>();
 
 	public GameListener(RageMode plugin) {
 		this.plugin = plugin;
@@ -119,7 +119,7 @@ public class GameListener implements Listener {
 		}
 
 		Location loc = null;
-		for (Map.Entry<Location, UUID> entry : pressureMinesOwner.entrySet()) {
+		for (Map.Entry<Location, UUID> entry : PRESSUREMINESOWNER.entrySet()) {
 			if (entry.getValue().equals(player.getUniqueId())) {
 				loc = entry.getKey();
 				break;
@@ -128,7 +128,7 @@ public class GameListener implements Listener {
 
 		if (loc != null) {
 			loc.getBlock().setType(Material.AIR);
-			pressureMinesOwner.remove(loc);
+			PRESSUREMINESOWNER.remove(loc);
 		}
 	}
 
@@ -137,13 +137,13 @@ public class GameListener implements Listener {
 	 */
 	@EventHandler
 	public void onGameStop(RMGameStopEvent event) {
-		for (Location loc : pressureMinesOwner.keySet()) {
+		for (Location loc : PRESSUREMINESOWNER.keySet()) {
 			loc.getBlock().setType(Material.AIR);
 		}
 
-		pressureMinesOwner.clear();
+		PRESSUREMINESOWNER.clear();
 
-		if (event.getGame().getGameType() == GameType.APOCALYPSE) {
+		if (event.getGame().getGameType() == GameType.APOCALYPSE && !event.getPlayers().isEmpty()) {
 			event.getPlayers().get(0).getPlayer().getWorld().setTime(event.getGame().worldTime);
 		}
 	}
@@ -643,7 +643,7 @@ public class GameListener implements Listener {
 
 	@EventHandler
 	public void onEntityExplode(EntityExplodeEvent ev) {
-		if ((!(ev.getEntity() instanceof Arrow) || !(ev.getEntity() instanceof Egg)) && GameAreaManager.inArea(ev.getLocation())) {
+		if (GameAreaManager.inArea(ev.getLocation())) {
 			ev.setCancelled(true);
 		}
 	}
@@ -758,7 +758,7 @@ public class GameListener implements Listener {
 		}
 
 		if (ev.getBlock().getType() == Material.TRIPWIRE) {
-			pressureMinesOwner.put(ev.getBlock().getLocation(), ev.getPlayer().getUniqueId());
+			PRESSUREMINESOWNER.put(ev.getBlock().getLocation(), ev.getPlayer().getUniqueId());
 			return;
 		}
 
@@ -1112,7 +1112,7 @@ public class GameListener implements Listener {
 				&& event.getClickedInventory().getType() == InventoryType.PLAYER) {
 			if ((event.getClick() == ClickType.LEFT || event.getClick() == ClickType.MIDDLE
 					|| event.getClick() == ClickType.RIGHT)
-					&& event.getCurrentItem().isSimilar(Items.getLeaveGameItem().build())) {
+					&& Items.getLeaveGameItem().build().isSimilar(event.getCurrentItem())) {
 				event.setCancelled(true);
 				GameUtils.leavePlayer(p, GameUtils.getGameBySpectator(p));
 			}
@@ -1138,6 +1138,7 @@ public class GameListener implements Listener {
 			event.setCancelled(true);
 	}
 
+	// This will fired in GameTimer tos simulate pressure mine
 	@EventHandler
 	public void onMonsterInteract(EntityInteractEvent e) {
 		if (GameAreaManager.inArea(e.getEntity().getLocation())) {
@@ -1234,6 +1235,9 @@ public class GameListener implements Listener {
 		double x = currentLoc.getX(),
 				y = currentLoc.getY(),
 				z = currentLoc.getZ();
+		if (w == null) {
+			return false;
+		}
 
 		Collection<Entity> nears = Utils.getNearbyEntities(w, currentLoc, 10);
 
@@ -1248,8 +1252,8 @@ public class GameListener implements Listener {
 				}
 
 				if (GameUtils.getGame(currentLoc).getGameType() == GameType.APOCALYPSE
-						&& pressureMinesOwner.containsKey(currentLoc)) {
-					explosionVictims.put(near.getUniqueId(), pressureMinesOwner.get(currentLoc));
+						&& PRESSUREMINESOWNER.containsKey(currentLoc)) {
+					explosionVictims.put(near.getUniqueId(), PRESSUREMINESOWNER.get(currentLoc));
 					continue;
 				}
 
@@ -1266,8 +1270,8 @@ public class GameListener implements Listener {
 			}
 		}
 
-		if (pressureMinesOwner.containsKey(currentLoc)) {
-			pressureMinesOwner.remove(currentLoc);
+		if (PRESSUREMINESOWNER.containsKey(currentLoc)) {
+			PRESSUREMINESOWNER.remove(currentLoc);
 		}
 
 		return true;

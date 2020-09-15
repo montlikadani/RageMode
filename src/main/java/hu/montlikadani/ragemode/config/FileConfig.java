@@ -16,14 +16,14 @@ public class FileConfig {
 		return c;
 	}
 
-	public String getL(String path, String boo) {
-		c.addDefault(path, boo);
+	public String getL(String path, String def) {
+		c.addDefault(path, def);
 		c.set(path, c.get(path));
 		return c.getString(path);
 	}
 
-	public List<String> getL(String path, List<String> list) {
-		c.addDefault(path, list);
+	public List<String> getL(String path, List<String> def) {
+		c.addDefault(path, def);
 		c.set(path, c.get(path));
 		return c.getStringList(path);
 	}

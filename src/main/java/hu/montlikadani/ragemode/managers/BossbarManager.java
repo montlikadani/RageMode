@@ -78,7 +78,7 @@ public class BossbarManager {
 				break;
 			}
 
-			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
+			Bukkit.getScheduler().runTaskLater(RageMode.getInstance(), () -> {
 				if (!GameUtils.isPlayerPlaying(p) || boss.getProgress() <= 0.2D) {
 					removeBossbar(p);
 					return;

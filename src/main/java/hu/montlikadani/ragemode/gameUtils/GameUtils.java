@@ -1014,12 +1014,14 @@ public class GameUtils {
 
 		GameAreaManager.removeEntitiesFromGame(game);
 
-		for (PlayerManager pm : players) {
-			final Player p = pm.getPlayer();
-			RageScores.removePointsForPlayer(p.getUniqueId());
+		Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
+			for (PlayerManager pm : players) {
+				final Player p = pm.getPlayer();
+				RageScores.removePointsForPlayer(p.getUniqueId());
 
-			game.removePlayer(p);
-		}
+				game.removePlayer(p);
+			}
+		});
 
 		game.getActionMessengers().clear();
 		game.setGameNotRunning();

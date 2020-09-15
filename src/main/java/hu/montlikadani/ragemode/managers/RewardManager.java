@@ -33,8 +33,7 @@ public class RewardManager {
 	}
 
 	public void rewardForWinner(Player winner) {
-		List<String> cmds = conf.getStringList("rewards.end-game.winner.commands");
-		for (String path : cmds) {
+		for (String path : conf.getStringList("rewards.end-game.winner.commands")) {
 			String[] arg = path.split(": ");
 
 			String cmd = path;
@@ -52,8 +51,7 @@ public class RewardManager {
 				winner.performCommand(cmd);
 		}
 
-		List<String> msgs = conf.getStringList("rewards.end-game.winner.messages");
-		for (String path : msgs) {
+		for (String path : conf.getStringList("rewards.end-game.winner.messages")) {
 			path = replacePlaceholders(path, winner, true);
 			winner.sendMessage(path);
 		}
@@ -66,8 +64,7 @@ public class RewardManager {
 	}
 
 	public void rewardForPlayers(Player pls) {
-		List<String> cmds = conf.getStringList("rewards.end-game.players.commands");
-		for (String path : cmds) {
+		for (String path : conf.getStringList("rewards.end-game.players.commands")) {
 			String[] arg = path.split(": ");
 			String cmd = path;
 			if (arg.length < 2) {

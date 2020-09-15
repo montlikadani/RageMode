@@ -4,13 +4,16 @@ import java.util.TimerTask;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.scheduler.BukkitTask;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.events.GameListener;
 import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -70,6 +73,8 @@ public class GameTimer extends TimerTask {
 			}
 
 			if (game.getGameType() == GameType.APOCALYPSE) {
+				Location loc = GameUtils.getGameSpawn(game).getSpawnLocations().get(0);
+
 				if (!firstZombieSpawned) {
 					if (ConfigValues.getDelayBeforeFirstZombiesSpawn() > 0) {
 						Bukkit.getScheduler().runTaskLater(RageMode.getInstance(), () -> {
@@ -81,7 +86,6 @@ public class GameTimer extends TimerTask {
 					}
 
 				} else if (timeElapsed == null) { // wait for the scheduler task
-					org.bukkit.Location loc = GameUtils.getGameSpawn(game).getSpawnLocations().get(0);
 					GameAreaManager.getAreaByLocation(loc).ifPresent(area -> {
 						java.util.List<Entity> entities = area.getEntities().stream()
 								.filter(e -> e instanceof org.bukkit.entity.Zombie).collect(Collectors.toList());
@@ -105,6 +109,29 @@ public class GameTimer extends TimerTask {
 						}
 					});
 				}
+
+				// Fire EntityInteractEvent to call pressure mines to be exploded
+				GameAreaManager.getAreaByLocation(loc).ifPresent(area -> {
+					e: for (Entity f : area.getEntities()) {
+						if (f.isDead()) {
+							continue;
+						}
+
+						for (Location mineLoc : GameListener.PRESSUREMINESOWNER.keySet()) {
+							if (mineLoc.getBlock().equals(f.getLocation().getBlock())) {
+								EntityInteractEvent interact = new EntityInteractEvent(f, mineLoc.getBlock());
+								if (!interact.isCancelled()) {
+									Bukkit.getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
+										Bukkit.getPluginManager().callEvent(interact);
+										return true;
+									});
+
+									break e;
+								}
+							}
+						}
+					}
+				});
 			}
 
 			for (ActionMessengers ac : game.getActionMessengers()) {

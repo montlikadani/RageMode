@@ -1,7 +1,6 @@
 package hu.montlikadani.ragemode.managers;
 
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.PlayerInventory;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
@@ -123,10 +122,8 @@ public class PlayerManager {
 		sps.oldLocation = player.getLocation();
 		sps.oldGameMode = player.getGameMode();
 
-		PlayerInventory inv = player.getInventory();
-
-		sps.oldInventories = inv.getContents();
-		sps.oldArmor = inv.getArmorContents();
+		sps.oldInventories = player.getInventory().getContents();
+		sps.oldArmor = player.getInventory().getArmorContents();
 	}
 
 	/**
