@@ -1,6 +1,7 @@
 package hu.montlikadani.ragemode.items;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -24,6 +25,13 @@ public class ItemHandler implements Cloneable {
 	private int slot = -1;
 
 	private double damage = 0;
+
+	public ItemHandler() {
+	}
+
+	public ItemHandler(Consumer<ItemHandler> con) {
+		con.accept(this);
+	}
 
 	public Material getItem() {
 		return item;

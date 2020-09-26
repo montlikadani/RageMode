@@ -34,7 +34,6 @@ public class Game {
 
 	private String name;
 	private GameType gameType;
-
 	private GameStatus status = GameStatus.STOPPED;
 
 	private final Map<UUID, PlayerManager> players = new HashMap<>(), specPlayer = new HashMap<>();
@@ -82,7 +81,7 @@ public class Game {
 
 	/**
 	 * Get the players who added to the list.
-	 * @return Modifiable map, {@link #players}
+	 * @return {@link Map}
 	 */
 	public Map<UUID, PlayerManager> getPlayers() {
 		return players;
@@ -90,7 +89,7 @@ public class Game {
 
 	/**
 	 * Gets the spectator players who added to the list.
-	 * @return Modifiable map, {@link #specPlayer}
+	 * @return {@link Map}
 	 */
 	public Map<UUID, PlayerManager> getSpectatorPlayers() {
 		return specPlayer;
@@ -203,10 +202,7 @@ public class Game {
 	}
 
 	public boolean removeSpectatorPlayer(Player player) {
-		if (!ConfigValues.isSpectatorEnabled())
-			return false;
-
-		if (!isSpectatorInList(player)) {
+		if (!ConfigValues.isSpectatorEnabled() || !isSpectatorInList(player)) {
 			return false;
 		}
 

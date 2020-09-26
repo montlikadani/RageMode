@@ -11,10 +11,10 @@ import org.bukkit.Effect;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -71,7 +71,7 @@ public class LobbyShop implements Listener {
 	public void openMainPage(Player player) {
 		removeShop(player);
 
-		MainPage main = new MainPage();
+		IShop main = new MainPage();
 		main.create(player);
 
 		if (main.getInventory() == null) {
@@ -83,7 +83,7 @@ public class LobbyShop implements Listener {
 	}
 
 	public void openNextPage(Player player, ShopCategory category) {
-		NextPage next = new NextPage();
+		IShop next = new NextPage();
 		next.create(player, category);
 
 		if (next.getInventory() == null) {
@@ -129,12 +129,12 @@ public class LobbyShop implements Listener {
 		//ev.getInventory().getHolder() instanceof IShop
 	}*/
 
-	@EventHandler
+	/*@EventHandler
 	public void onClose(InventoryCloseEvent e) {
 		removeShop((Player) e.getPlayer());
-	}
+	}*/
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGH)
 	public void onClickEvent(InventoryClickEvent ev) {
 		if (!(ev.getWhoClicked() instanceof Player)) {
 			return;
@@ -153,25 +153,18 @@ public class LobbyShop implements Listener {
 
 		ev.setCancelled(true);
 
-		if (ev.getClick() != ClickType.LEFT && ev.getClick() != ClickType.RIGHT) {
-			return;
+		if (ev.getClick() != ClickType.UNKNOWN) {
+			doItemClick(ev);
 		}
-
-		doItemClick(ev);
-		return; // ?
 	}
 
 	private void doItemClick(InventoryClickEvent ev) {
-		final Player player = (Player) ev.getWhoClicked();
-		if (!isOpened(player)) {
-			return;
-		}
-
 		final ItemStack currentItem = ev.getCurrentItem();
 		if (currentItem == null) {
 			return;
 		}
 
+		final Player player = (Player) ev.getWhoClicked();
 		shops.get(player).getShopItem(currentItem).ifPresent(shopItem -> {
 			if (shopItem.getItem().getType() != currentItem.getType()) {
 				return;
@@ -186,7 +179,6 @@ public class LobbyShop implements Listener {
 			ShopItemCommands cmds = shopItem.getItemCommands();
 			if (cmds != null) {
 				NavigationType type = cmds.getNavigationType();
-
 				if (type == NavigationType.WITHOUT && currentItem.getItemMeta().getDisplayName()
 						.equalsIgnoreCase(shopItem.getItem().getItemMeta().getDisplayName())) {
 					if (buyElement(ev, cmds.getConfigPath(), shopItem.getCategory())) {

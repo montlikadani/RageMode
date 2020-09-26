@@ -5,8 +5,10 @@ import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -67,7 +69,6 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
@@ -88,6 +89,7 @@ import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.items.Items;
+import hu.montlikadani.ragemode.items.handler.PressureMine;
 import hu.montlikadani.ragemode.items.shop.IShop;
 import hu.montlikadani.ragemode.items.shop.LobbyShop;
 import hu.montlikadani.ragemode.items.threads.CombatAxeThread;
@@ -104,7 +106,7 @@ public class GameListener implements Listener {
 
 	private final Map<UUID, UUID> explosionVictims = new HashMap<>(), grenadeExplosionVictims = new HashMap<>();
 
-	public static final Map<Location, UUID> PRESSUREMINESOWNER = new HashMap<>();
+	public static final Set<PressureMine> PRESSUREMINES = new HashSet<>();
 
 	public GameListener(RageMode plugin) {
 		this.plugin = plugin;
@@ -118,30 +120,20 @@ public class GameListener implements Listener {
 			GameUtils.USERPARTICLES.remove(player.getUniqueId());
 		}
 
-		Location loc = null;
-		for (Map.Entry<Location, UUID> entry : PRESSUREMINESOWNER.entrySet()) {
-			if (entry.getValue().equals(player.getUniqueId())) {
-				loc = entry.getKey();
+		for (java.util.Iterator<PressureMine> it = PRESSUREMINES.iterator(); it.hasNext();) {
+			PressureMine mine = it.next();
+			if (mine.getPlayerUUID().equals(player.getUniqueId())) {
+				mine.removeMines();
+				it.remove();
 				break;
 			}
 		}
-
-		if (loc != null) {
-			loc.getBlock().setType(Material.AIR);
-			PRESSUREMINESOWNER.remove(loc);
-		}
 	}
 
-	/**
-	 * @param event
-	 */
 	@EventHandler
 	public void onGameStop(RMGameStopEvent event) {
-		for (Location loc : PRESSUREMINESOWNER.keySet()) {
-			loc.getBlock().setType(Material.AIR);
-		}
-
-		PRESSUREMINESOWNER.clear();
+		PRESSUREMINES.forEach(PressureMine::removeMines);
+		PRESSUREMINES.clear();
 
 		if (event.getGame().getGameType() == GameType.APOCALYPSE && !event.getPlayers().isEmpty()) {
 			event.getPlayers().get(0).getPlayer().getWorld().setTime(event.getGame().worldTime);
@@ -205,59 +197,49 @@ public class GameListener implements Listener {
 			return;
 		}
 
+		Player shooter = (Player) proj.getShooter();
+		if (shooter == null) {
+			return;
+		}
+
 		// flash event
-		if (proj instanceof Snowball && (!GameUtils.isPlayerInFreezeRoom((Player) proj.getShooter())
-				|| GameUtils.getGameByPlayer((Player) proj.getShooter()).getGameType() != GameType.APOCALYPSE)) {
+		if (proj instanceof Snowball && (!GameUtils.isPlayerInFreezeRoom(shooter)
+				|| GameUtils.getGameByPlayer(shooter).getGameType() != GameType.APOCALYPSE)) {
 			final Item flash = proj.getWorld().dropItem(proj.getLocation(), new ItemStack(
 					Version.isCurrentLower(Version.v1_9_R1) ? Material.getMaterial("SNOW_BALL") : Material.SNOWBALL));
-			if (flash == null) {
-				return;
-			}
-
-			final Player shooter = (Player) proj.getShooter();
-			if (shooter == null) {
-				flash.remove();
-				return;
-			}
-
 			flash.setPickupDelay(41);
 			flash.setVelocity(shooter.getEyeLocation().getDirection());
 			flash.getLocation().add(proj.getVelocity());
 
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-					if (flash.isDead()) {
-						return;
-					}
-
-					if (!GameUtils.isPlayerPlaying(shooter) || GameUtils.isPlayerInFreezeRoom(shooter)) {
-						flash.remove();
-						cancel();
-						return;
-					}
-
-					for (Entity entity : Utils.getNearbyEntities(flash, 6)) {
-						if (entity instanceof Player) {
-							((Player) entity).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 2));
-						}
-					}
-
-					if (Version.isCurrentEqualOrHigher(Version.v1_9_R1)) {
-						proj.getWorld().spawnParticle(org.bukkit.Particle.EXPLOSION_LARGE, proj.getLocation(), 0);
-					}
-
-					flash.remove();
+			Bukkit.getScheduler().runTaskLater(plugin, cons -> {
+				if (flash.isDead()) {
+					return;
 				}
-			}.runTaskLater(plugin, 40);
+
+				if (!GameUtils.isPlayerPlaying(shooter) || GameUtils.isPlayerInFreezeRoom(shooter)) {
+					flash.remove();
+					return;
+				}
+
+				for (Entity entity : Utils.getNearbyEntities(flash, 6)) {
+					if (entity instanceof Player) {
+						((Player) entity).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 2));
+					}
+				}
+
+				if (Version.isCurrentEqualOrHigher(Version.v1_9_R1)) {
+					proj.getWorld().spawnParticle(org.bukkit.Particle.EXPLOSION_LARGE, proj.getLocation(), 0);
+				}
+
+				flash.remove();
+			}, 40);
 		} else if (proj instanceof Arrow) { // RageArrow explosion event
 			Arrow arrow = (Arrow) proj;
-			Player shooter = (Player) arrow.getShooter();
-			if (shooter == null) {
+			if (arrow.getShooter() == null) {
 				return;
 			}
 
-			Game game = GameUtils.getGameByPlayer(shooter);
+			Game game = GameUtils.getGameByPlayer((Player) arrow.getShooter());
 			GameStatus status = game.getStatus();
 
 			if (status == GameStatus.GAMEFREEZE && GameUtils.isGameInFreezeRoom(game)) {
@@ -287,7 +269,7 @@ public class GameListener implements Listener {
 					if (explosionVictims.containsKey(near.getUniqueId())) {
 						explosionVictims.remove(near.getUniqueId());
 					}
-					explosionVictims.put(near.getUniqueId(), shooter.getUniqueId());
+					explosionVictims.put(near.getUniqueId(), ((Player) arrow.getShooter()).getUniqueId());
 
 					if (nears.get(i) instanceof Player) {
 						near.removeMetadata("killedWith", plugin);
@@ -375,8 +357,7 @@ public class GameListener implements Listener {
 				if (GameUtils.isPlayerPlaying(damager)) {
 					ItemMeta meta = NMS.getItemInHand(damager).getItemMeta();
 					ItemHandler knife = Items.getRageKnife();
-					if (knife != null && meta != null && meta.hasDisplayName()
-							&& meta.getDisplayName().equals(knife.getDisplayName())) {
+					if (knife != null && meta != null && meta.getDisplayName().equals(knife.getDisplayName())) {
 						finalDamage = knife.getDamage();
 						tool = "knife";
 					}
@@ -628,10 +609,7 @@ public class GameListener implements Listener {
 					killer = Bukkit.getPlayer(grenadeExplosionVictims.get(entityUUID));
 				}
 
-				if (killer != null) {
-					GameUtils.broadcastToGame(game, RageMode.getLang().get("game.broadcast.zombie-kill", "%entity%",
-							entity.getName(), "%killer%", killer.getName()));
-
+				if (killer != null && killer instanceof Player) {
 					RageScores.addPointsToPlayer(killer, entity);
 
 					RMPlayerKilledEvent killed = new RMPlayerKilledEvent(game, entity, killer);
@@ -699,7 +677,7 @@ public class GameListener implements Listener {
 					p.getInventory().setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().build());
 				}
 
-				// delay to avoid bad work of spectator
+				// delay to avoid async catch
 				Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
 						() -> p.setGameMode(org.bukkit.GameMode.SPECTATOR), 5L);
 			} else {
@@ -757,8 +735,23 @@ public class GameListener implements Listener {
 			return;
 		}
 
-		if (ev.getBlock().getType() == Material.TRIPWIRE) {
-			PRESSUREMINESOWNER.put(ev.getBlock().getLocation(), ev.getPlayer().getUniqueId());
+		PressureMine pressureMine = null;
+		for (PressureMine mine : PRESSUREMINES) {
+			if (mine.getPlayerUUID().equals(p.getUniqueId())) {
+				pressureMine = mine;
+				break;
+			}
+		}
+
+		if (pressureMine == null) {
+			pressureMine = new PressureMine(p.getUniqueId());
+		}
+
+		if (pressureMine.addMine(ev.getBlock(), ev.getBlock().getLocation())) {
+			if (!PRESSUREMINES.contains(pressureMine)) {
+				PRESSUREMINES.add(pressureMine);
+			}
+
 			return;
 		}
 
@@ -845,11 +838,7 @@ public class GameListener implements Listener {
 	@EventHandler
 	public void eggThrow(PlayerEggThrowEvent event) {
 		final Player p = event.getPlayer();
-		if (!p.isOnline()) {
-			return;
-		}
-
-		if (!GameUtils.isPlayerPlaying(p)) {
+		if (!p.isOnline() || !GameUtils.isPlayerPlaying(p)) {
 			return;
 		}
 
@@ -892,42 +881,38 @@ public class GameListener implements Listener {
 				Version.isCurrentEqualOrLower(Version.v1_8_R3) ? Sounds.CREEPER_HISS : Sounds.ENTITY_CREEPER_PRIMED, 1,
 				1);
 
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				// Remove egg when the player is not in-game or is in freeze room.
-				if (!GameUtils.isPlayerPlaying(p) || GameUtils.isPlayerInFreezeRoom(p)) {
-					grenade.remove();
-					cancel();
-					return;
-				}
-
-				double gX = loc.getX(),
-						gY = loc.getY(),
-						gZ = loc.getZ();
-
-				grenade.getWorld().createExplosion(gX, gY, gZ, 3f, false, false);
-				grenade.remove(); // get rid of egg so it can't be picked up
-
-				int i = 0;
-				int imax = nears.size();
-				while (i < imax) {
-					Entity near = nears.get(i);
-
-					if (grenadeExplosionVictims.containsKey(near.getUniqueId())) {
-						grenadeExplosionVictims.remove(near.getUniqueId());
-					}
-					grenadeExplosionVictims.put(near.getUniqueId(), p.getUniqueId());
-
-					if (nears.get(i) instanceof Player) {
-						near.removeMetadata("killedWith", plugin);
-						near.setMetadata("killedWith", new FixedMetadataValue(plugin, "explosion"));
-					}
-
-					i++;
-				}
+		Bukkit.getScheduler().runTaskLater(plugin, cons -> {
+			// Remove egg when the player is not in-game or is in freeze room.
+			if (!GameUtils.isPlayerPlaying(p) || GameUtils.isPlayerInFreezeRoom(p)) {
+				grenade.remove();
+				return;
 			}
-		}.runTaskLater(plugin, 40);
+
+			double gX = loc.getX(),
+					gY = loc.getY(),
+					gZ = loc.getZ();
+
+			grenade.getWorld().createExplosion(gX, gY, gZ, 3f, false, false);
+			grenade.remove(); // get rid of egg so it can't be picked up
+
+			int i = 0;
+			int imax = nears.size();
+			while (i < imax) {
+				Entity near = nears.get(i);
+
+				if (grenadeExplosionVictims.containsKey(near.getUniqueId())) {
+					grenadeExplosionVictims.remove(near.getUniqueId());
+				}
+				grenadeExplosionVictims.put(near.getUniqueId(), p.getUniqueId());
+
+				if (near instanceof Player) {
+					near.removeMetadata("killedWith", plugin);
+					near.setMetadata("killedWith", new FixedMetadataValue(plugin, "explosion"));
+				}
+
+				i++;
+			}
+		}, 40);
 	}
 
 	@EventHandler
@@ -952,71 +937,71 @@ public class GameListener implements Listener {
 			event.setCancelled(true);
 		}
 
-		if (action != Action.PHYSICAL) {
-			// Combat axe throw
-			if (hand.getType() == Items.getCombatAxe().getItem()
-					&& GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING) {
-				final Item item = p.getWorld().dropItem(p.getEyeLocation(), NMS.getItemInHand(p));
+		if (action == Action.PHYSICAL) {
+			return;
+		}
 
-				p.getInventory().remove(Items.getCombatAxe().getItem());
+		// Combat axe throw
+		if (hand.getType() == Items.getCombatAxe().getItem()
+				&& GameUtils.getGameByPlayer(p).getStatus() == GameStatus.RUNNING) {
+			final Item item = p.getWorld().dropItem(p.getEyeLocation(), NMS.getItemInHand(p));
 
-				double velocity = plugin.getConfiguration().getItemsCfg().getDouble("gameitems.combatAxe.velocity", 2D);
-				if (velocity > 0D) {
-					item.setVelocity(p.getLocation().getDirection().multiply(velocity));
-				}
+			p.getInventory().remove(Items.getCombatAxe().getItem());
 
-				final CombatAxeThread combatAxeThread = new CombatAxeThread(p, item);
-				combatAxeThread.start();
-
-				CompletableFuture.supplyAsync(() -> {
-					while (!item.isDead()) {
-						try {
-							Thread.sleep(3000);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-
-						if (item.isOnGround()) {
-							item.remove();
-							combatAxeThread.stop();
-							break; // To make sure we're broke the thread
-						}
-					}
-
-					return true;
-				});
-
-				return;
+			double velocity = plugin.getConfiguration().getItemsCfg().getDouble("gameitems.combatAxe.velocity", 2D);
+			if (velocity > 0D) {
+				item.setVelocity(p.getLocation().getDirection().multiply(velocity));
 			}
 
-			if (GameUtils.getGameByPlayer(p).getStatus() == GameStatus.WAITING) {
-				ItemMeta meta = hand.getItemMeta();
-				if (meta != null && meta.hasDisplayName()) {
-					Game game = GameUtils.getGameByPlayer(p);
+			final CombatAxeThread combatAxeThread = new CombatAxeThread(p, item);
+			combatAxeThread.start();
 
-					if (hasPerm(p, "ragemode.admin.item.forcestart") && Items.getForceStarter() != null
-							&& Items.getForceStarter().getDisplayName().equals(meta.getDisplayName())) {
-						if (GameUtils.forceStart(game)) {
-							sendMessage(p,
-									RageMode.getLang().get("commands.forcestart.game-start", "%game%", game.getName()));
-						} else {
-							sendMessage(p, RageMode.getLang().get("not-enough-players"));
-						}
+			CompletableFuture.supplyAsync(() -> {
+				while (!item.isDead()) {
+					try {
+						Thread.sleep(3000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
 					}
 
-					if (Items.getLeaveGameItem() != null
-							&& Items.getLeaveGameItem().getDisplayName().equals(meta.getDisplayName())) {
-						GameUtils.leavePlayer(p, game);
-					}
-
-					if (Items.getShopItem() != null
-							&& Items.getShopItem().getDisplayName().equals(meta.getDisplayName())) {
-						lobbyShop.openMainPage(p);
+					if (item.isOnGround()) {
+						item.remove();
+						combatAxeThread.stop();
+						break; // To make sure we're broke the thread
 					}
 				}
 
-				event.setCancelled(true);
+				return true;
+			});
+
+			return;
+		}
+
+		if (GameUtils.getGameByPlayer(p).getStatus() == GameStatus.WAITING) {
+			ItemMeta meta = hand.getItemMeta();
+			if (meta != null && meta.hasDisplayName()) {
+				Game game = GameUtils.getGameByPlayer(p);
+				if (hasPerm(p, "ragemode.admin.item.forcestart") && Items.getForceStarter() != null
+						&& Items.getForceStarter().getDisplayName().equals(meta.getDisplayName())) {
+					if (GameUtils.forceStart(game)) {
+						sendMessage(p,
+								RageMode.getLang().get("commands.forcestart.game-start", "%game%", game.getName()));
+					} else {
+						sendMessage(p, RageMode.getLang().get("not-enough-players"));
+					}
+				}
+
+				if (Items.getLeaveGameItem() != null
+						&& Items.getLeaveGameItem().getDisplayName().equals(meta.getDisplayName())) {
+					GameUtils.leavePlayer(p, game);
+				}
+
+				if (Items.getShopItem() != null && Items.getShopItem().getDisplayName().equals(meta.getDisplayName())) {
+					lobbyShop.openMainPage(p);
+				}
 			}
+
+			event.setCancelled(true);
 		}
 	}
 
@@ -1138,7 +1123,7 @@ public class GameListener implements Listener {
 			event.setCancelled(true);
 	}
 
-	// This will fired in GameTimer tos simulate pressure mine
+	// This will fired in GameTimer to simulate pressure mine
 	@EventHandler
 	public void onMonsterInteract(EntityInteractEvent e) {
 		if (GameAreaManager.inArea(e.getEntity().getLocation())) {
@@ -1247,20 +1232,27 @@ public class GameListener implements Listener {
 
 		if (GameUtils.getGame(currentLoc) != null) {
 			for (final Entity near : nears) {
-				if (explosionVictims.containsKey(near.getUniqueId())) {
-					explosionVictims.remove(near.getUniqueId());
+				final UUID uuid = near.getUniqueId();
+
+				if (explosionVictims.containsKey(uuid)) {
+					explosionVictims.remove(uuid);
 				}
 
-				if (GameUtils.getGame(currentLoc).getGameType() == GameType.APOCALYPSE
-						&& PRESSUREMINESOWNER.containsKey(currentLoc)) {
-					explosionVictims.put(near.getUniqueId(), PRESSUREMINESOWNER.get(currentLoc));
+				if (GameUtils.getGame(currentLoc).getGameType() == GameType.APOCALYPSE) {
+					for (PressureMine mines : PRESSUREMINES) {
+						if (mines.getMines().contains(currentLoc)) {
+							explosionVictims.put(uuid, mines.getPlayerUUID());
+							break;
+						}
+					}
+
 					continue;
 				}
 
 				if (p != null) {
-					explosionVictims.put(near.getUniqueId(), p.getUniqueId());
+					explosionVictims.put(uuid, p.getUniqueId());
 				} else if (near instanceof Player) {
-					explosionVictims.put(near.getUniqueId(), near.getUniqueId());
+					explosionVictims.put(uuid, uuid);
 				}
 
 				if (near instanceof Player) {
@@ -1270,8 +1262,8 @@ public class GameListener implements Listener {
 			}
 		}
 
-		if (PRESSUREMINESOWNER.containsKey(currentLoc)) {
-			PRESSUREMINESOWNER.remove(currentLoc);
+		for (PressureMine mines : PRESSUREMINES) {
+			mines.removeMine(currentLoc);
 		}
 
 		return true;

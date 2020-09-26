@@ -8,7 +8,6 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.IGameSpawn;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
@@ -53,20 +52,20 @@ public class addspawn implements ICommand {
 		while (aFile.isSet(path + i))
 			i++;
 
+		path += i + ".";
+
 		Location loc = p.getLocation();
-		aFile.set(path + i + ".world", p.getWorld().getName());
-		aFile.set(path + i + ".x", loc.getX());
-		aFile.set(path + i + ".y", loc.getY());
-		aFile.set(path + i + ".z", loc.getZ());
-		aFile.set(path + i + ".yaw", loc.getYaw());
-		aFile.set(path + i + ".pitch", loc.getPitch());
+		aFile.set(path + "world", p.getWorld().getName());
+		aFile.set(path + "x", loc.getX());
+		aFile.set(path + "y", loc.getY());
+		aFile.set(path + "z", loc.getZ());
+		aFile.set(path + "yaw", loc.getYaw());
+		aFile.set(path + "pitch", loc.getPitch());
 		Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
-		for (IGameSpawn spawn : plugin.getSpawns()) {
-			if (spawn.getGame().getName().equalsIgnoreCase(args[1]) && spawn instanceof GameSpawn) {
-				spawn.addSpawn(loc);
-				break;
-			}
+		IGameSpawn spawn = GameUtils.getGameSpawn(args[1]);
+		if (spawn != null) {
+			spawn.addSpawn(loc);
 		}
 
 		sendMessage(p, RageMode.getLang().get("setup.spawn-set-success", "%number%", i, "%game%", args[1]));

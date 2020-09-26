@@ -36,7 +36,7 @@ public class SignPlaceholder {
 
 			if (line.contains("%current-players%")) {
 				line = line.replace("%current-players%",
-						status == GameStatus.RUNNING || status == GameStatus.WAITING
+						(status == GameStatus.RUNNING || status == GameStatus.WAITING)
 								? Integer.toString(GameUtils.getGame(game).getPlayers().size())
 								: "0");
 			}

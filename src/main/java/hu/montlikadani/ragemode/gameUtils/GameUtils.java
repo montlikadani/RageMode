@@ -910,7 +910,9 @@ public class GameUtils {
 	 * @see #sendBossBarMessages(Player, String, String)
 	 * @param game Game name
 	 * @param type Action type
+	 * @deprecated Use {@link #sendBossBarMessages(Player, String, String)}
 	 */
+	@Deprecated
 	public static void sendBossBarMessages(String game, String type) {
 		for (PlayerManager pm : getGame(game).getPlayersFromList()) {
 			sendBossBarMessages(pm.getPlayer(), game, type);
@@ -932,6 +934,9 @@ public class GameUtils {
 			Debug.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
 			return;
 		}
+
+		if (!isGameWithNameExists(game))
+			return;
 
 		Configuration conf = RageMode.getInstance().getConfiguration();
 
@@ -1017,8 +1022,8 @@ public class GameUtils {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
 			for (PlayerManager pm : players) {
 				final Player p = pm.getPlayer();
-				RageScores.removePointsForPlayer(p.getUniqueId());
 
+				RageScores.removePointsForPlayer(p.getUniqueId());
 				game.removePlayer(p);
 			}
 		});
@@ -1183,19 +1188,18 @@ public class GameUtils {
 		RewardManager reward = new RewardManager(gName);
 		for (PlayerManager pm : game.getPlayersFromList()) {
 			final Player p = pm.getPlayer();
-			final PlayerPoints pP = RageScores.getPlayerPoints(p.getUniqueId());
 
-			Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
-				RuntimePPManager.updatePlayerEntry(pP);
+			RageScores.getPlayerPoints(p.getUniqueId()).ifPresent(pP -> {
+				Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
+					RuntimePPManager.updatePlayerEntry(pP);
 
-				Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-						() -> HoloHolder.updateHolosForPlayer(p));
-			});
+					Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
+							() -> HoloHolder.updateHolosForPlayer(p));
+				});
 
-			if (pP != null) {
 				Thread th = new Thread(new DBThreads(pP));
 				th.start();
-			}
+			});
 
 			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
 			Utils.callEvent(gameLeaveEvent);
@@ -1289,7 +1293,11 @@ public class GameUtils {
 	}
 
 	private static String replaceVariables(String s, UUID uuid) {
-		PlayerPoints score = RageScores.getPlayerPoints(uuid);
+		if (!RageScores.getPlayerPoints(uuid).isPresent()) {
+			return s;
+		}
+
+		PlayerPoints score = RageScores.getPlayerPoints(uuid).get();
 
 		if (s.contains("%points%"))
 			s = s.replace("%points%", Integer.toString(score.getPoints()));

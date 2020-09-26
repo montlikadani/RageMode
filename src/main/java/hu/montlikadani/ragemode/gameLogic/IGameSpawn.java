@@ -29,15 +29,17 @@ public interface IGameSpawn {
 	 * Adds a new spawn location to the list.
 	 * 
 	 * @param loc The location where we want to save.
+	 * @return true if added
 	 */
-	void addSpawn(Location loc);
+	boolean addSpawn(Location loc);
 
 	/**
 	 * Removes a spawn by location.
 	 * 
 	 * @param loc The location where we want to remove.
+	 * @return true if removed
 	 */
-	void removeSpawn(Location loc);
+	boolean removeSpawn(Location loc);
 
 	/**
 	 * Removes all spawns location in game.

@@ -68,11 +68,7 @@ public class NextPage implements IShop {
 
 		for (String guiItems : section.getKeys(false)) {
 			String category = section.getString(guiItems + ".category", "").toUpperCase();
-			if (category.isEmpty()) {
-				continue;
-			}
-
-			if (ShopCategory.valueOf(category) != type) {
+			if (category.isEmpty() || ShopCategory.valueOf(category) != type) {
 				continue;
 			}
 
@@ -138,9 +134,8 @@ public class NextPage implements IShop {
 					for (String l : list) {
 						PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
 
-						int itemAmount = sec.getString(slots + ".giveitem", "").contains(":")
-								? Integer.parseInt(sec.getString(slots + ".giveitem", "").split(":")[1])
-								: 1;
+						String[] itemSplit = sec.getString(slots + ".giveitem", "").split(":");
+						int itemAmount = itemSplit.length > 1 ? Integer.parseInt(itemSplit[1]) : 1;
 
 						double costValue = sec.getDouble(slots + ".cost.value", 0d);
 						int pointsValue = sec.getInt(slots + ".cost.points", 0);

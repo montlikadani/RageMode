@@ -17,6 +17,7 @@ import hu.montlikadani.ragemode.events.GameListener;
 import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.items.handler.PressureMine;
 
 public class GameTimer extends TimerTask {
 
@@ -117,16 +118,19 @@ public class GameTimer extends TimerTask {
 							continue;
 						}
 
-						for (Location mineLoc : GameListener.PRESSUREMINESOWNER.keySet()) {
-							if (mineLoc.getBlock().equals(f.getLocation().getBlock())) {
-								EntityInteractEvent interact = new EntityInteractEvent(f, mineLoc.getBlock());
-								if (!interact.isCancelled()) {
-									Bukkit.getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
-										Bukkit.getPluginManager().callEvent(interact);
-										return true;
-									});
+						for (PressureMine mines : GameListener.PRESSUREMINES) {
+							for (Location mineLoc : mines.getMines()) {
+								if (mineLoc.getBlock().equals(f.getLocation().getBlock())) {
+									EntityInteractEvent interact = new EntityInteractEvent(f,
+											f.getLocation().getBlock());
+									if (!interact.isCancelled()) {
+										Bukkit.getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
+											Bukkit.getPluginManager().callEvent(interact);
+											return true;
+										});
 
-									break e;
+										break e;
+									}
 								}
 							}
 						}

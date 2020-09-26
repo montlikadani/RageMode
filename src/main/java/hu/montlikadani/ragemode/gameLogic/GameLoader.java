@@ -80,7 +80,7 @@ public class GameLoader {
 		}
 
 		if (game.getGameType() == hu.montlikadani.ragemode.gameUtils.GameType.APOCALYPSE
-				&& !GameUtils.getGameZombieSpawn(game).isReady()) {
+				&& GameUtils.getGameZombieSpawn(game) != null && !GameUtils.getGameZombieSpawn(game).isReady()) {
 			GameUtils.broadcastToGame(game, RageMode.getLang().get("game.not-set-up"));
 			return false;
 		}

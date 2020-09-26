@@ -68,17 +68,17 @@ public class GameSpawn implements IGameSpawn {
 	}
 
 	@Override
-	public void addSpawn(Location loc) {
+	public boolean addSpawn(Location loc) {
 		Validate.notNull(loc, "Location can't be null!");
 
-		isReady = spawnLocations.add(loc);
+		return isReady = spawnLocations.add(loc);
 	}
 
 	@Override
-	public void removeSpawn(Location loc) {
+	public boolean removeSpawn(Location loc) {
 		Validate.notNull(loc, "Location can't be null!");
 
-		spawnLocations.remove(loc);
+		return spawnLocations.remove(loc);
 	}
 
 	@Override

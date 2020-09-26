@@ -26,12 +26,12 @@ public class RmTabCompleter implements TabCompleter {
 			String partOfCommand = null;
 
 			if (args.length < 2) {
-				getCmds(sender).forEach(cmds::add);
+				if (args[0].equalsIgnoreCase("joinrandom") && hasPerm(sender, "ragemode.joinrandom")) {
+					cmds.add("joinrandom");
+				}
 
 				getDefaultCmds(sender).forEach(cmds::add);
-
 				getAdminCmds(sender).forEach(cmds::add);
-
 				getSomeCmds(sender).forEach(cmds::add);
 
 				partOfCommand = args[0];
@@ -100,17 +100,6 @@ public class RmTabCompleter implements TabCompleter {
 		List<String> c = new ArrayList<>();
 		for (String cmds : Arrays.asList("join", "leave", "listgames", "stats", "spectate", "listplayers")) {
 			if (hasPerm(sender, "ragemode.help.playercommands") || hasPerm(sender, "ragemode." + cmds)) {
-				c.add(cmds);
-			}
-		}
-
-		return c;
-	}
-
-	private List<String> getCmds(CommandSender sender) {
-		List<String> c = new ArrayList<>();
-		for (String cmds : Arrays.asList("joinrandom")) {
-			if (hasPerm(sender, "ragemode." + cmds)) {
 				c.add(cmds);
 			}
 		}

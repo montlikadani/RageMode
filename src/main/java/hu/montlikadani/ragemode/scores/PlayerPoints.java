@@ -7,21 +7,9 @@ public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 	private UUID uuid;
 	@Deprecated private String playerUUID;
 
-	private int kills = 0;
-	private int axeKills = 0;
-	private int directArrowKills = 0;
-	private int explosionKills = 0;
-	private int knifeKills = 0;
-	private int deaths = 0;
-	private int axeDeaths = 0;
-	private int directArrowDeaths = 0;
-	private int explosionDeaths = 0;
-	private int knifeDeaths = 0;
-	private int currentStreak = 0;
-	private int longestStreak = 0;
-	private int wins = 0;
-	private int games = 0;
-	private int zombieKills = 0;
+	private int kills = 0, axeKills = 0, directArrowKills = 0, explosionKills = 0, knifeKills = 0, deaths = 0,
+			axeDeaths = 0, directArrowDeaths = 0, explosionDeaths = 0, knifeDeaths = 0, currentStreak = 0,
+			longestStreak = 0, wins = 0, games = 0, zombieKills = 0;
 
 	private double kd = 0d;
 

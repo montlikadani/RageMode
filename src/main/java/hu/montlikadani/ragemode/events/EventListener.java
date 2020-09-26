@@ -88,10 +88,10 @@ public class EventListener implements Listener {
 			return;
 		}
 
+		final org.bukkit.Location loc = b.getLocation();
+
 		if (hasPerm(p, "ragemode.admin.area") && NMS.getItemInHand(p).getType()
 				.equals(Material.getMaterial(ConfigValues.getSelectionItem().toUpperCase()))) {
-			org.bukkit.Location loc = b.getLocation();
-
 			if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
 				RageMode.getInstance().getSelection().placeLoc1(p, loc);
 				sendMessage(p, RageMode.getLang().get("commands.area.selected1", "%x%", loc.getBlockX(), "%y%",
@@ -113,13 +113,11 @@ public class EventListener implements Listener {
 				return;
 			}
 
-			if (!SignCreator.isSign(b.getLocation())) {
+			if (!SignCreator.isSign(loc)) {
 				return;
 			}
 
-			final String name = SignCreator.getSignData(b.getLocation()) != null
-					? SignCreator.getSignData(b.getLocation()).getGame()
-					: null;
+			final String name = SignCreator.getSignData(loc) != null ? SignCreator.getSignData(loc).getGame() : null;
 			if (name == null || !GameUtils.isGameWithNameExists(name)) {
 				sendMessage(p, RageMode.getLang().get("game.does-not-exist"));
 				return;

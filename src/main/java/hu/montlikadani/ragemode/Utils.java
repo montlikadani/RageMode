@@ -58,8 +58,10 @@ public class Utils {
 		}
 
 		if (!event.isAsynchronous()) {
-			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-					() -> Bukkit.getPluginManager().callEvent(event));
+			Bukkit.getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
+				Bukkit.getPluginManager().callEvent(event);
+				return true;
+			});
 		} else {
 			Bukkit.getPluginManager().callEvent(event);
 		}
@@ -141,7 +143,7 @@ public class Utils {
 			pp = RuntimePPManager.getPPForPlayer(uuid);
 
 			if (GameUtils.isPlayerPlaying(player)) {
-				pp = RageScores.getPlayerPoints(uuid);
+				pp = RageScores.getPlayerPoints(uuid).orElse(null);
 			}
 		}
 

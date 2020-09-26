@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -28,7 +29,7 @@ public class HoloHolder {
 	private static File holosFile;
 	private static YamlConfiguration holosConf;
 
-	private static final List<Location> HOLOS = new ArrayList<>();
+	private static final List<Location> HOLOS = Collections.synchronizedList(new ArrayList<Location>());
 
 	public static void addHolo(Location loc) {
 		if (!RageMode.getInstance().isHologramEnabled())
@@ -38,7 +39,10 @@ public class HoloHolder {
 		loc.setPitch(0f);
 		loc.setYaw(0f);
 
-		HOLOS.add(loc);
+		synchronized (HOLOS) {
+			HOLOS.add(loc);
+		}
+
 		holosConf.set("data.holos", HOLOS);
 
 		Configuration.saveFile(holosConf, holosFile);
@@ -58,7 +62,10 @@ public class HoloHolder {
 			return;
 		}
 
-		loc.forEach(HoloHolder.HOLOS::add);
+		synchronized (HOLOS) {
+			loc.forEach(HoloHolder.HOLOS::add);
+		}
+
 		Bukkit.getOnlinePlayers().forEach(HoloHolder::showAllHolosToPlayer);
 	}
 
@@ -142,7 +149,10 @@ public class HoloHolder {
 		if (!RageMode.getInstance().isHologramEnabled() || holo == null || !HOLOS.contains(holo.getLocation()))
 			return false;
 
-		HOLOS.remove(holo.getLocation());
+		synchronized (HOLOS) {
+			HOLOS.remove(holo.getLocation());
+		}
+
 		holosConf.set("data.holos", HOLOS);
 
 		Configuration.saveFile(holosConf, holosFile);
@@ -213,11 +223,13 @@ public class HoloHolder {
 		if (!RageMode.getInstance().isHologramEnabled() || player == null)
 			return;
 
-		int i = 0;
-		int imax = HOLOS.size();
-		while (i < imax) {
-			displayHoloToPlayer(player, HOLOS.get(i));
-			i++;
+		synchronized (HOLOS) {
+			int i = 0;
+			int imax = HOLOS.size();
+			while (i < imax) {
+				displayHoloToPlayer(player, HOLOS.get(i));
+				i++;
+			}
 		}
 	}
 

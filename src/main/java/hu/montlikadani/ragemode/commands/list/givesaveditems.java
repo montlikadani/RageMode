@@ -67,11 +67,9 @@ public class givesaveditems implements ICommand {
 				}
 
 				// Confirmation to remove from file
-				if (args.length == 3) {
-					if (args[2].equalsIgnoreCase("true") || args[2].equalsIgnoreCase("yes")) {
-						datas.set("datas." + t.getName(), null);
-						Configuration.saveFile(datas, plugin.getConfiguration().getDatasFile());
-					}
+				if (args.length == 3 && (args[2].equalsIgnoreCase("true") || args[2].equalsIgnoreCase("yes"))) {
+					datas.set("datas." + t.getName(), null);
+					Configuration.saveFile(datas, plugin.getConfiguration().getDatasFile());
 				}
 			}
 
@@ -115,11 +113,9 @@ public class givesaveditems implements ICommand {
 		}
 
 		// Confirmation to remove from file
-		if (args.length == 3) {
-			if (args[2].equalsIgnoreCase("true") || args[2].equalsIgnoreCase("yes")) {
-				datas.set("datas." + args[1], null);
-				Configuration.saveFile(datas, plugin.getConfiguration().getDatasFile());
-			}
+		if (args.length == 3 && (args[2].equalsIgnoreCase("true") || args[2].equalsIgnoreCase("yes"))) {
+			datas.set("datas." + args[1], null);
+			Configuration.saveFile(datas, plugin.getConfiguration().getDatasFile());
 		}
 
 		return true;

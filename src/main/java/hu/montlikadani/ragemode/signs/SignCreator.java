@@ -256,14 +256,11 @@ public class SignCreator {
 	}
 
 	private static String getGameFromString(String raw) {
-		String[] splited = raw.split(",");
-		String returnGame = splited[4];
-		return returnGame;
+		return raw.split(",")[4];
 	}
 
 	private static String locationSignToString(Location loc, String game) {
-		String returnString = loc.getWorld().getName() + "," + loc.getX() + "," + loc.getY() + "," + loc.getZ() + "," + game;
-		return returnString;
+		return loc.getWorld().getName() + "," + loc.getX() + "," + loc.getY() + "," + loc.getZ() + "," + game;
 	}
 
 	private static Location stringToLocationSign(String raw) {

@@ -11,9 +11,60 @@ import hu.montlikadani.ragemode.Utils;
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
+import java.io.File;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+
 public class RmCommand implements CommandExecutor {
 
+	@SuppressWarnings("serial")
+	private final Set<Class<?>> subCmds = new HashSet<Class<?>>() {
+		{
+			try {
+				for (File rm : new File(RageMode.getInstance().getFolder().getParent()).listFiles()) {
+					if (rm.getName().toLowerCase().contains("ragemode") && rm.getName().endsWith(".jar")) {
+						JarFile file = new JarFile(rm);
+						for (Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
+							JarEntry jarEntry = entry.nextElement();
+							String name = jarEntry.getName().replace('/', '.');
+							String packageName = "hu.montlikadani.ragemode.commands.list";
+							if (name.startsWith(packageName) && name.endsWith(".class")
+									&& name.matches("^[a-zA-Z|.]+$")) {
+								add(Class.forName(name.substring(0, name.length() - 6)));
+							}
+						}
+
+						file.close();
+						break;
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	};
+
+	private final Set<ICommand> cmds = new HashSet<>();
+
 	@SuppressWarnings("deprecation")
+	public RmCommand() {
+		for (Class<?> s : subCmds) {
+			try {
+				Class<?> c = RageMode.class.getClassLoader().loadClass(s.getName());
+				if (Utils.Reflections.getCurrentJavaVersion() >= 9) {
+					cmds.add((ICommand) c.getDeclaredConstructor().newInstance());
+				} else {
+					cmds.add((ICommand) c.newInstance());
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length == 0) {
@@ -187,24 +238,17 @@ public class RmCommand implements CommandExecutor {
 				return true;
 			}
 
-			String path = "hu.montlikadani.ragemode.commands.list";
-			ICommand command = null;
-			try {
-				if (Utils.Reflections.getCurrentJavaVersion() >= 9) {
-					command = (ICommand) RageMode.class.getClassLoader().loadClass(path + "." + args[0].toLowerCase())
-							.getDeclaredConstructor().newInstance();
-				} else {
-					command = (ICommand) RageMode.class.getClassLoader().loadClass(path + "." + args[0].toLowerCase())
-							.newInstance();
+			boolean found = false;
+			for (ICommand command : cmds) {
+				if (command.getClass().getSimpleName().equalsIgnoreCase(args[0])) {
+					command.run(RageMode.getInstance(), sender, args);
+					found = true;
+					break;
 				}
-			} catch (ClassNotFoundException e) {
-				sendMessage(sender, RageMode.getLang().get("wrong-command"));
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
 
-			if (command != null) {
-				command.run(RageMode.getInstance(), sender, args);
+			if (!found) {
+				sendMessage(sender, RageMode.getLang().get("wrong-command"));
 			}
 		}
 

@@ -82,7 +82,7 @@ public class Language {
 		l.getFC().options().copyDefaults(true);
 
 		l.getL("in-game-only", "&cThis command can only be in-game.");
-		l.getL("not-a-player", "&cThis player not a player.");
+		l.getL("not-a-player", "&cThis is not a player.");
 		l.getL("wrong-command", "&cThis is not the command you are looking for!");
 		l.getL("no-permission", "&cYou don't have permission for that!");
 		l.getL("no-permission-to-interact-sign", "&cYou don't have permission to interact signs!");
@@ -203,7 +203,7 @@ public class Language {
 		l.getL("game.broadcast.knife-kill", "&a%victim%&3 was killed by&a %killer%&3 with a&6 RageKnife&3.");
 		l.getL("game.broadcast.explosion-kill", "&a%victim%&3 was&6 blown up&3 by&a %killer%&3.");
 		l.getL("game.broadcast.grenade-kill", "&a%victim%&3 was killed by&a %killer%&3 with a&7 Grenade&3. LOL");
-		l.getL("game.broadcast.zombie-kill", "&a%entity%&3 killed by&a %killer%&3.");
+		l.getL("game.broadcast.zombie-kill", "&a%entity%&3 killed by&a %killer%&3, remained entities:&c %remainEntities%.");
 		l.getL("game.broadcast.error-kill", "&cWhoops, that shouldn't happen normally...");
 		l.getL("game.broadcast.game-end", "&9The game ends in&e %time%&9.");
 		l.getL("game.unknown-killer", "&cDo you know who killed you? Because we don't know it...");

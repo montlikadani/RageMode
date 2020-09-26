@@ -28,14 +28,12 @@ public class UpdateDownloader {
 		}
 
 		CompletableFuture.supplyAsync(() -> {
-			String versionString = "", lineWithVersion = "";
-			int newVersion = 0, currentVersion = 0;
-
 			try {
 				URL githubUrl = new URL(
 						"https://raw.githubusercontent.com/montlikadani/RageMode/master/src/main/resources/plugin.yml");
 				BufferedReader br = new BufferedReader(new InputStreamReader(githubUrl.openStream()));
 				String s;
+				String lineWithVersion = "";
 				while ((s = br.readLine()) != null) {
 					String line = s;
 					if (line.toLowerCase().contains("version")) {
@@ -44,12 +42,11 @@ public class UpdateDownloader {
 					}
 				}
 
-				versionString = lineWithVersion.split(": ")[1];
-				String nVersion = versionString.replaceAll("[^0-9]", "");
-				newVersion = Integer.parseInt(nVersion);
-
-				String cVersion = RageMode.getInstance().getDescription().getVersion().replaceAll("[^0-9]", "");
-				currentVersion = Integer.parseInt(cVersion);
+				String versionString = lineWithVersion.split(": ")[1],
+						nVersion = versionString.replaceAll("[^0-9]", ""),
+						cVersion = RageMode.getInstance().getDescription().getVersion().replaceAll("[^0-9]", "");
+				int newVersion = Integer.parseInt(nVersion);
+				int currentVersion = Integer.parseInt(cVersion);
 
 				if (newVersion <= currentVersion || currentVersion >= newVersion) {
 					return false;

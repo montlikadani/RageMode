@@ -6,7 +6,7 @@ import hu.montlikadani.ragemode.Utils.Reflections;
 
 import java.lang.reflect.Constructor;
 
-public class Titles {
+public abstract class Titles {
 
 	public static void sendTitle(Player player, Integer fadeIn, Integer stay, Integer fadeOut, String title,
 			String subtitle) {

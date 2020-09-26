@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.Utils.Reflections;
 
-public class ActionBar {
+public abstract class ActionBar {
 
 	public static void sendActionBar(Player player, String message) {
 		if (player == null) {
