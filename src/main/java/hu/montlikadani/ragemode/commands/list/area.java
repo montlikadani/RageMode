@@ -88,7 +88,7 @@ public class area implements ICommand {
 			aFile.set(path + "z", area.getHighLoc().getZ());
 			Configuration.saveFile(aFile, plugin.getConfiguration().getAreasFile());
 
-			GameAreaManager.getGameAreas().put(areaName, new GameArea(args[2], area));
+			GameAreaManager.getGameAreas().put(areaName, new GameArea(GameUtils.getGame(args[2]), area));
 			sendMessage(p, RageMode.getLang().get("commands.area.set", "%name%", areaName));
 		} else if (args.length <= 3 && args[1].equalsIgnoreCase("remove")) {
 			if (args.length < 3) {

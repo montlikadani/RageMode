@@ -243,7 +243,7 @@ lobbyitems:
                   value: 450
                   points: 0
                 commands:
-                - "console:msg &aYou paid 450 money."
+                - "console:msg %player% &aYou paid 450 money."
                 effect: speed:15:1
                 lore:
                 - "&7Giving speed effect to player when the game started."

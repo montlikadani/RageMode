@@ -73,7 +73,7 @@ public class RuntimePPManager {
 	 * 
 	 * @param uuid   Player uuid
 	 * @param points points
-	 * @return <code>false</code> if the player is in the database and have enough, otherwise <code>false</code>
+	 * @return <code>true</code> if the player is in the database and have enough points, otherwise <code>false</code>
 	 */
 	public static boolean hasPoints(UUID uuid, int points) {
 		PlayerPoints pp = getPPForPlayer(uuid);

@@ -15,6 +15,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -36,6 +37,7 @@ import hu.montlikadani.ragemode.items.shop.pages.MainPage;
 import hu.montlikadani.ragemode.items.shop.pages.NextPage;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
+import hu.montlikadani.ragemode.scores.PlayerPoints;
 
 public class LobbyShop implements Listener {
 
@@ -129,10 +131,10 @@ public class LobbyShop implements Listener {
 		//ev.getInventory().getHolder() instanceof IShop
 	}*/
 
-	/*@EventHandler
+	@EventHandler
 	public void onClose(InventoryCloseEvent e) {
 		removeShop((Player) e.getPlayer());
-	}*/
+	}
 
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onClickEvent(InventoryClickEvent ev) {
@@ -181,7 +183,7 @@ public class LobbyShop implements Listener {
 				NavigationType type = cmds.getNavigationType();
 				if (type == NavigationType.WITHOUT && currentItem.getItemMeta().getDisplayName()
 						.equalsIgnoreCase(shopItem.getItem().getItemMeta().getDisplayName())) {
-					if (buyElement(ev, cmds.getConfigPath(), shopItem.getCategory())) {
+					if (buyElement(player, cmds.getConfigPath(), shopItem.getCategory())) {
 						for (String c : cmds.getCommands()) {
 							if (c.startsWith("console:")) {
 								c = c.replace("console:", "");
@@ -214,14 +216,14 @@ public class LobbyShop implements Listener {
 		});
 	}
 
-	private boolean buyElement(InventoryClickEvent e, String path, ShopCategory shopCategory) {
-		Player player = (Player) e.getWhoClicked();
+	private boolean buyElement(Player player, String path, ShopCategory shopCategory) {
 		if (!isOpened(player)) {
 			return false;
 		}
 
 		Configuration conf = plugin.getConfiguration();
 		BoughtElements elements = BOUGHTITEMS.get(player);
+		PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
 
 		final double cost = conf.getItemsCfg().getDouble(path + ".cost.value", 0d);
 		final double currentCost = elements != null ? elements.getCost() : cost;
@@ -257,7 +259,7 @@ public class LobbyShop implements Listener {
 			}
 
 			if ((plugin.isVaultEnabled() && !plugin.getEconomy().has(player, finalCost))
-					|| !RuntimePPManager.hasPoints(player.getUniqueId(), finalPoints)) {
+					|| (pp != null && !pp.hasPoints(finalPoints))) {
 				return false;
 			}
 
@@ -286,7 +288,7 @@ public class LobbyShop implements Listener {
 			}
 
 			if ((plugin.isVaultEnabled() && !plugin.getEconomy().has(player, finalCost))
-					|| !RuntimePPManager.hasPoints(player.getUniqueId(), finalPoints)) {
+					|| (pp != null && !pp.hasPoints(finalPoints))) {
 				return false;
 			}
 
@@ -324,7 +326,8 @@ public class LobbyShop implements Listener {
 			if (Version.isCurrentLower(Version.v1_9_R1)) {
 				try {
 					for (Effect effect : Effect.values()) {
-						Object effectType = Effect.class.getDeclaredClasses()[0].getDeclaredField("PARTICLE").get(effect);
+						Object effectType = Effect.class.getDeclaredClasses()[0].getDeclaredField("PARTICLE")
+								.get(effect);
 						if (effect.toString().equalsIgnoreCase(name)
 								&& effect.getClass().getDeclaredMethod("getType").invoke(effect) == effectType) {
 							particle = effect;
@@ -353,7 +356,7 @@ public class LobbyShop implements Listener {
 			}
 
 			if ((plugin.isVaultEnabled() && !plugin.getEconomy().has(player, finalCost))
-					|| !RuntimePPManager.hasPoints(player.getUniqueId(), finalPoints)) {
+					|| (pp != null && !pp.hasPoints(finalPoints))) {
 				return false;
 			}
 

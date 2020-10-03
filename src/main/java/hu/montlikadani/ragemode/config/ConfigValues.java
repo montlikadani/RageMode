@@ -5,11 +5,11 @@ package hu.montlikadani.ragemode.config;
  */
 public class ConfigValues {
 
-	private static String lang, hubName, selectionItem, databaseType, databaseTablePrefix, username, password, database, host, port,
-			encoding, sqlFileName, signGameRunning, signGameWaiting, signGameFull, signGameLocked, signBackgrType,
-			titleJoinGame, subtitleJoinGame, joinTitleTime, lobbyTitle, subtitleLobby, lobbyTitleTime, wonTitle,
-			wonsubtitle, wonTitleTime, youwonTitle, youwonsubtitle, youwonTitleTime, tabPrefix, tabSuffix, sbTitle,
-			chatFormat;
+	private static String lang, hubName, selectionItem, databaseType, databaseTablePrefix, username, password, database,
+			host, port, encoding, sqlFileName, signGameRunning, signGameWaiting, signGameFull, signGameLocked,
+			signBackgrType, titleJoinGame, subtitleJoinGame, joinTitleTime, lobbyTitle, subtitleLobby, lobbyTitleTime,
+			wonTitle, wonsubtitle, wonTitleTime, youwonTitle, youwonsubtitle, youwonTitleTime, tabPrefix, tabSuffix,
+			sbTitle, chatFormat;
 
 	@Deprecated private static boolean signBackground;
 
@@ -20,11 +20,13 @@ public class ConfigValues {
 			useGrenadeTrails, useArrowTrails, enableChatInGame, kickRandomPlayerIfJoinsVipToFullGame, deathMsgs,
 			bossbarEnable, actionbarEnable, switchGMForPlayers, disableAllCommandsInGameFreeze, enableChatAfterEnd,
 			tabFormatEnable, tabEnable, scoreboardEnable, enableChatFormat, restartServer, stopServer, rewardEnable,
-			rejoinDelayEnabled, rememberRejoinDelay, freezePlayers, waitForNextSpawnAfterZombiesAreDead;
+			rejoinDelayEnabled, rememberRejoinDelay, freezePlayers, waitForNextSpawnAfterZombiesAreDead,
+			notifySpectatorsToLeave;
 
 	private static int gameFreezeTime, lobbyDelay, gameTime, bowKill, axeKill, axeDeath, knifeKill, explosionKill,
 			suicide, grenadeKill, respawnProtectTime, rejoinDelayHour, rejoinDelayMinute, rejoinDelaySecond,
-			killBonusChance, delayBeforeFirstZombiesSpawn, delayAfterNextZombiesSpawning, playerLives;
+			killBonusChance, delayBeforeFirstZombiesSpawn, delayAfterNextZombiesSpawning, playerLives,
+			timeBetweenMessageSending;
 
 	public static void loadValues(FileConfig f) {
 		lang = f.get("language", "en");
@@ -70,6 +72,8 @@ public class ConfigValues {
 		youwonsubtitle = f.get("titles.you-won.subtitle", "&2You won this round!");
 		youwonTitleTime = f.get("titles.you-won.time", "20, 80, 20");
 		spectatorEnable = f.get("spectator.enable", true);
+		notifySpectatorsToLeave = f.get("spectator.notify-spectators-to-leave.enabled", true);
+		timeBetweenMessageSending = f.get("spectator.notify-spectators-to-leave.time-between-message-sending", 10);
 		chatEnableinLobby = f.get("lobby.enable-chat-in-lobby", true);
 		playerLevelAsTimeCounter = f.get("lobby.player-level-as-time-counter", false);
 		playersCanJoinRandomToRunningGames = f.get("players-can-join-random-to-running-games", true);
@@ -503,5 +507,13 @@ public class ConfigValues {
 
 	public static int getPlayerLives() {
 		return playerLives;
+	}
+
+	public static boolean isNotifySpectatorsToLeave() {
+		return notifySpectatorsToLeave;
+	}
+
+	public static int getSpecTimeBetweenMessageSending() {
+		return timeBetweenMessageSending;
 	}
 }

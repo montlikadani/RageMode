@@ -146,6 +146,7 @@ statistic-list:
 - "&cPontok:&2 %points%"
 
 game:
+  spec-player-leave-notify: "&2You can leave this game by typing&e /rm leave"
   lobby:
     start-message: "&9Ez a kör kezdődik&e %time%&9 másodpercen belül."
     chat-is-disabled: "&cA chat jelenleg letiltva a lobbyban!"

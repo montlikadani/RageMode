@@ -32,6 +32,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -1129,6 +1130,15 @@ public class GameListener implements Listener {
 		if (GameAreaManager.inArea(e.getEntity().getLocation())) {
 			explodeMine(null, e.getEntity().getLocation());
 		}
+	}
+
+	@EventHandler
+	public void onBlockGrow(BlockGrowEvent e) {
+		GameAreaManager.getAreaByLocation(e.getBlock().getLocation()).ifPresent(area -> {
+			if (area.getGame().isGameRunning()) {
+				e.setCancelled(true);
+			}
+		});
 	}
 
 	@EventHandler

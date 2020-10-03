@@ -202,7 +202,7 @@ public class MapChecker {
 
 		for (Map.Entry<String, GameArea> map : GameAreaManager.getGameAreas().entrySet()) {
 			// TODO: Add a check for area to make sure that is set in the correct position
-			if (map.getValue().getGame().equalsIgnoreCase(gameName)) {
+			if (map.getValue().getGame().getName().equalsIgnoreCase(gameName)) {
 				isValid = true;
 				break;
 			}

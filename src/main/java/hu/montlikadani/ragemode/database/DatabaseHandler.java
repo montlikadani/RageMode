@@ -89,9 +89,8 @@ public class DatabaseHandler {
 				charEncode = "UTF-8";
 			}
 
-			connector = new MySQLConnect(host, port, database, username, password, serverCertificate, useUnicode,
-					charEncode, autoReconnect, useSSL, prefix);
-			if (connector != null && connector.isConnected()) {
+			if ((connector = new MySQLConnect(host, port, database, username, password, serverCertificate, useUnicode,
+					charEncode, autoReconnect, useSSL, prefix)).isConnected()) {
 				Debug.logConsole("Successfully connected to MySQL!");
 			}
 
@@ -114,8 +113,7 @@ public class DatabaseHandler {
 				}
 			}
 
-			connector = new SQLConnect(sqlFile, prefix);
-			if (connector != null && connector.isConnected()) {
+			if ((connector = new SQLConnect(sqlFile, prefix)).isConnected()) {
 				Debug.logConsole("Successfully connected to SQL!");
 			}
 
@@ -130,10 +128,10 @@ public class DatabaseHandler {
 		case MYSQL:
 			if (connector == null || !connector.isConnected()) {
 				connectDatabase();
-			} else {
-				RuntimePPManager.loadPPListFromDatabase();
-				MySQLDB.loadPlayerStatistics();
 			}
+
+			RuntimePPManager.loadPPListFromDatabase();
+			MySQLDB.loadPlayerStatistics();
 
 			if (startup) {
 				MySQLDB.loadJoinDelay();
@@ -143,10 +141,10 @@ public class DatabaseHandler {
 		case SQLITE:
 			if (connector == null || !connector.isConnected()) {
 				connectDatabase();
-			} else {
-				RuntimePPManager.loadPPListFromDatabase();
-				SQLDB.loadPlayerStatistics();
 			}
+
+			RuntimePPManager.loadPPListFromDatabase();
+			SQLDB.loadPlayerStatistics();
 
 			if (startup) {
 				SQLDB.loadJoinDelay();

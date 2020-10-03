@@ -147,6 +147,13 @@ titles:
 spectator:
   enable: true
 
+  # Notify spectators in message, how to leave the game.
+  notify-spectators-to-leave:
+    enabled: true
+
+    # Time in seconds between sending notify message.
+    time-between-message-sending: 10
+
   # Which spectator commands will be allowed to use in-game?
   allowed-spectator-commands:
   - "/rm leave"

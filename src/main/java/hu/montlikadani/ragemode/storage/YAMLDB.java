@@ -36,7 +36,6 @@ public class YAMLDB {
 		inited = true;
 
 		File file = new File(RageMode.getInstance().getFolder(), "stats.yml");
-		YamlConfiguration config = null;
 		yamlStatsFile = file;
 
 		if (!file.exists()) {
@@ -51,7 +50,7 @@ public class YAMLDB {
 			}
 		}
 
-		config = YamlConfiguration.loadConfiguration(file);
+		YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
 		if (!config.contains("data")) {
 			config.createSection("data");
 		}
@@ -61,18 +60,13 @@ public class YAMLDB {
 	}
 
 	public static void loadPlayerStatistics() {
-		if (!inited) {
-			return;
-		}
-
-		ConfigurationSection section = statsConf.getConfigurationSection("data");
-		if (section == null) {
+		if (!inited || !statsConf.isConfigurationSection("data")) {
 			return;
 		}
 
 		int totalPlayers = 0;
 
-		for (String one : section.getKeys(false)) {
+		for (String one : statsConf.getConfigurationSection("data").getKeys(false)) {
 			UUID uuid = UUID.fromString(one);
 			PlayerPoints plPo = RuntimePPManager.getPPForPlayer(uuid);
 			if (plPo == null) {
@@ -122,9 +116,10 @@ public class YAMLDB {
 		UUID uuid = points.getUUID();
 		String path = "data." + uuid.toString() + ".";
 
+		statsConf.set(path + "name", Bukkit.getOfflinePlayer(uuid).getName());
+
 		if (statsConf.isConfigurationSection("data")
 				&& statsConf.getConfigurationSection("data").getKeys(false).contains(uuid.toString())) {
-			statsConf.set(path + "name", Bukkit.getPlayer(uuid).getName());
 
 			int kills = statsConf.getInt(path + "kills"),
 					axeKills = statsConf.getInt(path + "axe-kills"),
@@ -165,8 +160,6 @@ public class YAMLDB {
 							? ((double) ((kills + points.getKills())) / ((double) (deaths + points.getDeaths())))
 							: 1.0d);
 		} else {
-			statsConf.set(path + "name", Bukkit.getPlayer(uuid).getName());
-
 			statsConf.set(path + "kills", points.getKills());
 			statsConf.set(path + "axe_kills", points.getAxeKills());
 			statsConf.set(path + "direct_arrow_kills", points.getDirectArrowKills());
@@ -388,10 +381,7 @@ public class YAMLDB {
 		}
 
 		for (String o : section.getKeys(false)) {
-			OfflinePlayer p = Bukkit.getOfflinePlayer(UUID.fromString(o));
-			if (p != null) {
-				ReJoinDelay.setTime(p, section.getLong(o));
-			}
+			ReJoinDelay.setTime(Bukkit.getOfflinePlayer(UUID.fromString(o)), section.getLong(o));
 		}
 
 		config.set("players", null);

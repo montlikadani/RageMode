@@ -9,14 +9,16 @@ import org.bukkit.entity.Entity;
 
 import com.google.common.collect.ImmutableList;
 
+import hu.montlikadani.ragemode.gameLogic.Game;
+
 public class GameArea {
 
-	private String game;
+	private Game game;
 	private Area area;
 
 	private double x1, y1, z1, x2, y2, z2;
 
-	public GameArea(String game, Area area) {
+	public GameArea(Game game, Area area) {
 		this.game = game;
 		this.area = area;
 
@@ -28,7 +30,11 @@ public class GameArea {
 		z2 = Math.max(area.getLowLoc().getZ(), area.getHighLoc().getZ());
 	}
 
-	public String getGame() {
+	/**
+	 * @return {@link Game}
+	 * @return
+	 */
+	public Game getGame() {
 		return game;
 	}
 

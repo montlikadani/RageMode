@@ -313,7 +313,7 @@ public class GameUtils {
 		}
 
 		for (GameArea ga : GameAreaManager.getAreasByLocation(loc)) {
-			Game g = getGame(ga.getGame());
+			Game g = getGame(ga.getGame().getName());
 			if (g != null) {
 				return g;
 			}
@@ -324,7 +324,7 @@ public class GameUtils {
 
 	/**
 	 * Give game items to the given player. If the item slot not found in
-	 * configuration, then adds the item to the inventory.
+	 * configuration, manually adding the item to the inventory.
 	 * 
 	 * @param p Player
 	 * @param clear - if true clears the player inventory before adding items

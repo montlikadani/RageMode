@@ -275,10 +275,9 @@ public class RageMode extends JavaPlugin {
 			getManager().registerEvents(new BungeeListener(), this);
 		}
 
-		if (serverVersion.getVersion().isEqualOrLower(Version.v1_8_R3))
-			getManager().registerEvents(new Listeners_1_8(), this);
-		else
-			getManager().registerEvents(new Listeners_1_9(), this);
+		getManager().registerEvents(
+				serverVersion.getVersion().isEqualOrLower(Version.v1_8_R3) ? new Listeners_1_8() : new Listeners_1_9(),
+				this);
 	}
 
 	private void loadGames() {

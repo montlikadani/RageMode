@@ -18,6 +18,7 @@ import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.handler.PressureMine;
+import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class GameTimer extends TimerTask {
 
@@ -29,6 +30,7 @@ public class GameTimer extends TimerTask {
 
 	private int zombieSpawnAmount = 10;
 	private boolean firstZombieSpawned = false;
+	private boolean canSendSpectatorNotify = true;
 
 	public GameTimer(Game game, int time) {
 		this.game = game;
@@ -70,6 +72,17 @@ public class GameTimer extends TimerTask {
 					GameUtils.broadcastToGame(game,
 							RageMode.getLang().get("game.broadcast.game-end", "%time%", Utils.getFormattedTime(timer)));
 					break;
+				}
+			}
+
+			if (ConfigValues.isNotifySpectatorsToLeave() && canSendSpectatorNotify) {
+				canSendSpectatorNotify = false;
+
+				for (PlayerManager spec : game.getSpectatorPlayersFromList()) {
+					Bukkit.getScheduler().runTaskLater(RageMode.getInstance(), () -> {
+						spec.getPlayer().sendMessage(RageMode.getLang().get("game.spec-player-leave-notify"));
+						canSendSpectatorNotify = true;
+					}, ConfigValues.getSpecTimeBetweenMessageSending() * 20);
 				}
 			}
 

@@ -352,9 +352,9 @@ public class SQLDB {
 					PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid2);
 					if (pp == null) {
 						pp = new PlayerPoints(uuid2);
-						pp = getPlayerStatsFromData(uuid2);
 					}
 
+					RuntimePPManager.updatePlayerEntry(pp);
 					allRPPs.add(pp);
 				}
 			}

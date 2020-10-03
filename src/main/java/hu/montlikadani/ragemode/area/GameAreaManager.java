@@ -39,8 +39,8 @@ public class GameAreaManager {
 
 		for (String area : c.getConfigurationSection("areas").getKeys(false)) {
 			String path = "areas." + area + ".";
-			String game = c.getString(path + "game", "");
-			if (game.isEmpty() || !GameUtils.isGameWithNameExists(game)) {
+			String gameName = c.getString(path + "game", "");
+			if (gameName.isEmpty() || !GameUtils.isGameWithNameExists(gameName)) {
 				continue;
 			}
 
@@ -53,7 +53,10 @@ public class GameAreaManager {
 					c.getDouble(path + "loc1.z", 0));
 			Location loc2 = new Location(world, c.getDouble(path + "loc2.x", 0), c.getDouble(path + "loc2.y", 0),
 					c.getDouble(path + "loc2.z", 0));
-			GAMEAREAS.put(area, new GameArea(game, new Area(loc1, loc2)));
+			Game game = GameUtils.getGame(gameName);
+			if (game != null) {
+				GAMEAREAS.put(area, new GameArea(game, new Area(loc1, loc2)));
+			}
 		}
 	}
 
@@ -77,7 +80,7 @@ public class GameAreaManager {
 		}
 
 		for (GameArea area : GAMEAREAS.values()) {
-			if (area.getGame().equals(game.getName())) {
+			if (area.getGame().getName().equals(game.getName())) {
 				area.getEntities().forEach(Entity::remove);
 			}
 		}

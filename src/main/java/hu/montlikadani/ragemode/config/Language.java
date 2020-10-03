@@ -189,6 +189,7 @@ public class Language {
 				"&cDeaths:&2 %deaths%", "&cKd:&2 %kd%", "&cGames:&2 %games%", "&cWins:&2 %wins%", "&cPoints:&2 %points%");
 		l.getL("statistic-list", statList);
 
+		l.getL("game.spec-player-leave-notify", "&2You can leave this game by typing&e /rm leave");
 		l.getL("game.lobby.start-message", "&9This round will start in&e %time%&9 seconds.");
 		l.getL("game.lobby.chat-is-disabled", "&cThe chat currently is disabled in lobby!");
 		l.getL("game.spawns-not-set-properly", "&cOne or more spawns are not set properly!");
