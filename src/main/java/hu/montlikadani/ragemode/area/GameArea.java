@@ -6,6 +6,7 @@ import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 
 import com.google.common.collect.ImmutableList;
 
@@ -46,28 +47,17 @@ public class GameArea {
 	}
 
 	/**
-	 * Gets all entities from the location except players.
-	 * 
-	 * @see #getEntities(boolean)
-	 * @return the list of {@link Entity}
-	 */
-	public ImmutableList<Entity> getEntities() {
-		return getEntities(true);
-	}
-
-	/**
 	 * Gets all entities from the location.
 	 * 
-	 * @param ignorePlayers ignore players or not
-	 * @return the list of {@link Entity}
+	 * @return {@link ImmutableList} of {@link Entity}
 	 */
-	public ImmutableList<Entity> getEntities(boolean ignorePlayers) {
+	public ImmutableList<Entity> getEntities() {
 		// NOTE: don't use stream in here (memory allocation)
 
 		List<Entity> entities = new ArrayList<>();
 
 		for (Entity e : area.getLowLoc().getWorld().getEntities()) {
-			if ((ignorePlayers && !(e instanceof org.bukkit.entity.Player)) && inArea(e.getLocation())) {
+			if (!(e instanceof Player) && inArea(e.getLocation())) {
 				entities.add(e);
 			}
 		}
@@ -76,9 +66,26 @@ public class GameArea {
 	}
 
 	/**
+	 * Collects all players from this location.
+	 * 
+	 * @return {@link ImmutableList} of {@link Player}
+	 */
+	public ImmutableList<Player> getPlayers() {
+		List<Player> players = new ArrayList<>();
+
+		for (Entity e : area.getLowLoc().getWorld().getEntities()) {
+			if (e instanceof Player) {
+				players.add((Player) e);
+			}
+		}
+
+		return ImmutableList.copyOf(players);
+	}
+
+	/**
 	 * Collects all blocks into a list from the area.
 	 * 
-	 * @return a list of {@link Block}
+	 * @return {@link ImmutableList} of {@link Block}
 	 * @deprecated This method makes no sense until there is no feature to change ragemode area blocks.
 	 */
 	@Deprecated

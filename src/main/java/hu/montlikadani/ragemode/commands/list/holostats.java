@@ -5,7 +5,8 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
-import hu.montlikadani.ragemode.holder.HoloHolder;
+import hu.montlikadani.ragemode.holder.ArmorStands;
+import hu.montlikadani.ragemode.holder.IHoloHolder;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
@@ -25,38 +26,54 @@ public class holostats implements ICommand {
 			return false;
 		}
 
-		if (!plugin.isHologramEnabled()) {
-			sendMessage(p, RageMode.getLang().get("missing-dependencies", "%depend%", "HolographicDisplays"));
-			return false;
-		}
-
-		if (args.length >= 2) {
-			switch (args[1].toLowerCase()) {
-			case "add":
-				HoloHolder.addHolo(p.getLocation());
-				break;
-			case "remove":
-				if (!HoloHolder.deleteHologram(HoloHolder.getClosest(p, true))) {
-					sendMessage(p, RageMode.getLang().get("commands.holostats.no-holo-found"));
-					return false;
-				}
-
-				break;
-			case "tp":
-				if (HoloHolder.getHologramLocation(HoloHolder.getClosest(p, false)) == null) {
-					sendMessage(p, RageMode.getLang().get("commands.holostats.no-holo-found"));
-					return false;
-				}
-
-				p.teleport(HoloHolder.getHologramLocation(HoloHolder.getClosest(p, false)));
-				break;
-			default:
-				break;
-			}
-		} else {
+		if (args.length < 2) {
 			sendMessage(p,
 					RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <add/remove/tp>"));
 			return false;
+		}
+
+		IHoloHolder holder = RageMode.getInstance().getHoloHolder();
+		org.bukkit.Location closest = null;
+
+		switch (args[1].toLowerCase()) {
+		case "add":
+			holder.addHolo(p.getLocation());
+			break;
+		case "remove":
+			if (holder.getClosest(p, true).isPresent()) {
+				if (RageMode.getInstance().isPluginEnabled("HolographicDisplays")) {
+					closest = ((com.gmail.filoghost.holographicdisplays.api.Hologram) holder.getClosest(p, true).get())
+							.getLocation();
+				} else {
+					closest = ((ArmorStands) holder.getClosest(p, true).get()).getLocation();
+				}
+			}
+
+			if (!holder.deleteHologram(closest)) {
+				sendMessage(p, RageMode.getLang().get("commands.holostats.no-holo-found"));
+				return false;
+			}
+
+			break;
+		case "tp":
+			if (holder.getClosest(p, true).isPresent()) {
+				if (RageMode.getInstance().isPluginEnabled("HolographicDisplays")) {
+					closest = ((com.gmail.filoghost.holographicdisplays.api.Hologram) holder.getClosest(p, false).get())
+							.getLocation();
+				} else {
+					closest = ((ArmorStands) holder.getClosest(p, false).get()).getLocation();
+				}
+			}
+
+			if (closest == null) {
+				sendMessage(p, RageMode.getLang().get("commands.holostats.no-holo-found"));
+				return false;
+			}
+
+			p.teleport(closest);
+			break;
+		default:
+			break;
 		}
 
 		return true;

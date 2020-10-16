@@ -24,6 +24,7 @@ public class RmCommand implements CommandExecutor {
 	private final Set<Class<?>> subCmds = new HashSet<Class<?>>() {
 		{
 			try {
+				// Avoiding adding class names one by one
 				for (File rm : new File(RageMode.getInstance().getFolder().getParent()).listFiles()) {
 					if (rm.getName().toLowerCase().contains("ragemode") && rm.getName().endsWith(".jar")) {
 						JarFile file = new JarFile(rm);

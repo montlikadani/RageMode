@@ -257,7 +257,7 @@ public class Utils {
 			return "";
 		}
 
-		if (s.contains("#") && Version.isCurrentEqualOrHigher(Version.v1_16_R1)) {
+		if (Version.isCurrentEqualOrHigher(Version.v1_16_R1) && s.contains("#")) {
 			s = matchColorRegex(s);
 		}
 

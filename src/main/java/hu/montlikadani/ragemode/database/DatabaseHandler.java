@@ -86,7 +86,7 @@ public class DatabaseHandler {
 					useSSL = ConfigValues.isUseSSL();
 
 			if (charEncode.isEmpty()) {
-				charEncode = "UTF-8";
+				charEncode = java.nio.charset.StandardCharsets.UTF_8.name();
 			}
 
 			if ((connector = new MySQLConnect(host, port, database, username, password, serverCertificate, useUnicode,

@@ -39,7 +39,9 @@ import hu.montlikadani.ragemode.gameUtils.BungeeUtils;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
-import hu.montlikadani.ragemode.holder.HoloHolder;
+import hu.montlikadani.ragemode.holder.ArmorStandHologram;
+import hu.montlikadani.ragemode.holder.HolographicDisplaysHolder;
+import hu.montlikadani.ragemode.holder.IHoloHolder;
 import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.managers.BossbarManager;
 import hu.montlikadani.ragemode.metrics.Metrics;
@@ -60,6 +62,7 @@ public class RageMode extends JavaPlugin {
 	private DatabaseHandler dbHandler;
 	private Selection selection;
 
+	private IHoloHolder holoHolder;
 	private Economy econ;
 
 	private static RageMode instance;
@@ -68,7 +71,6 @@ public class RageMode extends JavaPlugin {
 
 	private static boolean isSpigot = false;
 
-	private boolean hologram = false;
 	private boolean vault = false;
 
 	private final List<Game> games = new ArrayList<>();
@@ -162,6 +164,7 @@ public class RageMode extends JavaPlugin {
 	public void onDisable() {
 		if (instance == null) return;
 
+		holoHolder.deleteAllHologram();
 		GameUtils.stopAllGames();
 		dbHandler.saveDatabase();
 
@@ -171,13 +174,7 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void loadHooks() {
-		if (isPluginEnabled("HolographicDisplays")) {
-			hologram = true;
-			HoloHolder.initHoloHolder();
-		} else {
-			hologram = false;
-		}
-
+		holoHolder = isPluginEnabled("HolographicDisplays") ? new HolographicDisplaysHolder() : new ArmorStandHologram();
 		vault = initEconomy();
 
 		if (isPluginEnabled("PlaceholderAPI")) {
@@ -255,9 +252,7 @@ public class RageMode extends JavaPlugin {
 			connectDatabase();
 		}
 
-		if (hologram)
-			HoloHolder.initHoloHolder();
-
+		holoHolder.loadHolos();
 		return true;
 	}
 
@@ -311,6 +306,7 @@ public class RageMode extends JavaPlugin {
 		Configuration.saveFile(conf.getArenasCfg(), conf.getArenasFile());
 		GameAreaManager.load();
 		loadItems();
+		holoHolder.loadHolos();
 	}
 
 	private void loadItems() {
@@ -525,10 +521,6 @@ public class RageMode extends JavaPlugin {
 		return isSpigot;
 	}
 
-	public boolean isHologramEnabled() {
-		return hologram;
-	}
-
 	public boolean isVaultEnabled() {
 		return vault;
 	}
@@ -543,6 +535,10 @@ public class RageMode extends JavaPlugin {
 
 	public BossbarManager getBossbarManager() {
 		return bossManager;
+	}
+
+	public IHoloHolder getHoloHolder() {
+		return holoHolder;
 	}
 
 	public List<Game> getGames() {

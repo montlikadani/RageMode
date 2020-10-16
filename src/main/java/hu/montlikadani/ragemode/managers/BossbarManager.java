@@ -42,10 +42,6 @@ public class BossbarManager {
 		}
 
 		final BossBar boss = Bukkit.createBossBar(message, color, style);
-		if (boss == null) {
-			return;
-		}
-
 		if (boss.getPlayers().contains(p)) {
 			boss.removePlayer(p);
 		}

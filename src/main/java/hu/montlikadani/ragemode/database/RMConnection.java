@@ -10,7 +10,7 @@ import hu.montlikadani.ragemode.Debug;
 
 public class RMConnection {
 
-	private Connection conn = null;
+	private Connection conn;
 
 	public RMConnection(Connection conn) {
 		this.conn = conn;

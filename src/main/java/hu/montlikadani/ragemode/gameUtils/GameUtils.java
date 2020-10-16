@@ -1,13 +1,13 @@
 package hu.montlikadani.ragemode.gameUtils;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -35,7 +35,6 @@ import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.*;
 import hu.montlikadani.ragemode.gameUtils.modules.ActionBar;
 import hu.montlikadani.ragemode.gameUtils.modules.Titles;
-import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.items.*;
 import hu.montlikadani.ragemode.items.shop.BoughtElements;
 import hu.montlikadani.ragemode.items.shop.LobbyShop;
@@ -290,7 +289,9 @@ public class GameUtils {
 	 * @return Game if the given name is exists.
 	 */
 	public static Game getGame(String name) {
-		Validate.notEmpty(name, "Game name can't be empty/null");
+		if (StringUtils.isEmpty(name)) {
+			return null;
+		}
 
 		for (Game game : RageMode.getInstance().getGames()) {
 			if (name.equalsIgnoreCase(game.getName())) {
@@ -1177,12 +1178,8 @@ public class GameUtils {
 			RuntimePPManager.loadPPListFromDatabase();
 		}
 
-		for (Iterator<UUID> it = game.getSpectatorPlayers().keySet().iterator(); it
-				.hasNext();) {
-			Player pl = Bukkit.getPlayer(it.next());
-			if (pl != null) {
-				game.removeSpectatorPlayer(pl);
-			}
+		for (PlayerManager spec : new HashMap<>(game.getSpectatorPlayers()).values()) {
+			game.removeSpectatorPlayer(spec.getPlayer());
 		}
 
 		RewardManager reward = new RewardManager(gName);
@@ -1192,9 +1189,7 @@ public class GameUtils {
 			RageScores.getPlayerPoints(p.getUniqueId()).ifPresent(pP -> {
 				Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
 					RuntimePPManager.updatePlayerEntry(pP);
-
-					Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-							() -> HoloHolder.updateHolosForPlayer(p));
+					RageMode.getInstance().getHoloHolder().updateHolosForPlayer(p);
 				});
 
 				Thread th = new Thread(new DBThreads(pP));
@@ -1249,10 +1244,6 @@ public class GameUtils {
 		Debug.logConsole("Searching games to stop...");
 
 		for (String game : GetGames.getGameNames()) {
-			if (game == null || game.isEmpty()) {
-				continue;
-			}
-
 			Game g = getGame(game);
 			if (g == null) {
 				continue;
@@ -1260,12 +1251,11 @@ public class GameUtils {
 
 			GameStatus status = g.getStatus();
 
-			List<PlayerManager> pList = g.getPlayersFromList();
+			List<PlayerManager> pList = new java.util.ArrayList<>(g.getPlayersFromList());
 			if (status == GameStatus.RUNNING && g.isGameRunning()) {
 				Debug.logConsole("Stopping " + game + " ...");
 
 				GameAreaManager.removeEntitiesFromGame(g);
-
 				RageScores.calculateWinner(g, pList);
 
 				for (PlayerManager players : pList) {
@@ -1275,12 +1265,8 @@ public class GameUtils {
 					RageScores.removePointsForPlayer(p.getUniqueId());
 				}
 
-				for (Iterator<UUID> it = g.getSpectatorPlayers().keySet().iterator(); it
-						.hasNext();) {
-					Player pl = Bukkit.getPlayer(it.next());
-					if (pl != null) {
-						g.removeSpectatorPlayer(pl);
-					}
+				for (PlayerManager spec : new HashMap<>(g.getSpectatorPlayers()).values()) {
+					g.removeSpectatorPlayer(spec.getPlayer());
 				}
 
 				g.setGameNotRunning();

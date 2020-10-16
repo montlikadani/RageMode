@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -136,7 +136,9 @@ public class GetGames {
 	 * @return true if the game is exists
 	 */
 	public static boolean isGameExistent(String game) {
-		Validate.notEmpty(game, "Game name can't be empty/null");
+		if (StringUtils.isEmpty(game)) {
+			return false;
+		}
 
 		for (String g : getGameNames()) {
 			if (g.equalsIgnoreCase(game.trim())) {

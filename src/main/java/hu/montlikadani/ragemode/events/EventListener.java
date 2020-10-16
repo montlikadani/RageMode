@@ -24,7 +24,6 @@ import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.holder.HoloHolder;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.utils.UpdateDownloader;
 
@@ -37,7 +36,7 @@ public class EventListener implements Listener {
 			UpdateDownloader.checkFromGithub(p);
 		}
 
-		HoloHolder.showAllHolosToPlayer(p);
+		RageMode.getInstance().getHoloHolder().showAllHolosToPlayer(p);
 	}
 
 	@EventHandler
@@ -46,7 +45,7 @@ public class EventListener implements Listener {
 
 		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p));
 		GameUtils.kickSpectator(p, GameUtils.getGameBySpectator(p));
-		HoloHolder.deleteHoloObjectsOfPlayer(p);
+		RageMode.getInstance().getHoloHolder().deleteHoloObjectsOfPlayer(p);
 	}
 
 	@EventHandler
@@ -55,7 +54,7 @@ public class EventListener implements Listener {
 
 		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p));
 		GameUtils.kickSpectator(p, GameUtils.getGameBySpectator(p));
-		HoloHolder.deleteHoloObjectsOfPlayer(p);
+		RageMode.getInstance().getHoloHolder().deleteHoloObjectsOfPlayer(p);
 	}
 
 	@EventHandler

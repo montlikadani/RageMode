@@ -124,8 +124,6 @@ public class ItemHandler implements Cloneable {
 		}
 
 		ItemStack item = new ItemStack(this.item, amount);
-		assert item != null;
-
 		ItemMeta meta = item.getItemMeta();
 		assert meta != null;
 

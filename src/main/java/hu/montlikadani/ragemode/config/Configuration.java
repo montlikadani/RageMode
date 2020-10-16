@@ -14,8 +14,8 @@ import hu.montlikadani.ragemode.RageMode;
 public class Configuration {
 
 	private RageMode plugin;
-	private FileConfiguration config, arenas, rewards, datas, items, gameAreas;
-	private File config_file, arenas_file, rewards_file, datas_file, items_file, areas_File;
+	private FileConfiguration config, arenas, rewards, datas, items, gameAreas, holosConfig;
+	private File config_file, arenas_file, rewards_file, datas_file, items_file, areas_File, holosFile;
 
 	private double configVersion = 1.9;
 
@@ -47,6 +47,10 @@ public class Configuration {
 
 		if (areas_File == null) {
 			areas_File = new File(folder, "gameareas.yml");
+		}
+
+		if (holosFile == null) {
+			holosFile = new File(folder, "holos.yml");
 		}
 	}
 
@@ -107,6 +111,15 @@ public class Configuration {
 				loadFile(gameAreas, areas_File);
 			} else {
 				gameAreas = createFile(areas_File, "gameareas.yml", true);
+			}
+
+			if (holosFile.exists()) {
+				holosConfig = YamlConfiguration.loadConfiguration(holosFile);
+				holosConfig.createSection("data");
+				loadFile(holosConfig, holosFile);
+				saveFile(holosConfig, holosFile);
+			} else {
+				holosConfig = createFile(holosFile, "holos.yml", true);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -174,6 +187,14 @@ public class Configuration {
 
 	public File getAreasFile() {
 		return areas_File;
+	}
+
+	public FileConfiguration getHolosConfig() {
+		return holosConfig;
+	}
+
+	public File getHolosFile() {
+		return holosFile;
 	}
 
 	public double getConfigVersion() {

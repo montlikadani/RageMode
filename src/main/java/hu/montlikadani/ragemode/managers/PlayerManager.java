@@ -14,7 +14,7 @@ public class PlayerManager {
 
 	private int lives = 0;
 
-	private StorePlayerStuffs sps = new StorePlayerStuffs();
+	private final StorePlayerStuffs sps = new StorePlayerStuffs();
 
 	public PlayerManager(Player player, String game) {
 		this.player = player;
