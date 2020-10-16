@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -257,9 +258,10 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void registerCommands() {
-		org.bukkit.command.PluginCommand cmd = getCommand("ragemode");
-		cmd.setExecutor(new RmCommand());
-		cmd.setTabCompleter(new RmTabCompleter());
+		Optional.ofNullable(getCommand("ragemode")).ifPresent(cmd -> {
+			cmd.setExecutor(new RmCommand());
+			cmd.setTabCompleter(new RmTabCompleter());
+		});
 	}
 
 	private void registerListeners() {
@@ -306,7 +308,6 @@ public class RageMode extends JavaPlugin {
 		Configuration.saveFile(conf.getArenasCfg(), conf.getArenasFile());
 		GameAreaManager.load();
 		loadItems();
-		holoHolder.loadHolos();
 	}
 
 	private void loadItems() {
