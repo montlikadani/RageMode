@@ -905,22 +905,6 @@ public class GameUtils {
 	}
 
 	/**
-	 * Send boss bar messages to all current playing players, when doing something,
-	 * such as joining, leave, starting or stopping game.
-	 * 
-	 * @see #sendBossBarMessages(Player, String, String)
-	 * @param game Game name
-	 * @param type Action type
-	 * @deprecated Use {@link #sendBossBarMessages(Player, String, String)}
-	 */
-	@Deprecated
-	public static void sendBossBarMessages(String game, String type) {
-		for (PlayerManager pm : getGame(game).getPlayersFromList()) {
-			sendBossBarMessages(pm.getPlayer(), game, type);
-		}
-	}
-
-	/**
 	 * Send boss bar messages to the current playing player, when doing something,
 	 * such as joining, leave, starting or stopping game.
 	 * <p>

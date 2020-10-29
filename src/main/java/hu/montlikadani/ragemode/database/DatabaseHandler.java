@@ -167,10 +167,6 @@ public class DatabaseHandler {
 	}
 
 	public void saveDatabase() {
-		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay()) {
-			return;
-		}
-
 		switch (type) {
 		case YAML:
 			YAMLDB.saveData();

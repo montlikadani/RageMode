@@ -393,6 +393,10 @@ public class YAMLDB {
 	}
 
 	public static void saveJoinDelay() {
+		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay()) {
+			return;
+		}
+
 		File f = new File(RageMode.getInstance().getFolder(), "joinDelays.yml");
 		if (!f.exists()) {
 			try {

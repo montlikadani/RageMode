@@ -19,6 +19,8 @@ public class RuntimePPManager {
 	}
 
 	public static void loadPPListFromDatabase() {
+		RUNTIMEPPLIST.clear();
+
 		switch (RageMode.getInstance().getDatabaseHandler().getDBType()) {
 		case SQLITE:
 			RUNTIMEPPLIST.addAll(SQLDB.getAllPlayerStatistics());

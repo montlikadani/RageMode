@@ -2,12 +2,14 @@ package hu.montlikadani.ragemode.database;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 
 import hu.montlikadani.ragemode.Debug;
 
 public class DBConnector {
 
-	private RMConnection conn = null;
+	private RMConnection conn;
 
 	private String url;
 	private String username;
@@ -22,6 +24,10 @@ public class DBConnector {
 
 		// Connect to the db
 		getConnection();
+	}
+
+	public String getPrefix() {
+		return prefix;
 	}
 
 	public RMConnection getConnection() {
@@ -51,7 +57,15 @@ public class DBConnector {
 		return conn != null && getConnection().isConnected();
 	}
 
-	public String getPrefix() {
-		return prefix;
+	public synchronized <T> CompletableFuture<T> dispatchAsync(Callable<T> task) {
+		CompletableFuture<T> future = new CompletableFuture<>();
+
+		try {
+			future.complete(task.call());
+		} catch (Exception e) {
+			future.completeExceptionally(e);
+		}
+
+		return future;
 	}
 }

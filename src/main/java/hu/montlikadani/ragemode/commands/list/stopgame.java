@@ -1,11 +1,8 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -47,7 +44,7 @@ public class stopgame implements ICommand {
 				return false;
 			}
 
-			List<PlayerManager> players = g.getPlayersFromList();
+			List<PlayerManager> players = new java.util.ArrayList<>(g.getPlayersFromList());
 			Utils.callEvent(new RMGameStopEvent(g, players));
 
 			if (g.getGameType() != GameType.APOCALYPSE)
@@ -55,24 +52,18 @@ public class stopgame implements ICommand {
 			else
 				GameAreaManager.removeEntitiesFromGame(g);
 
-			for (Iterator<PlayerManager> it = players.iterator(); it.hasNext();) {
-				Player player = it.next().getPlayer();
+			for (PlayerManager pm : players) {
+				Player player = pm.getPlayer();
 
 				RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(g, player);
 				Utils.callEvent(gameLeaveEvent);
-				if (gameLeaveEvent.isCancelled()) {
-					continue;
+				if (!gameLeaveEvent.isCancelled()) {
+					g.removePlayer(player);
 				}
-
-				g.removePlayer(player);
 			}
 
-			for (Iterator<Entry<UUID, PlayerManager>> it = g.getSpectatorPlayers().entrySet().iterator(); it
-					.hasNext();) {
-				Player pl = Bukkit.getPlayer(it.next().getKey());
-				if (pl != null) {
-					g.removeSpectatorPlayer(pl);
-				}
+			for (PlayerManager spec : new HashMap<>(g.getSpectatorPlayers()).values()) {
+				g.removeSpectatorPlayer(spec.getPlayer());
 			}
 
 			g.getActionMessengers().clear();

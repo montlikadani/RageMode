@@ -167,7 +167,8 @@ public class RageMode extends JavaPlugin {
 
 		holoHolder.deleteAllHologram();
 		GameUtils.stopAllGames();
-		dbHandler.saveDatabase();
+		// After any player stats modifications should contain a database save
+		//dbHandler.saveDatabase();
 
 		getServer().getScheduler().cancelTasks(this);
 		HandlerList.unregisterAll(this);
@@ -204,7 +205,6 @@ public class RageMode extends JavaPlugin {
 		}
 
 		dbHandler.setDatabaseType(type);
-		dbHandler.connectDatabase();
 		dbHandler.loadDatabase(true);
 	}
 
@@ -246,10 +246,7 @@ public class RageMode extends JavaPlugin {
 		}
 
 		registerListeners();
-		if (dbHandler != null) {
-			dbHandler.saveDatabase();
-			dbHandler.loadDatabase(false);
-		} else {
+		if (dbHandler == null) { // We don't need to save database on reload, due to duplications
 			connectDatabase();
 		}
 

@@ -97,16 +97,14 @@ public class MainPage implements IShop {
 				continue;
 			}
 
-			List<String> list = conf.getItemsCfg().getStringList(path + "slot-" + i + ".lore");
-			if (!list.isEmpty()) {
-				List<String> lore = new ArrayList<>();
-				list.forEach(l -> lore.add(Utils.colors(l)));
-				iMeta.setLore(lore);
+			List<String> lore = conf.getItemsCfg().getStringList(path + "slot-" + i + ".lore");
+			if (!lore.isEmpty()) {
+				iMeta.setLore(Utils.colorList(lore));
 			}
 
 			String itemName = conf.getItemsCfg().getString(path + "slot-" + i + ".name", "");
 			if (!itemName.isEmpty()) {
-				iMeta.setDisplayName(itemName.replace("&", "\u00a7"));
+				iMeta.setDisplayName(itemName.replace('&', '\u00a7'));
 			}
 
 			hu.montlikadani.ragemode.NMS.setDurability(iStack,

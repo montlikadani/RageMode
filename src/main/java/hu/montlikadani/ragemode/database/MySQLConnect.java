@@ -48,16 +48,18 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 	public boolean createTable(String query) {
 		Validate.notEmpty(query, "The query can't be empty/null");
 
-		if (isConnected()) {
-			try {
-				getConnection().executeUpdate(query);
-				return true;
-			} catch (SQLException e) {
-				e.printStackTrace();
+		return dispatchAsync(() -> {
+			if (isConnected()) {
+				try {
+					getConnection().executeUpdate(query);
+					return true;
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
-		}
 
-		return false;
+			return false;
+		}).join();
 	}
 
 	@Override
@@ -73,51 +75,57 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 			return false;
 		}
 
-		try {
-			getConnection().executeUpdate("DELETE FROM " + table + ";");
-			return true;
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		return dispatchAsync(() -> {
+			try {
+				getConnection().executeUpdate("DELETE FROM " + table + ";");
+				return true;
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 
-		return false;
+			return false;
+		}).join();
 	}
 
 	@Override
 	public boolean drop(String table) {
 		Validate.notEmpty(table, "The table name can't be empty/null");
 
-		if (isConnected()) {
-			try {
-				getConnection().executeUpdate("DROP TABLE IF EXISTS `" + table + "`;");
-				return true;
-			} catch (SQLException e) {
-				e.printStackTrace();
+		return dispatchAsync(() -> {
+			if (isConnected()) {
+				try {
+					getConnection().executeUpdate("DROP TABLE IF EXISTS `" + table + "`;");
+					return true;
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
-		}
 
-		return false;
+			return false;
+		}).join();
 	}
 
 	@Override
 	public boolean isTable(String name) {
 		Validate.notEmpty(name, "The table name can't be empty/null");
 
-		if (isConnected()) {
-			try {
-				ResultSet tables = getConnection().getConnection().getMetaData().getTables(null, null, name, null);
-				if (tables.next()) {
+		return dispatchAsync(() -> {
+			if (isConnected()) {
+				try {
+					ResultSet tables = getConnection().getConnection().getMetaData().getTables(null, null, name, null);
+					if (tables.next()) {
+						tables.close();
+						return true;
+					}
+
 					tables.close();
-					return true;
+				} catch (SQLException e) {
+					Debug.logConsole("Table with name {0} does not exists or not a table!", name);
 				}
-
-				tables.close();
-			} catch (SQLException e) {
-				Debug.logConsole("Table with name {0} does not exists or not a table!", name);
 			}
-		}
 
-		return false;
+			return false;
+		}).join();
 	}
 
 	@Override
@@ -125,16 +133,18 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 		Validate.notEmpty(table, "The table name can't be empty/null");
 		Validate.notEmpty(collumn, "The collumn can't be empty/null");
 
-		if (isConnected()) {
-			try {
-				getConnection().executeQuery(getConnection().createStatement(),
-						"SELECT `" + collumn + "` FROM `" + table + "`;");
-				return true;
-			} catch (SQLException e) {
-				Debug.logConsole("Column {0} with table {1} not a collumn or does not exists.", collumn, table);
+		return dispatchAsync(() -> {
+			if (isConnected()) {
+				try {
+					getConnection().executeQuery(getConnection().createStatement(),
+							"SELECT `" + collumn + "` FROM `" + table + "`;");
+					return true;
+				} catch (SQLException e) {
+					Debug.logConsole("Column {0} with table {1} not a collumn or does not exists.", collumn, table);
+				}
 			}
-		}
 
-		return false;
+			return false;
+		}).join();
 	}
 }

@@ -4,7 +4,7 @@ import hu.montlikadani.ragemode.scores.PlayerPoints;
 
 public class DBThreads implements Runnable {
 
-	private PlayerPoints pP = null;
+	private PlayerPoints pP;
 
 	public DBThreads(PlayerPoints pP) {
 		this.pP = pP;

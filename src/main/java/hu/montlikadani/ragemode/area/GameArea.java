@@ -57,7 +57,7 @@ public class GameArea {
 		List<Entity> entities = new ArrayList<>();
 
 		for (Entity e : area.getLowLoc().getWorld().getEntities()) {
-			if (!(e instanceof Player) && inArea(e.getLocation())) {
+			if (inArea(e.getLocation()) && !(e instanceof Player)) {
 				entities.add(e);
 			}
 		}
@@ -74,7 +74,7 @@ public class GameArea {
 		List<Player> players = new ArrayList<>();
 
 		for (Entity e : area.getLowLoc().getWorld().getEntities()) {
-			if (e instanceof Player) {
+			if (inArea(e.getLocation()) && e instanceof Player) {
 				players.add((Player) e);
 			}
 		}

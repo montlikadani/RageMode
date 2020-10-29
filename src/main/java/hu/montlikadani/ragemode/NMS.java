@@ -1,5 +1,7 @@
 package hu.montlikadani.ragemode;
 
+import java.util.Optional;
+
 import org.bukkit.Color;
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -51,9 +53,9 @@ public class NMS {
 	 * @param number short item durability
 	 */
 	public static void setDurability(ItemStack item, short number) {
-		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1))
-			((Damageable) item.getItemMeta()).setDamage(number);
-		else
+		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
+			Optional.ofNullable(item.getItemMeta()).ifPresent(meta -> ((Damageable) meta).setDamage(number));
+		} else
 			item.setDurability(number);
 	}
 

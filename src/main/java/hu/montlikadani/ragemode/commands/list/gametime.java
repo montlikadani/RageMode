@@ -34,16 +34,19 @@ public class gametime implements ICommand {
 			}
 
 			if (!plugin.getConfiguration().getArenasCfg().isSet("arenas." + args[1])) {
-				sendMessage(p, RageMode.getLang().get("setup.not-set-yet", "%usage%", "/rm addgame <gameName> <maxPlayers>"));
+				sendMessage(p,
+						RageMode.getLang().get("setup.not-set-yet", "%usage%", "/rm addgame <gameName> <maxPlayers>"));
 				return false;
 			}
 
-			if (Utils.isInt(args[2])) {
-				plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".gametime", Integer.parseInt(args[2]));
-				Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
-				sendMessage(p, RageMode.getLang().get("setup.set-game-time-success", "%game%", args[1], "%time%", args[2]));
-			} else
+			if (!Utils.isInt(args[2])) {
 				sendMessage(p, RageMode.getLang().get("not-a-number", "%number%", args[2]));
+				return false;
+			}
+
+			plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".gametime", Integer.parseInt(args[2]));
+			Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
+			sendMessage(p, RageMode.getLang().get("setup.set-game-time-success", "%game%", args[1], "%time%", args[2]));
 		} else {
 			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm gametime <gameName> <minutes>"));
 			return false;
