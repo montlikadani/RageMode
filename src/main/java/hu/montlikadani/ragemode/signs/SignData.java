@@ -1,7 +1,6 @@
 package hu.montlikadani.ragemode.signs;
 
 import java.util.List;
-import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -68,7 +67,6 @@ public class SignData {
 		return placeholder;
 	}
 
-	@SuppressWarnings("deprecation")
 	public void updateSign() {
 		Location location = getLocation();
 		if (!location.getWorld().getChunkAt(location).isLoaded()) {
@@ -82,18 +80,12 @@ public class SignData {
 
 		Sign sign = (Sign) b.getState();
 		if (placeholder != null && GameUtils.isGameWithNameExists(game)) {
-			if (placeholder.getLines().size() > 4 || placeholder.getLines().size() < 4) {
-				Bukkit.getLogger().log(Level.INFO, "In the configuration the signs lines is equal to 4.");
-				return;
-			}
-
 			List<String> lines = placeholder.parsePlaceholder(game);
 			for (int i = 0; i < 4; i++) {
 				sign.setLine(i, lines.get(i));
 			}
 
-			if ((ConfigValues.isSignBackground() || !ConfigValues.getSignBackground().equalsIgnoreCase("none"))
-					&& MaterialUtil.isWallSign(sign.getType())) {
+			if (!ConfigValues.getSignBackground().equalsIgnoreCase("none") && MaterialUtil.isWallSign(sign.getType())) {
 				changeBlockBackground();
 			}
 		} else {

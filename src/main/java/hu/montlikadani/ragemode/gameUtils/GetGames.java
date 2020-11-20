@@ -51,7 +51,7 @@ public class GetGames {
 	/**
 	 * Get the specified game world name.
 	 * @param game Game
-	 * @return {@link Optional} world name
+	 * @return {@link Optional} world name if present
 	 */
 	public static Optional<String> getWorld(String game) {
 		return Optional.ofNullable(
@@ -104,6 +104,7 @@ public class GetGames {
 	 * Gets all games converted to list.
 	 * <p>This will returns empty list if there are no games found.
 	 * @return all games
+	 * @see #getGameNames()
 	 */
 	public static List<String> getGames() {
 		return Arrays.asList(getGameNames());

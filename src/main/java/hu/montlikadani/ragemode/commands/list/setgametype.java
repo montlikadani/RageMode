@@ -37,7 +37,7 @@ public class setgametype implements ICommand {
 			type = GameType.NORMAL;
 		}
 
-		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".gametype", type.getName());
+		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".gametype", type.toString().toLowerCase());
 		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 
 		GameUtils.getGame(game).setGameType(type);

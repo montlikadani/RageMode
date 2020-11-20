@@ -1,7 +1,6 @@
 package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Timer;
 
 import org.bukkit.entity.Player;
@@ -12,6 +11,8 @@ import hu.montlikadani.ragemode.API.event.RMGameStartEvent;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.items.shop.LobbyShop;
+import hu.montlikadani.ragemode.gameUtils.GameUtils.ActionMessageType;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
@@ -30,17 +31,15 @@ public class GameLoader {
 	}
 
 	public boolean startGame() {
-		if (!checkTeleport()) {
+		if (!canTeleport()) {
 			return false; // stop starting the game if the game not set up correctly
 		}
 
-		List<PlayerManager> l = game.getPlayersFromList();
-
-		Utils.callEvent(new RMGameStartEvent(game, l));
+		Utils.callEvent(new RMGameStartEvent(game));
 
 		String name = game.getName();
 
-		game.setGameRunning();
+		game.setGameRunning(true);
 		game.setStatus(GameStatus.RUNNING);
 
 		int time = !RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + name + ".gametime")
@@ -53,7 +52,7 @@ public class GameLoader {
 
 		SignCreator.updateAllSigns(name);
 
-		for (PlayerManager pm : l) {
+		for (PlayerManager pm : game.getPlayersFromList()) {
 			Player p = pm.getPlayer();
 
 			GameUtils.addGameItems(p, true);
@@ -61,9 +60,9 @@ public class GameLoader {
 				p.setCustomNameVisible(false);
 			}
 			GameUtils.runCommands(p, name, "start");
-			GameUtils.sendBossBarMessages(p, name, "start");
-			GameUtils.sendActionBarMessages(p, name, "start");
-			GameUtils.buyElements(p);
+			GameUtils.sendActionMessage(p, name, ActionMessageType.START, ActionMessageType.asBossbar());
+			GameUtils.sendActionMessage(p, name, ActionMessageType.START, ActionMessageType.asActionbar());
+			LobbyShop.buyElements(p);
 
 			java.util.UUID uuid = p.getUniqueId();
 			if (!RageScores.getPlayerPointsMap().containsKey(uuid)) {
@@ -74,7 +73,7 @@ public class GameLoader {
 		return true;
 	}
 
-	private boolean checkTeleport() {
+	private boolean canTeleport() {
 		if (game == null) {
 			return false;
 		}

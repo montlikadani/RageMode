@@ -3,7 +3,6 @@ package hu.montlikadani.ragemode.storage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -17,50 +16,36 @@ import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.database.DB;
+import hu.montlikadani.ragemode.database.DBConnector;
+import hu.montlikadani.ragemode.database.DBType;
+import hu.montlikadani.ragemode.database.Database;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
-public class YAMLDB {
+@DB(type = DBType.YAML)
+public class YAMLDB implements Database {
 
-	private static boolean inited = false;
-	private static File yamlStatsFile;
-	private static YamlConfiguration statsConf;
+	private File yamlStatsFile;
+	private YamlConfiguration statsConf;
 
-	public static void initFile() {
-		if (inited) {
-			statsConf = YamlConfiguration.loadConfiguration(yamlStatsFile);
-			return;
-		}
-
-		inited = true;
-
-		File file = new File(RageMode.getInstance().getFolder(), "stats.yml");
-		yamlStatsFile = file;
-
-		if (!file.exists()) {
-			if (!file.getParentFile().exists()) {
-				file.getParentFile().mkdirs();
-			}
-
-			try {
-				file.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-		if (!config.contains("data")) {
-			config.createSection("data");
-		}
-
-		statsConf = config;
-		Configuration.saveFile(config, file);
+	@Override
+	public DBConnector getDatabase() {
+		return null;
 	}
 
-	public static void loadPlayerStatistics() {
-		if (!inited || !statsConf.isConfigurationSection("data")) {
+	public File getFile() {
+		return yamlStatsFile;
+	}
+
+	public YamlConfiguration getConf() {
+		return statsConf;
+	}
+
+	@Override
+	public void loadPlayerStatistics() {
+		if (!statsConf.isConfigurationSection("data")) {
 			return;
 		}
 
@@ -101,18 +86,13 @@ public class YAMLDB {
 		}
 	}
 
-	/**
-	 * Saves all players data to the database.
-	 */
-	public static void saveData() {
-		RuntimePPManager.getRuntimePPList().forEach(YAMLDB::addPlayerStatistics);
+	@Override
+	public void saveData() {
+		RuntimePPManager.getRuntimePPList().forEach(this::addPlayerStatistics);
 	}
 
-	public static void addPlayerStatistics(PlayerPoints points) {
-		if (!inited) {
-			return;
-		}
-
+	@Override
+	public void addPlayerStatistics(PlayerPoints points) {
 		UUID uuid = points.getUUID();
 		String path = "data." + uuid.toString() + ".";
 
@@ -121,21 +101,18 @@ public class YAMLDB {
 		if (statsConf.isConfigurationSection("data")
 				&& statsConf.getConfigurationSection("data").getKeys(false).contains(uuid.toString())) {
 
-			int kills = statsConf.getInt(path + "kills"),
-					axeKills = statsConf.getInt(path + "axe-kills"),
+			int kills = statsConf.getInt(path + "kills"), axeKills = statsConf.getInt(path + "axe-kills"),
 					directArrowKills = statsConf.getInt(path + "direct-arrow-kills"),
 					explosionKills = statsConf.getInt(path + "explosion-kills"),
 					knifeKills = statsConf.getInt(path + "knife-kills"),
 					zombieKills = statsConf.getInt(path + "zombie-kills"),
 
-					deaths = statsConf.getInt(path + "deaths"),
-					axeDeaths = statsConf.getInt(path + "axe-deaths"),
+					deaths = statsConf.getInt(path + "deaths"), axeDeaths = statsConf.getInt(path + "axe-deaths"),
 					directArrowDeaths = statsConf.getInt(path + "direct-arrow-deaths"),
 					explosionDeaths = statsConf.getInt(path + "explosion-deaths"),
 					knifeDeaths = statsConf.getInt(path + "knife-deaths"),
 
-					wins = statsConf.getInt(path + "wins"),
-					games = statsConf.getInt(path + "games"),
+					wins = statsConf.getInt(path + "wins"), games = statsConf.getInt(path + "games"),
 					score = statsConf.getInt(path + "score");
 
 			statsConf.set(path + "kills", (kills + points.getKills()));
@@ -184,13 +161,9 @@ public class YAMLDB {
 		Configuration.saveFile(statsConf, yamlStatsFile);
 	}
 
-	/**
-	 * Add points to the given player database.
-	 * @param points the amount of points
-	 * @param uuid player uuid
-	 */
-	public static void addPoints(int points, UUID uuid) {
-		if (!inited || !statsConf.isConfigurationSection("data")) {
+	@Override
+	public void addPoints(int points, UUID uuid) {
+		if (!statsConf.isConfigurationSection("data")) {
 			return;
 		}
 
@@ -204,15 +177,8 @@ public class YAMLDB {
 		Configuration.saveFile(statsConf, yamlStatsFile);
 	}
 
-	/**
-	 * Gets all player statistic
-	 * @return returns a List of all PlayerPoints that are stored
-	 */
-	public static List<PlayerPoints> getAllPlayerStatistics() {
-		if (!inited) {
-			return Collections.emptyList();
-		}
-
+	@Override
+	public List<PlayerPoints> getAllPlayerStatistics() {
 		List<PlayerPoints> allRPPs = new ArrayList<>();
 
 		if (statsConf.isConfigurationSection("data")) {
@@ -230,49 +196,27 @@ public class YAMLDB {
 		return allRPPs;
 	}
 
-	/**
-	 * Gets all player stats from database.
-	 * <p>If the player never played and not found in the database, will be ignored.
-	 * 
-	 * @param uuid Player uuid
-	 * @return {@link PlayerPoints}
-	 */
-	@Deprecated
-	public static PlayerPoints getPlayerStatsFromData(String uuid) {
-		return getPlayerStatsFromData(UUID.fromString(uuid));
-	}
-
-	/**
-	 * Gets all player stats from database.
-	 * <p>If the player never played and not found in the database, will be ignored.
-	 * 
-	 * @param uuid Player uuid
-	 * @return {@link PlayerPoints}
-	 */
-	public static PlayerPoints getPlayerStatsFromData(UUID uuid) {
+	@Override
+	public PlayerPoints getPlayerStatsFromData(UUID uuid) {
 		if (!statsConf.contains("data." + uuid.toString())) {
 			return null;
 		}
 
 		String path = "data." + uuid + ".";
 
-		int kills = statsConf.getInt(path + "kills"),
-				axeKills = statsConf.getInt(path + "axe-kills"),
+		int kills = statsConf.getInt(path + "kills"), axeKills = statsConf.getInt(path + "axe-kills"),
 				directArrowKills = statsConf.getInt(path + "direct-arrow-kills"),
 				explosionKills = statsConf.getInt(path + "explosion-kills"),
 				knifeKills = statsConf.getInt(path + "knife-kills"),
 				zombieKills = statsConf.getInt(path + "zombie-kills"),
 
-				deaths = statsConf.getInt(path + "deaths"),
-				axeDeaths = statsConf.getInt(path + "axe-deaths"),
+				deaths = statsConf.getInt(path + "deaths"), axeDeaths = statsConf.getInt(path + "axe-deaths"),
 				directArrowDeaths = statsConf.getInt(path + "direct-arrow-deaths"),
 				explosionDeaths = statsConf.getInt(path + "explosion-deaths"),
 				knifeDeaths = statsConf.getInt(path + "knife-deaths"),
 
-				wins = statsConf.getInt(path + "wins"),
-				games = statsConf.getInt(path + "games"),
-				score = statsConf.getInt(path + "score"),
-				KD = statsConf.getInt(path + "KD");
+				wins = statsConf.getInt(path + "wins"), games = statsConf.getInt(path + "games"),
+				score = statsConf.getInt(path + "score"), KD = statsConf.getInt(path + "KD");
 
 		PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid);
 		if (pp == null) {
@@ -303,23 +247,9 @@ public class YAMLDB {
 		return pp;
 	}
 
-	/**
-	 * Restores all data of the given player to 0
-	 * @param uuid UUID of player
-	 * @return true if the class inited and player found in database
-	 */
-	@Deprecated
-	public static boolean resetPlayerStatistic(String uuid) {
-		return resetPlayerStatistic(UUID.fromString(uuid));
-	}
-
-	/**
-	 * Restores all data of the given player to 0
-	 * @param uuid UUID of player
-	 * @return true if the class inited and player found in database
-	 */
-	public static boolean resetPlayerStatistic(UUID uuid) {
-		if (!inited || !statsConf.contains("data")) {
+	@Override
+	public boolean resetPlayerStatistic(UUID uuid) {
+		if (!statsConf.contains("data")) {
 			return false;
 		}
 
@@ -356,7 +286,8 @@ public class YAMLDB {
 		return true;
 	}
 
-	public static void loadJoinDelay() {
+	@Override
+	public void loadJoinDelay() {
 		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay()) {
 			return;
 		}
@@ -392,7 +323,8 @@ public class YAMLDB {
 		}
 	}
 
-	public static void saveJoinDelay() {
+	@Override
+	public void saveJoinDelay() {
 		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay()) {
 			return;
 		}
@@ -425,11 +357,71 @@ public class YAMLDB {
 		}
 	}
 
-	public static File getFile() {
-		return yamlStatsFile;
+	@Override
+	public void connectDatabase() {
+		if (yamlStatsFile != null) {
+			statsConf = YamlConfiguration.loadConfiguration(yamlStatsFile);
+			return;
+		}
+
+		File file = new File(RageMode.getInstance().getFolder(), "stats.yml");
+		yamlStatsFile = file;
+
+		if (!file.exists()) {
+			if (!file.getParentFile().exists()) {
+				file.getParentFile().mkdirs();
+			}
+
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+		if (!config.contains("data")) {
+			config.createSection("data");
+		}
+
+		statsConf = config;
+		Configuration.saveFile(config, file);
 	}
 
-	public static YamlConfiguration getConf() {
-		return statsConf;
+	@Override
+	public void loadDatabase(boolean startup) {
+		connectDatabase();
+		RuntimePPManager.loadPPListFromDatabase();
+		loadPlayerStatistics();
+
+		if (startup) {
+			loadJoinDelay();
+		}
+	}
+
+	@Override
+	public void saveDatabase() {
+		saveData();
+		saveJoinDelay();
+	}
+
+	@Override
+	public boolean convertDatabase(final String type) {
+		if (type == null || type.trim().isEmpty()
+				|| RageMode.getInstance().getDatabaseType().toString().equalsIgnoreCase(type.trim())) {
+			return false;
+		}
+
+		ConfigValues.databaseType = type;
+
+		final Configuration conf = RageMode.getInstance().getConfiguration();
+		conf.getCfg().set("database.type", type);
+		Configuration.saveFile(conf.getCfg(), conf.getCfgFile());
+
+		RageMode.getInstance().setDatabase(type);
+
+		RuntimePPManager.getRuntimePPList().forEach(RageMode.getInstance().getDatabase()::addPlayerStatistics);
+		RuntimePPManager.loadPPListFromDatabase();
+		return true;
 	}
 }

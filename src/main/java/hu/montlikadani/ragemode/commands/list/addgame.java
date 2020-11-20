@@ -97,7 +97,7 @@ public class addgame implements ICommand {
 		c.set("arenas." + game + ".maxplayers", x);
 		c.set("arenas." + game + ".minplayers", m);
 		c.set("arenas." + game + ".world", p.getWorld().getName());
-		c.set("arenas." + game + ".gametype", type.getName());
+		c.set("arenas." + game + ".gametype", type.toString().toLowerCase());
 		Configuration.saveFile(c, plugin.getConfiguration().getArenasFile());
 
 		if (type == GameType.APOCALYPSE) {

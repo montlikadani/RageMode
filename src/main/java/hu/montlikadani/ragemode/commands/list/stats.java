@@ -54,7 +54,6 @@ public class stats implements ICommand {
 
 	private void showStats(CommandSender sender, Player t) {
 		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(t.getUniqueId());
-
 		if (rpp == null) {
 			sendMessage(sender, RageMode.getLang().get("not-played-yet", "%player%", t.getName()));
 			return;

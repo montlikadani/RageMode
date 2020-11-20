@@ -89,8 +89,8 @@ public class EventListener implements Listener {
 
 		final org.bukkit.Location loc = b.getLocation();
 
-		if (hasPerm(p, "ragemode.admin.area") && NMS.getItemInHand(p).getType()
-				.equals(Material.getMaterial(ConfigValues.getSelectionItem().toUpperCase()))) {
+		if (hasPerm(p, "ragemode.admin.area") && NMS.getItemInHand(p).getType() == Material
+				.getMaterial(ConfigValues.getSelectionItem().toUpperCase())) {
 			if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
 				RageMode.getInstance().getSelection().placeLoc1(p, loc);
 				sendMessage(p, RageMode.getLang().get("commands.area.selected1", "%x%", loc.getBlockX(), "%y%",

@@ -44,9 +44,9 @@ public class stopgame implements ICommand {
 				return false;
 			}
 
-			List<PlayerManager> players = new java.util.ArrayList<>(g.getPlayersFromList());
-			Utils.callEvent(new RMGameStopEvent(g, players));
+			Utils.callEvent(new RMGameStopEvent(g));
 
+			List<PlayerManager> players = g.getPlayersFromList();
 			if (g.getGameType() != GameType.APOCALYPSE)
 				RageScores.calculateWinner(g, players);
 			else
@@ -67,7 +67,7 @@ public class stopgame implements ICommand {
 			}
 
 			g.getActionMessengers().clear();
-			g.setGameNotRunning();
+			g.setGameRunning(false);
 			g.setStatus(null);
 			SignCreator.updateAllSigns(game);
 			sendMessage(sender, RageMode.getLang().get("game.stopped", "%game%", game));

@@ -25,13 +25,14 @@ public class listgames implements ICommand {
 		}
 
 		String[] games = GetGames.getGameNames();
-		int imax = games.length;
 
-		sendMessage(sender, RageMode.getLang().get("commands.listgames.listing-games", "%games%", imax));
+		sendMessage(sender, RageMode.getLang().get("commands.listgames.listing-games", "%games%", games.length));
 
-		for (int i = 0; i < imax; i++) {
+		for (int i = 0; i < games.length; i++) {
 			String game = games[i];
-			if (game == null || game.isEmpty()) {
+			assert game != null;
+
+			if (game.isEmpty()) {
 				continue;
 			}
 

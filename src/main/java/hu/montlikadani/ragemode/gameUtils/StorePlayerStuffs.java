@@ -12,13 +12,13 @@ import org.bukkit.scoreboard.Scoreboard;
 public class StorePlayerStuffs {
 
 	public Double oldHealth = 0d;
-	public Integer oldHunger = Integer.valueOf(0);
 	public Collection<PotionEffect> oldEffects;
 	public String oldDisplayName;
 	public String oldListName;
-	public Integer oldFire = Integer.valueOf(0);
+	public Integer oldFire = Integer.valueOf(0),
+			oldHunger = Integer.valueOf(0),
+			oldExpLevel = Integer.valueOf(0);
 	public Float oldExp = 0f;
-	public Integer oldExpLevel = Integer.valueOf(0);
 	public Entity oldVehicle;
 	public Scoreboard currentBoard;
 

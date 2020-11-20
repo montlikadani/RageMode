@@ -123,6 +123,7 @@ public class HolographicDisplaysHolder extends IHoloHolder {
 				.filter(h -> h.getVisibilityManager().isVisibleTo(player)).forEach(Hologram::delete);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Optional<Hologram> getClosest(Player player, boolean eyeLoc) {
 		if (player == null)

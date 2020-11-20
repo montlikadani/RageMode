@@ -7,6 +7,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.gameUtils.GameUtils.ActionMessageType;
 import hu.montlikadani.ragemode.utils.Misc;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
@@ -39,7 +40,7 @@ public class leave implements ICommand {
 		}
 
 		GameUtils.runCommands(p, game.getName(), "leave");
-		GameUtils.sendActionBarMessages(p, game.getName(), "leave");
+		GameUtils.sendActionMessage(p, game.getName(), ActionMessageType.LEAVE, ActionMessageType.asActionbar());
 		GameUtils.leavePlayer(p, game);
 		return true;
 	}

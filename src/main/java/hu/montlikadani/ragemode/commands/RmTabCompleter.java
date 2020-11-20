@@ -53,16 +53,18 @@ public class RmTabCompleter implements TabCompleter {
 					for (String game : getGameListCmds()) {
 						if (args[0].equalsIgnoreCase(game) && !GetGames.getGames().isEmpty()) {
 							GetGames.getGames().forEach(cmds::add);
+							break;
 						}
 					}
 				}
 
 				partOfCommand = args[1];
 			} else if (args.length < 4) {
-				for (String val : Arrays.asList("actionbar", "bossbar", "globalmessages")) {
-					if (args[0].equalsIgnoreCase(val)) {
+				for (String c : Arrays.asList("actionbar", "bossbar", "globalmessages")) {
+					if (args[0].equalsIgnoreCase(c)) {
 						Arrays.asList("true", "false").forEach(cmds::add);
 						partOfCommand = args[2];
+						break;
 					}
 				}
 
@@ -108,17 +110,17 @@ public class RmTabCompleter implements TabCompleter {
 	}
 
 	private List<String> getAdminCmds(CommandSender sender) {
-		List<String> c = new ArrayList<>();
-		for (String cmds : Arrays.asList("addgame", "addspawn", "addzombiespawn", "setlobby", "reload", "holostats",
+		List<String> cmds = new ArrayList<>();
+		for (String cmd : Arrays.asList("addgame", "addspawn", "addzombiespawn", "setlobby", "reload", "holostats",
 				"removegame", "resetplayerstats", "forcestart", "kick", "stopgame", "signupdate", "togglegame",
 				"points", "givesaveditems", "removespawn", "latestart", "maxplayers", "minplayers", "convertdatabase",
 				"area", "setgametype", "removezombiespawn")) {
-			if (hasPerm(sender, "ragemode.admin." + cmds)) {
-				c.add(cmds);
+			if (hasPerm(sender, "ragemode.admin." + cmd)) {
+				cmds.add(cmd);
 			}
 		}
 
-		return c;
+		return cmds;
 	}
 
 	private List<String> getSomeCmds(CommandSender sender) {

@@ -4,6 +4,9 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
 
+/**
+ * Called when a spectator player has left a game.
+ */
 public class SpectatorLeaveGameEvent extends GameEvent {
 
 	private Player player;
@@ -13,6 +16,11 @@ public class SpectatorLeaveGameEvent extends GameEvent {
 		this.player = player;
 	}
 
+	/**
+	 * The spectator player who left the game.
+	 * 
+	 * @return {@link Player}
+	 */
 	public Player getPlayer() {
 		return player;
 	}

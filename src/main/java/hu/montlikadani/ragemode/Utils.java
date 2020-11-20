@@ -16,7 +16,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.ServerVersion.Version;
-import hu.montlikadani.ragemode.API.event.BaseEvent;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
@@ -49,10 +48,10 @@ public class Utils {
 
 	/**
 	 * Calls an event.
-	 * <p>If the event is Asynchronous then runs in the main thread, preventing an error.
-	 * @param event BaseEvent
+	 * <p>If the event is Asynchronous, it performs on the main thread, preventing async catch.
+	 * @param event {@link org.bukkit.event.Event}
 	 */
-	public static void callEvent(BaseEvent event) {
+	public static void callEvent(org.bukkit.event.Event event) {
 		if (!hu.montlikadani.ragemode.API.RageModeAPI.getPlugin().isEnabled()) {
 			return;
 		}
@@ -67,8 +66,19 @@ public class Utils {
 		}
 	}
 
-	public static void teleportSync(Player player, Location loc) {
-		Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> player.teleport(loc));
+	public static void teleport(Entity entity, Location loc) {
+		ServerSoftwareType softwareType = RageMode.getSoftwareType();
+		if (softwareType == ServerSoftwareType.PAPER || softwareType == ServerSoftwareType.PURPUR) {
+			entity.teleportAsync(loc).thenAccept(done -> {
+				if (!done) {
+					entity.teleport(loc);
+				}
+			});
+		} else if (!Bukkit.isPrimaryThread()) { // Check if current thread is async
+			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> entity.teleport(loc));
+		} else {
+			entity.teleport(loc);
+		}
 	}
 
 	public static Collection<Entity> getNearbyEntities(org.bukkit.World w, Location loc, int radius) {
@@ -217,7 +227,7 @@ public class Utils {
 		if (s.contains("%points%"))
 			s = s.replace("%points%", pp == null ? "0" : Integer.toString(pp.getPoints()));
 
-		PlayerPoints plp = RageMode.getPPFromDatabase(uuid);
+		PlayerPoints plp = RageMode.getInstance().getDatabase().getPlayerStatsFromData(uuid);
 		if (s.contains("%games%")) {
 			s = s.replace("%games%", Integer.toString(plp == null ? pp == null ? 0 : pp.getGames() : plp.getGames()));
 		}
@@ -227,15 +237,6 @@ public class Utils {
 		}
 
 		return colors(s);
-	}
-
-	/**
-	 * Gets the Bukkit version
-	 * <p>Example: 1.8, 1.13.2
-	 * @return Bukkit version
-	 */
-	public static String getVersion() {
-		return Bukkit.getVersion();
 	}
 
 	/**

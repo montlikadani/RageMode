@@ -8,7 +8,7 @@ import org.bukkit.Material;
 @SuppressWarnings("serial")
 public class MaterialUtil {
 
-	private static Set<Material> WALL_SIGNS = new HashSet<Material>() {
+	private static final Set<Material> WALL_SIGNS = new HashSet<Material>() {
 		{
 			add(getMat("WALL_SIGN"));
 			add(getMat("ACACIA_WALL_SIGN"));
@@ -21,7 +21,7 @@ public class MaterialUtil {
 			add(getMat("CRIMSON_WALL_SIGN"));
 		}
 	};
-	private static Set<Material> PRESSURE_PLATES = new HashSet<Material>() {
+	private static final Set<Material> PRESSURE_PLATES = new HashSet<Material>() {
 		{
 			add(getMat("WOODEN_PRESSURE_PLATE"));
 			add(getMat("OAK_PRESSURE_PLATE"));
@@ -38,7 +38,7 @@ public class MaterialUtil {
 			add(getMat("LIGHT_WEIGHTED_PRESSURE_PLATE"));
 		}
 	};
-	private static Set<Material> TRAPDOORS = new HashSet<Material>() {
+	private static final Set<Material> TRAPDOORS = new HashSet<Material>() {
 		{
 			add(getMat("TRAP_DOOR"));
 			add(getMat("IRON_TRAPDOOR"));
@@ -52,7 +52,7 @@ public class MaterialUtil {
 			add(getMat("CRIMSON_TRAPDOOR"));
 		}
 	};
-	private static Set<Material> BUTTONS = new HashSet<Material>() {
+	private static final Set<Material> BUTTONS = new HashSet<Material>() {
 		{
 			add(getMat("WOODEN_BUTTON"));
 			add(getMat("STONE_BUTTON"));
@@ -67,7 +67,7 @@ public class MaterialUtil {
 			add(getMat("CRIMSON_BUTTON"));
 		}
 	};
-	private static Set<Material> DOORS = new HashSet<Material>() {
+	private static final Set<Material> DOORS = new HashSet<Material>() {
 		{
 			add(getMat("WOODEN_DOOR"));
 			add(getMat("ACACIA_DOOR"));
@@ -75,13 +75,13 @@ public class MaterialUtil {
 			add(getMat("DARK_OAK_DOOR"));
 			add(getMat("JUNGLE_DOOR"));
 			add(getMat("SPRUCE_DOOR"));
-			add(getMat("OAK_DOOR"));
+			add(getMat("WOOD_DOOR"));
 			add(getMat("OAK_DOOR"));
 			add(getMat("WARPED_DOOR"));
 			add(getMat("CRIMSON_DOOR"));
 		}
 	};
-	private static Set<Material> COMPARATORS = new HashSet<Material>() {
+	private static final Set<Material> COMPARATORS = new HashSet<Material>() {
 		{
 			add(getMat("REDSTONE_COMPARATOR"));
 			add(getMat("REDSTONE_COMPARATOR_ON"));

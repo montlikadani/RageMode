@@ -141,6 +141,7 @@ public class ArmorStandHologram extends IHoloHolder {
 		armorStands.remove(player.getUniqueId());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Optional<ArmorStands> getClosest(Player player, boolean eyeLoc) {
 		if (player == null)

@@ -11,10 +11,7 @@ public class DBConnector {
 
 	private RMConnection conn;
 
-	private String url;
-	private String username;
-	private String password;
-	private String prefix;
+	private String url, username, password, prefix;
 
 	public DBConnector(String url, String username, String password, String prefix) {
 		this.url = url;

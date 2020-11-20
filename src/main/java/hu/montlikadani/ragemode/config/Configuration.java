@@ -8,16 +8,14 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 
 public class Configuration {
 
 	private RageMode plugin;
-	private FileConfiguration config, arenas, rewards, datas, items, gameAreas, holosConfig;
+	private CommentedConfig config;
+	private FileConfiguration arenas, rewards, datas, items, gameAreas, holosConfig;
 	private File config_file, arenas_file, rewards_file, datas_file, items_file, areas_File, holosFile;
-
-	private double configVersion = 1.9;
 
 	public Configuration(RageMode plugin) {
 		this.plugin = plugin;
@@ -58,19 +56,14 @@ public class Configuration {
 		loadFiles();
 
 		try {
-			if (config_file.exists()) {
-				config = YamlConfiguration.loadConfiguration(config_file);
-			} else {
-				config = createFile(config_file, "config.yml", false);
+			if (!config_file.exists()) {
+				plugin.saveResource("config.yml", false);
 			}
 
-			ConfigValues.loadValues(new FileConfig(config));
+			config = new CommentedConfig(config_file);
+			config.load();
 
-			if (!config.isSet("config-version") || !config.get("config-version").equals(configVersion)) {
-				Debug.logConsole(Level.WARNING,
-						"Found outdated configuration (config.yml)! (Your version: {0} | Newest version: {1})",
-						config.getString("config-version"), String.valueOf(configVersion));
-			}
+			ConfigValues.loadValues(config);
 
 			if (arenas_file.exists()) {
 				arenas = YamlConfiguration.loadConfiguration(arenas_file);
@@ -141,7 +134,7 @@ public class Configuration {
 		return YamlConfiguration.loadConfiguration(file);
 	}
 
-	public FileConfiguration getCfg() {
+	public CommentedConfig getCfg() {
 		return config;
 	}
 
@@ -195,10 +188,6 @@ public class Configuration {
 
 	public File getHolosFile() {
 		return holosFile;
-	}
-
-	public double getConfigVersion() {
-		return configVersion;
 	}
 
 	public static void saveFile(FileConfiguration c, File f) {

@@ -73,6 +73,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.ServerSoftwareType;
 import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.Utils;
@@ -117,8 +118,8 @@ public class GameListener implements Listener {
 	public void onGameLeave(RMGameLeaveAttemptEvent e) {
 		Player player = e.getPlayer();
 
-		if (GameUtils.USERPARTICLES.containsKey(player.getUniqueId())) {
-			GameUtils.USERPARTICLES.remove(player.getUniqueId());
+		if (LobbyShop.USERPARTICLES.containsKey(player.getUniqueId())) {
+			LobbyShop.USERPARTICLES.remove(player.getUniqueId());
 		}
 
 		for (java.util.Iterator<PressureMine> it = PRESSUREMINES.iterator(); it.hasNext();) {
@@ -136,8 +137,9 @@ public class GameListener implements Listener {
 		PRESSUREMINES.forEach(PressureMine::removeMines);
 		PRESSUREMINES.clear();
 
-		if (event.getGame().getGameType() == GameType.APOCALYPSE && !event.getPlayers().isEmpty()) {
-			event.getPlayers().get(0).getPlayer().getWorld().setTime(event.getGame().worldTime);
+		Game game = event.getGame();
+		if (game.getGameType() == GameType.APOCALYPSE && !game.getPlayersFromList().isEmpty()) {
+			game.getPlayersFromList().get(0).getPlayer().getWorld().setTime(game.worldTime);
 		}
 	}
 
@@ -579,8 +581,8 @@ public class GameListener implements Listener {
 		}
 
 		// respawn player instantly
-		if (RageMode.isSpigot()) {
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, deceased.spigot()::respawn, 1L);
+		if (RageMode.getSoftwareType() != ServerSoftwareType.UNKNOWN) {
+			Bukkit.getScheduler().runTaskLater(plugin, deceased.spigot()::respawn, 1L);
 		}
 
 		GameUtils.addGameItems(deceased, true);
@@ -660,7 +662,7 @@ public class GameListener implements Listener {
 		}
 
 		IGameSpawn gsg = GameUtils.getGameSpawn(game.getName());
-		if (gsg.getSpawnLocations().size() < 0) {
+		if (!gsg.haveAnySpawn()) {
 			return;
 		}
 
@@ -689,7 +691,7 @@ public class GameListener implements Listener {
 		}
 
 		Location randomSpawn = gsg.getRandomSpawn();
-		if (game.getGameType() == GameType.APOCALYPSE) {
+		/*if (game.getGameType() == GameType.APOCALYPSE) {
 			int amountEntities = 0;
 
 			// simulate the respawn from monsters
@@ -705,7 +707,7 @@ public class GameListener implements Listener {
 					}
 				}
 			}
-		}
+		}*/
 
 		e.setRespawnLocation(randomSpawn);
 
@@ -787,9 +789,8 @@ public class GameListener implements Listener {
 		String arg = event.getMessage().trim().toLowerCase();
 
 		if (ConfigValues.isSpectatorEnabled() && GameUtils.isSpectatorPlaying(p)) {
-			List<String> cmds = plugin.getConfiguration().getCfg()
-					.getStringList("spectator.allowed-spectator-commands");
-			if (!cmds.isEmpty() && !cmds.contains(arg) && !hasPerm(p, "ragemode.bypass.spectatorcommands")) {
+			if (!ConfigValues.getAllowedSpectatorCommands().contains(arg)
+					&& !hasPerm(p, "ragemode.bypass.spectatorcommands")) {
 				sendMessage(p, RageMode.getLang().get("game.this-command-is-disabled-in-game"));
 				event.setCancelled(true);
 				return;
@@ -803,8 +804,8 @@ public class GameListener implements Listener {
 				return;
 			}
 
-			List<String> cmds = plugin.getConfiguration().getCfg().getStringList("game.allowed-commands");
-			if (!cmds.isEmpty() && !cmds.contains(arg) && !hasPerm(p, "ragemode.bypass.disabledcommands")) {
+			if (!ConfigValues.getAllowedInGameCommands().contains(arg)
+					&& !hasPerm(p, "ragemode.bypass.disabledcommands")) {
 				sendMessage(p, RageMode.getLang().get("game.this-command-is-disabled-in-game"));
 				event.setCancelled(true);
 			}
@@ -1166,7 +1167,7 @@ public class GameListener implements Listener {
 		Game game = GameUtils.getGameByPlayer(p);
 
 		if (p.getLocation().getY() < 0) {
-			p.teleport(GameUtils.getGameSpawn(game).getRandomSpawn());
+			Utils.teleport(p, GameUtils.getGameSpawn(game).getRandomSpawn());
 
 			// Prevent damaging player when respawned
 			p.setFallDistance(0);
@@ -1188,6 +1189,7 @@ public class GameListener implements Listener {
 			// prevent player moving outside of game area
 			Location loc = p.getLocation();
 
+			// TODO if area lowest location is in air, then somehow teleport player to a block within area
 			if (!GameAreaManager.inArea(loc)) {
 				event.setTo(from.subtract(loc.clone().getDirection().multiply(1)));
 				return;
@@ -1209,7 +1211,7 @@ public class GameListener implements Listener {
 				y += .5;
 				z += .5;
 
-				p.teleport(new Location(from.getWorld(), x, y, z, from.getYaw(), from.getPitch()));
+				Utils.teleport(p, new Location(from.getWorld(), x, y, z, from.getYaw(), from.getPitch()));
 			}
 		}
 	}
@@ -1220,19 +1222,20 @@ public class GameListener implements Listener {
 	}
 
 	private boolean explodeMine(Player p, Location currentLoc) {
+		org.bukkit.World w = currentLoc.getWorld();
+		if (w == null) {
+			return false;
+		}
+
 		Block b = currentLoc.getBlock();
 
 		if (b.getRelative(BlockFace.DOWN).getType() != Material.TRIPWIRE && b.getType() != Material.TRIPWIRE) {
 			return false;
 		}
 
-		org.bukkit.World w = currentLoc.getWorld();
 		double x = currentLoc.getX(),
 				y = currentLoc.getY(),
 				z = currentLoc.getZ();
-		if (w == null) {
-			return false;
-		}
 
 		Collection<Entity> nears = Utils.getNearbyEntities(w, currentLoc, 10);
 
@@ -1293,7 +1296,7 @@ public class GameListener implements Listener {
 		}
 
 		final UUID uuid = ((Player) proj.getShooter()).getUniqueId();
-		if (ConfigValues.isUseArrowTrails() && isArrow && !GameUtils.USERPARTICLES.containsKey(uuid)) {
+		if (ConfigValues.isUseArrowTrails() && isArrow && !LobbyShop.USERPARTICLES.containsKey(uuid)) {
 			return;
 		}
 
@@ -1307,7 +1310,7 @@ public class GameListener implements Listener {
 					}
 
 					proj.getWorld().playEffect(proj.getLocation(), org.bukkit.Effect.SMOKE, 0);
-				} else if (ConfigValues.isUseArrowTrails() && isArrow && GameUtils.USERPARTICLES.containsKey(uuid)) {
+				} else if (ConfigValues.isUseArrowTrails() && isArrow && LobbyShop.USERPARTICLES.containsKey(uuid)) {
 					try {
 						Thread.sleep(40L);
 					} catch (InterruptedException e) {
@@ -1315,11 +1318,13 @@ public class GameListener implements Listener {
 					}
 
 					if (Version.isCurrentLower(Version.v1_9_R1)) {
-						proj.getWorld().playEffect(proj.getLocation(), (Effect) GameUtils.USERPARTICLES.get(uuid), 0);
+						proj.getWorld().playEffect(proj.getLocation(), (Effect) LobbyShop.USERPARTICLES.get(uuid), 0);
 					} else {
-						proj.getWorld().spawnParticle((Particle) GameUtils.USERPARTICLES.get(uuid), proj.getLocation(),
+						proj.getWorld().spawnParticle((Particle) LobbyShop.USERPARTICLES.get(uuid), proj.getLocation(),
 								0);
 					}
+				} else {
+					return false;
 				}
 			} while (!proj.isDead() && !proj.isOnGround());
 

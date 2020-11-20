@@ -10,6 +10,11 @@ public class GameEvent extends BaseEvent {
 		this.game = game;
 	}
 
+	/**
+	 * Gets the current game.
+	 * 
+	 * @return {@link Game}
+	 */
 	public Game getGame() {
 		return game;
 	}

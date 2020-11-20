@@ -41,6 +41,9 @@ public class Game {
 	private boolean running = false;
 	private LobbyTimer lobbyTimer;
 
+	/**
+	 * The set of world time to be cached before the game start in apocalypse mode
+	 */
 	public long worldTime = 0L;
 
 	private final Set<ActionMessengers> acList = new HashSet<>();
@@ -49,7 +52,6 @@ public class Game {
 		this(name, GameType.NORMAL);
 	}
 
-	// TODO: In the future add ability to work with ids
 	public Game(String name, GameType gameType) {
 		this.name = name == null ? "" : name;
 
@@ -81,6 +83,7 @@ public class Game {
 
 	/**
 	 * Get the players who added to the list.
+	 * 
 	 * @return {@link Map}
 	 */
 	public Map<UUID, PlayerManager> getPlayers() {
@@ -89,6 +92,7 @@ public class Game {
 
 	/**
 	 * Gets the spectator players who added to the list.
+	 * 
 	 * @return {@link Map}
 	 */
 	public Map<UUID, PlayerManager> getSpectatorPlayers() {
@@ -97,6 +101,7 @@ public class Game {
 
 	/**
 	 * Checks if the player is in spectator list.
+	 * 
 	 * @param p Player
 	 * @return true if in the list
 	 */
@@ -106,6 +111,7 @@ public class Game {
 
 	/**
 	 * Checks if the player is in list.
+	 * 
 	 * @param p Player
 	 * @return true if in the list
 	 */
@@ -129,8 +135,7 @@ public class Game {
 		if (event.isCancelled())
 			return false;
 
-		ActionMessengers ac = new ActionMessengers(this, player);
-		acList.add(ac);
+		acList.add(new ActionMessengers(this, player));
 
 		PlayerManager pm = new PlayerManager(player, name);
 
@@ -237,9 +242,7 @@ public class Game {
 		acList.remove(removePlayerSynced(player));
 		players.remove(player.getUniqueId());
 
-		if (!player.isCustomNameVisible()) {
-			player.setCustomNameVisible(true);
-		}
+		player.setCustomNameVisible(true);
 
 		if (!switchToSpec) {
 			player.sendMessage(RageMode.getLang().get("game.player-left"));
@@ -261,6 +264,7 @@ public class Game {
 
 	/**
 	 * Removes all of scoreboard, tablist and score team things from player.
+	 * 
 	 * @param player Player
 	 * @return {@link ActionMessengers}
 	 */
@@ -278,41 +282,26 @@ public class Game {
 	}
 
 	/**
-	 * Checks whatever the game is running or not.
-	 * @return true if the game running currently.
+	 * Checks whatever this game is running or not.
+	 * 
+	 * @return true if this game running.
 	 */
 	public boolean isGameRunning() {
 		return running;
 	}
 
 	/**
-	 * Sets the game to running state.
-	 * @return true if the game not running currently
+	 * Sets this game to a new state.
+	 * 
+	 * @param running this game should run or not
 	 */
-	public boolean setGameRunning() {
-		if (running) {
-			return false;
-		}
-
-		running = true;
-		return true;
-	}
-
-	/**
-	 * Sets the game to not running state.
-	 * @return true if the game is running currently
-	 */
-	public boolean setGameNotRunning() {
-		if (running) {
-			running = false;
-			return true;
-		}
-
-		return false;
+	public void setGameRunning(boolean running) {
+		this.running = running;
 	}
 
 	/**
 	 * Gets the game current set GameStatus.
+	 * 
 	 * @return {@link GameStatus}
 	 */
 	public GameStatus getStatus() {
@@ -321,6 +310,7 @@ public class Game {
 
 	/**
 	 * Sets the game status to new status.
+	 * 
 	 * @param status the new status to be set for the game
 	 */
 	public void setStatus(GameStatus status) {
@@ -328,14 +318,13 @@ public class Game {
 			status = GameStatus.STOPPED;
 		}
 
-		RMGameStatusChangeEvent event = new RMGameStatusChangeEvent(this, status);
-		Utils.callEvent(event);
-
+		Utils.callEvent(new RMGameStatusChangeEvent(this, status));
 		this.status = status;
 	}
 
 	/**
 	 * Check whatever has free room for VIP players.
+	 * 
 	 * @return true if the players size not equal to vips size
 	 */
 	public boolean hasRoomForVIP() {
@@ -348,24 +337,21 @@ public class Game {
 			}
 		}
 
-		if (vipsInGame == players.size())
-			return false;
-
-		return true;
+		return vipsInGame != players.size();
 	}
 
 	/**
-	 * Get the player by name from list.
-	 * @param name Player name
-	 * @return Player
+	 * Get the player by its uuid from list.
+	 * 
+	 * @param uuid Player uuid
+	 * @return {@link Player}
 	 */
-	public Player getPlayer(String name) {
-		Validate.notEmpty(name, "Name can't be empty/null");
+	public Player getPlayer(UUID uuid) {
+		Validate.notNull(uuid, "UUID can't be null");
 
-		for (UUID uuid : players.keySet()) {
-			Player player = Bukkit.getPlayer(uuid);
-			if (player != null && player.getName().equalsIgnoreCase(name)) {
-				return player;
+		for (UUID id : players.keySet()) {
+			if (uuid.equals(id)) {
+				return Bukkit.getPlayer(id);
 			}
 		}
 
@@ -373,17 +359,17 @@ public class Game {
 	}
 
 	/**
-	 * Get the spectator player by name from list.
-	 * @param name Player name
-	 * @return Player
+	 * Get the spectator player by its uuid from list.
+	 * 
+	 * @param uuid Player uuid
+	 * @return {@link Player}
 	 */
-	public Player getSpectatorPlayer(String name) {
-		Validate.notEmpty(name, "Name can't be empty/null");
+	public Player getSpectatorPlayer(UUID uuid) {
+		Validate.notNull(uuid, "UUID can't be null");
 
-		for (UUID uuid : specPlayer.keySet()) {
-			Player specs = Bukkit.getPlayer(uuid);
-			if (specs != null && specs.getName().equalsIgnoreCase(name)) {
-				return specs;
+		for (UUID id : specPlayer.keySet()) {
+			if (uuid.equals(id)) {
+				return Bukkit.getPlayer(id);
 			}
 		}
 
@@ -392,6 +378,7 @@ public class Game {
 
 	/**
 	 * Gets all players including spectators from this game.
+	 * 
 	 * @return list of {@link PlayerManager}
 	 */
 	public List<PlayerManager> getAllPlayers() {
@@ -403,6 +390,7 @@ public class Game {
 
 	/**
 	 * Gets the {@link PlayerManager} player converted to list.
+	 * 
 	 * @return list of {@link PlayerManager}
 	 */
 	public List<PlayerManager> getPlayersFromList() {
@@ -411,6 +399,7 @@ public class Game {
 
 	/**
 	 * Gets the {@link PlayerManager} spectator players converted to list.
+	 * 
 	 * @return list of {@link PlayerManager}
 	 */
 	public List<PlayerManager> getSpectatorPlayersFromList() {
@@ -419,6 +408,7 @@ public class Game {
 
 	/**
 	 * Gets the {@link PlayerManager} by spectator player.
+	 * 
 	 * @param p Spectator player
 	 * @return {@link PlayerManager} by spectator player
 	 */
@@ -430,6 +420,7 @@ public class Game {
 
 	/**
 	 * Gets the {@link PlayerManager} by player.
+	 * 
 	 * @param p Player
 	 * @return {@link PlayerManager} by player
 	 */

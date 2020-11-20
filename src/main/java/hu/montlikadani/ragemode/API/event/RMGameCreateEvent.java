@@ -2,6 +2,9 @@ package hu.montlikadani.ragemode.API.event;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
 
+/**
+ * Called when a game has been created.
+ */
 public class RMGameCreateEvent extends GameEvent {
 
 	private int maxPlayers;
@@ -13,10 +16,20 @@ public class RMGameCreateEvent extends GameEvent {
 		this.minPlayers = minPlayers;
 	}
 
+	/**
+	 * Gets the maximum players.
+	 * 
+	 * @return the maximum players
+	 */
 	public int getMaxPlayers() {
 		return maxPlayers;
 	}
 
+	/**
+	 * Gets the minimum players.
+	 * 
+	 * @return the minimum players
+	 */
 	public int getMinPlayers() {
 		return minPlayers;
 	}

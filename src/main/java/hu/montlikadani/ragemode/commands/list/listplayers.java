@@ -1,16 +1,11 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.UUID;
-
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
@@ -34,76 +29,64 @@ public class listplayers implements ICommand {
 			}
 
 			Player p = (Player) sender;
-			if (!GameUtils.isPlayerPlaying(p) || !GameUtils.isSpectatorPlaying(p)) {
+			boolean isPlayerPlaying = GameUtils.isPlayerPlaying(p);
+			boolean isSpectatorPlaying = GameUtils.isSpectatorPlaying(p);
+
+			if (!isPlayerPlaying && !isSpectatorPlaying) {
 				sendMessage(p, RageMode.getLang().get("commands.listplayers.player-currently-not-playing"));
 				return false;
 			}
 
-			if (!GameUtils.getGameByPlayer(p).getPlayersFromList().isEmpty()) {
+			if (isPlayerPlaying) {
 				StringBuilder sb = new StringBuilder();
-
-				for (Iterator<PlayerManager> e = GameUtils.getGameByPlayer(p).getPlayersFromList().iterator(); e
-						.hasNext();) {
-					sb.append("&7-&6 " + e.next().getPlayer().getName() + "&a - " + e.next().getGameName());
+				for (PlayerManager pm : GameUtils.getGameByPlayer(p).getPlayersFromList()) {
+					sb.append("&7-&6 " + pm.getPlayer().getName() + "&a - " + pm.getGameName());
 				}
 
-				sendMessage(p, "&7Players:\n" + sb, true);
+				sendMessage(p, "&7Players:\n" + sb.toString(), true);
 			}
 
-			if (!GameUtils.getGameBySpectator(p).getPlayersFromList().isEmpty()) {
+			if (isSpectatorPlaying) {
 				StringBuilder sb = new StringBuilder();
-
-				for (Iterator<PlayerManager> e = GameUtils.getGameBySpectator(p).getPlayersFromList().iterator(); e
-						.hasNext();) {
-					sb.append("&7-&6 " + e.next().getPlayer().getName() + "&a - " + e.next().getGameName());
+				for (PlayerManager pm : GameUtils.getGameBySpectator(p).getPlayersFromList()) {
+					sb.append("&7-&6 " + pm.getPlayer().getName() + "&a - " + pm.getGameName());
 				}
 
-				sendMessage(sender, "&7Spectator players:\n" + sb, true);
+				sendMessage(sender, "&7Spectator players:\n" + sb.toString(), true);
 			}
 
 			return true;
 		}
 
 		if (args.length >= 2) {
-			String game = args[1];
-			if (!GameUtils.isGameWithNameExists(game)) {
+			String gameName = args[1];
+			if (!GameUtils.isGameWithNameExists(gameName)) {
 				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", args[1]));
 				return false;
 			}
 
-			GameStatus status = GameUtils.getGame(game).getStatus();
-			if (!(status == GameStatus.RUNNING || status == GameStatus.WAITING)) {
+			Game game = GameUtils.getGame(gameName);
+			if (!(game.getStatus() == GameStatus.RUNNING || game.getStatus() == GameStatus.WAITING)) {
 				sendMessage(sender, RageMode.getLang().get("commands.listplayers.game-not-running"));
 				return false;
 			}
 
-			if (!GameUtils.getGame(game).getPlayers().isEmpty()) {
+			if (!game.getPlayers().isEmpty()) {
 				StringBuilder sb = new StringBuilder();
-
-				for (PlayerManager pm : GameUtils.getGame(game).getPlayersFromList()) {
-					Player player = pm.getPlayer();
-
-					for (Iterator<String> e = Arrays.asList(GameUtils.getGameByPlayer(player).getName()).iterator(); e
-							.hasNext();) {
-						sb.append("&7-&6 " + player.getName() + "&a - " + e.next());
-					}
+				for (PlayerManager pm : game.getPlayersFromList()) {
+					sb.append("&7-&6 " + pm.getPlayer().getName() + "&a - " + gameName);
 				}
 
-				sendMessage(sender, "&7Players:\n" + sb, true);
+				sendMessage(sender, "&7Players:\n" + sb.toString(), true);
 			}
 
-			if (!GameUtils.getGame(game).getSpectatorPlayers().isEmpty()) {
+			if (!game.getSpectatorPlayers().isEmpty()) {
 				StringBuilder sb = new StringBuilder();
-
-				for (Entry<UUID, PlayerManager> spec : GameUtils.getGame(game).getSpectatorPlayers()
-						.entrySet()) {
-					Player pl = Bukkit.getPlayer(spec.getKey());
-					if (pl != null) {
-						sb.append("\n&7-&6 " + pl.getName() + "&a - " + spec.getValue());
-					}
+				for (PlayerManager spec : game.getSpectatorPlayers().values()) {
+					sb.append("\n&7-&6 " + spec.getPlayer().getName() + "&a - " + spec.getGameName());
 				}
 
-				sendMessage(sender, "&7Spectator players:\n" + sb, true);
+				sendMessage(sender, "&7Spectator players:\n" + sb.toString(), true);
 			}
 		}
 

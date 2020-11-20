@@ -91,13 +91,15 @@ public class UpdateDownloader {
 				Files.copy(in, jar.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
 				in.close();
-
-				Debug.logConsole("The new RageMode has been downloaded to releases folder.");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
 			return true;
+		}).thenAccept(b -> {
+			if (b) {
+				Debug.logConsole("The new RageMode has been downloaded to releases folder.");
+			}
 		});
 	}
 }

@@ -36,7 +36,7 @@ public class RageScores {
 			int totalPoints = addPoints(killer, 1, true);
 
 			// To avoid spam
-			if (java.util.concurrent.ThreadLocalRandom.current().nextInt(0, 100) < 30) {
+			if (java.util.concurrent.ThreadLocalRandom.current().nextInt(0, 100) < 25) {
 				String msg = RageMode.getLang().get("game.broadcast.zombie-kill", "%entity%", entity.getName(),
 						"%killer%", killer.getName(), "%remainEntities%",
 						GameAreaManager.inArea(killer.getLocation())
@@ -111,7 +111,7 @@ public class RageScores {
 			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", totalPoints);
 			break;
 		case COMBATAXE:
-			int axePoints = RageMode.getInstance().getConfiguration().getCfg().getInt("points.axekill");
+			int axePoints = ConfigValues.getAxeKill();
 			int axeMinusPoints = ConfigValues.getAxeDeath();
 			totalPoints = addPoints(killer, axePoints, true);
 			addPoints(victim, axeMinusPoints, false);

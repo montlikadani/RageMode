@@ -9,36 +9,49 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import hu.montlikadani.ragemode.Debug;
+import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
-import hu.montlikadani.ragemode.database.DatabaseHandler;
+import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.database.DB;
+import hu.montlikadani.ragemode.database.DBType;
+import hu.montlikadani.ragemode.database.Database;
 import hu.montlikadani.ragemode.database.MySQLConnect;
 import hu.montlikadani.ragemode.database.RMConnection;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
-public class MySQLDB {
+@DB(type = DBType.MYSQL, doesFileDb = false)
+public class MySQLDB implements Database {
 
-	public static void loadPlayerStatistics() {
-		final MySQLConnect mySQL = DatabaseHandler.getMySQL();
-		if (!mySQL.isConnected() || !mySQL.isValid()) {
+	private MySQLConnect connect;
+
+	@Override
+	public MySQLConnect getDatabase() {
+		return connect;
+	}
+
+	@Override
+	public void loadPlayerStatistics() {
+		if (!connect.isConnected() || !connect.isValid()) {
 			return;
 		}
 
-		mySQL.dispatchAsync(() -> {
+		connect.dispatchAsync(() -> {
 			int totalPlayers = 0, kills = 0, axeKills = 0, directArrowKills = 0, explosionKills = 0, knifeKills = 0,
 					zombieKills = 0, deaths = 0, axeDeaths = 0, directArrowDeaths = 0, explosionDeaths = 0,
 					knifeDeaths = 0, currentWins = 0, currentScore = 0, currentGames = 0;
 
 			double kd = 0d;
 
-			String query = "SELECT * FROM `" + mySQL.getPrefix() + "stats_players`;";
-			RMConnection conn = mySQL.getConnection();
+			String query = "SELECT * FROM `" + connect.getPrefix() + "stats_players`;";
+			RMConnection conn = connect.getConnection();
 			Statement statement = null;
 			try {
 				statement = conn.createStatement();
@@ -114,34 +127,26 @@ public class MySQLDB {
 		});
 	}
 
-	/**
-	 * Saves all players data to the database.
-	 */
-	public static void saveData() {
-		RuntimePPManager.getRuntimePPList().forEach(MySQLDB::addPlayerStatistics);
+	@Override
+	public void saveData() {
+		RuntimePPManager.getRuntimePPList().forEach(this::addPlayerStatistics);
 	}
 
-	/**
-	 * Adds the statistics from the given PlayerPoints instance to the database
-	 * connection from the MySQLConnect instance.
-	 * 
-	 * @param playerPoints The PlayerPoints instance from which the statistics should be gotten.
-	 */
-	public static void addPlayerStatistics(PlayerPoints playerPoints) {
-		final MySQLConnect mySQL = DatabaseHandler.getMySQL();
-		if (!mySQL.isValid()) {
+	@Override
+	public void addPlayerStatistics(PlayerPoints playerPoints) {
+		if (!connect.isValid()) {
 			return;
 		}
 
-		mySQL.dispatchAsync(() -> {
+		connect.dispatchAsync(() -> {
 			int oldKills = 0, oldAxeKills = 0, oldDirectArrowKills = 0, oldExplosionKills = 0, oldKnifeKills = 0,
 					oldZombieKills = 0, oldDeaths = 0, oldAxeDeaths = 0, oldDirectArrowDeaths = 0,
 					oldExplosionDeaths = 0, oldKnifeDeaths = 0, oldWins = 0, oldScore = 0, oldGames = 0;
 
-			String query = "SELECT * FROM `" + mySQL.getPrefix() + "stats_players` WHERE `uuid` LIKE '"
+			String query = "SELECT * FROM `" + connect.getPrefix() + "stats_players` WHERE `uuid` LIKE '"
 					+ playerPoints.getUUID().toString() + "';";
 
-			RMConnection conn = mySQL.getConnection();
+			RMConnection conn = connect.getConnection();
 			Statement statement = null;
 			try {
 				statement = conn.createStatement();
@@ -198,7 +203,7 @@ public class MySQLDB {
 
 			PreparedStatement prestt = null;
 			try {
-				prestt = conn.prepareStatement("REPLACE INTO `" + mySQL.getPrefix()
+				prestt = conn.prepareStatement("REPLACE INTO `" + connect.getPrefix()
 						+ "stats_players` (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills,"
 						+ " knife_kills, zombie_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
 						+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
@@ -240,21 +245,17 @@ public class MySQLDB {
 		});
 	}
 
-	/**
-	 * Add points to the given player database.
-	 * @param points the amount of points
-	 * @param uuid player uuid
-	 */
-	public static void addPoints(int points, UUID uuid) {
-		final MySQLConnect mysql = DatabaseHandler.getMySQL();
-		if (!mysql.isValid()) {
+	@Override
+	public void addPoints(int points, UUID uuid) {
+		if (!connect.isValid()) {
 			return;
 		}
 
-		mysql.dispatchAsync(() -> {
+		connect.dispatchAsync(() -> {
 			int oldPoints = 0;
-			String query = "SELECT * FROM `" + mysql.getPrefix() + "stats_players` WHERE `uuid` LIKE '" + uuid.toString() + "';";
-			RMConnection conn = mysql.getConnection();
+			String query = "SELECT * FROM `" + connect.getPrefix() + "stats_players` WHERE `uuid` LIKE '"
+					+ uuid.toString() + "';";
+			RMConnection conn = connect.getConnection();
 			Statement statement = null;
 			try {
 				statement = conn.createStatement();
@@ -277,8 +278,8 @@ public class MySQLDB {
 
 			PreparedStatement prestt = null;
 			try {
-				prestt = conn.prepareStatement(
-						"REPLACE INTO `" + mysql.getPrefix() + "stats_players` (name, uuid, score) VALUES (?, ?, ?);");
+				prestt = conn.prepareStatement("REPLACE INTO `" + connect.getPrefix()
+						+ "stats_players` (name, uuid, score) VALUES (?, ?, ?);");
 				if (prestt == null) {
 					return null;
 				}
@@ -303,12 +304,8 @@ public class MySQLDB {
 		});
 	}
 
-	/**
-	 * Retrieves the list of PlayerPoints.
-	 * @return A List of all PlayerPoints objects which are stored in the MySQL database.
-	 */
-	public static List<PlayerPoints> getAllPlayerStatistics() {
-		final MySQLConnect connect = DatabaseHandler.getMySQL();
+	@Override
+	public List<PlayerPoints> getAllPlayerStatistics() {
 		if (!connect.isValid()) {
 			return Collections.emptyList();
 		}
@@ -351,27 +348,8 @@ public class MySQLDB {
 		}).join();
 	}
 
-	/**
-	 * Gets all player stats from database.
-	 * <p>If the player never played and not found in the database, will be ignored.
-	 * 
-	 * @param uuid Player uuid
-	 * @return {@link PlayerPoints}
-	 */
-	@Deprecated
-	public static PlayerPoints getPlayerStatsFromData(String uuid) {
-		return getPlayerStatsFromData(UUID.fromString(uuid));
-	}
-
-	/**
-	 * Gets all player stats from database.
-	 * <p>If the player never played and not found in the database, will be ignored.
-	 * 
-	 * @param uuid Player uuid
-	 * @return {@link PlayerPoints}
-	 */
-	public static PlayerPoints getPlayerStatsFromData(UUID uuid) {
-		MySQLConnect connect = DatabaseHandler.getMySQL();
+	@Override
+	public PlayerPoints getPlayerStatsFromData(UUID uuid) {
 		if (!connect.isValid()) {
 			return null;
 		}
@@ -388,7 +366,8 @@ public class MySQLDB {
 			RMConnection conn = connect.getConnection();
 
 			Statement statement = null;
-			String query = "SELECT * FROM `" + connect.getPrefix() + "stats_players` WHERE `uuid` LIKE '" + uuid.toString() + "';";
+			String query = "SELECT * FROM `" + connect.getPrefix() + "stats_players` WHERE `uuid` LIKE '"
+					+ uuid.toString() + "';";
 
 			int currentKills = 0, currentAxeKills = 0, currentDirectArrowKills = 0, currentExplosionKills = 0,
 					currentKnifeKills = 0, currentZombieKills = 0, currentDeaths = 0, currentAxeDeaths = 0,
@@ -455,22 +434,8 @@ public class MySQLDB {
 		}).join();
 	}
 
-	/**
-	 * Restores all data of the given player to 0
-	 * @param uuid UUID of player
-	 * @return true if the player found in database
-	 */
-	@Deprecated
-	public static boolean resetPlayerStatistic(String uuid) {
-		return resetPlayerStatistic(UUID.fromString(uuid));
-	}
-
-	/**
-	 * Restores all data of the given player to 0
-	 * @param uuid UUID of player
-	 * @return true if the player found in database
-	 */
-	public static boolean resetPlayerStatistic(UUID uuid) {
+	@Override
+	public boolean resetPlayerStatistic(UUID uuid) {
 		final PlayerPoints rpp = RuntimePPManager.getPPForPlayer(uuid);
 		if (rpp == null) {
 			return false;
@@ -494,15 +459,15 @@ public class MySQLDB {
 		rpp.setGames(0);
 		rpp.setKD(0d);
 
-		final RMConnection conn = DatabaseHandler.getMySQL().getConnection();
+		final RMConnection conn = connect.getConnection();
 		if (!conn.isConnected()) {
 			return false;
 		}
 
-		return DatabaseHandler.getMySQL().dispatchAsync(() -> {
+		return connect.dispatchAsync(() -> {
 			PreparedStatement prestt = null;
 			try {
-				prestt = conn.prepareStatement("REPLACE INTO `" + DatabaseHandler.getMySQL().getPrefix()
+				prestt = conn.prepareStatement("REPLACE INTO `" + connect.getPrefix()
 						+ "stats_players` (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills,"
 						+ " knife_kills, zombie_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
 						+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
@@ -533,13 +498,9 @@ public class MySQLDB {
 		}).join();
 	}
 
-	public static void loadJoinDelay() {
-		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay()) {
-			return;
-		}
-
-		final MySQLConnect connect = DatabaseHandler.getMySQL();
-		if (!connect.isConnected()) {
+	@Override
+	public void loadJoinDelay() {
+		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay() || !connect.isConnected()) {
 			return;
 		}
 
@@ -583,13 +544,9 @@ public class MySQLDB {
 		});
 	}
 
-	public static void saveJoinDelay() {
-		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay()) {
-			return;
-		}
-
-		final MySQLConnect connect = DatabaseHandler.getMySQL();
-		if (!connect.isConnected()) {
+	@Override
+	public void saveJoinDelay() {
+		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay() || !connect.isConnected()) {
 			return;
 		}
 
@@ -621,5 +578,85 @@ public class MySQLDB {
 
 			return null;
 		});
+	}
+
+	@Override
+	public void connectDatabase() {
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+		} catch (ClassNotFoundException c) {
+			c.printStackTrace();
+			Debug.logConsole(Level.WARNING, "Could not connect to the MySQL database. No MySql found.");
+			return;
+		}
+
+		String prefix = ConfigValues.getDatabaseTablePrefix();
+		if (prefix.isEmpty()) {
+			prefix = "rm_";
+		}
+
+		String host = ConfigValues.getHost(), port = ConfigValues.getPort(), database = ConfigValues.getDatabase(),
+				username = ConfigValues.getUsername(), password = ConfigValues.getPassword(),
+				charEncode = ConfigValues.getEncoding();
+
+		boolean serverCertificate = ConfigValues.isCertificate(), useUnicode = ConfigValues.isUnicode(),
+				autoReconnect = ConfigValues.isAutoReconnect(), useSSL = ConfigValues.isUseSSL();
+
+		if (charEncode.isEmpty()) {
+			charEncode = java.nio.charset.StandardCharsets.UTF_8.name();
+		}
+
+		if ((connect = new MySQLConnect(host, port, database, username, password, serverCertificate, useUnicode,
+				charEncode, autoReconnect, useSSL, prefix)).isConnected()) {
+			Debug.logConsole("Successfully connected to MySQL!");
+		}
+	}
+
+	@Override
+	public void loadDatabase(boolean startup) {
+		if (connect == null || !connect.isConnected()) {
+			connectDatabase();
+		}
+
+		RuntimePPManager.loadPPListFromDatabase();
+		loadPlayerStatistics();
+
+		if (startup) {
+			loadJoinDelay();
+		}
+	}
+
+	@Override
+	public void saveDatabase() {
+		saveData();
+		saveJoinDelay();
+	}
+
+	@Override
+	public boolean convertDatabase(final String type) {
+		if (type == null || type.trim().isEmpty()
+				|| RageMode.getInstance().getDatabaseType().toString().equalsIgnoreCase(type.trim())) {
+			return false;
+		}
+
+		if (connect != null && connect.isConnected()) {
+			try {
+				connect.getConnection().close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+		ConfigValues.databaseType = type;
+
+		final Configuration conf = RageMode.getInstance().getConfiguration();
+		conf.getCfg().set("database.type", type);
+		Configuration.saveFile(conf.getCfg(), conf.getCfgFile());
+
+		RageMode.getInstance().setDatabase(type);
+
+		RuntimePPManager.getRuntimePPList().forEach(RageMode.getInstance().getDatabase()::addPlayerStatistics);
+		RuntimePPManager.loadPPListFromDatabase();
+		return true;
 	}
 }

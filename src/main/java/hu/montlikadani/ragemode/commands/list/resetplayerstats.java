@@ -7,9 +7,6 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.storage.MySQLDB;
-import hu.montlikadani.ragemode.storage.SQLDB;
-import hu.montlikadani.ragemode.storage.YAMLDB;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
@@ -92,15 +89,6 @@ public class resetplayerstats implements ICommand {
 	}
 
 	private boolean reset(UUID uuid) {
-		switch (RageMode.getInstance().getDatabaseHandler().getDBType()) {
-		case MYSQL:
-			return MySQLDB.resetPlayerStatistic(uuid);
-		case SQLITE:
-			return SQLDB.resetPlayerStatistic(uuid);
-		case YAML:
-			return YAMLDB.resetPlayerStatistic(uuid);
-		default:
-			return false;
-		}
+		return RageMode.getInstance().getDatabase().resetPlayerStatistic(uuid);
 	}
 }

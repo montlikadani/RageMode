@@ -28,9 +28,15 @@ public class SignPlaceholder {
 			return variables;
 		}
 
+		while (lines.size() < 4) {
+			lines.add(""); // Sign lines should be 4
+		}
+
 		GameStatus status = GameUtils.getGame(game).getStatus();
 
-		for (String line : lines) {
+		for (int i = 0; i < 5; i++) {
+			String line = lines.get(i);
+
 			if (line.contains("%game%"))
 				line = line.replace("%game%", game);
 
@@ -56,6 +62,7 @@ public class SignPlaceholder {
 					if (GameUtils.getGame(game).isGameRunning()) {
 						line = line.replace("%running%", ConfigValues.getSignGameRunning());
 					}
+
 					break;
 				case NOTREADY:
 					line = line.replace("%running%", ConfigValues.getSignGameLocked());

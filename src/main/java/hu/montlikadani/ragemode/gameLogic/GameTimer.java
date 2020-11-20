@@ -66,9 +66,8 @@ public class GameTimer extends TimerTask {
 			}
 
 			// Broadcast time message should be in this place, before counting
-			for (String val : RageMode.getInstance().getConfiguration().getCfg()
-					.getStringList("game.values-to-send-game-end-broadcast")) {
-				if (timer == Integer.parseInt(val)) {
+			for (int value : ConfigValues.getGameEndBroadcast()) {
+				if (timer == value) {
 					GameUtils.broadcastToGame(game,
 							RageMode.getLang().get("game.broadcast.game-end", "%time%", Utils.getFormattedTime(timer)));
 					break;
@@ -137,11 +136,7 @@ public class GameTimer extends TimerTask {
 									EntityInteractEvent interact = new EntityInteractEvent(f,
 											f.getLocation().getBlock());
 									if (!interact.isCancelled()) {
-										Bukkit.getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
-											Bukkit.getPluginManager().callEvent(interact);
-											return true;
-										});
-
+										Utils.callEvent(interact);
 										break e;
 									}
 								}

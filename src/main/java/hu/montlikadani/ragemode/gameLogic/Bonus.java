@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.gameLogic;
 
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.entity.Player;
@@ -19,9 +18,8 @@ public class Bonus {
 			return;
 		}
 
-		List<String> list = RageMode.getInstance().getConfiguration().getCfg()
-				.getStringList("bonuses.kill-bonuses.list");
-		for (String b : list) {
+		for (String b : RageMode.getInstance().getConfiguration().getRewardsCfg()
+				.getStringList("rewards.in-game.bonuses.kill-bonuses.list")) {
 			if (b.contains("effect:")) {
 				b = b.replace("effect:", "");
 
@@ -61,7 +59,7 @@ public class Bonus {
 					continue;
 				}
 
-				ItemHandler item = null;
+				ItemHandler item;
 				switch (gameItem) {
 				case "grenade":
 					item = Items.getGrenade();
@@ -109,9 +107,8 @@ public class Bonus {
 	}
 
 	public static int getPointBonus() {
-		List<String> list = RageMode.getInstance().getConfiguration().getCfg()
-				.getStringList("bonuses.kill-bonuses.list");
-		for (String b : list) {
+		for (String b : RageMode.getInstance().getConfiguration().getRewardsCfg()
+				.getStringList("rewards.in-game.bonuses.kill-bonuses.list")) {
 			if (!b.contains("points:")) {
 				continue;
 			}

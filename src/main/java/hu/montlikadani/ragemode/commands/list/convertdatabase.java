@@ -31,14 +31,14 @@ public class convertdatabase implements ICommand {
 			return false;
 		}
 
-		String from = plugin.getDatabaseHandler().getDBType().name();
+		String from = plugin.getDatabaseType().name();
 		if (from.contentEquals(type.toUpperCase())) {
 			sendMessage(sender, RageMode.getLang().get("commands.convertdb.already-set"));
 			return false;
 		}
 
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-			if (plugin.getDatabaseHandler().convertDatabase(type)) {
+			if (plugin.getDatabase().convertDatabase(type)) {
 				sendMessage(sender, RageMode.getLang().get("commands.convertdb.done", "%from%", from.toLowerCase(),
 						"%to%", type.toLowerCase()));
 			} else {

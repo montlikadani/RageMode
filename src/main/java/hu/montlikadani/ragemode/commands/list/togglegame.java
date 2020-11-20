@@ -47,7 +47,7 @@ public class togglegame implements ICommand {
 			toggle = false;
 		} else {
 			g.setStatus(GameStatus.NOTREADY);
-			g.setGameNotRunning();
+			g.setGameRunning(false);
 		}
 
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".lock", toggle);

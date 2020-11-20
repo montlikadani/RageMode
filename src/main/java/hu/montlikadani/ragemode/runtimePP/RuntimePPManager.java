@@ -6,9 +6,6 @@ import java.util.UUID;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
-import hu.montlikadani.ragemode.storage.MySQLDB;
-import hu.montlikadani.ragemode.storage.SQLDB;
-import hu.montlikadani.ragemode.storage.YAMLDB;
 
 public class RuntimePPManager {
 
@@ -20,20 +17,7 @@ public class RuntimePPManager {
 
 	public static void loadPPListFromDatabase() {
 		RUNTIMEPPLIST.clear();
-
-		switch (RageMode.getInstance().getDatabaseHandler().getDBType()) {
-		case SQLITE:
-			RUNTIMEPPLIST.addAll(SQLDB.getAllPlayerStatistics());
-			break;
-		case MYSQL:
-			RUNTIMEPPLIST.addAll(MySQLDB.getAllPlayerStatistics());
-			break;
-		case YAML:
-			RUNTIMEPPLIST.addAll(YAMLDB.getAllPlayerStatistics());
-			break;
-		default:
-			break;
-		}
+		RUNTIMEPPLIST.addAll(RageMode.getInstance().getDatabase().getAllPlayerStatistics());
 	}
 
 	/**

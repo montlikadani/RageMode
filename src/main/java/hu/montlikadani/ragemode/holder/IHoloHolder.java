@@ -58,13 +58,14 @@ public abstract class IHoloHolder {
 	/**
 	 * Getting the closest hologram around the player.
 	 * 
+	 * @param <T>    The object of {@link ArmorStands} or
+	 *               {@link com.gmail.filoghost.holographicdisplays.api.Hologram}
+	 * 
 	 * @param player Player
 	 * @param eyeLoc player eye location or current location
-	 * @return {@link Optional} -> {@link Object} can be cast to
-	 *         {@link com.gmail.filoghost.holographicdisplays.api.Hologram}<br>
-	 *         or {@link ArmorStands}
+	 * @return {@link Optional}
 	 */
-	public abstract Optional<?> getClosest(Player player, boolean eyeLoc);
+	public abstract <T> Optional<T> getClosest(Player player, boolean eyeLoc);
 
 	/**
 	 * Displays all holos for the given player.

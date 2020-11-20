@@ -9,9 +9,6 @@ import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
-import hu.montlikadani.ragemode.storage.MySQLDB;
-import hu.montlikadani.ragemode.storage.SQLDB;
-import hu.montlikadani.ragemode.storage.YAMLDB;
 
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
@@ -95,21 +92,7 @@ public class points implements ICommand {
 			break;
 		}
 
-		java.util.UUID uuid = rpp.getUUID();
-
-		switch (plugin.getDatabaseHandler().getDBType()) {
-		case SQLITE:
-			SQLDB.addPoints(amount, uuid);
-			break;
-		case MYSQL:
-			MySQLDB.addPoints(amount, uuid);
-			break;
-		case YAML:
-			YAMLDB.addPoints(amount, uuid);
-			break;
-		default:
-			return false;
-		}
+		plugin.getDatabase().addPoints(amount, rpp.getUUID());
 
 		sendMessage(sender,
 				RageMode.getLang().get("commands.points.changed", "%amount%", amount, "%new%", rpp.getPoints()));

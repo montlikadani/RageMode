@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.events;
 
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -23,17 +22,13 @@ public class BungeeListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onQuit(PlayerQuitEvent ev) {
-		Player p = ev.getPlayer();
-
-		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p));
-		GameUtils.kickSpectator(p, GameUtils.getGameBySpectator(p));
+		GameUtils.kickPlayer(ev.getPlayer());
+		GameUtils.kickSpectator(ev.getPlayer());
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onKick(PlayerKickEvent e) {
-		Player p = e.getPlayer();
-
-		GameUtils.kickPlayer(p, GameUtils.getGameByPlayer(p));
-		GameUtils.kickSpectator(p, GameUtils.getGameBySpectator(p));
+		GameUtils.kickPlayer(e.getPlayer());
+		GameUtils.kickSpectator(e.getPlayer());
 	}
 }

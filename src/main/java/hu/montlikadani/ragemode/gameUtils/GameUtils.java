@@ -2,7 +2,6 @@ package hu.montlikadani.ragemode.gameUtils;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
@@ -27,6 +26,7 @@ import hu.montlikadani.ragemode.area.GameArea;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.ServerSoftwareType;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
@@ -36,8 +36,6 @@ import hu.montlikadani.ragemode.gameLogic.*;
 import hu.montlikadani.ragemode.gameUtils.modules.ActionBar;
 import hu.montlikadani.ragemode.gameUtils.modules.Titles;
 import hu.montlikadani.ragemode.items.*;
-import hu.montlikadani.ragemode.items.shop.BoughtElements;
-import hu.montlikadani.ragemode.items.shop.LobbyShop;
 import hu.montlikadani.ragemode.managers.BossbarManager;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.managers.RewardManager;
@@ -45,19 +43,15 @@ import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
-import hu.montlikadani.ragemode.storage.DBThreads;
-import net.milkbowl.vault.economy.Economy;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-public class GameUtils {
+public final class GameUtils {
 
 	/**
 	 * When the game ended and players waiting for teleport.
 	 */
 	public static final HashMap<String, Boolean> WAITINGGAMES = new HashMap<>();
-
-	public static final HashMap<UUID, Object> USERPARTICLES = new HashMap<>();
 
 	private GameUtils() {
 	}
@@ -220,7 +214,7 @@ public class GameUtils {
 
 		for (Game game : RageMode.getInstance().getGames()) {
 			for (PlayerManager pl : game.getPlayersFromList()) {
-				if (p.equals(pl.getPlayer())) {
+				if (p == pl.getPlayer()) {
 					return game;
 				}
 			}
@@ -253,7 +247,7 @@ public class GameUtils {
 
 		for (Game game : RageMode.getInstance().getGames()) {
 			for (PlayerManager pl : game.getSpectatorPlayersFromList()) {
-				if (p.equals(pl.getPlayer())) {
+				if (p == pl.getPlayer()) {
 					return game;
 				}
 			}
@@ -338,7 +332,7 @@ public class GameUtils {
 		for (ItemHandler ih : RageMode.getInstance().getGameItems()) {
 			// flash do not affect entities
 			if (isPlayerPlaying(p) && getGameByPlayer(p).getGameType() == GameType.APOCALYPSE
-					&& ih.equals(Items.getFlash())) {
+					&& ih == Items.getFlash()) {
 				continue;
 			}
 
@@ -434,7 +428,10 @@ public class GameUtils {
 			}
 
 			if (game.addSpectatorPlayer(p)) {
-				p.teleport(getGameSpawn(name).getRandomSpawn());
+				IGameSpawn spawn = getGameSpawn(name);
+				if (spawn != null && spawn.haveAnySpawn()) {
+					Utils.teleport(p, spawn.getRandomSpawn());
+				}
 
 				if (Items.getLeaveGameItem() != null) {
 					inv.setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().build());
@@ -507,11 +504,11 @@ public class GameUtils {
 			game.worldTime = p.getWorld().getFullTime();
 		}
 
-		p.teleport(GameLobby.getLobbyLocation(name));
+		Utils.teleport(p, GameLobby.getLobbyLocation(name));
 
 		runCommands(p, name, "join");
-		sendBossBarMessages(p, name, "join");
-		sendActionBarMessages(p, name, "join");
+		sendActionMessage(p, name, ActionMessageType.JOIN, ActionMessageType.asBossbar());
+		sendActionMessage(p, name, ActionMessageType.JOIN, ActionMessageType.asActionbar());
 		game.setStatus(GameStatus.WAITING);
 		broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
 
@@ -532,7 +529,7 @@ public class GameUtils {
 					continue;
 				}
 
-				if (items.equals(Items.getForceStarter())
+				if (items == Items.getForceStarter()
 						&& !hu.montlikadani.ragemode.utils.Misc.hasPerm(p, "ragemode.admin.item.forcestart")) {
 					continue;
 				}
@@ -630,6 +627,15 @@ public class GameUtils {
 	}
 
 	/**
+	 * Kicks the given player from a game.
+	 * 
+	 * @param p {@link Player}
+	 */
+	public static void kickPlayer(Player p) {
+		kickPlayer(p, null);
+	}
+
+	/**
 	 * Kicks the given player from the game.
 	 * 
 	 * @param p Player
@@ -637,6 +643,10 @@ public class GameUtils {
 	 */
 	public static void kickPlayer(Player p, Game game) {
 		Validate.notNull(p, "Player can't be null");
+
+		if (game == null) {
+			game = getGameByPlayer(p);
+		}
 
 		if (game == null) {
 			return;
@@ -650,9 +660,7 @@ public class GameUtils {
 			if (status == GameStatus.RUNNING) {
 				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
 
-				List<String> list = RageMode.getInstance().getConfiguration().getCfg()
-						.getStringList("game.run-commands-for-player-left-while-playing");
-				for (String cmds : list) {
+				for (String cmds : ConfigValues.getExecuteCommandsOnPlayerLeaveWhilePlaying()) {
 					cmds = cmds.replace("%player%", p.getName());
 					Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), Utils.colors(cmds));
 				}
@@ -663,6 +671,15 @@ public class GameUtils {
 	}
 
 	/**
+	 * Kicks the given spectator player from a game.
+	 * 
+	 * @param p {@link Player}
+	 */
+	public static void kickSpectator(Player p) {
+		kickSpectator(p, null);
+	}
+
+	/**
 	 * Kicks the given spectator player from game.
 	 * 
 	 * @param p Player to be kick
@@ -670,6 +687,10 @@ public class GameUtils {
 	 */
 	public static void kickSpectator(Player p, Game game) {
 		Validate.notNull(p, "Player can't be null");
+
+		if (game == null) {
+			game = getGameBySpectator(p);
+		}
 
 		if (game != null) {
 			game.removeSpectatorPlayer(p);
@@ -718,6 +739,11 @@ public class GameUtils {
 			return;
 		}
 
+		IGameSpawn zombieSpawn = getGameZombieSpawn(game);
+		if (zombieSpawn == null || !zombieSpawn.haveAnySpawn()) {
+			return;
+		}
+
 		GetGames.getWorld(game.getName()).ifPresent(world -> {
 			org.bukkit.World w = Bukkit.getWorld(world);
 			if (w == null) {
@@ -728,7 +754,7 @@ public class GameUtils {
 			w.setTime(14000L);
 
 			for (int i = 0; i <= amount; i++) {
-				Location location = getGameZombieSpawn(game).getRandomSpawn().clone();
+				Location location = zombieSpawn.getRandomSpawn().clone();
 				org.bukkit.util.Vector vec = location.getDirection();
 				location.add(vec.setY(0).normalize().multiply(3));
 				while (!w.getBlockAt(location).getType().isAir()) {
@@ -812,110 +838,22 @@ public class GameUtils {
 		}
 	}
 
-	public static void buyElements(Player player) {
-		if (!LobbyShop.BOUGHTITEMS.containsKey(player)) {
-			return;
-		}
-
-		for (Entry<Player, BoughtElements> elements : LobbyShop.BOUGHTITEMS.entrySet()) {
-			if (!elements.getKey().equals(player)) {
-				continue;
-			}
-
-			BoughtElements bought = elements.getValue();
-
-			boolean enough = false;
-			if (RageMode.getInstance().isVaultEnabled()) {
-				Economy economy = RageMode.getInstance().getEconomy();
-				double cost = bought.getCost();
-
-				if (cost > 0d && economy.has(player, cost)) {
-					economy.withdrawPlayer(player, cost);
-					enough = true;
-				}
-			}
-
-			if (bought.getPoints() > 0) {
-				PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
-				if (pp != null && pp.getPoints() >= bought.getPoints()) {
-					pp.takePoints(bought.getPoints());
-					enough = true;
-				} else {
-					enough = false;
-				}
-			}
-
-			if (!enough) {
-				sendMessage(player, RageMode.getLang().get("game.cant-bought-elements"));
-				break;
-			}
-
-			if (bought.getPotion() != null) {
-				player.addPotionEffect(bought.getPotion());
-			}
-
-			if (bought.getItem() != null) {
-				player.getInventory().addItem(bought.getItem());
-			}
-
-			if (bought.getTrail() != null) {
-				USERPARTICLES.put(player.getUniqueId(), bought.getTrail());
-			}
-
-			break;
-		}
-
-		LobbyShop.BOUGHTITEMS.remove(player);
-	}
-
 	/**
-	 * Send action bar messages to the player when doing something, such as joining,
-	 * leave, starting or stopping game.
+	 * Sends an action message to the given player with the specified type of action
+	 * message.
 	 * <p>
-	 * This returns if the actionbar option is disabled in configurations.
+	 * The method will return if the message type is bossbar and in the current
+	 * version its not supported. If the given game not exist with the name,
+	 * returns. If the message type is disabled per configuration, returns.
 	 * 
-	 * @param p Player
-	 * @param game Game name
-	 * @param type Action type
+	 * @param player      {@link Player}
+	 * @param game        game name
+	 * @param type        {@link ActionMessageType}
+	 * @param messageType {@link ActionMessageType.MessageTypes}
 	 */
-	public static void sendActionBarMessages(Player p, String game, String type) {
-		Configuration conf = RageMode.getInstance().getConfiguration();
-
-		if (conf.getArenasCfg().isSet("arenas." + game + ".actionbar")) {
-			if (!conf.getArenasCfg().getBoolean("arenas." + game + ".actionbar"))
-				return;
-		} else if (!ConfigValues.isDefaultActionbarEnabled())
-			return;
-
-		List<String> list = conf.getCfg().getStringList("actionbar-messages.actions");
-		for (String msg : list) {
-			if (msg.split(":").length < 2 && msg.split(":").length > 2) {
-				Debug.logConsole(Level.WARNING,
-						"In the config file the actionbar messages the split length is equal to 2.");
-				continue;
-			}
-
-			String action = msg.split(":")[0];
-			if (action.equalsIgnoreCase(type)) {
-				String message = msg.split(":")[1];
-				message = message.replace("%game%", game).replace("%player%", p.getName());
-				ActionBar.sendActionBar(p, Utils.colors(message));
-			}
-		}
-	}
-
-	/**
-	 * Send boss bar messages to the current playing player, when doing something,
-	 * such as joining, leave, starting or stopping game.
-	 * <p>
-	 * This returns if the boosbar option is disabled in configurations.
-	 * 
-	 * @param p Player
-	 * @param game Game name
-	 * @param type Action type
-	 */
-	public static void sendBossBarMessages(final Player p, String game, String type) {
-		if (Version.isCurrentLower(Version.v1_9_R1)) {
+	public static void sendActionMessage(Player player, String game, ActionMessageType type,
+			ActionMessageType.MessageTypes messageType) {
+		if (messageType == ActionMessageType.MessageTypes.BOSSBAR && Version.isCurrentLower(Version.v1_9_R1)) {
 			Debug.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
 			return;
 		}
@@ -923,41 +861,54 @@ public class GameUtils {
 		if (!isGameWithNameExists(game))
 			return;
 
-		Configuration conf = RageMode.getInstance().getConfiguration();
+		final String tName = messageType.name().toLowerCase();
 
-		if (conf.getArenasCfg().isSet("arenas." + game + ".bossbar")) {
-			if (!conf.getArenasCfg().getBoolean("arenas." + game + ".bossbar"))
+		if (RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + game + "." + tName)) {
+			if (!RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + game + "." + tName))
 				return;
-		} else if (!ConfigValues.isDefaultBossbarEnabled())
+		} else if ((messageType == ActionMessageType.MessageTypes.ACTIONBAR
+				&& !ConfigValues.isDefaultActionbarEnabled())
+				|| (messageType == ActionMessageType.MessageTypes.BOSSBAR && !ConfigValues.isDefaultBossbarEnabled()))
 			return;
 
-		List<String> list = conf.getCfg().getStringList("bossbar-messages.actions");
-		for (String msg : list) {
-			String[] split = msg.split(":");
-			if (split.length < 2) {
-				Debug.logConsole(Level.WARNING,
-						"In the config file the bossbar messages the split length should be 2 or 4.");
+		for (String msg : ConfigValues.getMessageActions()) {
+			if (!msg.startsWith("[" + tName + "];")) {
 				continue;
 			}
 
-			if (split[0].equalsIgnoreCase(type)) {
-				String message = split[1];
-				assert message != null;
+			msg = msg.replace("[" + tName + "];", "");
 
-				message = message.replace("%game%", game).replace("%player%", p.getName());
+			String[] split = msg.split(":");
+			if (split.length < 2) {
+				continue;
+			}
+
+			String action = split[0];
+			// Bossbar leave
+			if (action.equalsIgnoreCase("leave") && !type.isBothAllowed()) {
+				continue; // do we allow for user to use all actions?
+			}
+
+			if (action.equalsIgnoreCase(type.name())) {
+				String message = split[1];
+				message = message.replace("%game%", game).replace("%player%", player.getName());
 				message = Utils.colors(message);
 
-				BarColor color = split.length > 2 ? BarColor.valueOf(split[2].toUpperCase()) : BarColor.BLUE;
-				BarStyle style = split.length > 3 ? BarStyle.valueOf(split[3].toUpperCase()) : BarStyle.SOLID;
+				if (messageType == ActionMessageType.MessageTypes.ACTIONBAR) {
+					ActionBar.sendActionBar(player, message);
+				} else if (messageType == ActionMessageType.MessageTypes.BOSSBAR) {
+					BarColor color = split.length > 2 ? BarColor.valueOf(split[2].toUpperCase()) : BarColor.BLUE;
+					BarStyle style = split.length > 3 ? BarStyle.valueOf(split[3].toUpperCase()) : BarStyle.SOLID;
 
-				int second = 6;
-				if (split.length > 4 && Utils.isInt(split[4])) {
-					second = Integer.parseInt(split[4]);
+					int second = 6;
+					if (split.length > 4 && Utils.isInt(split[4])) {
+						second = Integer.parseInt(split[4]);
+					}
+
+					BossbarManager manager = RageMode.getInstance().getBossbarManager();
+					manager.createBossbar(player, message, color, style);
+					manager.showBossbar(player, second);
 				}
-
-				BossbarManager manager = RageMode.getInstance().getBossbarManager();
-				manager.createBossbar(p, message, color, style);
-				manager.showBossbar(p, second);
 			}
 		}
 	}
@@ -969,7 +920,9 @@ public class GameUtils {
 	 * @param gameSpawn {@link IGameSpawn}
 	 */
 	public static void teleportPlayersToGameSpawns(IGameSpawn gameSpawn) {
-		gameSpawn.getGame().getPlayersFromList().forEach(pm -> teleportPlayerToGameSpawn(pm.getPlayer(), gameSpawn));
+		if (gameSpawn != null) {
+			gameSpawn.getGame().getPlayersFromList().forEach(pm -> teleportPlayerToGameSpawn(pm.getPlayer(), gameSpawn));
+		}
 	}
 
 	/**
@@ -980,8 +933,8 @@ public class GameUtils {
 	 * @param gameSpawn {@link IGameSpawn}
 	 */
 	public static void teleportPlayerToGameSpawn(Player p, IGameSpawn gameSpawn) {
-		if (gameSpawn.haveAnySpawn()) {
-			Utils.teleportSync(p, gameSpawn.getRandomSpawn());
+		if (gameSpawn != null && gameSpawn.haveAnySpawn()) {
+			Utils.teleport(p, gameSpawn.getRandomSpawn());
 		}
 	}
 
@@ -998,14 +951,11 @@ public class GameUtils {
 			return;
 		}
 
-		final List<PlayerManager> players = game.getPlayersFromList();
-
-		Utils.callEvent(new RMGameStopEvent(game, players));
-
+		Utils.callEvent(new RMGameStopEvent(game));
 		GameAreaManager.removeEntitiesFromGame(game);
 
 		Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
-			for (PlayerManager pm : players) {
+			for (PlayerManager pm : game.getPlayersFromList()) {
 				final Player p = pm.getPlayer();
 
 				RageScores.removePointsForPlayer(p.getUniqueId());
@@ -1014,7 +964,7 @@ public class GameUtils {
 		});
 
 		game.getActionMessengers().clear();
-		game.setGameNotRunning();
+		game.setGameRunning(false);
 		game.setStatus(null);
 		SignCreator.updateAllSigns(game.getName());
 	}
@@ -1046,11 +996,11 @@ public class GameUtils {
 			return;
 		}
 
+		Utils.callEvent(new RMGameStopEvent(game));
+
 		final List<PlayerManager> players = game.getPlayersFromList();
-
-		Utils.callEvent(new RMGameStopEvent(game, players));
-
 		final String name = game.getName();
+
 		if (game.getGameType() != GameType.APOCALYPSE) {
 			boolean winnervalid = false;
 			UUID winnerUUID = RageScores.calculateWinner(game, players);
@@ -1171,13 +1121,10 @@ public class GameUtils {
 			final Player p = pm.getPlayer();
 
 			RageScores.getPlayerPoints(p.getUniqueId()).ifPresent(pP -> {
-				Bukkit.getServer().getScheduler().runTaskAsynchronously(RageMode.getInstance(), () -> {
-					RuntimePPManager.updatePlayerEntry(pP);
-					RageMode.getInstance().getHoloHolder().updateHolosForPlayer(p);
-				});
+				RuntimePPManager.updatePlayerEntry(pP);
 
-				Thread th = new Thread(new DBThreads(pP));
-				th.start();
+				RageMode.getInstance().getHoloHolder().updateHolosForPlayer(p);
+				RageMode.getInstance().getDatabase().addPlayerStatistics(pP);
 			});
 
 			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
@@ -1187,14 +1134,14 @@ public class GameUtils {
 			}
 
 			runCommands(p, gName, "stop");
-			sendBossBarMessages(p, gName, "stop");
-			sendActionBarMessages(p, gName, "stop");
+			sendActionMessage(p, gName, ActionMessageType.STOP, ActionMessageType.asBossbar());
+			sendActionMessage(p, gName, ActionMessageType.STOP, ActionMessageType.asActionbar());
 			RageScores.removePointsForPlayer(p.getUniqueId());
 			if (game.removePlayer(p)) {
 				sendMessage(p, RageMode.getLang().get("game.stopped", "%game%", gName));
 
 				if (ConfigValues.isRewardEnabled()) {
-					if (winner != null && winner.equals(p)) {
+					if (winner == p) {
 						reward.rewardForWinner(winner);
 						continue;
 					}
@@ -1204,13 +1151,13 @@ public class GameUtils {
 			}
 		}
 
-		game.setGameNotRunning();
+		game.setGameRunning(false);
 		SignCreator.updateAllSigns(gName);
 		game.setStatus(GameStatus.READY);
 
 		if (serverStop) {
 			if (ConfigValues.isRestartServerEnabled()) {
-				if (RageMode.isSpigot()) {
+				if (RageMode.getSoftwareType() == ServerSoftwareType.SPIGOT) {
 					Bukkit.spigot().restart();
 				} else {
 					Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "restart");
@@ -1253,7 +1200,7 @@ public class GameUtils {
 					g.removeSpectatorPlayer(spec.getPlayer());
 				}
 
-				g.setGameNotRunning();
+				g.setGameRunning(false);
 
 				Debug.logConsole(game + " has been stopped.");
 			} else if (status == GameStatus.WAITING) {
@@ -1336,5 +1283,39 @@ public class GameUtils {
 	 */
 	public static boolean isGameInFreezeRoom(String game) {
 		return WAITINGGAMES.getOrDefault(game, false);
+	}
+
+	/**
+	 * The enum for send various message types, like bossbar to player when
+	 * something happen in the game
+	 */
+	public enum ActionMessageType {
+		JOIN, LEAVE(false), START, STOP;
+
+		private boolean both;
+
+		ActionMessageType() {
+			this(true);
+		}
+
+		ActionMessageType(boolean both) {
+			this.both = both;
+		}
+
+		public boolean isBothAllowed() {
+			return both;
+		}
+
+		public static MessageTypes asActionbar() {
+			return MessageTypes.ACTIONBAR;
+		}
+
+		public static MessageTypes asBossbar() {
+			return MessageTypes.BOSSBAR;
+		}
+
+		private enum MessageTypes {
+			ACTIONBAR, BOSSBAR
+		}
 	}
 }

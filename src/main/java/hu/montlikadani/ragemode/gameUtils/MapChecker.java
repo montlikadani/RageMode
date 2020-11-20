@@ -79,7 +79,7 @@ public class MapChecker {
 		boolean changed = false;
 		int minPlayers = GetGames.getMinPlayers(gameName);
 		if (maxPlayers < minPlayers) {
-			Debug.logConsole(Level.WARNING, "Minimum players can't greater than maximum players. Changed...");
+			Debug.logConsole(Level.WARNING, "Minimum players can't greater than maximum players. Attempting to modify...");
 			maxPlayers = minPlayers;
 			changed = true;
 		}

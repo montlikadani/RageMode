@@ -5,6 +5,9 @@ import org.bukkit.event.Cancellable;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
 
+/**
+ * Called when a player attempt to respawn before teleporting.
+ */
 public class RMPlayerPreRespawnEvent extends GameEvent implements Cancellable {
 
 	private Player player;
@@ -15,6 +18,11 @@ public class RMPlayerPreRespawnEvent extends GameEvent implements Cancellable {
 		this.player = player;
 	}
 
+	/**
+	 * Gets the died player.
+	 * 
+	 * @return {@link Player}
+	 */
 	public Player getPlayer() {
 		return player;
 	}

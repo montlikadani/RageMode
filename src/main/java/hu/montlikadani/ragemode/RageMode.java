@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Material;
@@ -25,12 +24,15 @@ import hu.montlikadani.ragemode.commands.RmTabCompleter;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.Language;
-import hu.montlikadani.ragemode.database.DatabaseHandler;
+import hu.montlikadani.ragemode.database.DB;
+import hu.montlikadani.ragemode.database.DBType;
+import hu.montlikadani.ragemode.database.Database;
 import hu.montlikadani.ragemode.events.BungeeListener;
 import hu.montlikadani.ragemode.events.EventListener;
 import hu.montlikadani.ragemode.events.GameListener;
 import hu.montlikadani.ragemode.events.Listeners_1_8;
 import hu.montlikadani.ragemode.events.Listeners_1_9;
+import hu.montlikadani.ragemode.events.PurpurListener;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
@@ -46,7 +48,6 @@ import hu.montlikadani.ragemode.holder.IHoloHolder;
 import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.managers.BossbarManager;
 import hu.montlikadani.ragemode.metrics.Metrics;
-import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.signs.SignConfiguration;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.storage.MySQLDB;
@@ -60,17 +61,19 @@ public class RageMode extends JavaPlugin {
 	private Configuration conf;
 	private BungeeUtils bungee;
 	private BossbarManager bossManager;
-	private DatabaseHandler dbHandler;
 	private Selection selection;
 
 	private IHoloHolder holoHolder;
 	private Economy econ;
+	private Database database;
+
+	private DBType dbType = DBType.YAML;
 
 	private static RageMode instance;
 	private static Language lang;
 	private static ServerVersion serverVersion;
 
-	private static boolean isSpigot = false;
+	private static ServerSoftwareType softwareType = ServerSoftwareType.SPIGOT;
 
 	private boolean vault = false;
 
@@ -94,12 +97,7 @@ public class RageMode extends JavaPlugin {
 			return;
 		}
 
-		try {
-			Class.forName("org.spigotmc.SpigotConfig");
-			isSpigot = true;
-		} catch (ClassNotFoundException c) {
-			isSpigot = false;
-		}
+		initServerSoftwares();
 
 		if (serverVersion.getVersion().isEqualOrLower(Version.v1_8_R3))
 			getLogger().log(Level.INFO,
@@ -125,7 +123,9 @@ public class RageMode extends JavaPlugin {
 		connectDatabase();
 		loadGames();
 
-		bossManager = new BossbarManager();
+		if (serverVersion.getVersion().isEqualOrHigher(Version.v1_9_R1)) {
+			bossManager = new BossbarManager();
+		}
 
 		if (ConfigValues.isSignsEnable()) {
 			SignConfiguration.initSignConfiguration();
@@ -136,26 +136,10 @@ public class RageMode extends JavaPlugin {
 		if (metrics.isEnabled()) {
 			metrics.addCustomChart(new Metrics.SingleLineChart("amount_of_games", games::size));
 
-			metrics.addCustomChart(new Metrics.SimplePie("total_players", () -> {
-				int totalPlayers = 0;
-				switch (dbHandler.getDBType()) {
-				case MYSQL:
-					totalPlayers = MySQLDB.getAllPlayerStatistics().size();
-					break;
-				case SQLITE:
-					totalPlayers = SQLDB.getAllPlayerStatistics().size();
-					break;
-				case YAML:
-					totalPlayers = YAMLDB.getAllPlayerStatistics().size();
-					break;
-				default:
-					break;
-				}
+			metrics.addCustomChart(new Metrics.SimplePie("total_players",
+					() -> String.valueOf(database.getAllPlayerStatistics().size())));
 
-				return String.valueOf(totalPlayers);
-			}));
-
-			metrics.addCustomChart(new Metrics.SimplePie("statistic_type", dbHandler.getDBType().name()::toLowerCase));
+			metrics.addCustomChart(new Metrics.SimplePie("statistic_type", dbType.name()::toLowerCase));
 		}
 
 		Debug.logConsole("Loaded in " + (System.currentTimeMillis() - load) + "ms");
@@ -184,28 +168,45 @@ public class RageMode extends JavaPlugin {
 		}
 	}
 
-	private void connectDatabase() {
-		dbHandler = new DatabaseHandler(this);
+	private void initServerSoftwares() {
+		try {
+			Class.forName("org.spigotmc.SpigotConfig");
+			softwareType = ServerSoftwareType.SPIGOT;
+		} catch (ClassNotFoundException n) {
+		}
 
-		String type = "yaml";
-		switch (ConfigValues.getDatabaseType().toLowerCase()) {
+		try {
+			Class.forName("com.destroystokyo.paper.PaperConfig");
+			softwareType = ServerSoftwareType.PAPER;
+		} catch (ClassNotFoundException n) {
+		}
+
+		try {
+			Class.forName("net.pl3x.purpur.event.entity.EntityMoveEvent");
+			softwareType = ServerSoftwareType.PURPUR;
+		} catch (ClassNotFoundException n) {
+			softwareType = ServerSoftwareType.UNKNOWN;
+		}
+	}
+
+	private void connectDatabase() {
+		switch (ConfigValues.databaseType.toLowerCase()) {
 		case "mysql":
-			type = "mysql";
+			database = new MySQLDB();
 			break;
 		case "sql":
 		case "sqlite":
-			type = "sqlite";
+			database = new SQLDB();
 			break;
 		case "yml":
 		case "yaml":
-			type = "yaml";
-			break;
 		default:
+			database = new YAMLDB();
 			break;
 		}
 
-		dbHandler.setDatabaseType(type);
-		dbHandler.loadDatabase(true);
+		dbType = database.getClass().getAnnotation(DB.class).type();
+		database.loadDatabase(true);
 	}
 
 	private boolean initEconomy() {
@@ -246,7 +247,7 @@ public class RageMode extends JavaPlugin {
 		}
 
 		registerListeners();
-		if (dbHandler == null) { // We don't need to save database on reload, due to duplications
+		if (database == null) { // We don't need to save database on reload, due to duplications
 			connectDatabase();
 		}
 
@@ -264,6 +265,10 @@ public class RageMode extends JavaPlugin {
 	private void registerListeners() {
 		Arrays.asList(new EventListener(), new GameListener(this))
 				.forEach(l -> getServer().getPluginManager().registerEvents(l, this));
+
+		if (softwareType == ServerSoftwareType.PURPUR) {
+			getManager().registerEvents(new PurpurListener(), this);
+		}
 
 		if (ConfigValues.isBungee()) {
 			getManager().registerEvents(new BungeeListener(), this);
@@ -312,99 +317,82 @@ public class RageMode extends JavaPlugin {
 
 		String path = "gameitems.combatAxe";
 		if (c.contains(path)) {
-			ItemHandler itemHandler = new ItemHandler();
-			itemHandler.setItem(c.getString(path + ".item", "iron_axe"))
+			gameItems[0] = new ItemHandler().setItem(c.getString(path + ".item", "iron_axe"))
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&6CombatAxe")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 3));
-			gameItems[0] = itemHandler;
 		}
 
 		path = "gameitems.grenade";
 		if (c.contains(path)) {
-			ItemHandler itemHandler = new ItemHandler();
-			itemHandler.setItem(Material.EGG).setDisplayName(Utils.colors(c.getString(path + ".name", "&8Grenade")))
+			gameItems[1] = new ItemHandler().setItem(Material.EGG)
+					.setDisplayName(Utils.colors(c.getString(path + ".name", "&8Grenade")))
 					.setCustomName(Utils.colors(c.getString(path + ".custom-name", "")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 5))
 					.setAmount(c.getInt(path + ".amount", 2)).setDamage(2.20);
-			gameItems[1] = itemHandler;
 		}
 
 		path = "gameitems.rageArrow";
 		if (c.contains(path)) {
-			ItemHandler itemHandler = new ItemHandler();
-			itemHandler.setItem(Material.ARROW).setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageArrow")))
+			gameItems[2] = new ItemHandler().setItem(Material.ARROW)
+					.setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageArrow")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 9))
 					.setDamage(c.getDouble(path + ".damage", 3.35));
-			gameItems[2] = itemHandler;
 		}
 
 		path = "gameitems.rageBow";
 		if (c.contains(path)) {
-			ItemHandler itemHandler = new ItemHandler();
-			itemHandler.setItem(Material.BOW).setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageBow")))
+			gameItems[3] = new ItemHandler().setItem(Material.BOW)
+					.setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageBow")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 0))
 					.setEnchant(org.bukkit.enchantments.Enchantment.ARROW_INFINITE);
-			gameItems[3] = itemHandler;
 		}
 
 		path = "gameitems.rageKnife";
 		if (c.contains(path)) {
-			ItemHandler itemHandler = new ItemHandler();
-			itemHandler.setItem(Material.SHEARS)
+			gameItems[4] = new ItemHandler().setItem(Material.SHEARS)
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageKnife")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 1))
 					.setDamage(c.getDouble(path + ".damage", 25));
-			gameItems[4] = itemHandler;
 		}
 
 		path = "gameitems.flash";
 		if (c.contains(path)) {
-			ItemHandler itemHandler = new ItemHandler();
-			itemHandler
+			gameItems[5] = new ItemHandler()
 					.setItem(serverVersion.getVersion().isLower(Version.v1_9_R1) ? Material.getMaterial("SNOW_BALL")
 							: Material.SNOWBALL)
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&fFlash")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 6))
 					.setAmount(c.getInt(path + ".amount", 2));
-			gameItems[5] = itemHandler;
 		}
 
 		path = "gameitems.pressuremine";
 		if (c.contains(path)) {
-			ItemHandler itemHandler = new ItemHandler();
-			itemHandler.setItem(Material.STRING)
+			gameItems[6] = new ItemHandler().setItem(Material.STRING)
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&8PressureMine")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 7))
 					.setAmount(c.getInt(path + ".amount", 1));
-			gameItems[6] = itemHandler;
 		}
 
 		// Lobby items
 		path = "lobbyitems.force-start";
 		if (c.contains(path)) {
-			ItemHandler itemHandler = new ItemHandler();
-			itemHandler.setItem(c.getString(path + ".item"))
+			lobbyItems[0] = new ItemHandler().setItem(c.getString(path + ".item"))
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&2Force the game start")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 3));
-			lobbyItems[0] = itemHandler;
 		}
 
 		path = "lobbyitems.leavegameitem";
 		if (c.contains(path)) {
-			ItemHandler itemHandler = new ItemHandler();
-			itemHandler.setItem(c.getString(path + ".item"))
+			lobbyItems[1] = new ItemHandler().setItem(c.getString(path + ".item"))
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&cExit")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 5));
-			lobbyItems[1] = itemHandler;
 		}
 
 		path = "lobbyitems.shopitem";
 		if (c.contains(path) && c.getBoolean(path + ".enabled")) {
-			ItemHandler itemHandler = new ItemHandler();
-			itemHandler.setItem(c.getString(path + ".item"))
+			lobbyItems[2] = new ItemHandler().setItem(c.getString(path + ".item"))
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&2Shop")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 1));
-			lobbyItems[2] = itemHandler;
 		}
 	}
 
@@ -417,33 +405,13 @@ public class RageMode extends JavaPlugin {
 	}
 
 	/**
-	 * Gets the database handler which handles the database connection.
-	 * @return {@link DatabaseHandler}
+	 * Get the game by index.
+	 * @param index (index <= gamesSize && index >= 0)
+	 * @return {@link Game}
+	 * @see GameUtils#getGame(String)
 	 */
-	public DatabaseHandler getDatabaseHandler() {
-		return dbHandler;
-	}
-
-	/**
-	 * Gets the given player statistics from database.
-	 * @param uuid Player uuid
-	 * @return {@link PlayerPoints}
-	 */
-	public static PlayerPoints getPPFromDatabase(UUID uuid) {
-		if (uuid == null) {
-			return null;
-		}
-
-		switch (instance.getDatabaseHandler().getDBType()) {
-		case SQLITE:
-			return SQLDB.getPlayerStatsFromData(uuid);
-		case MYSQL:
-			return MySQLDB.getPlayerStatsFromData(uuid);
-		case YAML:
-			return YAMLDB.getPlayerStatsFromData(uuid);
-		default:
-			return null;
-		}
+	public Game getGame(int index) {
+		return (index > games.size() || index < 0) ? null : games.get(index);
 	}
 
 	/**
@@ -494,29 +462,57 @@ public class RageMode extends JavaPlugin {
 	}
 
 	/**
-	 * Gets the plugin instance
-	 * @return RageMode instance
+	 * @return the database interface of {@link Database}
+	 */
+	public Database getDatabase() {
+		return database;
+	}
+
+	/**
+	 * @return the current set of {@link DBType}
+	 */
+	public DBType getDatabaseType() {
+		return dbType;
+	}
+
+	/**
+	 * Sets the database to a new one by the given. If it changed it will tries to
+	 * connect to the new database, but the last database will still remains opens.
+	 * 
+	 * @param type the type which should be {@link DBType}
+	 * @return {@link DBType}
+	 */
+	public DBType setDatabase(String type) {
+		if (type != null && !type.trim().isEmpty()) {
+			dbType = DBType.valueOf(type.trim().toUpperCase());
+			if (dbType == null) {
+				dbType = DBType.YAML;
+			}
+
+			connectDatabase();
+		}
+
+		return dbType;
+	}
+
+	/**
+	 * Gets this class instance
+	 * @return {@link RageMode}
 	 */
 	public static RageMode getInstance() {
 		return instance;
 	}
 
-	/**
-	 * @return {@link Language}
-	 */
 	public static Language getLang() {
 		return lang;
 	}
 
-	/**
-	 * @return {@link ServerVersion}
-	 */
 	public static ServerVersion getServerVersion() {
 		return serverVersion;
 	}
 
-	public static boolean isSpigot() {
-		return isSpigot;
+	public static ServerSoftwareType getSoftwareType() {
+		return softwareType;
 	}
 
 	public boolean isVaultEnabled() {

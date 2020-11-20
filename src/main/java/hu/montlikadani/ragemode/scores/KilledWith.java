@@ -1,26 +1,35 @@
 package hu.montlikadani.ragemode.scores;
 
+import org.bukkit.inventory.ItemStack;
+
+import hu.montlikadani.ragemode.items.ItemHandler;
+import hu.montlikadani.ragemode.items.Items;
+
 public enum KilledWith {
 
-	RAGEBOW, COMBATAXE, RAGEKNIFE, EXPLOSION, GRENADE, UNKNOWN;
+	RAGEBOW(Items.getRageBow()), COMBATAXE(Items.getCombatAxe()), RAGEKNIFE(Items.getRageKnife()), EXPLOSION,
+	GRENADE(Items.getGrenade()), UNKNOWN;
 
-	private String name;
+	private ItemStack item;
 
-	KilledWith() {
-		this.name = toString().toLowerCase();
+	private KilledWith() {
 	}
 
-	public String getName() {
-		return name;
+	private KilledWith(ItemHandler item) {
+		this.item = item.build();
 	}
 
-	public KilledWith getByName(String name) {
+	public ItemStack asItemStack() {
+		return item;
+	}
+
+	public static KilledWith getByName(String name) {
 		for (KilledWith kw : values()) {
-			if (kw.getName().equalsIgnoreCase(name.trim())) {
+			if (kw.toString().equalsIgnoreCase(name.trim())) {
 				return kw;
 			}
 		}
 
-		return null;
+		return UNKNOWN;
 	}
 }

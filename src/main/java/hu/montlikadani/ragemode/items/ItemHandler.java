@@ -10,6 +10,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class ItemHandler implements Cloneable {
 
+	private ItemStack builtItem;
 	private Material item;
 
 	private int amount = 1;
@@ -119,6 +120,10 @@ public class ItemHandler implements Cloneable {
 	}
 
 	public ItemStack build() {
+		if (builtItem != null) {
+			return builtItem;
+		}
+
 		if (item == null) {
 			return null;
 		}
@@ -156,7 +161,7 @@ public class ItemHandler implements Cloneable {
 
 	@Override
 	public String toString() {
-		return "ItemHandler{" +
+		return getClass().getSimpleName() + '{' +
 				"displayName='" + displayName + '\'' +
 				", lore='" + lore + '\'' +
 				", item='" + item + '\'' +

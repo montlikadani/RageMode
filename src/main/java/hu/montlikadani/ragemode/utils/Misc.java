@@ -8,7 +8,7 @@ import hu.montlikadani.ragemode.Utils;
 public class Misc {
 
 	public static boolean hasPerm(CommandSender sender, String perm) {
-		return (!(sender instanceof Player) || sender.hasPermission(perm)) ? true : false;
+		return (!(sender instanceof Player) || sender.hasPermission(perm));
 	}
 
 	public static void sendMessage(CommandSender sender, String msg) {

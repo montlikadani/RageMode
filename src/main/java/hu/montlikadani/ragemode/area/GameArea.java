@@ -52,7 +52,7 @@ public class GameArea {
 	 * @return {@link ImmutableList} of {@link Entity}
 	 */
 	public ImmutableList<Entity> getEntities() {
-		// NOTE: don't use stream in here (memory allocation)
+		// NOTE: don't use stream in here (slowest)
 
 		List<Entity> entities = new ArrayList<>();
 
@@ -110,7 +110,7 @@ public class GameArea {
 	 * @return true if yes
 	 */
 	public boolean inArea(Location loc) {
-		if (loc == null) {
+		if (loc == null || loc.getWorld() != area.getHighLoc().getWorld()) {
 			return false;
 		}
 

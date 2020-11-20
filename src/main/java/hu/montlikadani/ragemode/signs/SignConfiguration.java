@@ -21,7 +21,7 @@ public class SignConfiguration {
 		}
 
 		File file = new File(RageMode.getInstance().getFolder(), "signs.yml");
-		FileConfiguration config = null;
+		FileConfiguration config;
 		yamlSignsFile = file;
 
 		if (!file.exists()) {

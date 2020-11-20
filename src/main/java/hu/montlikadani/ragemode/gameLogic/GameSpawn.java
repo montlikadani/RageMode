@@ -88,7 +88,6 @@ public class GameSpawn implements IGameSpawn {
 
 	@Override
 	public boolean haveAnySpawn() {
-		// Do NOT use isEmpty() due to getting the 0 element
 		return spawnLocations.size() > 0;
 	}
 

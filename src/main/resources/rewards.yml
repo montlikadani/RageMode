@@ -48,3 +48,16 @@ rewards:
     run-commands:
     - "chance:3-death:console:msg %player% &aNext time do not die ;)"
     - "join:console:msg %player% &aWe wish you a good game!"
+
+    # Various bonuses which will execute in the game.
+    bonuses:
+      # When a player kills someone
+      kill-bonuses:
+        # The list of bonuses
+        # If you don't know how to modify this list, follow this:
+        # https://github.com/montlikadani/RageMode/wiki/Using-bonuses
+        list:
+        - "effect:regeneration:20:2"
+        - "effect:speed:30:1"
+        - "points:15"
+        - "chance:75_effect:LUCK:45:1"

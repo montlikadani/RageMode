@@ -8,9 +8,9 @@ log-console: true
 # Check for updates on plugin startup.
 check-for-updates: true
 
-# Download releases to \releases folder
+# Download new updates to releases folder
 # This only works if the "check-update" is true.
-download-updates: true
+download-updates: false
 
 # This saves the player data, such as inventory, effects etc. to a file.
 # This can be useful for a random server shutdown.
@@ -30,8 +30,6 @@ require-empty-inventory-to-join: true
 selection-item: golden_shovel
 
 # Hook into bungee
-# For server game join signs use:
-# https://www.spigotmc.org/resources/37446/
 bungee:
   enable: false
   # Bungeecord server name when the game end and teleport players to this server.
@@ -66,7 +64,6 @@ database:
 
 # Sign texts
 signs:
-  # Enables the signs creates.
   enable: false
 
   # Sign text when the game running or waiting for players.
@@ -89,24 +86,14 @@ signs:
     # Possible types: glass, wool, terracotta (clay), none
     type: none
 
-# Actionbar messages
-actionbar-messages:
-  # Actionbar message when started the game and sends to player.
-  # This will be ignored, when the actionbar option is disabled, or
-  # this list is empty or not found.
-  # Actionbar usage found on https://github.com/montlikadani/RageMode/wiki/Actionbar-&-Bossbar-actions
-  actions:
-  #- "join:&cHello&a %player%&c in this game!"
-  - "start:&aGame has started!&2 We wish you a good game!"
-
-# Bossbar messages
-bossbar-messages:
-  # Bossbar message when started the game and sends to player.
-  # This will be ignored, when the bossbar option is disabled, or
-  # this list is empty or not found.
-  # Bossbar usage found on https://github.com/montlikadani/RageMode/wiki/Actionbar-&-Bossbar-actions
-  actions:
-  - "start:&bWelcome&a %player%&b to the&c %game%&b game!:green:segmented_6:8"
+# Actionbar/Bossbar message when started the game and sends to player.
+# This will be ignored, when the actionbar/bossbar option is disabled, or
+# this list is empty.
+# Actionbar usage found on https://github.com/montlikadani/RageMode/wiki/Actionbar-&-Bossbar-actions
+message-actions:
+- "[actionbar];join:&cHello&a %player%&c in this game!"
+- "[actionbar];start:&aGame has started!&2 We wish you a good game!"
+- "[bossbar];start:&bWelcome&a %player%&b to the&c %game%&b game!:green:segmented_6:8"
 
 # Title texts
 titles:
@@ -129,7 +116,7 @@ titles:
     time: "10, 30, 10"
 
     # Intervals when the lobby timer reaches e.g. 5 intervals, then send it on the screen.
-    values-to-send-start-message: [5, 4, 3, 2, 1]
+    begin-times: [5, 4, 3, 2, 1]
 
   # When a player won a game, and send title for all players that in the game currently.
   player-won:
@@ -155,7 +142,7 @@ spectator:
     time-between-message-sending: 10
 
   # Which spectator commands will be allowed to use in-game?
-  allowed-spectator-commands:
+  allowed-commands:
   - "/rm leave"
   - "/ragemode leave"
 
@@ -169,7 +156,7 @@ lobby:
   player-level-as-time-counter: false
 
   # Time intervals when the lobby timer reaches, for example, 10 seconds, write it into the chat.
-  values-to-send-start-message: [30, 20, 10, 5, 4, 3, 2, 1]
+  begin-times: [30, 20, 10, 5, 4, 3, 2, 1]
 
 # Does the player can join to running games when types /rm joinrandom command to spectate?
 players-can-join-random-to-running-games: true
@@ -196,8 +183,8 @@ game:
   # It makes the game harder, but the experience is better.
   hide-players-name-tag: false
 
-  # Time intervals when the game timer reaches, for example, 60 seconds, write it into the chat.
-  values-to-send-game-end-broadcast: [60, 30, 20, 10, 5, 4, 3, 2, 1]
+  # Time intervals when the game timer reaches, for example, 60 seconds, it will send to the chat.
+  end-broadcast-at-times: [60, 30, 20, 10, 5, 4, 3, 2, 1]
 
   # Cancel all redstone activating blocks, such as lever, comparator, pressure plate, etc.?
   cancel-redstone-activating-blocks: true
@@ -238,7 +225,7 @@ game:
     # Disable all commands execution?
     disable-all-commands: false
 
-    # Enables the chat messaging
+    # Enables chat messaging
     enable-chat: true
 
   # Do we use grenade effects when a player thrown?
@@ -256,36 +243,31 @@ game:
   # the joining player have permission "ragemode.vip".
   kickRandomPlayerIfJoinsVipToFullGame: true
 
-  # Defaults values when in the setup not specify e.g bossbar.
+  # Defaults values when in the setup does not contain e.g bossbar.
   defaults:
-    # Death messages
-    # This ignores, when the boolean is contains in the arenas file.
+    # Allow player death messages to be sent?
     death-messages: true
 
     # Bossbar messages when a player killed someone.
-    # This ignores, when the boolean is contains in the arenas file.
     bossbar: false
 
     # Actionbar messages when a player get points or killed someone.
-    # This ignores, when the boolean is contains in the arenas file.
     actionbar: true
 
     # Lobby delay to start the game in seconds.
     lobby-delay: 30
 
-    # Game time in minutes.
-    # This ignores, when the integer is contains in the arenas file.
+    # Default game time in minutes.
     gametime: 10
 
-  # Tablist formatting.
   tablist:
-    # Player prefix/suffix format to show example the player kills, deaths etc.
+    # Player prefix/suffix format to show for example the player kills, deaths etc.
     player-format:
       enable: false
       prefix: ""
       suffix: "&e %kills%"
 
-    # Tablist header/footer formats.
+    # Tablist header/footer
     list:
       enable: false
       header:
@@ -309,28 +291,28 @@ game:
     - "&7------"
     - ""
 
-  # Chat format
+  # Chat formatting
   chat-format:
     enable: false
     format: "&e[%points%]&r %player%&7:&r %message%"
 
-  # In-game commands, to use a player the specified commands in-game.
+  # The in game allowed commands, which the player can use in the game.
   allowed-commands:
   - "/rm leave"
   - "/ragemode leave"
   - "/ragemode stopgame"
 
   # Execute commands when the player left the game while playing. (Only console commands)
-  # # Use %player%, %player-ip% placeholder.
-  run-commands-for-player-left-while-playing:
-  #- "tell %player% &cWhy you left from the game while playing?"
+  # This is related to the "Exit from the game" button on Esc menu.
+  execute-commands-on-player-left-while-playing:
+  - "tell %player% &cWhy you left from the game while playing?"
 
 # Stop the server or restart at the end of the game?
 game-stop:
   restart-server: false
   stop-server: false
 
-# After executing the /rm join command, do adds delay to prevent use again?
+# Rejoin delay to add how many times a player can join to games.
 rejoin-delay:
   enabled: false
 
@@ -338,7 +320,7 @@ rejoin-delay:
   # The loaded delays will be removed when this setting is enabled and when the server starting.
   remember-to-database: true
 
-  # Times for delays.
+  # The waiting time for allowing player to join again.
   times:
     hour: 0
     minute: 0
@@ -349,20 +331,7 @@ rejoin-delay:
 rewards:
   enable: true
 
-# Various bonuses in game.
-bonuses:
-  # When a player kills someone
-  kill-bonuses:
-    # The list of bonuses
-    # If you don't know how to modify this list, follow this:
-    # https://github.com/montlikadani/RageMode/wiki/Using-bonuses
-    list:
-    - "effect:regeneration:20:2"
-    - "effect:speed:30:1"
-    - "points:15"
-    #- "chance:75_effect:LUCK:45:1"
-
-# Points for killing or deaths.
+# Points for killing or deaths
 points:
   bowkill: 25
   axekill: 30
@@ -370,8 +339,5 @@ points:
   knifekill: 15
   explosionkill: 25
   grenadeKill: 45
-  # If 0 ignoring the loss.
+  # You can set to 0 to do not decrease the points amount from player if suicides itself.
   suicide: -20
-
-# Do NOT edit this!!!
-config-version: 1.9

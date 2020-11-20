@@ -1,9 +1,13 @@
 package hu.montlikadani.ragemode.items.shop;
 
+import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -38,10 +42,12 @@ import hu.montlikadani.ragemode.items.shop.pages.NextPage;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
+import net.milkbowl.vault.economy.Economy;
 
 public class LobbyShop implements Listener {
 
 	public static final Map<Player, BoughtElements> BOUGHTITEMS = new HashMap<>();
+	public static final HashMap<UUID, Object> USERPARTICLES = new HashMap<>();
 
 	private final Map<Player, IShop> shops = new HashMap<>();
 
@@ -116,7 +122,7 @@ public class LobbyShop implements Listener {
 
 	@EventHandler
 	public void onGameStart(RMGameStartEvent event) {
-		for (PlayerManager pm : event.getPlayers()) {
+		for (PlayerManager pm : event.getGame().getPlayersFromList()) {
 			Player player = pm.getPlayer();
 			removeShop(player);
 			player.closeInventory();
@@ -383,5 +389,61 @@ public class LobbyShop implements Listener {
 		player.closeInventory();
 		openNextPage(player, shopCategory);
 		return true;
+	}
+
+	public static void buyElements(Player player) {
+		if (!BOUGHTITEMS.containsKey(player)) {
+			return;
+		}
+
+		for (Entry<Player, BoughtElements> elements : BOUGHTITEMS.entrySet()) {
+			if (elements.getKey() != player) {
+				continue;
+			}
+
+			BoughtElements bought = elements.getValue();
+
+			boolean enough = false;
+			if (RageMode.getInstance().isVaultEnabled()) {
+				Economy economy = RageMode.getInstance().getEconomy();
+				double cost = bought.getCost();
+
+				if (cost > 0d && economy.has(player, cost)) {
+					economy.withdrawPlayer(player, cost);
+					enough = true;
+				}
+			}
+
+			if (bought.getPoints() > 0) {
+				PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
+				if (pp != null && pp.getPoints() >= bought.getPoints()) {
+					pp.takePoints(bought.getPoints());
+					enough = true;
+				} else {
+					enough = false;
+				}
+			}
+
+			if (!enough) {
+				sendMessage(player, RageMode.getLang().get("game.cant-bought-elements"));
+				break;
+			}
+
+			if (bought.getPotion() != null) {
+				player.addPotionEffect(bought.getPotion());
+			}
+
+			if (bought.getItem() != null) {
+				player.getInventory().addItem(bought.getItem());
+			}
+
+			if (bought.getTrail() != null) {
+				USERPARTICLES.put(player.getUniqueId(), bought.getTrail());
+			}
+
+			break;
+		}
+
+		BOUGHTITEMS.remove(player);
 	}
 }

@@ -14,15 +14,15 @@ import org.bukkit.configuration.file.FileConfiguration;
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.API.event.RMSignsUpdateEvent;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.events.SignsUpdateEvent;
 import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class SignCreator {
 
-	private static FileConfiguration fileConf = null;
-	private static SignPlaceholder signPlaceholder = null;
+	private static FileConfiguration fileConf;
+	private static SignPlaceholder signPlaceholder;
 
 	private static final Set<SignData> SIGNDATA = new HashSet<>();
 
@@ -41,17 +41,14 @@ public class SignCreator {
 		if (list.isEmpty())
 			return false;
 
-		signPlaceholder = new SignPlaceholder(
-				RageMode.getInstance().getConfiguration().getCfg().getStringList("signs.list"));
+		signPlaceholder = new SignPlaceholder(ConfigValues.getSignTextLines());
 
 		int totalSigns = 0;
 
 		for (String one : list) {
 			String[] splited = one.split(",");
 			String world = splited[0];
-			if (world == null) {
-				continue;
-			}
+			assert world != null;
 
 			if (Bukkit.getWorld(world) == null) {
 				Debug.logConsole(Level.WARNING, "World {0} not found to load this sign.", world);
@@ -63,9 +60,7 @@ public class SignCreator {
 					z = Double.parseDouble(splited[3]);
 
 			String game = splited[4];
-			if (game == null) {
-				continue;
-			}
+			assert game != null;
 
 			Location loc = new Location(Bukkit.getWorld(world), x, y, z);
 			SignData data = new SignData(loc, game, signPlaceholder);
@@ -185,7 +180,7 @@ public class SignCreator {
 			return false;
 		}
 
-		SignsUpdateEvent event = new SignsUpdateEvent(SIGNDATA);
+		RMSignsUpdateEvent event = new RMSignsUpdateEvent(SIGNDATA);
 		Utils.callEvent(event);
 		if (event.isCancelled()) {
 			return false;

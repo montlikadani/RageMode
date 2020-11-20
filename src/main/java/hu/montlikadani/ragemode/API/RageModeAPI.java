@@ -9,7 +9,8 @@ public class RageModeAPI {
 
 	/**
 	 * Returns RageMode as a plugin
-	 * @return Plugin
+	 * 
+	 * @return {@link Plugin}
 	 */
 	public static Plugin getPlugin() {
 		return JavaPlugin.getPlugin(RageMode.class);
@@ -17,8 +18,10 @@ public class RageModeAPI {
 
 	/**
 	 * Gets the RageMode instance
+	 * @deprecated We don't need to call another method
 	 * @return Instance
 	 */
+	@Deprecated(forRemoval = true)
 	public static RageMode getRageMode() {
 		return RageMode.getInstance();
 	}

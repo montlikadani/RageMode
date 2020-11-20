@@ -5,6 +5,9 @@ import org.bukkit.event.Cancellable;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
 
+/**
+ * Called when a player attempted to join to a game.
+ */
 public class RMGameJoinAttemptEvent extends GameEvent implements Cancellable {
 
 	private Player player;
@@ -15,6 +18,11 @@ public class RMGameJoinAttemptEvent extends GameEvent implements Cancellable {
 		this.player = player;
 	}
 
+	/**
+	 * Gets the player who joined.
+	 * 
+	 * @return {@link Player}
+	 */
 	public Player getPlayer() {
 		return player;
 	}

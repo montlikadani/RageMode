@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.managers;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.StorePlayerStuffs;
@@ -153,7 +154,7 @@ public class PlayerManager {
 		}
 
 		if (sps.oldLocation != null) { // Teleport back to the location
-			player.teleport(sps.oldLocation);
+			Utils.teleport(player, sps.oldLocation);
 			sps.oldLocation = null;
 		}
 
@@ -219,7 +220,7 @@ public class PlayerManager {
 				player.setLevel(sps.oldExpLevel); // Give him his exp level back.
 
 				if (sps.oldVehicle != null) { // Give him his vehicle back.
-					sps.oldVehicle.getVehicle().teleport(player);
+					Utils.teleport(sps.oldVehicle.getVehicle(), player.getLocation());
 					sps.oldVehicle = null;
 				}
 

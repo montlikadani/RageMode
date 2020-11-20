@@ -5,7 +5,6 @@ import java.util.UUID;
 public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 
 	private UUID uuid;
-	@Deprecated private String playerUUID;
 
 	private int kills = 0, axeKills = 0, directArrowKills = 0, explosionKills = 0, knifeKills = 0, deaths = 0,
 			axeDeaths = 0, directArrowDeaths = 0, explosionDeaths = 0, knifeDeaths = 0, currentStreak = 0,
@@ -19,16 +18,6 @@ public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 
 	public PlayerPoints(UUID uuid) {
 		this.uuid = uuid;
-	}
-
-	@Deprecated
-	public PlayerPoints(String playerUUID) {
-		this.playerUUID = playerUUID;
-	}
-
-	@Deprecated
-	public String getPlayerUUID() {
-		return playerUUID;
 	}
 
 	public UUID getUUID() {

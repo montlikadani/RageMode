@@ -34,7 +34,7 @@ public class Debug {
 	 * @param p params
 	 */
 	public static void logConsole(Level lvl, String msg, Object... p) {
-		if (msg != null && !msg.isEmpty() && ConfigValues.isLogConsole())
+		if (ConfigValues.isLogConsole() && msg != null && !msg.isEmpty())
 			Bukkit.getLogger().log(lvl == null ? Level.INFO : lvl, "[RageMode] " + msg, p);
 	}
 
