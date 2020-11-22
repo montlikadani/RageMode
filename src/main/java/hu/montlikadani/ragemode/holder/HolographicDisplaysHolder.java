@@ -15,7 +15,6 @@ import com.gmail.filoghost.holographicdisplays.api.VisibilityManager;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 
 public class HolographicDisplaysHolder extends IHoloHolder {
 
@@ -72,11 +71,9 @@ public class HolographicDisplaysHolder extends IHoloHolder {
 		visibilityManager.showTo(player);
 		visibilityManager.setVisibleByDefault(false);
 
-		Optional.ofNullable(RuntimePPManager.getPPForPlayer(player.getUniqueId())).ifPresent(rpp -> {
-			for (String hList : RageMode.getLang().getList("hologram-list")) {
-				hologram.appendTextLine(Utils.setPlaceholders(hList, rpp));
-			}
-		});
+		for (String hList : RageMode.getLang().getList("hologram-list")) {
+			hologram.appendTextLine(Utils.setPlaceholders(hList, player));
+		}
 	}
 
 	@Override

@@ -18,6 +18,7 @@ import hu.montlikadani.ragemode.API.event.PlayerWinEvent;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
@@ -217,6 +218,11 @@ public class RageScores {
 		}
 	}
 
+	/**
+	 * Removes the given player cached points statistic.
+	 * 
+	 * @param playerUUID {@link UUID}
+	 */
 	public static void removePointsForPlayer(UUID playerUUID) {
 		Validate.notNull(playerUUID, "Player UUID can't be null!");
 
@@ -227,8 +233,9 @@ public class RageScores {
 
 	/**
 	 * Gets the given player points
+	 * 
 	 * @param playerUUID UUID of player
-	 * @return {@link PlayerPoints}
+	 * @return {@link PlayerPoints} if present
 	 */
 	public static Optional<PlayerPoints> getPlayerPoints(UUID playerUUID) {
 		Validate.notNull(playerUUID, "Player UUID can't be null!");
@@ -237,8 +244,9 @@ public class RageScores {
 	}
 
 	/**
-	 * Gets the {@link PlayerPoints}
-	 * @return {@link #playerpoints}
+	 * Gets the map of cached players containing {@link PlayerPoints}
+	 * 
+	 * @return the map of cached players
 	 */
 	public static HashMap<UUID, PlayerPoints> getPlayerPointsMap() {
 		return PLAYERPOINTS;
@@ -297,6 +305,8 @@ public class RageScores {
 	}
 
 	public static UUID calculateWinner(Game game, List<PlayerManager> players) {
+		game.setStatus(GameStatus.WINNER_CALCULATING);
+
 		UUID highest = UUID.randomUUID(),
 				resultPlayer = null,
 				goy = highest;
@@ -316,7 +326,7 @@ public class RageScores {
 			return null;
 		}
 
-		if (goy == highest) {
+		if (goy.equals(highest)) {
 			sendMessage(Bukkit.getPlayer(resultPlayer), RageMode.getLang().get("game.message.player-won", "%player%",
 					"Herobrine", "%game%", game.getName()));
 			return null;
@@ -332,8 +342,7 @@ public class RageScores {
 					winner.getName(), "%game%", game.getName()));
 		}
 
-		PlayerWinEvent event = new PlayerWinEvent(game, winner);
-		Utils.callEvent(event);
+		Utils.callEvent(new PlayerWinEvent(game, winner));
 		return highest;
 	}
 }

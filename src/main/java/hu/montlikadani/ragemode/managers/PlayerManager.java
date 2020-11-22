@@ -2,6 +2,8 @@ package hu.montlikadani.ragemode.managers;
 
 import org.bukkit.entity.Player;
 
+import com.google.common.base.Preconditions;
+
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
@@ -22,10 +24,20 @@ public class PlayerManager {
 		this.game = game;
 	}
 
+	/**
+	 * Gets the cached player from this object.
+	 * 
+	 * @return {@link Player}
+	 */
 	public Player getPlayer() {
 		return player;
 	}
 
+	/**
+	 * Gets the game name where the player is in currently.
+	 * 
+	 * @return game name
+	 */
 	public String getGameName() {
 		return game;
 	}
@@ -37,10 +49,22 @@ public class PlayerManager {
 		return lives;
 	}
 
+	/**
+	 * Sets the player lives to a new value.
+	 * 
+	 * @param lives the new lives (lives > -1)
+	 */
 	public void setPlayerLives(int lives) {
+		Preconditions.checkArgument(lives > -1, "Player lives should be highest than -1.");
+
 		this.lives = lives;
 	}
 
+	/**
+	 * Gets the cached player stuffs
+	 * 
+	 * @return the cached stuffs that are in {@link StorePlayerStuffs}
+	 */
 	public StorePlayerStuffs getStorePlayer() {
 		return sps;
 	}

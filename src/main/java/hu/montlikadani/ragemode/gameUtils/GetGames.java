@@ -135,14 +135,25 @@ public class GetGames {
 	 * Check if game is exist that found in the file
 	 * @param game Game
 	 * @return true if the game is exists
+	 * @see #isGameExistent(String, boolean)
 	 */
 	public static boolean isGameExistent(String game) {
+		return isGameExistent(game, true);
+	}
+
+	/**
+	 * Check if game is exist that found in the file
+	 * @param game Game
+	 * @param ignoreCase ignore cases or not
+	 * @return true if the game is exists
+	 */
+	public static boolean isGameExistent(String game, boolean ignoreCase) {
 		if (StringUtils.isEmpty(game)) {
 			return false;
 		}
 
 		for (String g : getGameNames()) {
-			if (g.equalsIgnoreCase(game.trim())) {
+			if (ignoreCase ? g.equalsIgnoreCase(game.trim()) : g.equals(game.trim())) {
 				return true;
 			}
 		}

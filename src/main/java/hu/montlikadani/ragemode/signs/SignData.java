@@ -29,14 +29,14 @@ public class SignData {
 	private String game;
 	private SignPlaceholder placeholder;
 
-	public SignData(Location loc, String game, SignPlaceholder placeholder) {
+	public SignData(Location loc, String game) {
 		this.world = loc.getWorld().getName();
 		this.x = loc.getBlockX();
 		this.y = loc.getBlockY();
 		this.z = loc.getBlockZ();
 
 		this.game = game == null ? "" : game;
-		this.placeholder = placeholder;
+		this.placeholder = new SignPlaceholder(ConfigValues.getSignTextLines());
 	}
 
 	public String getWorld() {
@@ -79,7 +79,7 @@ public class SignData {
 		}
 
 		Sign sign = (Sign) b.getState();
-		if (placeholder != null && GameUtils.isGameWithNameExists(game)) {
+		if (GameUtils.isGameWithNameExists(game)) {
 			List<String> lines = placeholder.parsePlaceholder(game);
 			for (int i = 0; i < 4; i++) {
 				sign.setLine(i, lines.get(i));

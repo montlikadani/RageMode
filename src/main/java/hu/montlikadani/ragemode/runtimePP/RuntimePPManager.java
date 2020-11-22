@@ -23,19 +23,6 @@ public class RuntimePPManager {
 	/**
 	 * Get the points database for the given player uuid.
 	 * 
-	 * @deprecated converting string to uuid is too long time
-	 * @param sUUID Player uuid
-	 * @see #getPPForPlayer(UUID)
-	 * @return {@link PlayerPoints}
-	 */
-	@Deprecated
-	public static PlayerPoints getPPForPlayer(String sUUID) {
-		return getPPForPlayer(UUID.fromString(sUUID));
-	}
-
-	/**
-	 * Get the points database for the given player uuid.
-	 * 
 	 * @param uuid Player uuid
 	 * @return {@link PlayerPoints} the player current stats
 	 */
@@ -59,7 +46,8 @@ public class RuntimePPManager {
 	 * 
 	 * @param uuid   Player uuid
 	 * @param points points
-	 * @return <code>true</code> if the player is in the database and have enough points, otherwise <code>false</code>
+	 * @return <code>true</code> if the player is in the database and have enough
+	 *         points, otherwise <code>false</code>
 	 */
 	public static boolean hasPoints(UUID uuid, int points) {
 		PlayerPoints pp = getPPForPlayer(uuid);

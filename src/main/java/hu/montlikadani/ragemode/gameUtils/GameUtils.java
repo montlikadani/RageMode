@@ -970,13 +970,13 @@ public final class GameUtils {
 	}
 
 	/**
-	 * Stops the specified game if running.
+	 * Stops the specified game on the main thread if running.
 	 * 
 	 * @see #stopGame(Game, boolean)
-	 * @param name Game name
+	 * @param game {@link Game}
 	 */
-	public static void stopGame(String name) {
-		Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> stopGame(getGame(name), true));
+	public static void stopGame(Game game) {
+		Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> stopGame(game, true));
 	}
 
 	/**
@@ -1044,7 +1044,6 @@ public final class GameUtils {
 			}
 
 			players.forEach(pm -> game.removePlayerSynced(pm.getPlayer()));
-			game.getActionMessengers().clear();
 
 			final Player winner = winnerUUID != null ? Bukkit.getPlayer(winnerUUID) : null;
 			if (!useFreeze) {
@@ -1072,7 +1071,6 @@ public final class GameUtils {
 			GameAreaManager.removeEntitiesFromGame(game);
 
 			players.forEach(pm -> game.removePlayerSynced(pm.getPlayer()));
-			game.getActionMessengers().clear();
 
 			if (!useFreeze) {
 				finishStopping(game, null, false);
@@ -1115,6 +1113,8 @@ public final class GameUtils {
 		for (PlayerManager spec : new HashMap<>(game.getSpectatorPlayers()).values()) {
 			game.removeSpectatorPlayer(spec.getPlayer());
 		}
+
+		game.getActionMessengers().clear();
 
 		RewardManager reward = new RewardManager(gName);
 		for (PlayerManager pm : game.getPlayersFromList()) {

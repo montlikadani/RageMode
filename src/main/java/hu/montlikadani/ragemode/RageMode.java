@@ -48,7 +48,6 @@ import hu.montlikadani.ragemode.holder.IHoloHolder;
 import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.managers.BossbarManager;
 import hu.montlikadani.ragemode.metrics.Metrics;
-import hu.montlikadani.ragemode.signs.SignConfiguration;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.storage.MySQLDB;
 import hu.montlikadani.ragemode.storage.SQLDB;
@@ -128,7 +127,6 @@ public class RageMode extends JavaPlugin {
 		}
 
 		if (ConfigValues.isSignsEnable()) {
-			SignConfiguration.initSignConfiguration();
 			SignCreator.loadSigns();
 		}
 
@@ -160,7 +158,8 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void loadHooks() {
-		holoHolder = isPluginEnabled("HolographicDisplays") ? new HolographicDisplaysHolder() : new ArmorStandHologram();
+		holoHolder = isPluginEnabled("HolographicDisplays") ? new HolographicDisplaysHolder()
+				: new ArmorStandHologram();
 		vault = initEconomy();
 
 		if (isPluginEnabled("PlaceholderAPI")) {
@@ -169,6 +168,8 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void initServerSoftwares() {
+		softwareType = ServerSoftwareType.UNKNOWN;
+
 		try {
 			Class.forName("org.spigotmc.SpigotConfig");
 			softwareType = ServerSoftwareType.SPIGOT;
@@ -185,7 +186,6 @@ public class RageMode extends JavaPlugin {
 			Class.forName("net.pl3x.purpur.event.entity.EntityMoveEvent");
 			softwareType = ServerSoftwareType.PURPUR;
 		} catch (ClassNotFoundException n) {
-			softwareType = ServerSoftwareType.UNKNOWN;
 		}
 	}
 
@@ -205,11 +205,18 @@ public class RageMode extends JavaPlugin {
 			break;
 		}
 
-		dbType = database.getClass().getAnnotation(DB.class).type();
+		if (database.getClass().isAnnotationPresent(DB.class)) {
+			dbType = database.getClass().getAnnotation(DB.class).type();
+		}
+
 		database.loadDatabase(true);
 	}
 
 	private boolean initEconomy() {
+		if (econ != null) {
+			return true;
+		}
+
 		if (!isPluginEnabled("Vault")) {
 			return false;
 		}
@@ -236,13 +243,14 @@ public class RageMode extends JavaPlugin {
 		games.clear();
 		spawns.clear();
 
+		loadHooks();
+
 		conf.loadConfig();
 		lang.loadLanguage(ConfigValues.getLang());
 
 		loadGames();
 
 		if (ConfigValues.isSignsEnable()) {
-			SignConfiguration.initSignConfiguration();
 			SignCreator.loadSigns();
 		}
 
@@ -406,6 +414,7 @@ public class RageMode extends JavaPlugin {
 
 	/**
 	 * Get the game by index.
+	 * 
 	 * @param index (index <= gamesSize && index >= 0)
 	 * @return {@link Game}
 	 * @see GameUtils#getGame(String)
@@ -416,6 +425,7 @@ public class RageMode extends JavaPlugin {
 
 	/**
 	 * Removes a game from the list.
+	 * 
 	 * @see #removeGame(String)
 	 * @param game Game
 	 */
@@ -425,6 +435,7 @@ public class RageMode extends JavaPlugin {
 
 	/**
 	 * Removes a game from the list by name.
+	 * 
 	 * @param name Game name
 	 */
 	public void removeGame(String name) {
@@ -437,7 +448,8 @@ public class RageMode extends JavaPlugin {
 	}
 
 	/**
-	 * Removes the given game all spawns.
+	 * Removes all set of spawns from the given game.
+	 * 
 	 * @see #removeSpawn(String)
 	 * @param game Game
 	 */
@@ -446,7 +458,8 @@ public class RageMode extends JavaPlugin {
 	}
 
 	/**
-	 * Removes the given game name all spawns.
+	 * Removes all set of spawns from the given game.
+	 * 
 	 * @param name Game name
 	 */
 	public void removeSpawn(String name) {
@@ -495,10 +508,6 @@ public class RageMode extends JavaPlugin {
 		return dbType;
 	}
 
-	/**
-	 * Gets this class instance
-	 * @return {@link RageMode}
-	 */
 	public static RageMode getInstance() {
 		return instance;
 	}

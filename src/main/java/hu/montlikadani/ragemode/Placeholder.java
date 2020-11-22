@@ -1,8 +1,13 @@
 package hu.montlikadani.ragemode;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 
+import hu.montlikadani.ragemode.API.RageModeAPI;
+import hu.montlikadani.ragemode.area.GameAreaManager;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -12,14 +17,117 @@ public class Placeholder extends PlaceholderExpansion {
 	Placeholder() {
 	}
 
+	public static final String IDENTIFIER = "ragemode";
+	public static final String PREFIX = IDENTIFIER + '_';
+
+	public enum RMPlaceholders {
+		KILLS,
+		AXE_KILLS,
+		DIRECT_ARROW_KILLS,
+		EXPLOSION_KILLS,
+		KNIFE_KILLS,
+		ZOMBIE_KILLS,
+		DEATHS,
+		AXE_DEATHS,
+		DIRECT_ARROW_DEATHS,
+		EXPLOSION_DEATHS,
+		KNIFE_DEATHS,
+		CURRENT_STREAK,
+		LONGEST_STREAK,
+		POINTS,
+		GAMES,
+		WINS,
+		KD,
+
+		PLAYER_LIVES,
+
+		STATE("game"),
+		PLAYERS("game"),
+		SPECTATOR_PLAYERS("game"),
+		MAXPLAYERS("game"),
+		ZOMBIES_ALIVE("game"),
+		TYPE("game"),
+		;
+
+		private String requirements = "";
+		private String gameName = "";
+
+		private RMPlaceholders() {
+		}
+
+		private RMPlaceholders(String requirements) {
+			this.requirements = requirements;
+		}
+
+		public boolean isComplexed() {
+			return !requirements.isEmpty();
+		}
+
+		public String getRequirements() {
+			return requirements;
+		}
+
+		public String getFullName() {
+			return PREFIX + name();
+		}
+
+		public String getGameName() {
+			return gameName;
+		}
+
+		public void setGameName(String gameName) {
+			this.gameName = gameName;
+		}
+
+		public static RMPlaceholders getByIdentifier(final String id) {
+			String original = id;
+			String gameName = id;
+			if (gameName.contains("_")) {
+				for (int i = gameName.length() - 1; i > 0; i--) {
+					if (gameName.charAt(i) == '_') {
+						gameName = gameName.substring(i + 1);
+						original = original.substring(0, i);
+						break;
+					}
+				}
+			}
+
+			boolean gameDefined = GetGames.isGameExistent(gameName, false);
+
+			for (RMPlaceholders holder : values()) {
+				if (id.equalsIgnoreCase(holder.toString())) {
+					return holder;
+				}
+			}
+
+			for (RMPlaceholders holder : values()) {
+				if (id.equalsIgnoreCase(holder.getFullName())) {
+					return holder;
+				}
+			}
+
+			for (RMPlaceholders holder : values()) {
+				if (StringUtils.startsWithIgnoreCase(original, holder.toString()) && holder.isComplexed()) {
+					if (gameDefined) {
+						holder.setGameName(gameName);
+					}
+
+					return holder;
+				}
+			}
+
+			return null;
+		}
+	}
+
 	@Override
 	public String getAuthor() {
-		return JavaPlugin.getPlugin(RageMode.class).getDescription().getAuthors().toString();
+		return RageModeAPI.getPlugin().getDescription().getAuthors().toString();
 	}
 
 	@Override
 	public String getIdentifier() {
-		return "ragemode";
+		return IDENTIFIER;
 	}
 
 	@Override
@@ -32,45 +140,82 @@ public class Placeholder extends PlaceholderExpansion {
 		if (p == null)
 			return "";
 
-		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(p.getUniqueId());
-		if (rpp == null)
+		RMPlaceholders placeholder = RMPlaceholders.getByIdentifier(v);
+		if (placeholder == null) {
 			return "";
+		}
 
-		switch (v.toLowerCase()) {
-		case "kills":
-			return Integer.toString(rpp.getKills());
-		case "axe_kills":
-			return Integer.toString(rpp.getAxeKills());
-		case "direct_arrow_kills":
-			return Integer.toString(rpp.getDirectArrowKills());
-		case "explosion_kills":
-			return Integer.toString(rpp.getExplosionKills());
-		case "knife_kills":
-			return Integer.toString(rpp.getKnifeKills());
-		case "zombie_kills":
-			return Integer.toString(rpp.getZombieKills());
-		case "deaths":
-			return Integer.toString(rpp.getDeaths());
-		case "axe_deaths":
-			return Integer.toString(rpp.getAxeDeaths());
-		case "direct_arrow_deaths":
-			return Integer.toString(rpp.getDirectArrowDeaths());
-		case "explosion_deaths":
-			return Integer.toString(rpp.getExplosionDeaths());
-		case "knife_deaths":
-			return Integer.toString(rpp.getKnifeDeaths());
-		case "current_streak":
-			return Integer.toString(rpp.getCurrentStreak());
-		case "longest_streak":
-			return Integer.toString(rpp.getLongestStreak());
-		case "points":
-			return Integer.toString(rpp.getPoints());
-		case "games":
-			return Integer.toString(rpp.getGames());
-		case "wins":
-			return Integer.toString(rpp.getWins());
-		case "kd":
-			return Double.toString(rpp.getKD());
+		String gameName = placeholder.getGameName();
+
+		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(p.getUniqueId());
+		if (rpp != null) {
+			switch (placeholder) {
+			case KILLS:
+				return Integer.toString(rpp.getKills());
+			case AXE_KILLS:
+				return Integer.toString(rpp.getAxeKills());
+			case DIRECT_ARROW_KILLS:
+				return Integer.toString(rpp.getDirectArrowKills());
+			case EXPLOSION_KILLS:
+				return Integer.toString(rpp.getExplosionKills());
+			case KNIFE_KILLS:
+				return Integer.toString(rpp.getKnifeKills());
+			case ZOMBIE_KILLS:
+				return Integer.toString(rpp.getZombieKills());
+			case DEATHS:
+				return Integer.toString(rpp.getDeaths());
+			case AXE_DEATHS:
+				return Integer.toString(rpp.getAxeDeaths());
+			case DIRECT_ARROW_DEATHS:
+				return Integer.toString(rpp.getDirectArrowDeaths());
+			case EXPLOSION_DEATHS:
+				return Integer.toString(rpp.getExplosionDeaths());
+			case KNIFE_DEATHS:
+				return Integer.toString(rpp.getKnifeDeaths());
+			case CURRENT_STREAK:
+				return Integer.toString(rpp.getCurrentStreak());
+			case LONGEST_STREAK:
+				return Integer.toString(rpp.getLongestStreak());
+			case POINTS:
+				return Integer.toString(rpp.getPoints());
+			case GAMES:
+				return Integer.toString(rpp.getGames());
+			case WINS:
+				return Integer.toString(rpp.getWins());
+			case KD:
+				return Double.toString(rpp.getKD());
+			default:
+				break;
+			}
+		}
+
+		switch (placeholder) {
+		case PLAYER_LIVES:
+			if (GameUtils.isPlayerPlaying(p)) {
+				PlayerManager pm = GameUtils.getGameByPlayer(p).getPlayerManager(p).orElse(null);
+				if (pm != null) {
+					return Integer.toString(pm.getPlayerLives());
+				}
+			}
+
+			break;
+		case STATE:
+			return GameUtils.getGame(gameName).getStatus().toString().toLowerCase();
+		case PLAYERS:
+			return Integer.toString(GameUtils.getGame(gameName).getPlayers().size());
+		case SPECTATOR_PLAYERS:
+			return Integer.toString(GameUtils.getGame(gameName).getSpectatorPlayers().size());
+		case MAXPLAYERS:
+			return Integer.toString(GetGames.getMaxPlayers(gameName));
+		case ZOMBIES_ALIVE:
+			hu.montlikadani.ragemode.area.GameArea area = GameAreaManager.getAreaByGame(GameUtils.getGame(gameName));
+			if (area != null) {
+				return Integer.toString(area.getEntities(org.bukkit.entity.EntityType.ZOMBIE).size());
+			}
+
+			break;
+		case TYPE:
+			return GameUtils.getGame(gameName).getGameType().toString().toLowerCase();
 		default:
 			break;
 		}

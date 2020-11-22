@@ -1,7 +1,6 @@
 package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.TimerTask;
-import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -88,39 +87,40 @@ public class GameTimer extends TimerTask {
 			if (game.getGameType() == GameType.APOCALYPSE) {
 				Location loc = GameUtils.getGameSpawn(game).getSpawnLocations().get(0);
 
-				if (!firstZombieSpawned) {
-					if (ConfigValues.getDelayBeforeFirstZombiesSpawn() > 0) {
-						Bukkit.getScheduler().runTaskLater(RageMode.getInstance(), () -> {
-							GameUtils.spawnZombies(game, zombieSpawnAmount);
-							firstZombieSpawned = true;
-						}, ConfigValues.getDelayBeforeFirstZombiesSpawn() * 20);
-					} else {
-						GameUtils.spawnZombies(game, zombieSpawnAmount);
-					}
-
-				} else if (timeElapsed == null) { // wait for the scheduler task
-					GameAreaManager.getAreaByLocation(loc).ifPresent(area -> {
-						java.util.List<Entity> entities = area.getEntities().stream()
-								.filter(e -> e instanceof org.bukkit.entity.Zombie).collect(Collectors.toList());
-						if (entities.size() <= 150
-								&& ((ConfigValues.isWaitForNextSpawnAfterZombiesAreDead() && entities.isEmpty())
-										|| !ConfigValues.isWaitForNextSpawnAfterZombiesAreDead())) {
-							if (ConfigValues.getDelayAfterNextZombiesSpawning() > 0) {
-								timeElapsed = Bukkit.getScheduler().runTaskLater(RageMode.getInstance(), () -> {
-									GameUtils.spawnZombies(game, zombieSpawnAmount);
-									timeElapsed = null;
-								}, ConfigValues.getDelayAfterNextZombiesSpawning() * 20);
-							} else {
+				if (timeElapsed == null) { // wait for the scheduler task
+					if (!firstZombieSpawned) {
+						if (ConfigValues.getDelayBeforeFirstZombiesSpawn() > 0) {
+							timeElapsed = Bukkit.getScheduler().runTaskLater(RageMode.getInstance(), () -> {
 								GameUtils.spawnZombies(game, zombieSpawnAmount);
-							}
-
-							if (ConfigValues.isWaitForNextSpawnAfterZombiesAreDead()) {
-								zombieSpawnAmount += 20;
-							} else { // Preventing too much zombie spawning
-								zombieSpawnAmount += 1;
-							}
+								firstZombieSpawned = true;
+								timeElapsed = null;
+							}, ConfigValues.getDelayBeforeFirstZombiesSpawn() * 20);
+						} else {
+							GameUtils.spawnZombies(game, zombieSpawnAmount);
 						}
-					});
+					} else {
+						GameAreaManager.getAreaByLocation(loc).ifPresent(area -> {
+							java.util.List<Entity> entities = area.getEntities(org.bukkit.entity.EntityType.ZOMBIE);
+							if (entities.size() <= 150
+									&& ((ConfigValues.isWaitForNextSpawnAfterZombiesAreDead() && entities.isEmpty())
+											|| !ConfigValues.isWaitForNextSpawnAfterZombiesAreDead())) {
+								if (ConfigValues.getDelayAfterNextZombiesSpawning() > 0) {
+									timeElapsed = Bukkit.getScheduler().runTaskLater(RageMode.getInstance(), () -> {
+										GameUtils.spawnZombies(game, zombieSpawnAmount);
+										timeElapsed = null;
+									}, ConfigValues.getDelayAfterNextZombiesSpawning() * 20);
+								} else {
+									GameUtils.spawnZombies(game, zombieSpawnAmount);
+								}
+
+								if (ConfigValues.isWaitForNextSpawnAfterZombiesAreDead()) {
+									zombieSpawnAmount += 20;
+								} else { // Preventing too much zombie spawning
+									zombieSpawnAmount += 1;
+								}
+							}
+						});
+					}
 				}
 
 				// Fire EntityInteractEvent to call pressure mines to be exploded
@@ -158,7 +158,7 @@ public class GameTimer extends TimerTask {
 
 			if (timer == 0) {
 				cancel();
-				GameUtils.stopGame(game.getName());
+				GameUtils.stopGame(game);
 				return;
 			}
 

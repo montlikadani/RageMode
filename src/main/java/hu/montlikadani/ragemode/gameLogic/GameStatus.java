@@ -1,5 +1,8 @@
 package hu.montlikadani.ragemode.gameLogic;
 
+/**
+ * Represents the status of the game
+ */
 public enum GameStatus {
 	/**
 	 * When the game is running
@@ -9,6 +12,10 @@ public enum GameStatus {
 	 * When the players who joined to the waiting game (lobby)
 	 */
 	WAITING,
+	/**
+	 * At the game end when calculating the winner player.
+	 */
+	WINNER_CALCULATING,
 	/**
 	 * When the game has end
 	 */

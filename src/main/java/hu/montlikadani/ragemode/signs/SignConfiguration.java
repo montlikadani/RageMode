@@ -12,17 +12,21 @@ import hu.montlikadani.ragemode.config.Configuration;
 public class SignConfiguration {
 
 	private static boolean inited = false;
-	private static File yamlSignsFile;
+	private static File signsFile;
 	private static FileConfiguration signConfig;
 
-	public static FileConfiguration initSignConfiguration() {
+	public static File getSignFile() {
+		return signsFile;
+	}
+
+	public static FileConfiguration getSignConfig() {
 		if (inited) {
 			return signConfig;
 		}
 
 		File file = new File(RageMode.getInstance().getFolder(), "signs.yml");
 		FileConfiguration config;
-		yamlSignsFile = file;
+		signsFile = file;
 
 		if (!file.exists()) {
 			if (!file.getParentFile().exists())
@@ -45,14 +49,6 @@ public class SignConfiguration {
 		Configuration.saveFile(config, file);
 		inited = true;
 
-		return signConfig;
-	}
-
-	public static File getFile() {
-		return yamlSignsFile;
-	}
-
-	public static FileConfiguration getConf() {
 		return signConfig;
 	}
 }

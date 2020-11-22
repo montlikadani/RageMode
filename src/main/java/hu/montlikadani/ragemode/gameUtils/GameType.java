@@ -1,8 +1,19 @@
 package hu.montlikadani.ragemode.gameUtils;
 
+/**
+ * Represents the type of the gane
+ */
 public enum GameType {
 
-	NORMAL, APOCALYPSE("apocalypse", "zombieapocalypse", "zombie");
+	/**
+	 * Normal game, which player vs player
+	 */
+	NORMAL,
+
+	/**
+	 * Zombie apocalypse game, which zombies vs players
+	 */
+	APOCALYPSE("apocalypse", "zombieapocalypse", "zombie");
 
 	private String[] names;
 
@@ -14,6 +25,11 @@ public enum GameType {
 		this.names = names;
 	}
 
+	/**
+	 * Gets the array sub names of this type.
+	 * 
+	 * @return array of string
+	 */
 	public String[] getNames() {
 		return names;
 	}

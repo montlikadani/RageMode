@@ -108,6 +108,9 @@ public class GameListener implements Listener {
 
 	private final Map<UUID, UUID> explosionVictims = new HashMap<>(), grenadeExplosionVictims = new HashMap<>();
 
+	/**
+	 * The cached set of pressure mines
+	 */
 	public static final Set<PressureMine> PRESSUREMINES = new HashSet<>();
 
 	public GameListener(RageMode plugin) {

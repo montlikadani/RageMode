@@ -1,17 +1,22 @@
 package hu.montlikadani.ragemode.area;
 
 import java.util.ArrayList;
+
 import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 import com.google.common.collect.ImmutableList;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
 
+/**
+ * Represents the game area
+ */
 public class GameArea {
 
 	private Game game;
@@ -47,7 +52,7 @@ public class GameArea {
 	}
 
 	/**
-	 * Gets all entities from the location.
+	 * Gets all entities from the location except player.
 	 * 
 	 * @return {@link ImmutableList} of {@link Entity}
 	 */
@@ -59,6 +64,30 @@ public class GameArea {
 		for (Entity e : area.getLowLoc().getWorld().getEntities()) {
 			if (inArea(e.getLocation()) && !(e instanceof Player)) {
 				entities.add(e);
+			}
+		}
+
+		return ImmutableList.copyOf(entities);
+	}
+
+	/**
+	 * Gets the given entities from the location from the filter array.
+	 * 
+	 * @param filter the array of entities
+	 * @return {@link ImmutableList} of {@link Entity}
+	 */
+	public ImmutableList<Entity> getEntities(EntityType... filter) {
+		if (filter.length == 0) {
+			return ImmutableList.of();
+		}
+
+		List<Entity> entities = new ArrayList<>();
+
+		for (EntityType filtered : filter) {
+			for (Entity e : area.getLowLoc().getWorld().getEntities()) {
+				if (filtered == e.getType() && inArea(e.getLocation())) {
+					entities.add(e);
+				}
 			}
 		}
 
@@ -86,7 +115,8 @@ public class GameArea {
 	 * Collects all blocks into a list from the area.
 	 * 
 	 * @return {@link ImmutableList} of {@link Block}
-	 * @deprecated This method makes no sense until there is no feature to change ragemode area blocks.
+	 * @deprecated This method makes no sense until there is no feature to change
+	 *             ragemode area blocks.
 	 */
 	@Deprecated
 	public ImmutableList<Block> getBlocks() {

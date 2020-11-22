@@ -62,6 +62,7 @@ public class GameAreaManager {
 
 	/**
 	 * Checks if the given area name is exists.
+	 * 
 	 * @param name area name
 	 * @return true if yes
 	 */
@@ -72,6 +73,7 @@ public class GameAreaManager {
 	/**
 	 * Remove all entities from the given game. If the game type is not
 	 * {@link GameType#APOCALYPSE} it will returns.
+	 * 
 	 * @param game {@link Game}
 	 */
 	public static void removeEntitiesFromGame(Game game) {
@@ -88,6 +90,7 @@ public class GameAreaManager {
 
 	/**
 	 * Gets an area by given location.
+	 * 
 	 * @param loc {@link Location}
 	 * @return {@link GameArea}
 	 */
@@ -97,6 +100,7 @@ public class GameAreaManager {
 
 	/**
 	 * Checks if the given location is in the set of area.
+	 * 
 	 * @param loc {@link Location}
 	 * @return true if yes
 	 */
@@ -105,11 +109,32 @@ public class GameAreaManager {
 	}
 
 	/**
-	 * Gets all area by given location.
+	 * Gets all cached area by given location.
+	 * 
 	 * @param loc {@link Location}
 	 * @return the list of {@link GameArea}
 	 */
 	public static List<GameArea> getAreasByLocation(Location loc) {
 		return GAMEAREAS.values().stream().filter(area -> area.inArea(loc)).collect(Collectors.toList());
+	}
+
+	/**
+	 * Gets the area by game.
+	 * 
+	 * @param game {@link Game}
+	 * @return {@link GameArea}
+	 */
+	public static GameArea getAreaByGame(Game game) {
+		if (game == null) {
+			return null;
+		}
+
+		for (GameArea area : GAMEAREAS.values()) {
+			if (area.getGame().getName().equals(game.getName())) {
+				return area;
+			}
+		}
+
+		return null;
 	}
 }

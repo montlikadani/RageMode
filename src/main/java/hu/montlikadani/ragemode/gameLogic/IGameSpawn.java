@@ -4,10 +4,13 @@ import java.util.List;
 
 import org.bukkit.Location;
 
+/**
+ * Interface to handle game spawns
+ */
 public interface IGameSpawn {
 
 	/**
-	 * @return {@link Game}
+	 * @return the {@link Game} of this spawn
 	 */
 	Game getGame();
 

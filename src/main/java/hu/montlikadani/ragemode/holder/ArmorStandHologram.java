@@ -16,7 +16,6 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 
 public class ArmorStandHologram extends IHoloHolder {
 
@@ -71,17 +70,16 @@ public class ArmorStandHologram extends IHoloHolder {
 			return;
 		}
 
-		Optional.ofNullable(RuntimePPManager.getPPForPlayer(player.getUniqueId())).ifPresent(rpp -> {
-			List<ArmorStands> l = new ArrayList<>();
-			for (String hList : RageMode.getLang().getList("hologram-list")) {
-				ArmorStands armorStand = ArmorStands.holoTextBuilder().addLine(Utils.setPlaceholders(hList, rpp)).build();
-				armorStand.setLocation(loc);
-				armorStand.append();
-				l.add(armorStand);
-			}
+		List<ArmorStands> l = new ArrayList<>();
+		for (String hList : RageMode.getLang().getList("hologram-list")) {
+			ArmorStands armorStand = ArmorStands.holoTextBuilder().addLine(Utils.setPlaceholders(hList, player))
+					.build();
+			armorStand.setLocation(loc);
+			armorStand.append();
+			l.add(armorStand);
+		}
 
-			armorStands.put(player.getUniqueId(), l);
-		});
+		armorStands.put(player.getUniqueId(), l);
 	}
 
 	@Override

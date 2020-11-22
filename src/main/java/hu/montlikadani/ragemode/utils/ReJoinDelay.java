@@ -17,16 +17,16 @@ public class ReJoinDelay {
 	private static final Map<OfflinePlayer, Long> PLAYERTIMES = new HashMap<>();
 
 	public static void setTime(OfflinePlayer p, Long ticks) {
-		ticks = ticks - System.currentTimeMillis();
+		ticks -= System.currentTimeMillis();
 
 		int hours = (int) (ticks / 1000 / 60 / 60);
-		ticks = ticks - (hours * 1000 * 60 * 60);
+		ticks -= (hours * 1000 * 60 * 60);
 
 		int minutes = (int) (ticks / 1000 / 60);
-		ticks = ticks - (minutes * 1000 * 60);
+		ticks -= (minutes * 1000 * 60);
 
 		int sec = (int) (ticks / 1000);
-		ticks = ticks - (sec * 1000);
+		ticks -= (sec * 1000);
 
 		setTime(p, hours, minutes, sec);
 	}
@@ -47,13 +47,13 @@ public class ReJoinDelay {
 
 	public static String format(Long ticks) {
 		long hours = ticks / 1000 / 60 / 60;
-		ticks = ticks - (hours * 1000 * 60 * 60);
+		ticks -= (hours * 1000 * 60 * 60);
 
 		long minutes = ticks / 1000 / 60;
-		ticks = ticks - (minutes * 1000 * 60);
+		ticks -= (minutes * 1000 * 60);
 
 		long sec = ticks / 1000;
-		ticks = ticks - (sec * 1000);
+		ticks -= (sec * 1000);
 
 		String time = "";
 
@@ -123,7 +123,7 @@ public class ReJoinDelay {
 	}
 
 	public static boolean isValid(Player pl, Long time) {
-		return PLAYERTIMES.containsKey(pl) && time != null && time > System.currentTimeMillis();
+		return PLAYERTIMES.containsKey(pl) && time != null && time.longValue() > System.currentTimeMillis();
 	}
 
 	public static Long getTimeByPlayer(Player p) {

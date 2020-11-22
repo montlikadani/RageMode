@@ -35,7 +35,7 @@ public class NMS {
 	 * Sets the item in hand, this supports item in hand in 1.8 and item in main
 	 * hand in 1.9+ versions
 	 * 
-	 * @param p Player
+	 * @param p    Player
 	 * @param item ItemStack
 	 */
 	public static void setItemInHand(Player p, ItemStack item) {
@@ -49,7 +49,7 @@ public class NMS {
 	 * Sets the item durability, this prevents error when the durability is fully
 	 * removed in the next mc version.
 	 * 
-	 * @param item ItemStack
+	 * @param item   ItemStack
 	 * @param number short item durability
 	 */
 	public static void setDurability(ItemStack item, short number) {
@@ -94,7 +94,7 @@ public class NMS {
 	 * Adds team entry to the given player.
 	 * 
 	 * @param player {@link Player}
-	 * @param team {@link Team}
+	 * @param team   {@link Team}
 	 */
 	public static void addEntry(Player player, Team team) {
 		if (Version.isCurrentLower(Version.v1_9_R1)) {
@@ -110,7 +110,7 @@ public class NMS {
 	 * Removes the scoreboard entry from the given player if the team exists.
 	 * 
 	 * @param player {@link Player}
-	 * @param board {@link Scoreboard}
+	 * @param board  {@link Scoreboard}
 	 */
 	public static void removeEntry(Player player, Scoreboard board) {
 		if (Version.isCurrentLower(Version.v1_9_R1)) {
@@ -126,6 +126,7 @@ public class NMS {
 
 	/**
 	 * Splits the string (team prefix & suffix) by versions.
+	 * 
 	 * @param s {@link String}
 	 * @return the splitted string
 	 */

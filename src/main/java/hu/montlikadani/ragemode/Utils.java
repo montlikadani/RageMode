@@ -23,11 +23,6 @@ import hu.montlikadani.ragemode.scores.RageScores;
 
 public class Utils {
 
-	/**
-	 * Formats the given time 
-	 * @param time the time in decimal
-	 * @return formatted time
-	 */
 	public static String getFormattedTime(long time) {
 		String sMark = RageMode.getLang().get("time-formats.second");
 		String mMark = RageMode.getLang().get("time-formats.minute");
@@ -37,18 +32,22 @@ public class Utils {
 		long mins = time / 60;
 		long remainderSecs = time - (mins * 60);
 		if (mins < 60)
-			return (mins < 10 ? "0" : "") + mins + mMark + " " + (remainderSecs < 10 ? "0" : "") + remainderSecs + sMark;
+			return (mins < 10 ? "0" : "") + mins + mMark + " " + (remainderSecs < 10 ? "0" : "") + remainderSecs
+					+ sMark;
 
 		long hours = mins / 60;
 		long remainderMins = mins - (hours * 60);
-		return (hours < 10 ? "0" : "") + hours + RageMode.getLang().get("time-formats.hour") + " " +
-				(remainderMins < 10 ? "0" : "") + remainderMins + mMark + " "
-				+ (remainderSecs < 10 ? "0" : "") + remainderSecs + sMark;
+		return (hours < 10 ? "0" : "") + hours + RageMode.getLang().get("time-formats.hour") + " "
+				+ (remainderMins < 10 ? "0" : "") + remainderMins + mMark + " " + (remainderSecs < 10 ? "0" : "")
+				+ remainderSecs + sMark;
 	}
 
 	/**
 	 * Calls an event.
-	 * <p>If the event is Asynchronous, it performs on the main thread, preventing async catch.
+	 * <p>
+	 * If the event is Asynchronous, it performs on the main thread, preventing
+	 * async catch.
+	 * 
 	 * @param event {@link org.bukkit.event.Event}
 	 */
 	public static void callEvent(org.bukkit.event.Event event) {
@@ -86,26 +85,26 @@ public class Utils {
 				: getNearbyList(loc, radius);
 	}
 
-	public static List<Entity> getNearbyEntities(org.bukkit.entity.Entity e, int radius) {
+	public static List<Entity> getNearbyEntities(Entity e, int radius) {
 		return Version.isCurrentHigher(Version.v1_8_R1) ? e.getNearbyEntities(radius, radius, radius)
 				: getNearbyList(e.getLocation(), radius);
 	}
 
 	private static List<Entity> getNearbyList(Location loc, int radius) {
-		int chunkRadius = radius < 16 ? 1 : radius / 16;
 		List<Entity> radiusEntities = new java.util.ArrayList<>();
+		if (loc.getWorld() == null) {
+			return radiusEntities;
+		}
 
+		int chunkRadius = radius < 16 ? 1 : radius / 16;
 		for (int chunkX = 0 - chunkRadius; chunkX <= chunkRadius; chunkX++) {
 			for (int chunkZ = 0 - chunkRadius; chunkZ <= chunkRadius; chunkZ++) {
 				int x = (int) loc.getX(), y = (int) loc.getY(), z = (int) loc.getZ();
 
 				for (Entity e : new Location(loc.getWorld(), x + chunkX * 16, y, z + chunkZ * 16).getChunk()
 						.getEntities()) {
-					if (!(loc.getWorld().getName().equalsIgnoreCase(e.getWorld().getName()))) {
-						continue;
-					}
-
-					if (e.getLocation().distanceSquared(loc) <= radius * radius
+					if (loc.getWorld().getName().equalsIgnoreCase(e.getWorld().getName())
+							&& e.getLocation().distanceSquared(loc) <= radius * radius
 							&& e.getLocation().getBlock() != loc.getBlock()) {
 						radiusEntities.add(e);
 					}
@@ -116,45 +115,19 @@ public class Utils {
 		return radiusEntities;
 	}
 
-	/**
-	 * Clears the given player inventory.
-	 * @param pl Player
-	 */
 	public static void clearPlayerInventory(Player pl) {
 		pl.getInventory().clear();
 		pl.updateInventory();
 	}
 
-	/**
-	 * Sets the available placeholders to that string, that manages from RageMode.<br><br>
-	 * If the player is playing currently it will replaces the placeholders to the current score.
-	 * @param s String to replace the variables
-	 * @param pp {@link PlayerPoints}
-	 * @see #setPlaceholders(String, Player)
-	 * @return The replaced placeholders
-	 */
-	public static String setPlaceholders(String s, PlayerPoints pp) {
-		return setPlaceholders(s, Bukkit.getPlayer(pp.getUUID()));
-	}
-
-	/**
-	 * Sets the available placeholders to that string, that manages from RageMode.<br><br>
-	 * If the player is playing currently it will replaces the placeholders to the current score.
-	 * @param s String to replace the variables
-	 * @param player Player
-	 * @return The replaced placeholders
-	 */
 	public static String setPlaceholders(String s, Player player) {
-		PlayerPoints pp = null;
-		java.util.UUID uuid = null;
+		if (player == null) {
+			return colors(s);
+		}
 
-		if (player != null) {
-			uuid = player.getUniqueId();
-			pp = RuntimePPManager.getPPForPlayer(uuid);
-
-			if (GameUtils.isPlayerPlaying(player)) {
-				pp = RageScores.getPlayerPoints(uuid).orElse(null);
-			}
+		PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
+		if (GameUtils.isPlayerPlaying(Bukkit.getPlayer(player.getUniqueId()))) {
+			pp = RageScores.getPlayerPoints(player.getUniqueId()).orElse(pp);
 		}
 
 		if (s.contains("%kills%")) {
@@ -227,7 +200,7 @@ public class Utils {
 		if (s.contains("%points%"))
 			s = s.replace("%points%", pp == null ? "0" : Integer.toString(pp.getPoints()));
 
-		PlayerPoints plp = RageMode.getInstance().getDatabase().getPlayerStatsFromData(uuid);
+		PlayerPoints plp = RageMode.getInstance().getDatabase().getPlayerStatsFromData(player.getUniqueId());
 		if (s.contains("%games%")) {
 			s = s.replace("%games%", Integer.toString(plp == null ? pp == null ? 0 : pp.getGames() : plp.getGames()));
 		}
@@ -239,20 +212,10 @@ public class Utils {
 		return colors(s);
 	}
 
-	/**
-	 * Adds to use the color codes in the list
-	 * @param list List
-	 * @return List
-	 */
 	public static List<String> colorList(List<String> list) {
 		return list.stream().map(Utils::colors).collect(Collectors.toList());
 	}
 
-	/**
-	 * Adds to use color codes in the string.
-	 * @param s String
-	 * @return colored text
-	 */
 	public static String colors(String s) {
 		if (s == null) {
 			return "";
@@ -282,11 +245,6 @@ public class Utils {
 		return s;
 	}
 
-	/**
-	 * Check if number is an integer
-	 * @param str Number as string
-	 * @return true if the number as double
-	 */
 	public static boolean isDouble(String str) {
 		try {
 			Double.parseDouble(str);
@@ -297,11 +255,6 @@ public class Utils {
 		return true;
 	}
 
-	/**
-	 * Check if number is an integer
-	 * @param str Number as string
-	 * @return true if the number as integer
-	 */
 	public static boolean isInt(String str) {
 		try {
 			Integer.parseInt(str);
