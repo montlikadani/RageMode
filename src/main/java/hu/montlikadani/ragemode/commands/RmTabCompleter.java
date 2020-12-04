@@ -50,10 +50,10 @@ public class RmTabCompleter implements TabCompleter {
 				} else if (args[0].equalsIgnoreCase("area")) {
 					Arrays.asList("add", "remove", "info", "list").forEach(cmds::add);
 				} else {
-					for (String game : Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay",
-							"removegame", "forcestart", "setlobby", "addspawn", "addzombiespawn", "join", "stop",
-							"stopgame", "togglegame", "spectate", "removespawn", "removezombiespawn", "listplayers",
-							"kick", "maxplayers", "minplayers", "setgametype")) {
+					for (String game : Arrays.asList("actionbar", "bossbar", "gametime", "lobbydelay", "removegame",
+							"forcestart", "setlobby", "addspawn", "addzombiespawn", "join", "stop", "stopgame",
+							"togglegame", "spectate", "removespawn", "removezombiespawn", "listplayers", "kick",
+							"maxplayers", "minplayers", "setgametype")) {
 						if (args[0].equalsIgnoreCase(game) && !GetGames.getGames().isEmpty()) {
 							GetGames.getGames().forEach(cmds::add);
 							break;
@@ -63,7 +63,7 @@ public class RmTabCompleter implements TabCompleter {
 
 				partOfCommand = args[1];
 			} else if (args.length < 4) {
-				for (String c : Arrays.asList("actionbar", "bossbar", "globalmessages")) {
+				for (String c : Arrays.asList("actionbar", "bossbar")) {
 					if (args[0].equalsIgnoreCase(c)) {
 						Arrays.asList("true", "false").forEach(cmds::add);
 						partOfCommand = args[2];
@@ -128,7 +128,7 @@ public class RmTabCompleter implements TabCompleter {
 
 	private List<String> getSomeCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
-		for (String cmds : Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay")) {
+		for (String cmds : Arrays.asList("actionbar", "bossbar", "gametime", "lobbydelay")) {
 			if (hasPerm(sender, "ragemode.admin.set" + cmds)) {
 				c.add(cmds);
 			}
