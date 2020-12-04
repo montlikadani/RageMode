@@ -7,23 +7,19 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.IGameSpawn;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
+@CommandProcessor(name = "removespawn", permission = "ragemode.admin.removespawn")
 public class removespawn implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (!hasPerm(sender, "ragemode.admin.removespawn")) {
-			sendMessage(sender, RageMode.getLang().get("no-permission"));
-			return false;
-		}
-
 		if (args.length < 3) {
 			sendMessage(sender,
 					RageMode.getLang().get("missing-arguments", "%usage%", "/rm removespawn <gameName> <id/all>"));

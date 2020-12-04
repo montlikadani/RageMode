@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 import java.io.IOException;
@@ -14,26 +13,18 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.area.Area;
 import hu.montlikadani.ragemode.area.GameArea;
 import hu.montlikadani.ragemode.area.GameAreaManager;
+import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
+@CommandProcessor(name = "area", permission = "ragemode.admin.area", playerOnly = true)
 public class area implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (!(sender instanceof Player)) {
-			sendMessage(sender, RageMode.getLang().get("in-game-only"));
-			return false;
-		}
-
 		Player p = (Player) sender;
-		if (!hasPerm(p, "ragemode.admin.area")) {
-			sendMessage(p, RageMode.getLang().get("no-permission"));
-			return false;
-		}
-
 		if (args.length < 2) {
 			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm area add/remove/info/list"));
 			return false;

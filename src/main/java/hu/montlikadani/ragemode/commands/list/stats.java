@@ -6,22 +6,18 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 
-import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
+@CommandProcessor(name = "stats", permission = "ragemode.stats")
 public class stats implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (!hasPerm(sender, "ragemode.stats")) {
-			sendMessage(sender, RageMode.getLang().get("no-permission"));
-			return false;
-		}
-
 		if (!(sender instanceof Player)) {
 			if (args.length < 2) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-null"));

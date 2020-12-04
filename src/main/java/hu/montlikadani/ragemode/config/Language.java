@@ -182,9 +182,8 @@ public class Language {
 				"&6Area list:\n&a%num%. %area%\n  &eLow:&c x:%lowx%, y:%lowy%, z:%lowz%\n  &eHigh:&c x:%highx%, y:%highy%, z:%highz%");
 		l.get("commands.setgametype.set", "&aGame type set for&e %game%&a.");
 
-		List<String> holoList = Arrays.asList("&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
-				"&5KD:&a %kd%", "&4Kills:&a %kills%", "&7Deaths:&a %deaths%");
-		l.get("hologram-list", holoList);
+		l.get("hologram-list", Arrays.asList("&9Score:&a %points%", "&eWins:&a %wins%", "&3Games:&a %games%",
+				"&5KD:&a %kd%", "&4Kills:&a %kills%", "&7Deaths:&a %deaths%"));
 
 		l.get("setup.not-set-yet", "&cThis game was not set yet! Set it with&e %usage%");
 		l.get("setup.lobby.set-success", "&2The lobby for the game&3 %game%&2 was set successfully!");
@@ -207,14 +206,14 @@ public class Language {
 		l.get("setup.set-game-time-success",
 				"&aGame time successfully set for&e %game%&a game with&e %time% minutes&a.");
 
-		List<String> statList = Arrays.asList("&e--------&2 %player%&e --------", "",
-				"&6Knife kills/deaths:&a %knife-kills%&7/&6%knife-deaths%",
-				"&6Explosion kills/deaths:&a %explosion-kills%&7/&6%explosion-deaths%",
-				"&6Axe kills/deaths:&a %axe-kills%&7/&6%axe-deaths%",
-				"&6Direct arrow kills/deaths:&a %direct-arrow-kills%&7/%direct-arrow-deaths%", "", "&cKills:&2 %kills%",
-				"&cDeaths:&2 %deaths%", "&cKd:&2 %kd%", "&cGames:&2 %games%", "&cWins:&2 %wins%",
-				"&cPoints:&2 %points%");
-		l.get("statistic-list", statList);
+		l.get("statistic-list",
+				Arrays.asList("&e--------&2 %player%&e --------", "",
+						"&6Knife kills/deaths:&a %knife-kills%&7/&6%knife-deaths%",
+						"&6Explosion kills/deaths:&a %explosion-kills%&7/&6%explosion-deaths%",
+						"&6Axe kills/deaths:&a %axe-kills%&7/&6%axe-deaths%",
+						"&6Direct arrow kills/deaths:&a %direct-arrow-kills%&7/%direct-arrow-deaths%", "",
+						"&cKills:&2 %kills%", "&cDeaths:&2 %deaths%", "&cKd:&2 %kd%", "&cGames:&2 %games%",
+						"&cWins:&2 %wins%", "&cPoints:&2 %points%"));
 
 		l.get("game.spec-player-leave-notify", "&2You can leave this game by typing&e /rm leave");
 		l.get("game.lobby.start-message", "&9This round will start in&e %time%&9 seconds.");

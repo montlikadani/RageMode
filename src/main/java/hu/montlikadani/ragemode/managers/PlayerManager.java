@@ -1,5 +1,9 @@
 package hu.montlikadani.ragemode.managers;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import org.bukkit.entity.Player;
 
 import com.google.common.base.Preconditions;
@@ -11,6 +15,11 @@ import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.StorePlayerStuffs;
 
 public class PlayerManager {
+
+	/**
+	 * Cached map to store the "toggleable" death messages
+	 */
+	public static final Map<UUID, Boolean> DEATHMESSAGESTOGGLE = new HashMap<>();
 
 	private Player player;
 	private String game;

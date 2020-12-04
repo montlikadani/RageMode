@@ -245,9 +245,6 @@ game:
 
   # Defaults values when in the setup does not contain e.g bossbar.
   defaults:
-    # Allow player death messages to be sent?
-    death-messages: true
-
     # Bossbar messages when a player killed someone.
     bossbar: false
 

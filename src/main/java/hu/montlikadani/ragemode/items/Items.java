@@ -7,43 +7,43 @@ public class Items {
 	private static ItemHandler[] gi = RageMode.getInstance().getGameItems();
 	private static ItemHandler[] li = RageMode.getInstance().getLobbyItems();
 
-	public static ItemHandler getCombatAxe() {
-		return gi[0];
+	/**
+	 * Returns the game item by its index.
+	 * <p>
+	 * Indexes:
+	 * 
+	 * <pre>
+	 * 0 - combatAxe
+	 * 1 - grenade
+	 * 2 - ragearrow
+	 * 3 - ragebow
+	 * 4 - rageknife
+	 * 5 - flash
+	 * 6 - pressure mine
+	 * </pre>
+	 * 
+	 * @param index the array index of item (>= 0 && <= length)
+	 */
+	public static ItemHandler getGameItem(int index) {
+		return (index >= 0 && index <= gi.length) ? gi[index] : null;
 	}
 
-	public static ItemHandler getGrenade() {
-		return gi[1];
-	}
-
-	public static ItemHandler getRageArrow() {
-		return gi[2];
-	}
-
-	public static ItemHandler getRageBow() {
-		return gi[3];
-	}
-
-	public static ItemHandler getRageKnife() {
-		return gi[4];
-	}
-
-	public static ItemHandler getFlash() {
-		return gi[5];
-	}
-
-	public static ItemHandler getPressureMine() {
-		return gi[6];
-	}
-
-	public static ItemHandler getForceStarter() {
-		return li[0];
-	}
-
-	public static ItemHandler getLeaveGameItem() {
-		return li[1];
-	}
-
-	public static ItemHandler getShopItem() {
-		return li[2];
+	/**
+	 * Returns the lobby item by its index.
+	 * <p>
+	 * Indexes:
+	 * 
+	 * <pre>
+	 * 0 - force starter
+	 * 1 - leave game
+	 * 2 - shop item
+	 * 3 - hide messages item
+	 * </pre>
+	 * 
+	 * @param index the array index of item (>= 0 && <= length)
+	 * @return
+	 */
+	public static ItemHandler getLobbyItem(int index) {
+		return (index >= 0 && index <= li.length) ? li[index] : null;
 	}
 }

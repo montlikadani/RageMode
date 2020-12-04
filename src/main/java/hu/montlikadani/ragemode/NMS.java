@@ -124,12 +124,6 @@ public class NMS {
 		}
 	}
 
-	/**
-	 * Splits the string (team prefix & suffix) by versions.
-	 * 
-	 * @param s {@link String}
-	 * @return the splitted string
-	 */
 	public static String splitStringByVersion(String s) {
 		if (Version.isCurrentLower(Version.v1_13_R1) && s.length() > 16) {
 			s = s.substring(0, 16);

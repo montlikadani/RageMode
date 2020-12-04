@@ -36,7 +36,8 @@ public class ReJoinDelay {
 			return;
 		}
 
-		Calendar cal = getCal(new Date());
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
 
 		cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) + hour);
 		cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE) + minute);
@@ -74,12 +75,6 @@ public class ReJoinDelay {
 		}
 
 		return time;
-	}
-
-	private static Calendar getCal(Date date) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		return cal;
 	}
 
 	public static void resetTime(Player p) {

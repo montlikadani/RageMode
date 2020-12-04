@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -254,7 +253,7 @@ public class LobbyShop implements Listener {
 			int duration = effect.length > 1 ? Integer.parseInt(effect[1]) : 5;
 			int amplifier = effect.length > 2 ? Integer.parseInt(effect[2]) : 1;
 
-			if (BOUGHTITEMS.containsKey(player)) {
+			if (elements != null) {
 				finalCost += cost;
 				finalPoints += points;
 				duration += duration;
@@ -287,7 +286,7 @@ public class LobbyShop implements Listener {
 				amount = 1;
 			}
 
-			if (BOUGHTITEMS.containsKey(player)) {
+			if (elements != null) {
 				finalCost += cost;
 				finalPoints += points;
 				amount += amount;
@@ -300,13 +299,13 @@ public class LobbyShop implements Listener {
 
 			ItemHandler item = null;
 			if ("grenade".equals(splitItem[0])) {
-				item = Items.getGrenade();
+				item = Items.getGameItem(1);
 			} else if ("combataxe".equals(splitItem[0])) {
-				item = Items.getCombatAxe();
+				item = Items.getGameItem(0);
 			} else if ("flash".equals(splitItem[0])) {
-				item = Items.getFlash();
+				item = Items.getGameItem(5);
 			} else if ("pressuremine".equals(splitItem[0]) || "mine".equals(splitItem[0])) {
-				item = Items.getPressureMine();
+				item = Items.getGameItem(6);
 			}
 
 			if (item == null) {
@@ -317,9 +316,9 @@ public class LobbyShop implements Listener {
 			item.setAmount(amount);
 
 			if (elements == null) {
-				elements = new BoughtElements(item.build(), finalCost, finalPoints);
+				elements = new BoughtElements(item.get(), finalCost, finalPoints);
 			} else {
-				elements.setItem(item.build());
+				elements.setItem(item.get());
 			}
 		} else if (ConfigValues.isUseArrowTrails() && shopCategory == ShopCategory.ITEMTRAILS
 				&& conf.getItemsCfg().contains(path + ".trail")) {
@@ -396,54 +395,44 @@ public class LobbyShop implements Listener {
 			return;
 		}
 
-		for (Entry<Player, BoughtElements> elements : BOUGHTITEMS.entrySet()) {
-			if (elements.getKey() != player) {
-				continue;
+		BoughtElements bought = BOUGHTITEMS.remove(player);
+
+		boolean enough = false;
+		if (RageMode.getInstance().isVaultEnabled()) {
+			Economy economy = RageMode.getInstance().getEconomy();
+			double cost = bought.getCost();
+
+			if (cost > 0d && economy.has(player, cost)) {
+				economy.withdrawPlayer(player, cost);
+				enough = true;
 			}
-
-			BoughtElements bought = elements.getValue();
-
-			boolean enough = false;
-			if (RageMode.getInstance().isVaultEnabled()) {
-				Economy economy = RageMode.getInstance().getEconomy();
-				double cost = bought.getCost();
-
-				if (cost > 0d && economy.has(player, cost)) {
-					economy.withdrawPlayer(player, cost);
-					enough = true;
-				}
-			}
-
-			if (bought.getPoints() > 0) {
-				PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
-				if (pp != null && pp.getPoints() >= bought.getPoints()) {
-					pp.takePoints(bought.getPoints());
-					enough = true;
-				} else {
-					enough = false;
-				}
-			}
-
-			if (!enough) {
-				sendMessage(player, RageMode.getLang().get("game.cant-bought-elements"));
-				break;
-			}
-
-			if (bought.getPotion() != null) {
-				player.addPotionEffect(bought.getPotion());
-			}
-
-			if (bought.getItem() != null) {
-				player.getInventory().addItem(bought.getItem());
-			}
-
-			if (bought.getTrail() != null) {
-				USERPARTICLES.put(player.getUniqueId(), bought.getTrail());
-			}
-
-			break;
 		}
 
-		BOUGHTITEMS.remove(player);
+		if (bought.getPoints() > 0) {
+			PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
+			if (pp != null && pp.getPoints() >= bought.getPoints()) {
+				pp.takePoints(bought.getPoints());
+				enough = true;
+			} else {
+				enough = false;
+			}
+		}
+
+		if (!enough) {
+			sendMessage(player, RageMode.getLang().get("game.cant-bought-elements"));
+			return;
+		}
+
+		if (bought.getPotion() != null) {
+			player.addPotionEffect(bought.getPotion());
+		}
+
+		if (bought.getItem() != null) {
+			player.getInventory().addItem(bought.getItem());
+		}
+
+		if (bought.getTrail() != null) {
+			USERPARTICLES.put(player.getUniqueId(), bought.getTrail());
+		}
 	}
 }

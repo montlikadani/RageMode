@@ -5,29 +5,20 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.Items;
 
-import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
+@CommandProcessor(name = "spectate", permission = "ragemode.spectate", playerOnly = true)
 public class spectate implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (!(sender instanceof Player)) {
-			sendMessage(sender, RageMode.getLang().get("in-game-only"));
-			return false;
-		}
-
 		Player p = (Player) sender;
-		if (!hasPerm(p, "ragemode.spectate")) {
-			sendMessage(p, RageMode.getLang().get("no-permission"));
-			return false;
-		}
-
 		if (args.length < 2) {
 			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName>"));
 			return false;
@@ -57,8 +48,8 @@ public class spectate implements ICommand {
 			p.setAllowFlight(true);
 			p.setFlying(true);
 			p.setGameMode(GameMode.SPECTATOR);
-			if (Items.getLeaveGameItem() != null) {
-				p.getInventory().setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().build());
+			if (Items.getLobbyItem(1) != null) {
+				p.getInventory().setItem(Items.getLobbyItem(1).getSlot(), Items.getLobbyItem(1).get());
 			}
 
 			return true;

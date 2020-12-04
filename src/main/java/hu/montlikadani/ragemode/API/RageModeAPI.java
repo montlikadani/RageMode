@@ -21,7 +21,7 @@ public class RageModeAPI {
 	 * @deprecated We don't need to call another method
 	 * @return Instance
 	 */
-	@Deprecated(forRemoval = true)
+	@Deprecated
 	public static RageMode getRageMode() {
 		return RageMode.getInstance();
 	}

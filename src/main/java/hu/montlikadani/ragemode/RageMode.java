@@ -48,10 +48,11 @@ import hu.montlikadani.ragemode.holder.IHoloHolder;
 import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.managers.BossbarManager;
 import hu.montlikadani.ragemode.metrics.Metrics;
+import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.signs.SignCreator;
-import hu.montlikadani.ragemode.storage.MySQLDB;
-import hu.montlikadani.ragemode.storage.SQLDB;
-import hu.montlikadani.ragemode.storage.YAMLDB;
+import hu.montlikadani.ragemode.storage.MySqlDB;
+import hu.montlikadani.ragemode.storage.SqlDB;
+import hu.montlikadani.ragemode.storage.YamlDB;
 import hu.montlikadani.ragemode.utils.UpdateDownloader;
 import net.milkbowl.vault.economy.Economy;
 
@@ -80,7 +81,7 @@ public class RageMode extends JavaPlugin {
 	private final Set<IGameSpawn> spawns = new HashSet<>();
 
 	private final ItemHandler[] gameItems = new ItemHandler[7];
-	private final ItemHandler[] lobbyItems = new ItemHandler[3];
+	private final ItemHandler[] lobbyItems = new ItemHandler[4];
 
 	@Override
 	public void onEnable() {
@@ -96,7 +97,10 @@ public class RageMode extends JavaPlugin {
 			return;
 		}
 
-		initServerSoftwares();
+		if (initServerSoftwares() == ServerSoftwareType.UNKNOWN) {
+			getLogger().log(Level.INFO,
+					"[RageMode] Seems your server software is unknown. I guess you use craftbukkit or non-spigot forks?");
+		}
 
 		if (serverVersion.getVersion().isEqualOrLower(Version.v1_8_R3))
 			getLogger().log(Level.INFO,
@@ -135,7 +139,7 @@ public class RageMode extends JavaPlugin {
 			metrics.addCustomChart(new Metrics.SingleLineChart("amount_of_games", games::size));
 
 			metrics.addCustomChart(new Metrics.SimplePie("total_players",
-					() -> String.valueOf(database.getAllPlayerStatistics().size())));
+					() -> String.valueOf(RuntimePPManager.getRuntimePPList().size())));
 
 			metrics.addCustomChart(new Metrics.SimplePie("statistic_type", dbType.name()::toLowerCase));
 		}
@@ -149,8 +153,7 @@ public class RageMode extends JavaPlugin {
 
 		holoHolder.deleteAllHologram();
 		GameUtils.stopAllGames();
-		// After any player stats modifications should contain a database save
-		//dbHandler.saveDatabase();
+		database.saveDatabase();
 
 		getServer().getScheduler().cancelTasks(this);
 		HandlerList.unregisterAll(this);
@@ -167,7 +170,7 @@ public class RageMode extends JavaPlugin {
 		}
 	}
 
-	private void initServerSoftwares() {
+	private ServerSoftwareType initServerSoftwares() {
 		softwareType = ServerSoftwareType.UNKNOWN;
 
 		try {
@@ -187,21 +190,23 @@ public class RageMode extends JavaPlugin {
 			softwareType = ServerSoftwareType.PURPUR;
 		} catch (ClassNotFoundException n) {
 		}
+
+		return softwareType;
 	}
 
 	private void connectDatabase() {
 		switch (ConfigValues.databaseType.toLowerCase()) {
 		case "mysql":
-			database = new MySQLDB();
+			database = new MySqlDB();
 			break;
 		case "sql":
 		case "sqlite":
-			database = new SQLDB();
+			database = new SqlDB();
 			break;
 		case "yml":
 		case "yaml":
 		default:
-			database = new YAMLDB();
+			database = new YamlDB();
 			break;
 		}
 
@@ -384,23 +389,33 @@ public class RageMode extends JavaPlugin {
 		// Lobby items
 		path = "lobbyitems.force-start";
 		if (c.contains(path)) {
-			lobbyItems[0] = new ItemHandler().setItem(c.getString(path + ".item"))
+			lobbyItems[0] = new ItemHandler().setItem(c.getString(path + ".item", "lever"))
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&2Force the game start")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 3));
 		}
 
 		path = "lobbyitems.leavegameitem";
 		if (c.contains(path)) {
-			lobbyItems[1] = new ItemHandler().setItem(c.getString(path + ".item"))
+			lobbyItems[1] = new ItemHandler().setItem(c.getString(path + ".item", "barrier"))
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&cExit")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 5));
 		}
 
 		path = "lobbyitems.shopitem";
 		if (c.contains(path) && c.getBoolean(path + ".enabled")) {
-			lobbyItems[2] = new ItemHandler().setItem(c.getString(path + ".item"))
+			lobbyItems[2] = new ItemHandler().setItem(c.getString(path + ".item", "emerald"))
 					.setDisplayName(Utils.colors(c.getString(path + ".name", "&2Shop")))
 					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 1));
+		}
+
+		path = "lobbyitems.hideMessages";
+		if (c.contains(path)) {
+			lobbyItems[3] = new ItemHandler().setItem(c.getString(path + ".item", "nether_star"))
+					.setDisplayName(Utils.colors(c.getString(path + ".name", "&cHide kill messages")))
+					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 8))
+					.addExtra(new ItemHandler.Extra()
+							.setExtraName(Utils.colors(c.getString(path + ".status-off.name", "&aShow kill messages")))
+							.setExtraLore(Utils.colorList(c.getStringList(path + ".status-off.lore"))));
 		}
 	}
 

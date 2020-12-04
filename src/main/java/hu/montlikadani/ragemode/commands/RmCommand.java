@@ -20,45 +20,54 @@ import java.util.jar.JarFile;
 
 public class RmCommand implements CommandExecutor {
 
-	@SuppressWarnings("serial")
-	private final Set<Class<?>> subCmds = new HashSet<Class<?>>() {
-		{
-			try {
-				// Avoiding adding class names one by one
-				for (File rm : new File(RageMode.getInstance().getFolder().getParent()).listFiles()) {
-					if (rm.getName().toLowerCase().contains("ragemode") && rm.getName().endsWith(".jar")) {
-						JarFile file = new JarFile(rm);
-						for (Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
-							JarEntry jarEntry = entry.nextElement();
-							String name = jarEntry.getName().replace('/', '.');
-							String packageName = "hu.montlikadani.ragemode.commands.list";
-							if (name.startsWith(packageName) && name.endsWith(".class")
-									&& name.matches("^[a-zA-Z|.]+$")) {
-								add(Class.forName(name.substring(0, name.length() - 6)));
-							}
-						}
-
-						file.close();
-						break;
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	};
-
 	private final Set<ICommand> cmds = new HashSet<>();
 
 	@SuppressWarnings("deprecation")
 	public RmCommand() {
+		@SuppressWarnings("serial")
+		final Set<Class<?>> subCmds = new HashSet<Class<?>>() {
+			{
+				try {
+					// Avoiding adding class names one by one
+					for (File rm : new File(RageMode.getInstance().getFolder().getParent()).listFiles()) {
+						if (rm.getName().toLowerCase().contains("ragemode") && rm.getName().endsWith(".jar")) {
+							JarFile file = new JarFile(rm);
+							for (Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
+								JarEntry jarEntry = entry.nextElement();
+								String name = jarEntry.getName().replace('/', '.');
+								String packageName = "hu.montlikadani.ragemode.commands.list";
+								if (name.startsWith(packageName) && name.endsWith(".class")
+										&& name.matches("^[a-zA-Z|.]+$")) {
+									add(Class.forName(name.substring(0, name.length() - 6)));
+								}
+							}
+
+							file.close();
+							break;
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+
 		for (Class<?> s : subCmds) {
 			try {
 				Class<?> c = RageMode.class.getClassLoader().loadClass(s.getName());
+				if (c == null) {
+					continue;
+				}
+
+				ICommand cmd;
 				if (Utils.Reflections.getCurrentJavaVersion() >= 9) {
-					cmds.add((ICommand) c.getDeclaredConstructor().newInstance());
+					cmd = (ICommand) c.getDeclaredConstructor().newInstance();
 				} else {
-					cmds.add((ICommand) c.newInstance());
+					cmd = (ICommand) c.newInstance();
+				}
+
+				if (cmd.getClass().isAnnotationPresent(CommandProcessor.class)) {
+					cmds.add(cmd);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -173,9 +182,6 @@ public class RmCommand implements CommandExecutor {
 				if (hasPerm(sender, "ragemode.admin.setgametime"))
 					msg += "&7-&6 /rm gametime <gameName> <minutes>&a - Adding game time (in minutes) to game.\n";
 
-				if (hasPerm(sender, "ragemode.admin.setglobalmessages"))
-					msg += "&7-&6 /rm globalmessages <gameName> <true/false>&a - Global messages on/off which showing death or other messages.\n";
-
 				if (hasPerm(sender, "ragemode.admin.setlobbydelay"))
 					msg += "&7-&6 /rm lobbydelay <gameName> <seconds>&a - Lobby waiting time in seconds.\n";
 
@@ -241,9 +247,21 @@ public class RmCommand implements CommandExecutor {
 
 			boolean found = false;
 			for (ICommand command : cmds) {
-				if (command.getClass().getSimpleName().equalsIgnoreCase(args[0])) {
-					command.run(RageMode.getInstance(), sender, args);
+				CommandProcessor proc = command.getClass().getAnnotation(CommandProcessor.class);
+				if (proc != null && proc.name().equalsIgnoreCase(args[0])) {
 					found = true;
+
+					if (proc.playerOnly() && !(sender instanceof Player)) {
+						sendMessage(sender, RageMode.getLang().get("in-game-only"));
+						return true;
+					}
+
+					if (!hasPerm(sender, proc.permission())) {
+						sendMessage(sender, RageMode.getLang().get("no-permission"));
+						return true;
+					}
+
+					command.run(RageMode.getInstance(), sender, args);
 					break;
 				}
 			}

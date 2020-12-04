@@ -5,6 +5,7 @@ import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -65,8 +66,10 @@ public class Utils {
 		}
 	}
 
-	public static void teleport(Entity entity, Location loc) {
-		ServerSoftwareType softwareType = RageMode.getSoftwareType();
+	public static CompletableFuture<Boolean> teleport(Entity entity, Location loc) {
+		final CompletableFuture<Boolean> comp = new CompletableFuture<>();
+		final ServerSoftwareType softwareType = RageMode.getSoftwareType();
+
 		if (softwareType == ServerSoftwareType.PAPER || softwareType == ServerSoftwareType.PURPUR) {
 			entity.teleportAsync(loc).thenAccept(done -> {
 				if (!done) {
@@ -78,6 +81,9 @@ public class Utils {
 		} else {
 			entity.teleport(loc);
 		}
+
+		comp.complete(true);
+		return comp;
 	}
 
 	public static Collection<Entity> getNearbyEntities(org.bukkit.World w, Location loc, int radius) {
@@ -200,13 +206,12 @@ public class Utils {
 		if (s.contains("%points%"))
 			s = s.replace("%points%", pp == null ? "0" : Integer.toString(pp.getPoints()));
 
-		PlayerPoints plp = RageMode.getInstance().getDatabase().getPlayerStatsFromData(player.getUniqueId());
 		if (s.contains("%games%")) {
-			s = s.replace("%games%", Integer.toString(plp == null ? pp == null ? 0 : pp.getGames() : plp.getGames()));
+			s = s.replace("%games%", Integer.toString(pp == null ? 0 : pp.getGames()));
 		}
 
 		if (s.contains("%wins%")) {
-			s = s.replace("%wins%", Integer.toString(plp == null ? pp == null ? 0 : pp.getWins() : plp.getWins()));
+			s = s.replace("%wins%", Integer.toString(pp == null ? 0 : pp.getWins()));
 		}
 
 		return colors(s);

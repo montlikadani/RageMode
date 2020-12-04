@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.commands.list;
 import org.bukkit.command.CommandSender;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.Game;
@@ -10,18 +11,13 @@ import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.signs.SignCreator;
 
-import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
+@CommandProcessor(name = "togglegame", permission = "ragemode.admin.togglegame")
 public class togglegame implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (!hasPerm(sender, "ragemode.admin.togglegame")) {
-			sendMessage(sender, RageMode.getLang().get("no-permission"));
-			return false;
-		}
-
 		if (args.length < 2) {
 			sendMessage(sender,
 					RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName>"));

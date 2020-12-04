@@ -16,32 +16,24 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 				+ "&maxReconnects=1&useUnicode=" + useUnicode + "&characterEncoding=" + charEncode + "&autoReconnect="
 				+ autoReconnect + "&useSSL=" + useSSL, userName, password, prefix);
 
-		createStatsTable();
-		createPlayersTable();
+		if (isConnected()) {
+			createStatsTable();
+			createPlayersTable();
+		}
 	}
 
-	public void createStatsTable() {
-		if (!isConnected()) {
-			return;
-		}
-
-		String query = "CREATE TABLE IF NOT EXISTS `" + getPrefix()
+	private void createStatsTable() {
+		createTable("CREATE TABLE IF NOT EXISTS `" + getPrefix()
 				+ "stats_players` (`id` INT AUTO_INCREMENT PRIMARY KEY, `name` VARCHAR(255) NOT NULL, `uuid` VARCHAR(255) NOT NULL, "
 				+ "`kills` INTEGER, `axe_kills` INTEGER, `direct_arrow_kills` INTEGER, `explosion_kills` INTEGER, "
 				+ "`knife_kills` INTEGER, `zombie_kills` INTEGER, `deaths` INTEGER, `axe_deaths` INTEGER, `direct_arrow_deaths` INTEGER, "
 				+ "`explosion_deaths` INTEGER, `knife_deaths` INTEGER, `wins` INTEGER, `score` INTEGER, `games` INTEGER, "
-				+ "`kd` DOUBLE, UNIQUE(uuid));";
-		createTable(query);
+				+ "`kd` DOUBLE, UNIQUE(uuid));");
 	}
 
-	public void createPlayersTable() {
-		if (!isConnected()) {
-			return;
-		}
-
-		String query = "CREATE TABLE IF NOT EXISTS `" + getPrefix() + "players` (`id` INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "`uuid` VARCHAR(255) NOT NULL, `time` LONG, UNIQUE(uuid));";
-		createTable(query);
+	private void createPlayersTable() {
+		createTable("CREATE TABLE IF NOT EXISTS `" + getPrefix() + "players` (`id` INT AUTO_INCREMENT PRIMARY KEY, "
+				+ "`uuid` VARCHAR(255) NOT NULL, `time` LONG, `deathMessagesEnabled` BOOLEAN, UNIQUE(uuid));");
 	}
 
 	@Override

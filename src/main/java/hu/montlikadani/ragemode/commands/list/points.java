@@ -5,14 +5,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 
-import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
+@CommandProcessor(name = "points", permission = "ragemode.admin.points")
 public class points implements ICommand {
 
 	private enum Actions {
@@ -21,11 +22,6 @@ public class points implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (!hasPerm(sender, "ragemode.admin.points")) {
-			sendMessage(sender, RageMode.getLang().get("no-permission"));
-			return false;
-		}
-
 		if (args.length < 4) {
 			sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%",
 					"/rm points set/add/take <player> <amount>"));
@@ -92,7 +88,7 @@ public class points implements ICommand {
 			break;
 		}
 
-		plugin.getDatabase().addPoints(amount, rpp.getUUID());
+		RuntimePPManager.updatePlayerEntry(rpp);
 
 		sendMessage(sender,
 				RageMode.getLang().get("commands.points.changed", "%amount%", amount, "%new%", rpp.getPoints()));

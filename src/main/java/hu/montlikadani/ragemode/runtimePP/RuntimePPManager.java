@@ -27,15 +27,10 @@ public class RuntimePPManager {
 	 * @return {@link PlayerPoints} the player current stats
 	 */
 	public static PlayerPoints getPPForPlayer(UUID uuid) {
-		int i = 0;
-		int imax = RUNTIMEPPLIST.size();
-		while (i < imax) {
-			PlayerPoints pp = RUNTIMEPPLIST.get(i);
+		for (PlayerPoints pp : RUNTIMEPPLIST) {
 			if (pp != null && pp.getUUID().equals(uuid)) {
 				return pp;
 			}
-
-			i++;
 		}
 
 		return null;
@@ -54,6 +49,12 @@ public class RuntimePPManager {
 		return pp != null && pp.hasPoints(points);
 	}
 
+	/**
+	 * Attempts to update the given player statistic to a new one if the given
+	 * parameter not null.
+	 * 
+	 * @param pp {@link PlayerPoints}
+	 */
 	public synchronized static void updatePlayerEntry(PlayerPoints pp) {
 		PlayerPoints oldPP = getPPForPlayer(pp.getUUID());
 		if (oldPP == null) {

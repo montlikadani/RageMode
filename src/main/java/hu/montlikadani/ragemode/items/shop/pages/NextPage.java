@@ -1,6 +1,6 @@
 package hu.montlikadani.ragemode.items.shop.pages;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -30,7 +30,7 @@ import hu.montlikadani.ragemode.scores.PlayerPoints;
 
 public class NextPage implements IShop {
 
-	private final List<ShopItem> items = new ArrayList<>();
+	private final List<ShopItem> items = new LinkedList<>();
 
 	private Inventory inv;
 
@@ -129,7 +129,7 @@ public class NextPage implements IShop {
 
 				List<String> list = sec.getStringList(slots + ".lore");
 				if (!list.isEmpty()) {
-					List<String> lore = new ArrayList<>();
+					List<String> lore = new java.util.ArrayList<>();
 
 					for (String l : list) {
 						PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());

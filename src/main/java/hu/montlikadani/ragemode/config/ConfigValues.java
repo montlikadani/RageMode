@@ -20,11 +20,10 @@ public class ConfigValues {
 			autoReconnect, useSSL, unicode, certificate, signsEnable, enableLobbyTitle, spectatorEnable,
 			chatEnableinLobby, playerLevelAsTimeCounter, playersCanJoinRandomToRunningGames, perJoinPermissions,
 			damagePlayerFall, preventFastBowEvent, hidePlayerNameTag, cancelRedstoneActivating, cancelDoorUse,
-			useGrenadeTrails, useArrowTrails, enableChatInGame, kickRandomPlayerIfJoinsVipToFullGame, deathMsgs,
-			bossbarEnable, actionbarEnable, switchGMForPlayers, disableAllCommandsInGameFreeze, enableChatAfterEnd,
-			tabFormatEnable, tabEnable, scoreboardEnable, enableChatFormat, restartServer, stopServer, rewardEnable,
-			rejoinDelayEnabled, rememberRejoinDelay, freezePlayers, waitForNextSpawnAfterZombiesAreDead,
-			notifySpectatorsToLeave;
+			useGrenadeTrails, useArrowTrails, enableChatInGame, kickRandomPlayerIfJoinsVipToFullGame, bossbarEnable,
+			actionbarEnable, switchGMForPlayers, disableAllCommandsInGameFreeze, enableChatAfterEnd, tabFormatEnable,
+			tabEnable, scoreboardEnable, enableChatFormat, restartServer, stopServer, rewardEnable, rejoinDelayEnabled,
+			rememberRejoinDelay, freezePlayers, waitForNextSpawnAfterZombiesAreDead, notifySpectatorsToLeave;
 
 	private static int gameFreezeTime, lobbyDelay, gameTime, bowKill, axeKill, axeDeath, knifeKill, explosionKill,
 			suicide, grenadeKill, respawnProtectTime, rejoinDelayHour, rejoinDelayMinute, rejoinDelaySecond,
@@ -145,7 +144,6 @@ public class ConfigValues {
 				"Kicks random player from the game if that game is full, and",
 				"the joining player have permission \"ragemode.vip\".");
 		f.addComment("game.defaults", "Defaults values when in the setup does not contain e.g bossbar.");
-		f.addComment("game.defaults.death-messages", "Allow player death messages to be sent?");
 		f.addComment("game.defaults.bossbar", "Bossbar messages when a player killed someone.");
 		f.addComment("game.defaults.actionbar", "Actionbar messages when a player get points or killed someone.");
 		f.addComment("game.defaults.lobby-delay", "Lobby delay to start the game in seconds.");
@@ -233,7 +231,6 @@ public class ConfigValues {
 		useArrowTrails = f.get("game.use-arrow-trails", false);
 		enableChatInGame = f.get("game.enable-chat-in-game", true);
 		kickRandomPlayerIfJoinsVipToFullGame = f.get("game.kickRandomPlayerIfJoinsVipToFullGame", true);
-		deathMsgs = f.get("game.defaults.death-messages", true);
 		bossbarEnable = f.get("game.defaults.bossbar", false);
 		actionbarEnable = f.get("game.defaults.actionbar", true);
 		lobbyDelay = f.get("game.defaults.lobby-delay", 30);
@@ -503,10 +500,6 @@ public class ConfigValues {
 
 	public static boolean isKickRandomPlayerIfJoinsVip() {
 		return kickRandomPlayerIfJoinsVipToFullGame;
-	}
-
-	public static boolean isDefaultDeathMessageEnabled() {
-		return deathMsgs;
 	}
 
 	public static boolean isDefaultBossbarEnabled() {

@@ -96,11 +96,14 @@ public final class GameUtils {
 	/**
 	 * Checks the game name if contains special chars or too long.
 	 * 
-	 * @param pl Player
+	 * @param pl   Player
 	 * @param name Game
-	 * @return false if:<br>
-	 * - contains special chars<br>
+	 * @return this returns false if:
+	 * 
+	 * <pre>
+	 * - contains special chars
 	 * - the name is too long
+	 * </pre>
 	 */
 	public static boolean checkName(Player pl, String name) {
 		if (!name.matches("^[a-zA-Z0-9\\_\\-]+$")) {
@@ -332,14 +335,14 @@ public final class GameUtils {
 		for (ItemHandler ih : RageMode.getInstance().getGameItems()) {
 			// flash do not affect entities
 			if (isPlayerPlaying(p) && getGameByPlayer(p).getGameType() == GameType.APOCALYPSE
-					&& ih == Items.getFlash()) {
+					&& ih.equals(Items.getGameItem(5))) {
 				continue;
 			}
 
 			if (ih.getSlot() != -1) {
-				inv.setItem(ih.getSlot(), ih.build());
+				inv.setItem(ih.getSlot(), ih.get());
 			} else {
-				inv.addItem(ih.build());
+				inv.addItem(ih.get());
 			}
 		}
 	}
@@ -433,8 +436,8 @@ public final class GameUtils {
 					Utils.teleport(p, spawn.getRandomSpawn());
 				}
 
-				if (Items.getLeaveGameItem() != null) {
-					inv.setItem(Items.getLeaveGameItem().getSlot(), Items.getLeaveGameItem().build());
+				if (Items.getLobbyItem(1) != null) {
+					inv.setItem(Items.getLobbyItem(1).getSlot(), Items.getLobbyItem(1).get());
 				}
 
 				// delay to avoid bad work of spectator
@@ -504,41 +507,49 @@ public final class GameUtils {
 			game.worldTime = p.getWorld().getFullTime();
 		}
 
-		Utils.teleport(p, GameLobby.getLobbyLocation(name));
+		Utils.teleport(p, GameLobby.getLobbyLocation(name)).thenAccept(success -> {
+			runCommands(p, name, "join");
+			sendActionMessage(p, name, ActionMessageType.JOIN, ActionMessageType.asBossbar());
+			sendActionMessage(p, name, ActionMessageType.JOIN, ActionMessageType.asActionbar());
+			game.setStatus(GameStatus.WAITING);
+			broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
 
-		runCommands(p, name, "join");
-		sendActionMessage(p, name, ActionMessageType.JOIN, ActionMessageType.asBossbar());
-		sendActionMessage(p, name, ActionMessageType.JOIN, ActionMessageType.asActionbar());
-		game.setStatus(GameStatus.WAITING);
-		broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
+			String title = ConfigValues.getTitleJoinGame(), subtitle = ConfigValues.getSubTitleJoinGame(),
+					times = ConfigValues.getJoinTitleTime();
 
-		String title = ConfigValues.getTitleJoinGame(),
-				subtitle = ConfigValues.getSubTitleJoinGame(),
-				times = ConfigValues.getJoinTitleTime();
+			title = title.replace("%game%", game.getName());
+			subtitle = subtitle.replace("%game%", game.getName());
 
-		title = title.replace("%game%", game.getName());
-		subtitle = subtitle.replace("%game%", game.getName());
+			sendTitleMessages(p, title, subtitle, times);
 
-		sendTitleMessages(p, title, subtitle, times);
-
-		// Delay items adding, due to world changing and if someone tries to join will
-		// kick out. I don't know why.
-		Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
 			for (ItemHandler items : RageMode.getInstance().getLobbyItems()) {
-				if (items == null) {
+				if (items == null || (items.equals(Items.getLobbyItem(0))
+						&& !hu.montlikadani.ragemode.utils.Misc.hasPerm(p, "ragemode.admin.item.forcestart"))) {
 					continue;
 				}
 
-				if (items == Items.getForceStarter()
-						&& !hu.montlikadani.ragemode.utils.Misc.hasPerm(p, "ragemode.admin.item.forcestart")) {
-					continue;
+				ItemStack builtItem = items.get();
+
+				if (items.equals(Items.getLobbyItem(3))) {
+					org.bukkit.inventory.meta.ItemMeta meta = builtItem.getItemMeta();
+					if (meta != null) {
+						if (!PlayerManager.DEATHMESSAGESTOGGLE.getOrDefault(p.getUniqueId(), false)) {
+							meta.setDisplayName(items.getDisplayName());
+							meta.setLore(items.getLore());
+						} else if (!items.getExtras().isEmpty()) {
+							meta.setDisplayName(items.getExtras().get(0).getExtraName());
+							meta.setLore(items.getExtras().get(0).getExtraLore());
+						}
+
+						builtItem.setItemMeta(meta);
+					}
 				}
 
-				inv.setItem(items.getSlot(), items.build());
+				inv.setItem(items.getSlot(), builtItem);
 			}
-		}, 5L);
 
-		SignCreator.updateAllSigns(name);
+			SignCreator.updateAllSigns(name);
+		});
 	}
 
 	/**
@@ -781,7 +792,7 @@ public final class GameUtils {
 	 * 
 	 * @see #runCommands(Player, String, String)
 	 * @param game Game name
-	 * @param cmdType Command type, such as death, join or other
+	 * @param cmdType CommandProcessor type, such as death, join or other
 	 */
 	public static void runCommandsForAll(String game, String cmdType) {
 		for (PlayerManager pl : getGame(game).getPlayersFromList()) {
@@ -795,7 +806,7 @@ public final class GameUtils {
 	 * 
 	 * @param p Player
 	 * @param game Game name
-	 * @param cmdType Command type, such as death, join or other
+	 * @param cmdType CommandProcessor type, such as death, join or other
 	 */
 	public static void runCommands(Player p, String game, String cmdType) {
 		if (!ConfigValues.isRewardEnabled()) {
@@ -861,10 +872,10 @@ public final class GameUtils {
 		if (!isGameWithNameExists(game))
 			return;
 
-		final String tName = messageType.name().toLowerCase();
-
-		if (RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + game + "." + tName)) {
-			if (!RageMode.getInstance().getConfiguration().getArenasCfg().getBoolean("arenas." + game + "." + tName))
+		if (RageMode.getInstance().getConfiguration().getArenasCfg()
+				.isSet("arenas." + game + "." + messageType.toString())) {
+			if (!RageMode.getInstance().getConfiguration().getArenasCfg()
+					.getBoolean("arenas." + game + "." + messageType.toString()))
 				return;
 		} else if ((messageType == ActionMessageType.MessageTypes.ACTIONBAR
 				&& !ConfigValues.isDefaultActionbarEnabled())
@@ -872,11 +883,11 @@ public final class GameUtils {
 			return;
 
 		for (String msg : ConfigValues.getMessageActions()) {
-			if (!msg.startsWith("[" + tName + "];")) {
+			if (!msg.startsWith("[" + messageType.toString() + "];")) {
 				continue;
 			}
 
-			msg = msg.replace("[" + tName + "];", "");
+			msg = msg.replace("[" + messageType.toString() + "];", "");
 
 			String[] split = msg.split(":");
 			if (split.length < 2) {
@@ -1124,7 +1135,10 @@ public final class GameUtils {
 				RuntimePPManager.updatePlayerEntry(pP);
 
 				RageMode.getInstance().getHoloHolder().updateHolosForPlayer(p);
-				RageMode.getInstance().getDatabase().addPlayerStatistics(pP);
+
+				// Avoid calling database connection for each player
+				// Database should save at stop
+				//RageMode.getInstance().getDatabase().addPlayerStatistics(pP);
 			});
 
 			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, p);
@@ -1246,7 +1260,7 @@ public final class GameUtils {
 	 */
 	private static boolean isGameItem(ItemStack item) {
 		for (ItemHandler ih : RageMode.getInstance().getGameItems()) {
-			if (ih != null && ih.build().isSimilar(item)) {
+			if (ih != null && ih.get().isSimilar(item)) {
 				return true;
 			}
 		}
@@ -1300,6 +1314,11 @@ public final class GameUtils {
 
 		ActionMessageType(boolean both) {
 			this.both = both;
+		}
+
+		@Override
+		public String toString() {
+			return name().toLowerCase(java.util.Locale.ENGLISH);
 		}
 
 		public boolean isBothAllowed() {

@@ -39,7 +39,6 @@ permissions:
       ragemode.admin.stopgame: true
       ragemode.admin.setlobbydelay: true
       ragemode.admin.setgametime: true
-      ragemode.admin.setglobalmessages: true
       ragemode.admin.setbossbar: true
       ragemode.admin.setactionbar: true
       ragemode.admin.kick: true

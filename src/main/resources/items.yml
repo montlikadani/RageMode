@@ -57,6 +57,16 @@ lobbyitems:
     lore:
     - "&7&oLeft/right click"
     slot: 3
+  hideMessages:
+    item: nether_star
+    name: "&cHide kill messages"
+    lore:
+    - "&7Left/right click to hide death/kill messages in game."
+    slot: 8
+    status-off:
+      name: "&aShow kill messages"
+      lore:
+      - "&7Left/right click to show death/kill messages in game."
   shopitem:
     enabled: true
     item: emerald

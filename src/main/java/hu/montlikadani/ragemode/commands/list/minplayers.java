@@ -1,31 +1,22 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
+@CommandProcessor(name = "minplayers", permission = "ragemode.admin.setminplayers", playerOnly = true)
 public class minplayers implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (!(sender instanceof Player)) {
-			sendMessage(sender, RageMode.getLang().get("in-game-only"));
-			return false;
-		}
-
 		Player p = (Player) sender;
-		if (!hasPerm(p, "ragemode.admin.minplayers")) {
-			sendMessage(p, RageMode.getLang().get("no-permission"));
-			return false;
-		}
-
 		if (args.length < 3) {
 			sendMessage(p,
 					RageMode.getLang().get("missing-arguments", "%usage%", "/rm minplayers <gameName> <minPlayers>"));

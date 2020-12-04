@@ -50,7 +50,10 @@ public class RmTabCompleter implements TabCompleter {
 				} else if (args[0].equalsIgnoreCase("area")) {
 					Arrays.asList("add", "remove", "info", "list").forEach(cmds::add);
 				} else {
-					for (String game : getGameListCmds()) {
+					for (String game : Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay",
+							"removegame", "forcestart", "setlobby", "addspawn", "addzombiespawn", "join", "stop",
+							"stopgame", "togglegame", "spectate", "removespawn", "removezombiespawn", "listplayers",
+							"kick", "maxplayers", "minplayers", "setgametype")) {
 						if (args[0].equalsIgnoreCase(game) && !GetGames.getGames().isEmpty()) {
 							GetGames.getGames().forEach(cmds::add);
 							break;
@@ -132,12 +135,5 @@ public class RmTabCompleter implements TabCompleter {
 		}
 
 		return c;
-	}
-
-	private List<String> getGameListCmds() {
-		return Arrays.asList("actionbar", "bossbar", "globalmessages", "gametime", "lobbydelay", "removegame",
-				"forcestart", "setlobby", "addspawn", "addzombiespawn", "join", "stop", "stopgame", "togglegame",
-				"spectate", "removespawn", "removezombiespawn", "listplayers", "kick", "maxplayers", "minplayers",
-				"setgametype");
 	}
 }

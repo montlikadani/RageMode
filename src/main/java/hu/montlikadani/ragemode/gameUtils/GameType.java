@@ -15,10 +15,9 @@ public enum GameType {
 	 */
 	APOCALYPSE("apocalypse", "zombieapocalypse", "zombie");
 
-	private String[] names;
+	private String[] names = new String[0];
 
 	GameType() {
-		this("");
 	}
 
 	GameType(String... names) {

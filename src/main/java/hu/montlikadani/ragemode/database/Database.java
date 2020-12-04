@@ -1,10 +1,15 @@
 package hu.montlikadani.ragemode.database;
 
-import java.util.List;
 import java.util.UUID;
+
+import com.google.common.collect.ImmutableList;
 
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 
+/**
+ * Database interface which represents the required methods to load/save
+ * data(s).
+ */
 public interface Database {
 
 	/**
@@ -51,7 +56,7 @@ public interface Database {
 	/**
 	 * Saves all players data to the database.
 	 */
-	void saveData();
+	void saveAllPlayerData();
 
 	/**
 	 * Attempts to store the given player statistic into database.
@@ -73,9 +78,9 @@ public interface Database {
 	 * loads the saved player statistic, only retrieves the uuid and trying to
 	 * instantiate a new object if not exists, but not includes into database.
 	 * 
-	 * @return returns a List of all PlayerPoints that are stored
+	 * @return returns a an ImmutableList of all PlayerPoints that are stored
 	 */
-	List<PlayerPoints> getAllPlayerStatistics();
+	ImmutableList<PlayerPoints> getAllPlayerStatistics();
 
 	/**
 	 * Retrieves the all player statistic from the database by the given uuid.
@@ -96,12 +101,21 @@ public interface Database {
 	boolean resetPlayerStatistic(UUID uuid);
 
 	/**
-	 * Attempts to load join delay from database.
+	 * Attempts to load all players data.
+	 * <p>
+	 * <b>This is not to be confused with player stats!</b><br>
+	 * More understandably, this loads players mixed personal settings, such as
+	 * displaying alternating death messages in the game or join delays.
 	 */
-	void loadJoinDelay();
+	void loadMiscPlayersData();
 
 	/**
-	 * Attempts to save all join delay data into database.
+	 * Attempts to save all players misc data.
+	 * <p>
+	 * <b>This is not to be confused with player stats!</b><br>
+	 * As of described in {@link #loadMiscPlayersData()} its the same thing, but
+	 * this method saves the players data in order to be loaded for per-player
+	 * handling.
 	 */
-	void saveJoinDelay();
+	void saveMiscPlayersData();
 }

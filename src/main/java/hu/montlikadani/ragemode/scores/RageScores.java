@@ -36,8 +36,8 @@ public class RageScores {
 
 			int totalPoints = addPoints(killer, 1, true);
 
-			// To avoid spam
-			if (java.util.concurrent.ThreadLocalRandom.current().nextInt(0, 100) < 25) {
+			if (!PlayerManager.DEATHMESSAGESTOGGLE.getOrDefault(killer.getUniqueId(), false)
+					&& java.util.concurrent.ThreadLocalRandom.current().nextInt(0, 100) < 25) {
 				String msg = RageMode.getLang().get("game.broadcast.zombie-kill", "%entity%", entity.getName(),
 						"%killer%", killer.getName(), "%remainEntities%",
 						GameAreaManager.inArea(killer.getLocation())
@@ -294,6 +294,7 @@ public class RageScores {
 			totalDeaths = 1;
 			currentStreak = 0;
 		}
+
 		PlayerPoints pointsHolder = new PlayerPoints(playerUUID);
 		pointsHolder.setPoints(points);
 		pointsHolder.setKills(totalKills);

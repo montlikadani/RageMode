@@ -17,5 +17,5 @@ public @interface DB {
 	/**
 	 * @return true if the database is file-based otherwise false
 	 */
-	boolean doesFileDb() default true;
+	boolean fileBased() default true;
 }

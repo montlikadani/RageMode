@@ -133,7 +133,7 @@ public class MapChecker {
 	private void checkSpawns() {
 		FileConfiguration aFile = RageMode.getInstance().getConfiguration().getArenasCfg();
 		String path = "arenas." + gameName + ".spawns";
-		if (!aFile.isSet(path)) {
+		if (!aFile.isConfigurationSection(path)) {
 			message = RageMode.getLang().get("game.no-spawns-configured", "%game%", gameName);
 			isValid = false;
 			return;
@@ -170,8 +170,7 @@ public class MapChecker {
 				return;
 			}
 
-			spawnNames = aFile.getConfigurationSection(path).getKeys(false);
-			for (String s : spawnNames) {
+			for (String s : aFile.getConfigurationSection(path).getKeys(false)) {
 				World world = Bukkit.getWorld(aFile.getString(path + "." + s + ".world", ""));
 				if (world != null && Utils.isDouble(aFile.getString(path + "." + s + ".x"))
 						&& Utils.isDouble(aFile.getString(path + "." + s + ".y"))

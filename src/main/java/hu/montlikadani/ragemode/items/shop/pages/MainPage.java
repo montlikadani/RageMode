@@ -1,6 +1,6 @@
 package hu.montlikadani.ragemode.items.shop.pages;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -24,7 +24,7 @@ import hu.montlikadani.ragemode.items.shop.ShopItemCommands;
 
 public class MainPage implements IShop {
 
-	private final List<ShopItem> items = new ArrayList<>();
+	private final List<ShopItem> items = new LinkedList<>();
 
 	private Inventory inv;
 

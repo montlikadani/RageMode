@@ -5,14 +5,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 import java.util.UUID;
 
+@CommandProcessor(name = "resetplayerstats", permission = "ragemode.admin.stats.reset")
 public class resetplayerstats implements ICommand {
 
 	@Override
@@ -46,11 +47,6 @@ public class resetplayerstats implements ICommand {
 		}
 
 		Player p = (Player) sender;
-		if (!hasPerm(p, "ragemode.admin.stats.reset")) {
-			sendMessage(p, RageMode.getLang().get("no-permission"));
-			return false;
-		}
-
 		if (args.length == 2) {
 			Player target = Bukkit.getPlayer(args[1]);
 			if (target == null) {

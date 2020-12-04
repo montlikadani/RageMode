@@ -55,67 +55,63 @@ public class Configuration {
 	public void loadConfig() {
 		loadFiles();
 
-		try {
-			if (!config_file.exists()) {
-				plugin.saveResource("config.yml", false);
-			}
+		if (!config_file.exists()) {
+			plugin.saveResource("config.yml", false);
+		}
 
-			config = new CommentedConfig(config_file);
-			config.load();
+		config = new CommentedConfig(config_file);
+		config.load();
 
-			ConfigValues.loadValues(config);
+		ConfigValues.loadValues(config);
 
-			if (arenas_file.exists()) {
-				arenas = YamlConfiguration.loadConfiguration(arenas_file);
-				loadFile(arenas, arenas_file);
-				saveFile(arenas, arenas_file);
+		if (arenas_file.exists()) {
+			arenas = YamlConfiguration.loadConfiguration(arenas_file);
+			loadFile(arenas, arenas_file);
+			saveFile(arenas, arenas_file);
+		} else {
+			arenas = createFile(arenas_file, "arenas.yml", true);
+		}
+
+		if (ConfigValues.isRewardEnabled()) {
+			if (rewards_file.exists()) {
+				rewards = YamlConfiguration.loadConfiguration(rewards_file);
+				loadFile(rewards, rewards_file);
 			} else {
-				arenas = createFile(arenas_file, "arenas.yml", true);
+				rewards = createFile(rewards_file, "rewards.yml", false);
 			}
+		}
 
-			if (ConfigValues.isRewardEnabled()) {
-				if (rewards_file.exists()) {
-					rewards = YamlConfiguration.loadConfiguration(rewards_file);
-					loadFile(rewards, rewards_file);
-				} else {
-					rewards = createFile(rewards_file, "rewards.yml", false);
-				}
-			}
-
-			if (ConfigValues.isSavePlayerData()) {
-				if (datas_file.exists()) {
-					datas = YamlConfiguration.loadConfiguration(datas_file);
-					loadFile(datas, datas_file);
-					saveFile(datas, datas_file);
-				} else {
-					datas = createFile(datas_file, "datas.yml", true);
-				}
-			}
-
-			if (items_file.exists()) {
-				items = YamlConfiguration.loadConfiguration(items_file);
-				loadFile(items, items_file);
+		if (ConfigValues.isSavePlayerData()) {
+			if (datas_file.exists()) {
+				datas = YamlConfiguration.loadConfiguration(datas_file);
+				loadFile(datas, datas_file);
+				saveFile(datas, datas_file);
 			} else {
-				items = createFile(items_file, "items.yml", false);
+				datas = createFile(datas_file, "datas.yml", true);
 			}
+		}
 
-			if (areas_File.exists()) {
-				gameAreas = YamlConfiguration.loadConfiguration(areas_File);
-				loadFile(gameAreas, areas_File);
-			} else {
-				gameAreas = createFile(areas_File, "gameareas.yml", true);
-			}
+		if (items_file.exists()) {
+			items = YamlConfiguration.loadConfiguration(items_file);
+			loadFile(items, items_file);
+		} else {
+			items = createFile(items_file, "items.yml", false);
+		}
 
-			if (holosFile.exists()) {
-				holosConfig = YamlConfiguration.loadConfiguration(holosFile);
-				holosConfig.createSection("data");
-				loadFile(holosConfig, holosFile);
-				saveFile(holosConfig, holosFile);
-			} else {
-				holosConfig = createFile(holosFile, "holos.yml", true);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		if (areas_File.exists()) {
+			gameAreas = YamlConfiguration.loadConfiguration(areas_File);
+			loadFile(gameAreas, areas_File);
+		} else {
+			gameAreas = createFile(areas_File, "gameareas.yml", true);
+		}
+
+		if (holosFile.exists()) {
+			holosConfig = YamlConfiguration.loadConfiguration(holosFile);
+			holosConfig.createSection("data");
+			loadFile(holosConfig, holosFile);
+			saveFile(holosConfig, holosFile);
+		} else {
+			holosConfig = createFile(holosFile, "holos.yml", true);
 		}
 	}
 

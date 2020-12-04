@@ -6,7 +6,7 @@ public enum DBType {
 
 	public static boolean isDBWithNameExists(String name) {
 		for (DBType type : values()) {
-			if (type.name().equals(name.trim().toUpperCase())) {
+			if (type.name().equalsIgnoreCase(name)) {
 				return true;
 			}
 		}

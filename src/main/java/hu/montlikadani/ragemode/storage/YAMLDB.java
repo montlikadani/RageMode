@@ -12,6 +12,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import com.google.common.collect.ImmutableList;
+
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
@@ -20,12 +22,13 @@ import hu.montlikadani.ragemode.database.DB;
 import hu.montlikadani.ragemode.database.DBConnector;
 import hu.montlikadani.ragemode.database.DBType;
 import hu.montlikadani.ragemode.database.Database;
+import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
 @DB(type = DBType.YAML)
-public class YAMLDB implements Database {
+public class YamlDB implements Database {
 
 	private File yamlStatsFile;
 	private YamlConfiguration statsConf;
@@ -52,7 +55,13 @@ public class YAMLDB implements Database {
 		int totalPlayers = 0;
 
 		for (String one : statsConf.getConfigurationSection("data").getKeys(false)) {
-			UUID uuid = UUID.fromString(one);
+			UUID uuid = null;
+			try {
+				uuid = UUID.fromString(one);
+			} catch (IllegalArgumentException e) {
+				continue;
+			}
+
 			PlayerPoints plPo = RuntimePPManager.getPPForPlayer(uuid);
 			if (plPo == null) {
 				plPo = new PlayerPoints(uuid);
@@ -87,7 +96,7 @@ public class YAMLDB implements Database {
 	}
 
 	@Override
-	public void saveData() {
+	public void saveAllPlayerData() {
 		RuntimePPManager.getRuntimePPList().forEach(this::addPlayerStatistics);
 	}
 
@@ -99,8 +108,7 @@ public class YAMLDB implements Database {
 		statsConf.set(path + "name", Bukkit.getOfflinePlayer(uuid).getName());
 
 		if (statsConf.isConfigurationSection("data")
-				&& statsConf.getConfigurationSection("data").getKeys(false).contains(uuid.toString())) {
-
+				&& statsConf.getConfigurationSection("data").contains(uuid.toString())) {
 			int kills = statsConf.getInt(path + "kills"), axeKills = statsConf.getInt(path + "axe-kills"),
 					directArrowKills = statsConf.getInt(path + "direct-arrow-kills"),
 					explosionKills = statsConf.getInt(path + "explosion-kills"),
@@ -168,22 +176,26 @@ public class YAMLDB implements Database {
 		}
 
 		int currentPoints = getPlayerStatsFromData(uuid).getPoints();
-		String path = "data." + uuid.toString() + ".";
-
-		if (statsConf.getConfigurationSection("data").getKeys(false).contains(uuid.toString())) {
-			statsConf.set(path + "score", currentPoints + points);
+		if (statsConf.getConfigurationSection("data").contains(uuid.toString())) {
+			statsConf.set("data." + uuid.toString() + ".score", currentPoints + points);
 		}
 
 		Configuration.saveFile(statsConf, yamlStatsFile);
 	}
 
 	@Override
-	public List<PlayerPoints> getAllPlayerStatistics() {
+	public ImmutableList<PlayerPoints> getAllPlayerStatistics() {
 		List<PlayerPoints> allRPPs = new ArrayList<>();
 
 		if (statsConf.isConfigurationSection("data")) {
 			for (String d : statsConf.getConfigurationSection("data").getKeys(false)) {
-				UUID uuid = UUID.fromString(d);
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(d);
+				} catch (IllegalArgumentException e) {
+					continue;
+				}
+
 				PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid);
 				if (pp == null) {
 					pp = new PlayerPoints(uuid);
@@ -193,7 +205,7 @@ public class YAMLDB implements Database {
 			}
 		}
 
-		return allRPPs;
+		return ImmutableList.copyOf(allRPPs);
 	}
 
 	@Override
@@ -249,11 +261,11 @@ public class YAMLDB implements Database {
 
 	@Override
 	public boolean resetPlayerStatistic(UUID uuid) {
-		if (!statsConf.contains("data")) {
+		if (!statsConf.isConfigurationSection("data")) {
 			return false;
 		}
 
-		if (statsConf.getConfigurationSection("data").getKeys(false).contains(uuid.toString())) {
+		if (statsConf.getConfigurationSection("data").contains(uuid.toString())) {
 			String path = "data." + uuid + ".";
 			statsConf.set(path + "kills", 0);
 			statsConf.set(path + "axe_kills", 0);
@@ -287,105 +299,32 @@ public class YAMLDB implements Database {
 	}
 
 	@Override
-	public void loadJoinDelay() {
-		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay()) {
-			return;
-		}
-
-		File f = new File(RageMode.getInstance().getFolder(), "joinDelays.yml");
-		if (!f.exists()) {
-			try {
-				f.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		YamlConfiguration config = YamlConfiguration.loadConfiguration(f);
-		if (!config.contains("players")) {
-			config.createSection("players");
-		}
-
-		ConfigurationSection section = config.getConfigurationSection("players");
-		if (section.getKeys(false).isEmpty()) {
-			return;
-		}
-
-		for (String o : section.getKeys(false)) {
-			ReJoinDelay.setTime(Bukkit.getOfflinePlayer(UUID.fromString(o)), section.getLong(o));
-		}
-
-		config.set("players", null);
-		try {
-			config.save(f);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public void saveJoinDelay() {
-		if (!ConfigValues.isRejoinDelayEnabled() || !ConfigValues.isRememberRejoinDelay()) {
-			return;
-		}
-
-		File f = new File(RageMode.getInstance().getFolder(), "joinDelays.yml");
-		if (!f.exists()) {
-			try {
-				f.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		YamlConfiguration config = YamlConfiguration.loadConfiguration(f);
-		if (!config.contains("players")) {
-			config.createSection("players");
-		} else {
-			config.set("players", null);
-		}
-
-		ConfigurationSection section = config.getConfigurationSection("players");
-		for (Map.Entry<OfflinePlayer, Long> m : ReJoinDelay.getPlayerTimes().entrySet()) {
-			section.set(m.getKey().getName(), m.getValue());
-		}
-
-		try {
-			config.save(f);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Override
 	public void connectDatabase() {
 		if (yamlStatsFile != null) {
 			statsConf = YamlConfiguration.loadConfiguration(yamlStatsFile);
 			return;
 		}
 
-		File file = new File(RageMode.getInstance().getFolder(), "stats.yml");
-		yamlStatsFile = file;
+		yamlStatsFile = new File(RageMode.getInstance().getFolder(), "stats.yml");
 
-		if (!file.exists()) {
-			if (!file.getParentFile().exists()) {
-				file.getParentFile().mkdirs();
+		if (!yamlStatsFile.exists()) {
+			if (!yamlStatsFile.getParentFile().exists()) {
+				yamlStatsFile.getParentFile().mkdirs();
 			}
 
 			try {
-				file.createNewFile();
+				yamlStatsFile.createNewFile();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 
-		YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-		if (!config.contains("data")) {
-			config.createSection("data");
+		statsConf = YamlConfiguration.loadConfiguration(yamlStatsFile);
+		if (!statsConf.contains("data")) {
+			statsConf.createSection("data");
 		}
 
-		statsConf = config;
-		Configuration.saveFile(config, file);
+		Configuration.saveFile(statsConf, yamlStatsFile);
 	}
 
 	@Override
@@ -395,14 +334,14 @@ public class YAMLDB implements Database {
 		loadPlayerStatistics();
 
 		if (startup) {
-			loadJoinDelay();
+			loadMiscPlayersData();
 		}
 	}
 
 	@Override
 	public void saveDatabase() {
-		saveData();
-		saveJoinDelay();
+		saveAllPlayerData();
+		saveMiscPlayersData();
 	}
 
 	@Override
@@ -423,5 +362,100 @@ public class YAMLDB implements Database {
 		RuntimePPManager.getRuntimePPList().forEach(RageMode.getInstance().getDatabase()::addPlayerStatistics);
 		RuntimePPManager.loadPPListFromDatabase();
 		return true;
+	}
+
+	@Override
+	public void loadMiscPlayersData() {
+		File folder = RageMode.getInstance().getFolder();
+		File f = new File(folder, "joinDelays.yml");
+		if (f.exists()) {
+			f.renameTo(new File(folder, "players.yml"));
+		}
+
+		f = new File(folder, "players.yml");
+
+		if (!f.exists()) {
+			try {
+				f.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		YamlConfiguration config = YamlConfiguration.loadConfiguration(f);
+		if (!config.isConfigurationSection("players")) {
+			return;
+		}
+
+		ConfigurationSection section = config.getConfigurationSection("players");
+		if (section.getKeys(false).isEmpty()) {
+			return;
+		}
+
+		for (String uuid : section.getKeys(false)) {
+			if (ConfigValues.isRejoinDelayEnabled() && ConfigValues.isRememberRejoinDelay()) {
+				ReJoinDelay.setTime(Bukkit.getOfflinePlayer(UUID.fromString(uuid)),
+						section.getLong(uuid + ".join-delay"));
+			}
+
+			if (section.getBoolean(uuid + ".deathMessagesEnabled")) {
+				PlayerManager.DEATHMESSAGESTOGGLE.put(UUID.fromString(uuid),
+						section.getBoolean(uuid + ".deathMessagesEnabled"));
+			}
+		}
+
+		config.set("players", null);
+		try {
+			config.save(f);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void saveMiscPlayersData() {
+		File folder = RageMode.getInstance().getFolder();
+		File f = new File(folder, "joinDelays.yml");
+		if (f.exists()) {
+			f.renameTo(new File(folder, "players.yml"));
+		}
+
+		f = new File(folder, "players.yml");
+
+		if (!f.exists()) {
+			try {
+				f.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		YamlConfiguration config = YamlConfiguration.loadConfiguration(f);
+		ConfigurationSection section = config.getConfigurationSection("players");
+		if (section == null) {
+			section = config.createSection("players");
+		} else {
+			config.set("players", null);
+		}
+
+		for (Map.Entry<UUID, Boolean> map : PlayerManager.DEATHMESSAGESTOGGLE.entrySet()) {
+			if (map.getValue()) {
+				section.set(map.getKey().toString() + ".deathMessagesEnabled", map.getValue());
+			}
+		}
+
+		if (ConfigValues.isRejoinDelayEnabled() && ConfigValues.isRememberRejoinDelay()) {
+			for (Map.Entry<OfflinePlayer, Long> m : ReJoinDelay.getPlayerTimes().entrySet()) {
+				if (m.getValue().longValue() > System.currentTimeMillis()) {
+					section.set(m.getKey().getUniqueId().toString() + ".join-delay", m.getValue());
+				}
+			}
+		}
+
+		try {
+			config.save(f);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

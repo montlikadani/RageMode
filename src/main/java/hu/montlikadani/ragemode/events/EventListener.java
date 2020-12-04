@@ -81,12 +81,12 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		final Player p = event.getPlayer();
 		final Block b = event.getClickedBlock();
 		if (b == null) {
 			return;
 		}
 
+		final Player p = event.getPlayer();
 		final org.bukkit.Location loc = b.getLocation();
 
 		if (hasPerm(p, "ragemode.admin.area") && NMS.getItemInHand(p).getType() == Material

@@ -4,28 +4,19 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
+@CommandProcessor(name = "actionbar", permission = "ragemode.admin.setactionbar", playerOnly = true)
 public class actionbar implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (!(sender instanceof Player)) {
-			sendMessage(sender, RageMode.getLang().get("in-game-only"));
-			return false;
-		}
-
 		Player p = (Player) sender;
-		if (!hasPerm(p, "ragemode.admin.setactionbar")) {
-			sendMessage(p, RageMode.getLang().get("no-permission"));
-			return false;
-		}
-
 		if (args.length >= 3) {
 			if (!GameUtils.isGameWithNameExists(args[1])) {
 				sendMessage(p, RageMode.getLang().get("invalid-game", "%game%", args[1]));

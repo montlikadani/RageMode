@@ -62,17 +62,17 @@ public class Bonus {
 				ItemHandler item;
 				switch (gameItem) {
 				case "grenade":
-					item = Items.getGrenade();
+					item = Items.getGameItem(1);
 					break;
 				case "combataxe":
-					item = Items.getCombatAxe();
+					item = Items.getGameItem(0);
 					break;
 				case "flash":
-					item = Items.getFlash();
+					item = Items.getGameItem(5);
 					break;
 				case "pressuremine":
 				case "mine":
-					item = Items.getPressureMine();
+					item = Items.getGameItem(6);
 					break;
 				default:
 					continue;
@@ -93,14 +93,14 @@ public class Bonus {
 						amount = 1;
 					}
 
-					item.setAmount(amount).build();
+					item.setAmount(amount).get();
 				}
 
 				org.bukkit.inventory.PlayerInventory inv = player.getInventory();
 				if (!inv.contains(item.getItem()) && item.getSlot() != -1) {
-					inv.setItem(item.getSlot(), item.build());
+					inv.setItem(item.getSlot(), item.get());
 				} else {
-					inv.addItem(item.build());
+					inv.addItem(item.get());
 				}
 			}
 		}

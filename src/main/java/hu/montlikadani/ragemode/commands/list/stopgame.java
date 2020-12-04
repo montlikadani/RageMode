@@ -11,6 +11,7 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.area.GameAreaManager;
+import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameType;
@@ -19,18 +20,13 @@ import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
 
-import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
+@CommandProcessor(name = "stopgame", permission = "ragemode.admin.stopgame")
 public class stopgame implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (!hasPerm(sender, "ragemode.admin.stopgame")) {
-			sendMessage(sender, RageMode.getLang().get("no-permission"));
-			return false;
-		}
-
 		if (args.length >= 2) {
 			String game = args[1];
 			if (!GameUtils.isGameWithNameExists(game)) {

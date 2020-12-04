@@ -4,29 +4,20 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.GameUtils.ActionMessageType;
-import hu.montlikadani.ragemode.utils.Misc;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
+@CommandProcessor(name = "leave", permission = "ragemode.leave", playerOnly = true)
 public class leave implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (!(sender instanceof Player)) {
-			sendMessage(sender, RageMode.getLang().get("in-game-only"));
-			return false;
-		}
-
 		Player p = (Player) sender;
-		if (!Misc.hasPerm(p, "ragemode.leave")) {
-			sendMessage(p, RageMode.getLang().get("no-permission"));
-			return false;
-		}
-
 		Game game = GameUtils.getGameBySpectator(p);
 		if (game != null) {
 			game.removeSpectatorPlayer(p);

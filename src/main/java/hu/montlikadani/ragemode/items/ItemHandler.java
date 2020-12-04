@@ -1,19 +1,20 @@
 package hu.montlikadani.ragemode.items;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class ItemHandler implements Cloneable {
+public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 
 	private ItemStack builtItem;
 	private Material item;
-
-	private int amount = 1;
 
 	private String displayName;
 	private String customName;
@@ -22,10 +23,11 @@ public class ItemHandler implements Cloneable {
 
 	private Enchantment enchant;
 
-	private int enchantLevel = 1;
-	private int slot = -1;
+	private int amount = 1, enchantLevel = 1, slot = -1;
 
 	private double damage = 0;
+
+	private final List<Extra> extras = new ArrayList<>();
 
 	public ItemHandler() {
 	}
@@ -66,13 +68,25 @@ public class ItemHandler implements Cloneable {
 		return slot;
 	}
 
-	public ItemHandler setSlot(int slot) {
-		this.slot = slot < 0 ? 1 : slot;
+	public double getDamage() {
+		return damage;
+	}
+
+	public List<Extra> getExtras() {
+		return extras;
+	}
+
+	public ItemHandler addExtra(Extra... extra) {
+		if (extra != null && extra.length != 0) {
+			Arrays.asList(extra).forEach(extras::add);
+		}
+
 		return this;
 	}
 
-	public double getDamage() {
-		return damage;
+	public ItemHandler setSlot(int slot) {
+		this.slot = slot < 0 ? 1 : slot;
+		return this;
 	}
 
 	public ItemHandler setDamage(double damage) {
@@ -119,7 +133,8 @@ public class ItemHandler implements Cloneable {
 		return this;
 	}
 
-	public ItemStack build() {
+	@Override
+	public ItemStack get() {
 		if (builtItem != null) {
 			return builtItem;
 		}
@@ -149,6 +164,11 @@ public class ItemHandler implements Cloneable {
 	}
 
 	@Override
+	public boolean equals(Object obj) {
+		return obj == builtItem || obj == item || super.equals(obj);
+	}
+
+	@Override
 	public Object clone() {
 		try {
 			return super.clone();
@@ -169,5 +189,32 @@ public class ItemHandler implements Cloneable {
 				", enchant=''" + enchant + '\'' +
 				", slot='" + slot + '\'' +
 				'}';
+	}
+
+	public static class Extra {
+
+		public Extra() {
+		}
+
+		private String extraName;
+		private List<String> extraLore;
+
+		public Extra setExtraName(String extraName) {
+			this.extraName = extraName == null ? "" : extraName;
+			return this;
+		}
+
+		public Extra setExtraLore(List<String> extraLore) {
+			this.extraLore = extraLore == null ? new ArrayList<>() : extraLore;
+			return this;
+		}
+
+		public String getExtraName() {
+			return extraName;
+		}
+
+		public List<String> getExtraLore() {
+			return extraLore;
+		}
 	}
 }
