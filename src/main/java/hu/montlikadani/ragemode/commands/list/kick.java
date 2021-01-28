@@ -32,7 +32,7 @@ public class kick implements ICommand {
 			return false;
 		}
 
-		if (!GameUtils.isGameWithNameExists(name)) {
+		if (!GameUtils.isGameExist(name)) {
 			sendMessage(sender, RageMode.getLang().get("invalid-game"));
 			return false;
 		}

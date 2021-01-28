@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -18,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.CommentedConfig;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.database.DB;
@@ -547,31 +549,32 @@ public class SqlDB implements Database {
 	}
 
 	@Override
-	public boolean convertDatabase(final String type) {
-		if (type == null || type.trim().isEmpty()
-				|| RageMode.getInstance().getDatabaseType().toString().equalsIgnoreCase(type.trim())) {
-			return false;
-		}
-
-		if (connect != null && connect.isConnected()) {
-			try {
-				connect.getConnection().close();
-			} catch (SQLException e) {
-				e.printStackTrace();
+	public CompletableFuture<Boolean> convertDatabase(final String type) {
+		return CompletableFuture.supplyAsync(() -> {
+			if (type == null || type.trim().isEmpty() || getDatabaseType().toString().equalsIgnoreCase(type.trim())) {
+				return false;
 			}
-		}
 
-		ConfigValues.databaseType = type;
+			if (connect != null && connect.isConnected()) {
+				try {
+					connect.getConnection().close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
 
-		final Configuration conf = RageMode.getInstance().getConfiguration();
-		conf.getCfg().set("database.type", type);
-		Configuration.saveFile(conf.getCfg(), conf.getCfgFile());
+			ConfigValues.databaseType = type;
 
-		RageMode.getInstance().setDatabase(type);
+			final CommentedConfig conf = RageMode.getInstance().getConfig();
+			conf.set("database.type", type);
+			Configuration.saveFile(conf, RageMode.getInstance().getConfiguration().getCfgFile());
 
-		RuntimePPManager.getRuntimePPList().forEach(RageMode.getInstance().getDatabase()::addPlayerStatistics);
-		RuntimePPManager.loadPPListFromDatabase();
-		return true;
+			RageMode.getInstance().connectDatabase(true);
+
+			RuntimePPManager.getRuntimePPList().forEach(RageMode.getInstance().getDatabase()::addPlayerStatistics);
+			RuntimePPManager.loadPPListFromDatabase();
+			return true;
+		});
 	}
 
 	@Override
@@ -588,9 +591,8 @@ public class SqlDB implements Database {
 				ResultSet rs = conn.executeQuery(statement, "SELECT * FROM `" + connect.getPrefix() + "players`;");
 				while (rs.next()) {
 					String uuid = rs.getString("uuid");
-					boolean condition = rs.getBoolean("deathMessagesEnabled");
 					if (uuid != null) {
-						if (condition) {
+						if (rs.getBoolean("deathMessagesEnabled")) {
 							PlayerManager.DEATHMESSAGESTOGGLE.put(UUID.fromString(uuid), true);
 						}
 

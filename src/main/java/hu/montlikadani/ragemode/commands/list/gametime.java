@@ -19,7 +19,7 @@ public class gametime implements ICommand {
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		Player p = (Player) sender;
 		if (args.length >= 3) {
-			if (!GameUtils.isGameWithNameExists(args[1])) {
+			if (!GameUtils.isGameExist(args[1])) {
 				sendMessage(p, RageMode.getLang().get("invalid-game", "%game%", args[1]));
 				return false;
 			}

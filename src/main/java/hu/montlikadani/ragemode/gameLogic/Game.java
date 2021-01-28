@@ -1,20 +1,17 @@
 package hu.montlikadani.ragemode.gameLogic;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.lang.Validate;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.FixedMetadataValue;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
@@ -24,22 +21,22 @@ import hu.montlikadani.ragemode.API.event.SpectatorJoinToGameEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorLeaveGameEvent;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
-import hu.montlikadani.ragemode.gameUtils.GameLobby;
 import hu.montlikadani.ragemode.gameUtils.GameType;
-import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.gameUtils.modules.TabTitles;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
-public class Game {
+public final class Game extends GameSettings {
+
+	private final GameLobby gameLobby = new GameLobby(this);
 
 	private String name;
 	private GameType gameType;
 	private GameStatus status = GameStatus.STOPPED;
 
-	private final Map<UUID, PlayerManager> players = new HashMap<>(), specPlayer = new HashMap<>();
+	private final Set<PlayerManager> players = new HashSet<>(), specPlayers = new HashSet<>();
+	private final Set<IGameSpawn> spawns = new HashSet<>();
 
 	private boolean running = false;
-	private LobbyTimer lobbyTimer;
 
 	/**
 	 * The set of world time to be cached before the game start in apocalypse mode
@@ -53,9 +50,19 @@ public class Game {
 	}
 
 	public Game(String name, GameType gameType) {
+		super(name);
 		this.name = name == null ? "" : name;
 
 		setGameType(gameType);
+		loadSpawns();
+	}
+
+	private void loadSpawns() {
+		if (gameType == GameType.APOCALYPSE) {
+			spawns.add(new GameZombieSpawn(this));
+		}
+
+		spawns.add(new GameSpawn(this));
 	}
 
 	/**
@@ -82,41 +89,261 @@ public class Game {
 	}
 
 	/**
-	 * Get the players who added to the list.
+	 * Returns this game lobby instance
 	 * 
-	 * @return {@link Map}
+	 * @return {@link GameLobby}
 	 */
-	public Map<UUID, PlayerManager> getPlayers() {
-		return players;
+	public GameLobby getGameLobby() {
+		return gameLobby;
 	}
 
 	/**
-	 * Gets the spectator players who added to the list.
+	 * Returns a copy of players who's in this game.
 	 * 
-	 * @return {@link Map}
+	 * @return {@link Set}
 	 */
-	public Map<UUID, PlayerManager> getSpectatorPlayers() {
-		return specPlayer;
+	public Set<PlayerManager> getPlayers() {
+		return new HashSet<>(players);
 	}
 
 	/**
-	 * Checks if the player is in spectator list.
+	 * Returns a copy of spectator players who's in this game.
 	 * 
-	 * @param p Player
-	 * @return true if in the list
+	 * @return {@link Set}
+	 */
+	public Set<PlayerManager> getSpectatorPlayers() {
+		return new HashSet<>(specPlayers);
+	}
+
+	/**
+	 * Checks if the given player is in spectator list.
+	 * 
+	 * @param p {@link Player}
+	 * @return true if cached
 	 */
 	public boolean isSpectatorInList(Player p) {
-		return specPlayer.containsKey(p.getUniqueId());
+		if (p == null) {
+			return false;
+		}
+
+		for (PlayerManager pm : specPlayers) {
+			if (pm.getPlayer() == p) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
-	 * Checks if the player is in list.
+	 * Checks if the given player is in list.
 	 * 
-	 * @param p Player
-	 * @return true if in the list
+	 * @param p {@link Player}
+	 * @return true if cached
 	 */
 	public boolean isPlayerInList(Player p) {
-		return players.containsKey(p.getUniqueId());
+		if (p == null) {
+			return false;
+		}
+
+		for (PlayerManager pm : players) {
+			if (pm.getPlayer() == p) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whatever this game is running or not.
+	 * 
+	 * @return true if this game running.
+	 */
+	public boolean isGameRunning() {
+		return running;
+	}
+
+	/**
+	 * Sets this game running state to a new state.
+	 * 
+	 * @param running this game should run or not
+	 */
+	public void setGameRunning(boolean running) {
+		this.running = running;
+	}
+
+	/**
+	 * Gets the game current set GameStatus.
+	 * 
+	 * @return {@link GameStatus}
+	 */
+	public GameStatus getStatus() {
+		return status;
+	}
+
+	/**
+	 * Sets the game status to a new status.
+	 * 
+	 * @param status the new status to be set for this game
+	 */
+	public void setStatus(GameStatus status) {
+		if (status == null) {
+			status = GameStatus.STOPPED;
+		}
+
+		Utils.callEvent(new RMGameStatusChangeEvent(this, status));
+		this.status = status;
+	}
+
+	/**
+	 * Get the player by its uuid from this game.
+	 * 
+	 * @param uuid Player uuid
+	 * @return {@link Player}
+	 */
+	public Player getPlayer(UUID uuid) {
+		Validate.notNull(uuid, "UUID can't be null");
+
+		for (PlayerManager pm : players) {
+			if (pm.getPlayer().getUniqueId().equals(uuid)) {
+				return pm.getPlayer();
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get the spectator player by its uuid from this game.
+	 * 
+	 * @param uuid Player uuid
+	 * @return {@link Player}
+	 */
+	public Player getSpectatorPlayer(UUID uuid) {
+		Validate.notNull(uuid, "UUID can't be null");
+
+		for (PlayerManager pm : specPlayers) {
+			if (pm.getPlayer().getUniqueId().equals(uuid)) {
+				return pm.getPlayer();
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns an immutable list of all players including spectators who's in this
+	 * game.
+	 * 
+	 * @return immutable list of {@link PlayerManager}
+	 */
+	public ImmutableList<PlayerManager> getAllPlayers() {
+		List<PlayerManager> list = new java.util.ArrayList<>();
+		players.forEach(list::add);
+		specPlayers.forEach(list::add);
+		return ImmutableList.copyOf(list);
+	}
+
+	/**
+	 * Returns a spectator player who's in a game if present. Otherwise
+	 * {@link Optional#empty()}
+	 * 
+	 * @param p Spectator player
+	 * @return {@link PlayerManager}
+	 */
+	public Optional<PlayerManager> getSpectatorPlayerManager(Player p) {
+		if (p != null) {
+			for (PlayerManager pm : specPlayers) {
+				if (pm.getPlayer() == p) {
+					return Optional.of(pm);
+				}
+			}
+		}
+
+		return Optional.empty();
+	}
+
+	/**
+	 * Returns a player who's playing in a game if present. Otherwise
+	 * {@link Optional#empty()}
+	 * 
+	 * @param p {@link Player}
+	 * @return {@link PlayerManager}
+	 */
+	public Optional<PlayerManager> getPlayerManager(Player p) {
+		if (p != null) {
+			for (PlayerManager pm : players) {
+				if (pm.getPlayer() == p) {
+					return Optional.of(pm);
+				}
+			}
+		}
+
+		return Optional.empty();
+	}
+
+	/**
+	 * Removes all set of spawns including zombie and player spawns from this game.
+	 */
+	public void removeSpawn() {
+		spawns.removeIf(s -> s.getGame().getName().equalsIgnoreCase(name));
+	}
+
+	/**
+	 * Removes all set of spawns from this game with the given type.
+	 * 
+	 * <pre>
+	 * removeSpawn(GameZombieSpawn.class)
+	 * </pre>
+	 * 
+	 * This will removes all zombie spawns from this game.
+	 * 
+	 * @param spawnType the type of the spawn
+	 */
+	public void removeSpawn(Class<? extends IGameSpawn> spawnType) {
+		spawns.removeIf(s -> spawnType.isAssignableFrom(s.getClass()) && s.getGame().getName().equalsIgnoreCase(name));
+	}
+
+	/**
+	 * Returns this game spawn object with the given type.
+	 * 
+	 * <pre>
+	 * getSpawn(GameSpawn.class)
+	 * </pre>
+	 * 
+	 * This will returns the game spawn for players.
+	 * 
+	 * @param spawnType the type of the spawn
+	 * @return {@link IGameSpawn}
+	 */
+	public IGameSpawn getSpawn(Class<? extends IGameSpawn> spawnType) {
+		for (IGameSpawn s : spawns) {
+			if (s.getGame().getName().equalsIgnoreCase(name) && spawnType.isAssignableFrom(s.getClass())) {
+				return s;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns a set of spawns from this game including zombie and player spawns.
+	 * 
+	 * @return set of {@link IGameSpawn}
+	 */
+	public Set<IGameSpawn> getSpawns() {
+		return spawns;
+	}
+
+	/**
+	 * Returns a set of action messengers which contains action bar, score board and
+	 * team.
+	 * 
+	 * @return set of {@link ActionMessengers}
+	 */
+	public Set<ActionMessengers> getActionMessengers() {
+		return acList;
 	}
 
 	public boolean addPlayer(Player player) {
@@ -135,22 +362,17 @@ public class Game {
 		if (event.isCancelled())
 			return false;
 
-		acList.add(new ActionMessengers(this, player));
+		acList.add(new ActionMessengers(this, player.getUniqueId()));
 
-		PlayerManager pm = new PlayerManager(player, name);
-
-		int time = GameLobby.getLobbyTime(name),
-				maxPlayers = GetGames.getMaxPlayers(name),
-				minPlayers = GetGames.getMinPlayers(name);
+		PlayerManager pm = new PlayerManager(player.getUniqueId(), name);
 
 		if (players.size() < maxPlayers) {
-			players.put(player.getUniqueId(), pm);
+			players.add(pm);
 
 			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
 
 			if (players.size() == minPlayers) {
-				lobbyTimer = new LobbyTimer(this, time);
-				lobbyTimer.loadTimer();
+				gameLobby.getLobbyTimer().beginScheduling();
 			}
 
 			return true;
@@ -164,25 +386,24 @@ public class Game {
 
 			do {
 				int kickposition = maxPlayers < 2 ? 0 : ThreadLocalRandom.current().nextInt(maxPlayers - 1);
-				playerToKick = getPlayersFromList().get(kickposition).getPlayer();
+				playerToKick = Iterables.get(players, kickposition).getPlayer();
 				isVIP = playerToKick.hasPermission("ragemode.vip");
 			} while (isVIP);
 
-			playerToKick.setMetadata("Leaving", new FixedMetadataValue(RageMode.getInstance(), true));
-
 			Utils.clearPlayerInventory(playerToKick);
-			getPlayerManager(playerToKick).ifPresent(PlayerManager::addBackTools);
-			players.remove(playerToKick.getUniqueId());
+			getPlayerManager(playerToKick).ifPresent(pmToKick -> {
+				players.remove(pmToKick);
+				pmToKick.addBackTools();
+			});
 
 			playerToKick.sendMessage(RageMode.getLang().get("game.player-kicked-for-vip"));
 
-			players.put(player.getUniqueId(), pm);
+			if (players.add(pm)) {
+				player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
 
-			player.sendMessage(RageMode.getLang().get("game.you-joined-the-game", "%game%", name));
-
-			if (players.size() == minPlayers) {
-				lobbyTimer = new LobbyTimer(this, time);
-				lobbyTimer.loadTimer();
+				if (players.size() == minPlayers) {
+					gameLobby.getLobbyTimer().beginScheduling();
+				}
 			}
 
 			return true;
@@ -193,8 +414,8 @@ public class Game {
 	}
 
 	public boolean addSpectatorPlayer(Player player) {
-		PlayerManager pm = new PlayerManager(player, name);
-		specPlayer.put(player.getUniqueId(), pm);
+		PlayerManager pm = new PlayerManager(player.getUniqueId(), name);
+		specPlayers.add(pm);
 
 		if (!ConfigValues.isBungee()) {
 			pm.storePlayerTools(true);
@@ -212,11 +433,14 @@ public class Game {
 		}
 
 		Utils.clearPlayerInventory(player);
-		getSpectatorPlayerManager(player).ifPresent(p -> p.addBackTools(true));
+		PlayerManager pm = getSpectatorPlayerManager(player).orElse(null);
+		if (pm != null) {
+			pm.addBackTools(true);
+		}
 
 		Utils.callEvent(new SpectatorLeaveGameEvent(this, player));
 
-		return specPlayer.remove(player.getUniqueId()) != null;
+		return pm != null && specPlayers.remove(pm);
 	}
 
 	public boolean removePlayer(final Player player) {
@@ -229,97 +453,31 @@ public class Game {
 			return false;
 		}
 
-		hu.montlikadani.ragemode.gameUtils.StorePlayerStuffs oldStuffs = null;
-		if (getPlayerManager(player).isPresent()) {
-			oldStuffs = getPlayerManager(player).get().getStorePlayer();
-		}
-
-		Utils.clearPlayerInventory(player);
-		if (!switchToSpec) {
-			getPlayerManager(player).ifPresent(PlayerManager::addBackTools);
-		}
-
 		acList.remove(removePlayerSynced(player));
-		players.remove(player.getUniqueId());
-
 		player.setCustomNameVisible(true);
 
-		if (!switchToSpec) {
-			player.sendMessage(RageMode.getLang().get("game.player-left"));
-			player.setMetadata("Leaving", new FixedMetadataValue(RageMode.getInstance(), true));
-		}
+		getPlayerManager(player).ifPresent(oldPm -> {
+			hu.montlikadani.ragemode.gameUtils.StorePlayerStuffs oldStuffs = oldPm.getStorePlayer();
 
-		if (switchToSpec) {
-			PlayerManager pm = new PlayerManager(player, name);
-
-			if (oldStuffs != null) {
-				pm.storeFrom(oldStuffs);
+			Utils.clearPlayerInventory(player);
+			if (!switchToSpec) {
+				oldPm.addBackTools();
 			}
 
-			specPlayer.put(player.getUniqueId(), pm);
-		}
+			if (players.remove(oldPm) && switchToSpec) {
+				PlayerManager pm = new PlayerManager(player.getUniqueId(), name);
 
+				if (oldStuffs != null) {
+					pm.storeFrom(oldStuffs);
+				}
+
+				specPlayers.add(pm);
+			}
+		});
+
+		// Send left message when switched to spec or not
+		player.sendMessage(RageMode.getLang().get("game.player-left"));
 		return true;
-	}
-
-	/**
-	 * Removes all of scoreboard, tablist and score team things from player.
-	 * 
-	 * @param player Player
-	 * @return {@link ActionMessengers}
-	 */
-	public ActionMessengers removePlayerSynced(Player player) {
-		for (ActionMessengers action : acList) {
-			if (action.getPlayer().equals(player)) {
-				action.getScoreboard().remove(player);
-				TabTitles.sendTabTitle(player, "", "");
-				action.getScoreTeam().remove();
-				return action;
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * Checks whatever this game is running or not.
-	 * 
-	 * @return true if this game running.
-	 */
-	public boolean isGameRunning() {
-		return running;
-	}
-
-	/**
-	 * Sets this game to a new state.
-	 * 
-	 * @param running this game should run or not
-	 */
-	public void setGameRunning(boolean running) {
-		this.running = running;
-	}
-
-	/**
-	 * Gets the game current set GameStatus.
-	 * 
-	 * @return {@link GameStatus}
-	 */
-	public GameStatus getStatus() {
-		return status;
-	}
-
-	/**
-	 * Sets the game status to new status.
-	 * 
-	 * @param status the new status to be set for the game
-	 */
-	public void setStatus(GameStatus status) {
-		if (status == null) {
-			status = GameStatus.STOPPED;
-		}
-
-		Utils.callEvent(new RMGameStatusChangeEvent(this, status));
-		this.status = status;
 	}
 
 	/**
@@ -330,9 +488,8 @@ public class Game {
 	public boolean hasRoomForVIP() {
 		int vipsInGame = 0;
 
-		for (Entry<UUID, PlayerManager> players : players.entrySet()) {
-			if (players.getValue().getGameName().equalsIgnoreCase(name)
-					&& Bukkit.getPlayer(players.getKey()).hasPermission("ragemode.vip")) {
+		for (PlayerManager player : players) {
+			if (player.getGameName().equalsIgnoreCase(name) && player.getPlayer().hasPermission("ragemode.vip")) {
 				vipsInGame++;
 			}
 		}
@@ -341,109 +498,26 @@ public class Game {
 	}
 
 	/**
-	 * Get the player by its uuid from list.
+	 * Removes all of scoreboard, tablist and score team things from player.
 	 * 
-	 * @param uuid Player uuid
-	 * @return {@link Player}
+	 * @param player {@link Player}
+	 * @return {@link ActionMessengers}
 	 */
-	public Player getPlayer(UUID uuid) {
-		Validate.notNull(uuid, "UUID can't be null");
-
-		for (UUID id : players.keySet()) {
-			if (uuid.equals(id)) {
-				return Bukkit.getPlayer(id);
+	public ActionMessengers removePlayerSynced(Player player) {
+		for (ActionMessengers action : acList) {
+			if (action.getPlayer() == player) {
+				action.getScoreboard().remove(player);
+				TabTitles.sendTabTitle(player, "", "");
+				action.getScoreTeam().remove();
+				return action;
 			}
 		}
 
 		return null;
 	}
 
-	/**
-	 * Get the spectator player by its uuid from list.
-	 * 
-	 * @param uuid Player uuid
-	 * @return {@link Player}
-	 */
-	public Player getSpectatorPlayer(UUID uuid) {
-		Validate.notNull(uuid, "UUID can't be null");
-
-		for (UUID id : specPlayer.keySet()) {
-			if (uuid.equals(id)) {
-				return Bukkit.getPlayer(id);
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * Gets all players including spectators from this game.
-	 * 
-	 * @return list of {@link PlayerManager}
-	 */
-	public List<PlayerManager> getAllPlayers() {
-		List<PlayerManager> list = new ArrayList<>();
-		players.values().forEach(list::add);
-		specPlayer.values().forEach(list::add);
-		return list;
-	}
-
-	/**
-	 * Gets the {@link PlayerManager} player converted to list.
-	 * 
-	 * @return list of {@link PlayerManager}
-	 */
-	public List<PlayerManager> getPlayersFromList() {
-		return new ArrayList<>(players.values());
-	}
-
-	/**
-	 * Gets the {@link PlayerManager} spectator players converted to list.
-	 * 
-	 * @return list of {@link PlayerManager}
-	 */
-	public List<PlayerManager> getSpectatorPlayersFromList() {
-		return new ArrayList<>(specPlayer.values());
-	}
-
-	/**
-	 * Gets the {@link PlayerManager} by spectator player.
-	 * 
-	 * @param p Spectator player
-	 * @return {@link PlayerManager} by spectator player
-	 */
-	public Optional<PlayerManager> getSpectatorPlayerManager(Player p) {
-		Validate.notNull(p, "Player can't be null!");
-
-		return Optional.ofNullable(specPlayer.get(p.getUniqueId()));
-	}
-
-	/**
-	 * Gets the {@link PlayerManager} by player.
-	 * 
-	 * @param p Player
-	 * @return {@link PlayerManager} by player
-	 */
-	public Optional<PlayerManager> getPlayerManager(Player p) {
-		Validate.notNull(p, "Player can't be null!");
-
-		return Optional.ofNullable(players.get(p.getUniqueId()));
-	}
-
-	public LobbyTimer getLobbyTimer() {
-		return lobbyTimer;
-	}
-
-	public Set<ActionMessengers> getActionMessengers() {
-		return acList;
-	}
-
-	/**
-	 * Cancels the lobby timer.
-	 */
-	public void cancelLobbyTimer() {
-		if (lobbyTimer != null) {
-			lobbyTimer.cancel();
-		}
+	@Override
+	public boolean equals(Object obj) {
+		return obj == this || (obj instanceof Game && ((Game) obj).getName().equalsIgnoreCase(name));
 	}
 }

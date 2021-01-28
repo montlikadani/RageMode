@@ -1,5 +1,6 @@
 package hu.montlikadani.ragemode.commands.list;
 
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -17,6 +18,7 @@ public class holostats implements ICommand {
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		Player p = (Player) sender;
+
 		if (args.length < 2) {
 			sendMessage(p,
 					RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <add/remove/tp>"));
@@ -24,38 +26,20 @@ public class holostats implements ICommand {
 		}
 
 		IHoloHolder holder = RageMode.getInstance().getHoloHolder();
-		org.bukkit.Location closest = null;
 
 		switch (args[1].toLowerCase()) {
 		case "add":
 			holder.addHolo(p.getLocation());
 			break;
 		case "remove":
-			if (holder.getClosest(p, true).isPresent()) {
-				if (RageMode.getInstance().isPluginEnabled("HolographicDisplays")) {
-					closest = ((com.gmail.filoghost.holographicdisplays.api.Hologram) holder.getClosest(p, true).get())
-							.getLocation();
-				} else {
-					closest = ((ArmorStands) holder.getClosest(p, true).get()).getLocation();
-				}
-			}
-
-			if (!holder.deleteHologram(closest)) {
+			if (!holder.deleteHologram(getClosest(p, holder, true))) {
 				sendMessage(p, RageMode.getLang().get("commands.holostats.no-holo-found"));
 				return false;
 			}
 
 			break;
 		case "tp":
-			if (holder.getClosest(p, true).isPresent()) {
-				if (RageMode.getInstance().isPluginEnabled("HolographicDisplays")) {
-					closest = ((com.gmail.filoghost.holographicdisplays.api.Hologram) holder.getClosest(p, false).get())
-							.getLocation();
-				} else {
-					closest = ((ArmorStands) holder.getClosest(p, false).get()).getLocation();
-				}
-			}
-
+			Location closest = getClosest(p, holder, false);
 			if (closest == null) {
 				sendMessage(p, RageMode.getLang().get("commands.holostats.no-holo-found"));
 				return false;
@@ -68,5 +52,18 @@ public class holostats implements ICommand {
 		}
 
 		return true;
+	}
+
+	private Location getClosest(Player player, IHoloHolder holder, boolean eye) {
+		if (holder.getClosest(player, eye).isPresent()) {
+			if (RageMode.getInstance().isPluginEnabled("HolographicDisplays")) {
+				return holder.<com.gmail.filoghost.holographicdisplays.api.Hologram>getClosest(player, eye).get()
+						.getLocation();
+			}
+
+			return holder.<ArmorStands>getClosest(player, eye).get().getLocation();
+		}
+
+		return null;
 	}
 }

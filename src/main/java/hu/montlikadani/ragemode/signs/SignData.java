@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.signs;
 
 import java.util.List;
 
+import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -9,33 +10,34 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.material.Directional;
 
 import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.utils.MaterialUtil;
 
 public class SignData {
 
 	private String world;
 
-	private double x;
-	private double y;
-	private double z;
+	private double x, y, z;
 
-	private String game;
+	private String gameName;
 	private SignPlaceholder placeholder;
 
-	public SignData(Location loc, String game) {
+	public SignData(Location loc, String gameName) {
+		Validate.notNull(loc, "loc cannot be null");
+
 		this.world = loc.getWorld().getName();
 		this.x = loc.getBlockX();
 		this.y = loc.getBlockY();
 		this.z = loc.getBlockZ();
 
-		this.game = game == null ? "" : game;
+		this.gameName = gameName == null ? "" : gameName;
 		this.placeholder = new SignPlaceholder(ConfigValues.getSignTextLines());
 	}
 
@@ -59,8 +61,8 @@ public class SignData {
 		return new Location(Bukkit.getWorld(world), x, y, z);
 	}
 
-	public String getGame() {
-		return game;
+	public String getGameName() {
+		return gameName;
 	}
 
 	public SignPlaceholder getPlaceholder() {
@@ -79,8 +81,8 @@ public class SignData {
 		}
 
 		Sign sign = (Sign) b.getState();
-		if (GameUtils.isGameWithNameExists(game)) {
-			List<String> lines = placeholder.parsePlaceholder(game);
+		if (GameUtils.isGameExist(gameName)) {
+			List<String> lines = placeholder.parsePlaceholder(gameName);
 			for (int i = 0; i < 4; i++) {
 				sign.setLine(i, lines.get(i));
 			}
@@ -109,8 +111,13 @@ public class SignData {
 		try {
 			bf = ((Directional) s.getData()).getFacing();
 		} catch (ClassCastException e) {
-			org.bukkit.block.data.type.WallSign data = (org.bukkit.block.data.type.WallSign) s.getBlockData();
-			bf = data.getFacing();
+			if (s.getBlockData() instanceof WallSign) {
+				bf = ((WallSign) s.getBlockData()).getFacing();
+			}
+		}
+
+		if (bf == null) {
+			return;
 		}
 
 		Location loc2 = new Location(loc.getWorld(), loc.getBlockX() - bf.getModX(), loc.getBlockY() - bf.getModY(),
@@ -128,7 +135,8 @@ public class SignData {
 	}
 
 	private void changeBlockBackground() {
-		GameStatus status = GameUtils.getGame(game).getStatus();
+		Game game = GameUtils.getGame(gameName);
+		GameStatus status = game.getStatus();
 		String type = ConfigValues.getSignBackground().toLowerCase();
 
 		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
@@ -141,8 +149,7 @@ public class SignData {
 					updateBackground(Material.YELLOW_TERRACOTTA);
 			}
 
-			if (status == GameStatus.WAITING
-					&& GameUtils.getGame(game).getPlayers().size() == GetGames.getMaxPlayers(game)) {
+			if (status == GameStatus.WAITING && game.getPlayers().size() == game.maxPlayers) {
 				if (type.contentEquals("wool"))
 					updateBackground(Material.BLUE_WOOL);
 				else if (type.contentEquals("glass"))
@@ -151,7 +158,7 @@ public class SignData {
 					updateBackground(Material.BLUE_TERRACOTTA);
 			}
 
-			if (status == GameStatus.RUNNING && GameUtils.getGame(game).isGameRunning()) {
+			if (status == GameStatus.RUNNING && game.isGameRunning()) {
 				if (type.contentEquals("wool"))
 					updateBackground(Material.LIME_WOOL);
 				else if (type.contentEquals("glass"))
@@ -176,8 +183,7 @@ public class SignData {
 					updateBackground(Material.getMaterial("STAINED_CLAY"), 4);
 			}
 
-			if (status == GameStatus.WAITING
-					&& GameUtils.getGame(game).getPlayers().size() == GetGames.getMaxPlayers(game)) {
+			if (status == GameStatus.WAITING && game.getPlayers().size() == game.maxPlayers) {
 				if (type.contentEquals("wool"))
 					updateBackground(Material.getMaterial("WOOL"), 11);
 				else if (type.contentEquals("glass"))
@@ -186,7 +192,7 @@ public class SignData {
 					updateBackground(Material.getMaterial("STAINED_CLAY"), 11);
 			}
 
-			if (status == GameStatus.RUNNING && GameUtils.getGame(game).isGameRunning()) {
+			if (status == GameStatus.RUNNING && game.isGameRunning()) {
 				if (type.contentEquals("wool"))
 					updateBackground(Material.getMaterial("WOOL"), 5);
 				else if (type.contentEquals("glass"))

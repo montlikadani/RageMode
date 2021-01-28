@@ -40,6 +40,7 @@ public class RMConnection {
 		synchronized (conn) {
 			try {
 				return conn != null && conn.isValid(timeout);
+			} catch (AbstractMethodError e) { // Some softwares does not have new 1.6+ database
 			} catch (SQLException e) {
 				Debug.logConsole(e.getMessage());
 			}

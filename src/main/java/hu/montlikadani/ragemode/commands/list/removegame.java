@@ -9,6 +9,7 @@ import hu.montlikadani.ragemode.API.event.RMGameDeleteEvent;
 import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
@@ -24,26 +25,27 @@ public class removegame implements ICommand {
 			return true;
 		}
 
-		String game = args[1];
-		if (!GameUtils.isGameWithNameExists(game)) {
+		String gameName = args[1];
+		if (!GameUtils.isGameExist(gameName)) {
 			sendMessage(p, RageMode.getLang().get("setup.removed-non-existent-game"));
 			return false;
 		}
 
-		if (GameUtils.getGame(game).isGameRunning()) {
+		Game game = GameUtils.getGame(gameName);
+		if (game.isGameRunning()) {
 			sendMessage(p, RageMode.getLang().get("game.running"));
 			return false;
 		}
 
-		Utils.callEvent(new RMGameDeleteEvent(GameUtils.getGame(game)));
+		Utils.callEvent(new RMGameDeleteEvent(game));
 
-		plugin.removeSpawn(game);
+		game.removeSpawn();
 		plugin.removeGame(game);
 
-		plugin.getConfiguration().getArenasCfg().set("arenas." + game, null);
+		plugin.getConfiguration().getArenasCfg().set("arenas." + game.getName(), null);
 		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 
-		sendMessage(p, RageMode.getLang().get("setup.success-removed", "%game%", game));
+		sendMessage(p, RageMode.getLang().get("setup.success-removed", "%game%", game.getName()));
 		return true;
 	}
 }

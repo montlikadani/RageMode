@@ -25,7 +25,7 @@ public class join implements ICommand {
 		}
 
 		String map = args[1];
-		if (!GameUtils.isGameWithNameExists(map)) {
+		if (!GameUtils.isGameExist(map)) {
 			sendMessage(p, RageMode.getLang().get("invalid-game", "%game%", map));
 			return false;
 		}

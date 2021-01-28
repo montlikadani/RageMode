@@ -8,6 +8,8 @@ import java.util.Map;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
+import com.google.common.collect.ImmutableMap;
+
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
@@ -125,7 +127,7 @@ public class ReJoinDelay {
 		return PLAYERTIMES.getOrDefault(p, 0L);
 	}
 
-	public static Map<OfflinePlayer, Long> getPlayerTimes() {
-		return java.util.Collections.unmodifiableMap(PLAYERTIMES);
+	public static ImmutableMap<OfflinePlayer, Long> getPlayerTimes() {
+		return ImmutableMap.copyOf(PLAYERTIMES);
 	}
 }

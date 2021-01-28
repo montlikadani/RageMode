@@ -6,7 +6,8 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.ConfigValues;
-import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.signs.SignCreator;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
@@ -25,12 +26,12 @@ public class signupdate implements ICommand {
 		}
 
 		if (args[1].equalsIgnoreCase("all")) {
-			for (String game : GetGames.getGameNames()) {
-				SignCreator.updateAllSigns(game);
+			for (Game game : plugin.getGames()) {
+				SignCreator.updateAllSigns(game.getName());
 			}
 		} else {
 			String name = args[1];
-			if (!GetGames.isGameExistent(name)) {
+			if (GameUtils.getGame(name) == null) {
 				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", name));
 				return false;
 			}

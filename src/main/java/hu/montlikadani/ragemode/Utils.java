@@ -16,6 +16,9 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+
 import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
@@ -46,7 +49,7 @@ public class Utils {
 	/**
 	 * Calls an event.
 	 * <p>
-	 * If the event is Asynchronous, it performs on the main thread, preventing
+	 * If the event is not Asynchronous, it performs on the main thread, preventing
 	 * async catch.
 	 * 
 	 * @param event {@link org.bukkit.event.Event}
@@ -56,7 +59,7 @@ public class Utils {
 			return;
 		}
 
-		if (!event.isAsynchronous()) {
+		if (!event.isAsynchronous() && !Bukkit.isPrimaryThread()) {
 			Bukkit.getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
 				Bukkit.getPluginManager().callEvent(event);
 				return true;
@@ -70,7 +73,7 @@ public class Utils {
 		final CompletableFuture<Boolean> comp = new CompletableFuture<>();
 		final ServerSoftwareType softwareType = RageMode.getSoftwareType();
 
-		if (softwareType == ServerSoftwareType.PAPER || softwareType == ServerSoftwareType.PURPUR) {
+		if (softwareType != ServerSoftwareType.UNKNOWN && softwareType != ServerSoftwareType.SPIGOT) {
 			entity.teleportAsync(loc).thenAccept(done -> {
 				if (!done) {
 					entity.teleport(loc);
@@ -193,8 +196,7 @@ public class Utils {
 
 		if (s.contains("%kd%")) {
 			double kd = pp == null ? 0d : pp.getKD();
-			NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
-			s = s.replace("%kd%", format.format(kd));
+			s = s.replace("%kd%", NumberFormat.getInstance(Locale.ENGLISH).format(kd));
 		}
 
 		if (s.contains("%current-streak%"))
@@ -250,7 +252,18 @@ public class Utils {
 		return s;
 	}
 
+	public static void connectToHub(Player player) {
+		ByteArrayDataOutput out = ByteStreams.newDataOutput();
+		out.writeUTF("Connect");
+		out.writeUTF(hu.montlikadani.ragemode.config.ConfigValues.getHubName());
+		player.sendPluginMessage(RageMode.getInstance(), "BungeeCord", out.toByteArray());
+	}
+
 	public static boolean isDouble(String str) {
+		if (str == null) {
+			return false;
+		}
+
 		try {
 			Double.parseDouble(str);
 		} catch (NumberFormatException e) {
@@ -261,6 +274,10 @@ public class Utils {
 	}
 
 	public static boolean isInt(String str) {
+		if (str == null) {
+			return false;
+		}
+
 		try {
 			Integer.parseInt(str);
 		} catch (NumberFormatException e) {
@@ -287,8 +304,7 @@ public class Utils {
 			if (Version.isCurrentEqualOrLower(Version.v1_8_R2)) {
 				Class<?> chatSerializer = getNMSClass("ChatSerializer");
 				Method m = chatSerializer.getMethod("a", String.class);
-				Object t = iChatBaseComponent.cast(m.invoke(chatSerializer, "{\"text\":\"" + name + "\"}"));
-				return t;
+				return iChatBaseComponent.cast(m.invoke(chatSerializer, "{\"text\":\"" + name + "\"}"));
 			}
 
 			Class<?> declaredClass = iChatBaseComponent.getDeclaredClasses()[0];

@@ -10,28 +10,24 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-@CommandProcessor(name = "setlobby", permission = "ragemode.admin.setlobby", playerOnly = true)
-public class setlobby implements ICommand {
+@CommandProcessor(name = "setup", permission = "ragemode.admin.setup", playerOnly = true)
+public class setup implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		Player p = (Player) sender;
+		Player player = (Player) sender;
 
 		if (args.length < 2) {
-			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm setlobby <gameName>"));
+			sendMessage(player, RageMode.getLang().get("missing-arguments", "%usage%", "/rm setup <gameName>"));
 			return false;
 		}
 
-		String gameName = args[1];
-
-		if (!GameUtils.isGameExist(gameName)) {
-			sendMessage(p, RageMode.getLang().get("invalid-game"));
+		if (!GameUtils.isGameExist(args[1])) {
+			sendMessage(player, RageMode.getLang().get("invalid-game", "%game%", args[1]));
 			return false;
 		}
 
-		GameUtils.getGame(gameName).getGameLobby().location = p.getLocation();
-		sendMessage(p, RageMode.getLang().get("setup.lobby.set-success", "%game%", gameName));
-
+		plugin.getSetupGui().openGui(player, GameUtils.getGame(args[1]));
 		return true;
 	}
 }

@@ -16,12 +16,12 @@ You can manually add the jar file to your build path or you can use jitpack if y
 </repositories>
 
 <dependencies>
-	<dependency>
-		<groupId>com.github.montlikadani</groupId>
-		<artifactId>RageMode</artifactId>
-		<version>LATEST</version> <!-- Change the LATEST to the current version of this plugin -->
-		<scope>provided</scope>
-	</dependency>
+    <dependency>
+        <groupId>com.github.montlikadani</groupId>
+        <artifactId>RageMode</artifactId>
+        <version>LATEST</version> <!-- Change the LATEST to the current version of this plugin -->
+        <scope>provided</scope>
+    </dependency>
 </dependencies>
 ```
 

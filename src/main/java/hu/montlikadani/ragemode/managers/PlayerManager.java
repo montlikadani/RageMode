@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import com.google.common.base.Preconditions;
@@ -21,15 +22,15 @@ public class PlayerManager {
 	 */
 	public static final Map<UUID, Boolean> DEATHMESSAGESTOGGLE = new HashMap<>();
 
-	private Player player;
+	private UUID playerUUID;
 	private String game;
 
 	private int lives = 0;
 
 	private final StorePlayerStuffs sps = new StorePlayerStuffs();
 
-	public PlayerManager(Player player, String game) {
-		this.player = player;
+	public PlayerManager(UUID playerUUID, String game) {
+		this.playerUUID = playerUUID;
 		this.game = game;
 	}
 
@@ -39,7 +40,7 @@ public class PlayerManager {
 	 * @return {@link Player}
 	 */
 	public Player getPlayer() {
-		return player;
+		return Bukkit.getPlayer(playerUUID);
 	}
 
 	/**
@@ -122,6 +123,7 @@ public class PlayerManager {
 	 * @param spectator the player is spectator or not
 	 */
 	public void storePlayerTools(boolean spectator) {
+		Player player = getPlayer();
 		if (player == null) {
 			return;
 		}
@@ -173,6 +175,7 @@ public class PlayerManager {
 	 * @param spectator the player is spectator or not
 	 */
 	public void addBackTools(boolean spectator) {
+		Player player = getPlayer();
 		if (player == null) {
 			return;
 		}
@@ -182,7 +185,7 @@ public class PlayerManager {
 		}
 
 		if (ConfigValues.isBungee()) {
-			RageMode.getInstance().getBungeeUtils().connectToHub(player);
+			Utils.connectToHub(player);
 			return;
 		}
 

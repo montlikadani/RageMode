@@ -9,6 +9,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.IGameSpawn;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
@@ -25,7 +26,7 @@ public class addspawn implements ICommand {
 			return false;
 		}
 
-		if (!GameUtils.isGameWithNameExists(args[1])) {
+		if (!GameUtils.isGameExist(args[1])) {
 			sendMessage(p, RageMode.getLang().get("invalid-game"));
 			return false;
 		}
@@ -54,7 +55,7 @@ public class addspawn implements ICommand {
 		aFile.set(path + "pitch", loc.getPitch());
 		Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
-		IGameSpawn spawn = GameUtils.getGameSpawn(args[1]);
+		IGameSpawn spawn = GameUtils.getGame(args[1]).getSpawn(GameSpawn.class);
 		if (spawn != null) {
 			spawn.addSpawn(loc);
 		}

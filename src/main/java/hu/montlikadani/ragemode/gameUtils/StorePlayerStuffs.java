@@ -22,7 +22,7 @@ public class StorePlayerStuffs {
 	public Entity oldVehicle;
 	public Scoreboard currentBoard;
 
-	// Spectator datas
+	// Spectator
 	public boolean fly = false;
 	public boolean allowFly = false;
 

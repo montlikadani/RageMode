@@ -89,7 +89,7 @@ signs:
 # Actionbar/Bossbar message when started the game and sends to player.
 # This will be ignored, when the actionbar/bossbar option is disabled, or
 # this list is empty.
-# Actionbar usage found on https://github.com/montlikadani/RageMode/wiki/Actionbar-&-Bossbar-actions
+# Usage found on https://github.com/montlikadani/RageMode/wiki/Actionbar-&-Bossbar-actions
 message-actions:
 - "[actionbar];join:&cHello&a %player%&c in this game!"
 - "[actionbar];start:&aGame has started!&2 We wish you a good game!"
@@ -170,10 +170,6 @@ game:
   # If this false if player has fallen to ground then not damage.
   damage-player-fall: false
 
-  # This option can be useful when a player is using a FastBow cheat,
-  # so it will be disabled by the plugin if it is enabled.
-  prevent-fastbow-event: true
-
   # Respawn protection when player dead and respawned.
   # Counts in seconds.
   # If the value 0, ignoring the protection.
@@ -242,20 +238,6 @@ game:
   # Kicks random player from the game if that game is full, and
   # the joining player have permission "ragemode.vip".
   kickRandomPlayerIfJoinsVipToFullGame: true
-
-  # Defaults values when in the setup does not contain e.g bossbar.
-  defaults:
-    # Bossbar messages when a player killed someone.
-    bossbar: false
-
-    # Actionbar messages when a player get points or killed someone.
-    actionbar: true
-
-    # Lobby delay to start the game in seconds.
-    lobby-delay: 30
-
-    # Default game time in minutes.
-    gametime: 10
 
   tablist:
     # Player prefix/suffix format to show for example the player kills, deaths etc.

@@ -12,10 +12,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.util.StringUtil;
 
+import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.database.DBType;
 import hu.montlikadani.ragemode.gameUtils.GameType;
-import hu.montlikadani.ragemode.gameUtils.GetGames;
 
 public class RmTabCompleter implements TabCompleter {
 
@@ -26,13 +26,20 @@ public class RmTabCompleter implements TabCompleter {
 			String partOfCommand = null;
 
 			if (args.length < 2) {
-				if (args[0].equalsIgnoreCase("joinrandom") && hasPerm(sender, "ragemode.joinrandom")) {
+				if (hasPerm(sender, "ragemode.joinrandom")) {
 					cmds.add("joinrandom");
 				}
 
 				getDefaultCmds(sender).forEach(cmds::add);
 				getAdminCmds(sender).forEach(cmds::add);
-				getSomeCmds(sender).forEach(cmds::add);
+
+				if (hasPerm(sender, "ragemode.admin.setgametime")) {
+					cmds.add("gametime");
+				}
+
+				if (hasPerm(sender, "ragemode.admin.setlobbydelay")) {
+					cmds.add("lobbydelay");
+				}
 
 				partOfCommand = args[0];
 			} else if (args.length < 3) {
@@ -41,7 +48,7 @@ public class RmTabCompleter implements TabCompleter {
 				} else if (args[0].equalsIgnoreCase("points")) {
 					Arrays.asList("set", "add", "take").forEach(cmds::add);
 				} else if (args[0].equalsIgnoreCase("signupdate")) {
-					GetGames.getGames().forEach(cmds::add);
+					RageMode.getInstance().getGames().forEach(game -> cmds.add(game.getName()));
 					cmds.add("all");
 				} else if (args[0].equalsIgnoreCase("convertdatabase")) {
 					for (DBType type : DBType.values()) {
@@ -50,12 +57,12 @@ public class RmTabCompleter implements TabCompleter {
 				} else if (args[0].equalsIgnoreCase("area")) {
 					Arrays.asList("add", "remove", "info", "list").forEach(cmds::add);
 				} else {
-					for (String game : Arrays.asList("actionbar", "bossbar", "gametime", "lobbydelay", "removegame",
+					for (String name : Arrays.asList("gametime", "lobbydelay", "removegame",
 							"forcestart", "setlobby", "addspawn", "addzombiespawn", "join", "stop", "stopgame",
 							"togglegame", "spectate", "removespawn", "removezombiespawn", "listplayers", "kick",
-							"maxplayers", "minplayers", "setgametype")) {
-						if (args[0].equalsIgnoreCase(game) && !GetGames.getGames().isEmpty()) {
-							GetGames.getGames().forEach(cmds::add);
+							"maxplayers", "minplayers", "setgametype", "setup")) {
+						if (args[0].equalsIgnoreCase(name) && !RageMode.getInstance().getGames().isEmpty()) {
+							RageMode.getInstance().getGames().forEach(game -> cmds.add(game.getName()));
 							break;
 						}
 					}
@@ -63,29 +70,21 @@ public class RmTabCompleter implements TabCompleter {
 
 				partOfCommand = args[1];
 			} else if (args.length < 4) {
-				for (String c : Arrays.asList("actionbar", "bossbar")) {
-					if (args[0].equalsIgnoreCase(c)) {
-						Arrays.asList("true", "false").forEach(cmds::add);
-						partOfCommand = args[2];
-						break;
-					}
-				}
-
 				if (args[0].equalsIgnoreCase("removespawn") || args[0].equalsIgnoreCase("removezombiespawn")) {
 					cmds.add("all");
-					partOfCommand = args[2];
 				} else if (args[0].equalsIgnoreCase("area")) {
 					if (args[1].equalsIgnoreCase("add")) {
-						GetGames.getGames().forEach(cmds::add);
+						RageMode.getInstance().getGames().forEach(game -> cmds.add(game.getName()));
 					} else if (args[1].equalsIgnoreCase("remove")) {
 						GameAreaManager.getGameAreas().keySet().forEach(cmds::add);
 					}
-
-					partOfCommand = args[2];
 				} else if (args[0].equalsIgnoreCase("setgametype")) {
-					Arrays.asList(GameType.values()).forEach(t -> cmds.add(t.toString().toLowerCase()));
-					partOfCommand = args[2];
+					for (GameType t : GameType.values()) {
+						cmds.add(t.toString().toLowerCase());
+					}
 				}
+
+				partOfCommand = args[2];
 			}
 
 			// Completes the player names
@@ -117,23 +116,12 @@ public class RmTabCompleter implements TabCompleter {
 		for (String cmd : Arrays.asList("addgame", "addspawn", "addzombiespawn", "setlobby", "reload", "holostats",
 				"removegame", "resetplayerstats", "forcestart", "kick", "stopgame", "signupdate", "togglegame",
 				"points", "givesaveditems", "removespawn", "latestart", "maxplayers", "minplayers", "convertdatabase",
-				"area", "setgametype", "removezombiespawn")) {
+				"area", "setgametype", "removezombiespawn", "setup")) {
 			if (hasPerm(sender, "ragemode.admin." + cmd)) {
 				cmds.add(cmd);
 			}
 		}
 
 		return cmds;
-	}
-
-	private List<String> getSomeCmds(CommandSender sender) {
-		List<String> c = new ArrayList<>();
-		for (String cmds : Arrays.asList("actionbar", "bossbar", "gametime", "lobbydelay")) {
-			if (hasPerm(sender, "ragemode.admin.set" + cmds)) {
-				c.add(cmds);
-			}
-		}
-
-		return c;
 	}
 }

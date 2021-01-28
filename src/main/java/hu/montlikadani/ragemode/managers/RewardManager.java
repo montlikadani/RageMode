@@ -14,9 +14,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 import hu.montlikadani.ragemode.Debug;
-import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.utils.Misc;
 
 public class RewardManager {
 
@@ -52,8 +52,7 @@ public class RewardManager {
 		}
 
 		for (String path : conf.getStringList("rewards.end-game.winner.messages")) {
-			path = replacePlaceholders(path, winner, true);
-			winner.sendMessage(path);
+			winner.sendMessage(replacePlaceholders(path, winner, true));
 		}
 
 		double cash = conf.getDouble("rewards.end-game.winner.cash");
@@ -104,7 +103,7 @@ public class RewardManager {
 	}
 
 	private void addItems(String path, Player p) {
-		if (!conf.contains("rewards.end-game." + path + ".items")) {
+		if (!conf.isConfigurationSection("rewards.end-game." + path + ".items")) {
 			return;
 		}
 
@@ -133,42 +132,44 @@ public class RewardManager {
 				itemStack.setAmount(conf.getInt(rewPath + "amount", 1));
 
 				if (conf.contains(rewPath + "durability"))
-					NMS.setDurability(itemStack, (short) conf.getDouble(rewPath + "durability"));
+					Misc.setDurability(itemStack, (short) conf.getDouble(rewPath + "durability"));
 
-				if (conf.getBoolean(rewPath + "meta", false)) {
-					ItemMeta itemMeta = itemStack.getItemMeta();
-					String name = conf.getString(rewPath + "name", "");
-					if (!name.isEmpty())
-						itemMeta.setDisplayName(name.replaceAll("&", "\u00a7"));
+				ItemMeta itemMeta = itemStack.getItemMeta();
+				if (itemMeta == null) {
+					continue;
+				}
 
-					List<String> loreList = conf.getStringList(rewPath + "lore");
-					if (!loreList.isEmpty())
-						itemMeta.setLore(Utils.colorList(loreList));
+				String name = conf.getString(rewPath + "name", "");
+				if (!name.isEmpty())
+					itemMeta.setDisplayName(name.replaceAll("&", "\u00a7"));
 
-					if (type.startsWith("LEATHER_")) {
-						String color = conf.getString(rewPath + "color", "");
-						if (!color.isEmpty() && itemMeta instanceof LeatherArmorMeta) {
-							((LeatherArmorMeta) itemMeta).setColor(getColorFromString(color));
-						}
+				List<String> loreList = conf.getStringList(rewPath + "lore");
+				if (!loreList.isEmpty())
+					itemMeta.setLore(Utils.colorList(loreList));
+
+				if (type.startsWith("LEATHER_")) {
+					String color = conf.getString(rewPath + "color", "");
+					if (!color.isEmpty() && itemMeta instanceof LeatherArmorMeta) {
+						((LeatherArmorMeta) itemMeta).setColor(getColorFromString(color));
 					}
+				}
 
-					itemStack.setItemMeta(itemMeta);
+				itemStack.setItemMeta(itemMeta);
 
-					List<String> enchantList = conf.getStringList(rewPath + "enchants");
-					for (String enchant : enchantList) {
-						String[] split = enchant.split(":");
-						try {
-							if (itemStack.getItemMeta() instanceof EnchantmentStorageMeta) {
-								EnchantmentStorageMeta enchMeta = (EnchantmentStorageMeta) itemStack.getItemMeta();
-								enchMeta.addStoredEnchant(NMS.getEnchant(split[0]),
-										(split.length > 2 ? Integer.parseInt(split[1]) : 1), true);
-								itemStack.setItemMeta(enchMeta);
-							} else
-								itemStack.addUnsafeEnchantment(NMS.getEnchant(split[0]), Integer.parseInt(split[1]));
-						} catch (IllegalArgumentException b) {
-							Debug.logConsole(Level.WARNING, "Bad enchantment name: " + split[0]);
-							continue;
-						}
+				List<String> enchantList = conf.getStringList(rewPath + "enchants");
+				for (String enchant : enchantList) {
+					String[] split = enchant.split(":");
+					try {
+						if (itemStack.getItemMeta() instanceof EnchantmentStorageMeta) {
+							EnchantmentStorageMeta enchMeta = (EnchantmentStorageMeta) itemStack.getItemMeta();
+							enchMeta.addStoredEnchant(Misc.getEnchant(split[0]),
+									(split.length > 2 ? Integer.parseInt(split[1]) : 1), true);
+							itemStack.setItemMeta(enchMeta);
+						} else
+							itemStack.addUnsafeEnchantment(Misc.getEnchant(split[0]), Integer.parseInt(split[1]));
+					} catch (IllegalArgumentException b) {
+						Debug.logConsole(Level.WARNING, "Bad enchantment name: " + split[0]);
+						continue;
 					}
 				}
 

@@ -36,8 +36,7 @@ public class joinrandom implements ICommand {
 			return false;
 		}
 
-		int r = ThreadLocalRandom.current().nextInt(games.size());
-		Game game = games.get(r);
+		Game game = games.get(ThreadLocalRandom.current().nextInt(games.size()));
 		if (game != null) {
 			if (!ConfigValues.isPlayersCanJoinRandomToRunningGames() && game.isGameRunning()) {
 				sendMessage(p, RageMode.getLang().get("commands.joinrandom.cantjoin"));

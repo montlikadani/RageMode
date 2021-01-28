@@ -6,12 +6,12 @@ package hu.montlikadani.ragemode.gameUtils;
 public enum GameType {
 
 	/**
-	 * Normal game, which player vs player
+	 * Normal game, player vs player
 	 */
 	NORMAL,
 
 	/**
-	 * Zombie apocalypse game, which zombies vs players
+	 * Zombie apocalypse game, zombies vs players
 	 */
 	APOCALYPSE("apocalypse", "zombieapocalypse", "zombie");
 

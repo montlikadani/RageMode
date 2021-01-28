@@ -4,6 +4,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
@@ -13,6 +14,7 @@ import hu.montlikadani.ragemode.managers.PlayerManager;
 import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
+@CommandProcessor(name = "listplayers", permission = "ragemode.listplayers")
 public class listplayers implements ICommand {
 
 	@Override
@@ -39,7 +41,7 @@ public class listplayers implements ICommand {
 
 			if (isPlayerPlaying) {
 				StringBuilder sb = new StringBuilder();
-				for (PlayerManager pm : GameUtils.getGameByPlayer(p).getPlayersFromList()) {
+				for (PlayerManager pm : GameUtils.getGameByPlayer(p).getPlayers()) {
 					sb.append("&7-&6 " + pm.getPlayer().getName() + "&a - " + pm.getGameName());
 				}
 
@@ -48,7 +50,7 @@ public class listplayers implements ICommand {
 
 			if (isSpectatorPlaying) {
 				StringBuilder sb = new StringBuilder();
-				for (PlayerManager pm : GameUtils.getGameBySpectator(p).getPlayersFromList()) {
+				for (PlayerManager pm : GameUtils.getGameBySpectator(p).getSpectatorPlayers()) {
 					sb.append("&7-&6 " + pm.getPlayer().getName() + "&a - " + pm.getGameName());
 				}
 
@@ -60,8 +62,8 @@ public class listplayers implements ICommand {
 
 		if (args.length >= 2) {
 			String gameName = args[1];
-			if (!GameUtils.isGameWithNameExists(gameName)) {
-				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", args[1]));
+			if (!GameUtils.isGameExist(gameName)) {
+				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", gameName));
 				return false;
 			}
 
@@ -73,7 +75,7 @@ public class listplayers implements ICommand {
 
 			if (!game.getPlayers().isEmpty()) {
 				StringBuilder sb = new StringBuilder();
-				for (PlayerManager pm : game.getPlayersFromList()) {
+				for (PlayerManager pm : game.getPlayers()) {
 					sb.append("&7-&6 " + pm.getPlayer().getName() + "&a - " + gameName);
 				}
 
@@ -82,7 +84,7 @@ public class listplayers implements ICommand {
 
 			if (!game.getSpectatorPlayers().isEmpty()) {
 				StringBuilder sb = new StringBuilder();
-				for (PlayerManager spec : game.getSpectatorPlayers().values()) {
+				for (PlayerManager spec : game.getSpectatorPlayers()) {
 					sb.append("\n&7-&6 " + spec.getPlayer().getName() + "&a - " + spec.getGameName());
 				}
 

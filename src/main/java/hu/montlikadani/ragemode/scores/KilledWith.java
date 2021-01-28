@@ -2,32 +2,41 @@ package hu.montlikadani.ragemode.scores;
 
 import org.bukkit.inventory.ItemStack;
 
-import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.items.Items;
 
 public enum KilledWith {
 
-	RAGEBOW(Items.getGameItem(3)), COMBATAXE(Items.getGameItem(0)), RAGEKNIFE(Items.getGameItem(4)), EXPLOSION,
-	GRENADE("explosion", Items.getGameItem(1)), RAGEARROW("explosion", Items.getGameItem(2)),
-	PRESSUREMINE("explosion", Items.getGameItem(6)), UNKNOWN;
+	RAGEBOW("arrow-kill", 3), COMBATAXE("axe-kill", 0), RAGEKNIFE("knife-kill", 4), EXPLOSION("explosion-kill"),
+	GRENADE("explosion", "grenade-kill", 1), RAGEARROW("explosion", "arrow-kill", 2), PRESSUREMINE("explosion", "", 6),
+	UNKNOWN("unknown-weapon");
 
-	private String metaName;
+	private String metaName, killTextPath = "";
 	private ItemStack item;
 
-	private KilledWith() {
+	KilledWith() {
 	}
 
-	private KilledWith(ItemHandler item) {
-		this("", item);
+	KilledWith(String killTextPath) {
+		this(killTextPath, -1);
 	}
 
-	private KilledWith(String metaName, ItemHandler item) {
+	KilledWith(String killTextPath, int itemIndex) {
+		this("", killTextPath, itemIndex);
+	}
+
+	KilledWith(String metaName, String killTextPath, int itemIndex) {
 		this.metaName = metaName;
-		this.item = item.get();
+		this.killTextPath = killTextPath;
+		this.item = Items.getGameItem(itemIndex) == null ? new ItemStack(org.bukkit.Material.STONE)
+				: Items.getGameItem(itemIndex).get();
 	}
 
 	public String getMetaName() {
 		return metaName;
+	}
+
+	public String getKillTextPath() {
+		return killTextPath;
 	}
 
 	public ItemStack asItemStack() {
@@ -36,7 +45,7 @@ public enum KilledWith {
 
 	public static KilledWith getByName(String name) {
 		for (KilledWith kw : values()) {
-			if (kw.toString().equalsIgnoreCase(name.trim())) {
+			if (kw.toString().equalsIgnoreCase(name)) {
 				return kw;
 			}
 		}

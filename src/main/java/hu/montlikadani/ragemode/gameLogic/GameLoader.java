@@ -10,7 +10,6 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameStartEvent;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.items.shop.LobbyShop;
 import hu.montlikadani.ragemode.gameUtils.GameUtils.ActionMessageType;
 import hu.montlikadani.ragemode.managers.PlayerManager;
@@ -37,31 +36,23 @@ public class GameLoader {
 
 		Utils.callEvent(new RMGameStartEvent(game));
 
-		String name = game.getName();
-
 		game.setGameRunning(true);
 		game.setStatus(GameStatus.RUNNING);
 
-		int time = !RageMode.getInstance().getConfiguration().getArenasCfg().isSet("arenas." + name + ".gametime")
-				? ConfigValues.getDefaultGameTime() < 0 ? 5 : ConfigValues.getDefaultGameTime()
-				: GetGames.getGameTime(name);
+		new Timer().scheduleAtFixedRate(new GameTimer(game, game.gameTime * 60), 0, 60 * 20L);
 
-		GameTimer gameTimer = new GameTimer(game, time * 60);
-		Timer t = new Timer();
-		t.scheduleAtFixedRate(gameTimer, 0, 60 * 20L);
+		SignCreator.updateAllSigns(game.getName());
 
-		SignCreator.updateAllSigns(name);
-
-		for (PlayerManager pm : game.getPlayersFromList()) {
+		for (PlayerManager pm : game.getPlayers()) {
 			Player p = pm.getPlayer();
 
 			GameUtils.addGameItems(p, true);
 			if (ConfigValues.isHidePlayerNameTag()) {
 				p.setCustomNameVisible(false);
 			}
-			GameUtils.runCommands(p, name, "start");
-			GameUtils.sendActionMessage(p, name, ActionMessageType.START, ActionMessageType.asBossbar());
-			GameUtils.sendActionMessage(p, name, ActionMessageType.START, ActionMessageType.asActionbar());
+			GameUtils.runCommands(p, game, "start");
+			GameUtils.sendActionMessage(p, game, ActionMessageType.START, ActionMessageType.asBossbar());
+			GameUtils.sendActionMessage(p, game, ActionMessageType.START, ActionMessageType.asActionbar());
 			LobbyShop.buyElements(p);
 
 			java.util.UUID uuid = p.getUniqueId();
@@ -79,20 +70,20 @@ public class GameLoader {
 		}
 
 		if (game.getGameType() == hu.montlikadani.ragemode.gameUtils.GameType.APOCALYPSE
-				&& GameUtils.getGameZombieSpawn(game) != null && !GameUtils.getGameZombieSpawn(game).isReady()) {
+				&& game.getSpawn(GameZombieSpawn.class) != null && !game.getSpawn(GameZombieSpawn.class).isReady()) {
 			GameUtils.broadcastToGame(game, RageMode.getLang().get("game.not-set-up"));
 			return false;
 		}
 
-		IGameSpawn gameSpawn = GameUtils.getGameSpawn(game);
-		if (gameSpawn.isReady()) {
+		IGameSpawn gameSpawn = game.getSpawn(GameSpawn.class);
+		if (gameSpawn != null && gameSpawn.isReady()) {
 			GameUtils.teleportPlayersToGameSpawns(gameSpawn);
 			return true;
 		}
 
 		GameUtils.broadcastToGame(game, RageMode.getLang().get("game.not-set-up"));
 
-		for (Iterator<PlayerManager> it = game.getPlayersFromList().iterator(); it.hasNext();) {
+		for (Iterator<PlayerManager> it = game.getPlayers().iterator(); it.hasNext();) {
 			game.removePlayer(it.next().getPlayer());
 		}
 

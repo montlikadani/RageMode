@@ -11,8 +11,6 @@ import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.Game;
-import hu.montlikadani.ragemode.gameLogic.GameSpawn;
-import hu.montlikadani.ragemode.gameLogic.GameZombieSpawn;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
@@ -31,7 +29,7 @@ public class addgame implements ICommand {
 		}
 
 		String game = args[1];
-		if (GameUtils.isGameWithNameExists(game)) {
+		if (GameUtils.isGameExist(game)) {
 			sendMessage(p, RageMode.getLang().get("setup.addgame.already-exists", "%game%", game));
 			return false;
 		}
@@ -91,13 +89,12 @@ public class addgame implements ICommand {
 		c.set("arenas." + game + ".gametype", type.toString().toLowerCase());
 		Configuration.saveFile(c, plugin.getConfiguration().getArenasFile());
 
-		if (type == GameType.APOCALYPSE) {
-			plugin.getSpawns().add(new GameZombieSpawn(g));
+		sendMessage(p, RageMode.getLang().get("setup.addgame.success-added", "%game%", game));
+
+		if (plugin.getSetupGui().openGui(p, g).isOpened()) {
+			sendMessage(p, "&2Opening setup gui... /rm setup");
 		}
 
-		plugin.getSpawns().add(new GameSpawn(g));
-
-		sendMessage(p, RageMode.getLang().get("setup.addgame.success-added", "%game%", game));
 		return true;
 	}
 }

@@ -6,7 +6,6 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.API.RageModeAPI;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
@@ -92,7 +91,7 @@ public class Placeholder extends PlaceholderExpansion {
 				}
 			}
 
-			boolean gameDefined = GetGames.isGameExistent(gameName, false);
+			boolean gameDefined = GameUtils.isGameExist(gameName);
 
 			for (RMPlaceholders holder : values()) {
 				if (id.equalsIgnoreCase(holder.toString())) {
@@ -145,8 +144,6 @@ public class Placeholder extends PlaceholderExpansion {
 			return "";
 		}
 
-		String gameName = placeholder.getGameName();
-
 		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(p.getUniqueId());
 		if (rpp != null) {
 			switch (placeholder) {
@@ -189,16 +186,19 @@ public class Placeholder extends PlaceholderExpansion {
 			}
 		}
 
-		switch (placeholder) {
-		case PLAYER_LIVES:
-			if (GameUtils.isPlayerPlaying(p)) {
-				PlayerManager pm = GameUtils.getGameByPlayer(p).getPlayerManager(p).orElse(null);
-				if (pm != null) {
-					return Integer.toString(pm.getPlayerLives());
-				}
+		if (placeholder == RMPlaceholders.PLAYER_LIVES && GameUtils.isPlayerPlaying(p)) {
+			PlayerManager pm = GameUtils.getGameByPlayer(p).getPlayerManager(p).orElse(null);
+			if (pm != null) {
+				return Integer.toString(pm.getPlayerLives());
 			}
+		}
 
-			break;
+		String gameName = placeholder.getGameName();
+		if (gameName.isEmpty()) {
+			return "";
+		}
+
+		switch (placeholder) {
 		case STATE:
 			return GameUtils.getGame(gameName).getStatus().toString().toLowerCase();
 		case PLAYERS:
@@ -206,7 +206,7 @@ public class Placeholder extends PlaceholderExpansion {
 		case SPECTATOR_PLAYERS:
 			return Integer.toString(GameUtils.getGame(gameName).getSpectatorPlayers().size());
 		case MAXPLAYERS:
-			return Integer.toString(GetGames.getMaxPlayers(gameName));
+			return Integer.toString(GameUtils.getGame(gameName).maxPlayers);
 		case ZOMBIES_ALIVE:
 			hu.montlikadani.ragemode.area.GameArea area = GameAreaManager.getAreaByGame(GameUtils.getGame(gameName));
 			if (area != null) {
@@ -217,7 +217,7 @@ public class Placeholder extends PlaceholderExpansion {
 		case TYPE:
 			return GameUtils.getGame(gameName).getGameType().toString().toLowerCase();
 		default:
-			break;
+			return "";
 		}
 
 		return "";

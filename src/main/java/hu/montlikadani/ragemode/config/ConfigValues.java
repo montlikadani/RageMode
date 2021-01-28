@@ -16,18 +16,18 @@ public class ConfigValues {
 			wonsubtitle, wonTitleTime, youwonTitle, youwonsubtitle, youwonTitleTime, tabPrefix, tabSuffix, sbTitle,
 			chatFormat;
 
-	private static boolean checkForUpdates, downloadUpdates, logConsole, savePlayerData, requireEmptyInv, bungee,
-			autoReconnect, useSSL, unicode, certificate, signsEnable, enableLobbyTitle, spectatorEnable,
+	private static boolean developerMode, checkForUpdates, downloadUpdates, logConsole, savePlayerData, requireEmptyInv,
+			bungee, autoReconnect, useSSL, unicode, certificate, signsEnable, enableLobbyTitle, spectatorEnable,
 			chatEnableinLobby, playerLevelAsTimeCounter, playersCanJoinRandomToRunningGames, perJoinPermissions,
-			damagePlayerFall, preventFastBowEvent, hidePlayerNameTag, cancelRedstoneActivating, cancelDoorUse,
-			useGrenadeTrails, useArrowTrails, enableChatInGame, kickRandomPlayerIfJoinsVipToFullGame, bossbarEnable,
-			actionbarEnable, switchGMForPlayers, disableAllCommandsInGameFreeze, enableChatAfterEnd, tabFormatEnable,
-			tabEnable, scoreboardEnable, enableChatFormat, restartServer, stopServer, rewardEnable, rejoinDelayEnabled,
-			rememberRejoinDelay, freezePlayers, waitForNextSpawnAfterZombiesAreDead, notifySpectatorsToLeave;
+			damagePlayerFall, hidePlayerNameTag, cancelRedstoneActivating, cancelDoorUse, useGrenadeTrails,
+			useArrowTrails, enableChatInGame, kickRandomPlayerIfJoinsVipToFullGame, switchGMForPlayers,
+			disableAllCommandsInGameFreeze, enableChatAfterEnd, tabFormatEnable, tabEnable, scoreboardEnable,
+			enableChatFormat, restartServer, stopServer, rewardEnable, rejoinDelayEnabled, rememberRejoinDelay,
+			freezePlayers, waitForNextSpawnAfterZombiesAreDead, notifySpectatorsToLeave;
 
-	private static int gameFreezeTime, lobbyDelay, gameTime, bowKill, axeKill, axeDeath, knifeKill, explosionKill,
-			suicide, grenadeKill, respawnProtectTime, rejoinDelayHour, rejoinDelayMinute, rejoinDelaySecond,
-			delayBeforeFirstZombiesSpawn, delayAfterNextZombiesSpawning, playerLives, timeBetweenMessageSending;
+	private static int gameFreezeTime, bowKill, axeKill, axeDeath, knifeKill, explosionKill, suicide, grenadeKill,
+			respawnProtectTime, rejoinDelayHour, rejoinDelayMinute, rejoinDelaySecond, delayBeforeFirstZombiesSpawn,
+			delayAfterNextZombiesSpawning, playerLives, timeBetweenMessageSending;
 
 	private static List<String> signTextLines, messageActions, allowedSpectatorCommands, allowedInGameCommands,
 			executeCommandsOnPlayerLeaveWhilePlaying;
@@ -37,6 +37,7 @@ public class ConfigValues {
 	public static void loadValues(CommentedConfig f) {
 		f.copyDefaults(true);
 
+		f.addComment("developerMode", "This will allows you for example to force start a game with only 1 player.");
 		f.addComment("language", "Default language. Example: en, hu, de etc.",
 				"You can find all supported languages on: https://github.com/montlikadani/RageMode/wiki/Languages");
 		f.addComment("log-console", "Logging console messages, such as error description");
@@ -72,7 +73,7 @@ public class ConfigValues {
 		f.addComment("signs.background.type", "Possible types: glass, wool, terracotta (clay), none");
 		f.addComment("message-actions", "Actionbar/Bossbar message when started the game and sends to player.",
 				"This will be ignored, when the actionbar/bossbar option is disabled, or", "this list is empty.",
-				"Actionbar usage found on https://github.com/montlikadani/RageMode/wiki/Actionbar-&-Bossbar-actions");
+				"Usage found on https://github.com/montlikadani/RageMode/wiki/Actionbar-&-Bossbar-actions");
 		f.addComment("titles", "Title texts");
 		f.addComment("titles.join-game", "When a player join to the game, and send title for him.");
 		f.addComment("titles.join-game.time", "Title time settings (in ticks)",
@@ -104,8 +105,6 @@ public class ConfigValues {
 				"Use \"ragemode.join.gameName\" permission.");
 		f.addComment("game", "Global settings for game.");
 		f.addComment("game.damage-player-fall", "If this false if player has fallen to ground then not damage.");
-		f.addComment("game.prevent-fastbow-event", "This option can be useful when a player is using a FastBow cheat,",
-				"so it will be disabled by the plugin if it is enabled.");
 		f.addComment("game.respawn-protection", "Respawn protection when player dead and respawned.",
 				"Counts in seconds.", "If the value 0, ignoring the protection.");
 		f.addComment("game.hide-players-name-tag", "Hide the players name tag who in game and playing?",
@@ -143,11 +142,6 @@ public class ConfigValues {
 		f.addComment("game.kickRandomPlayerIfJoinsVipToFullGame",
 				"Kicks random player from the game if that game is full, and",
 				"the joining player have permission \"ragemode.vip\".");
-		f.addComment("game.defaults", "Defaults values when in the setup does not contain e.g bossbar.");
-		f.addComment("game.defaults.bossbar", "Bossbar messages when a player killed someone.");
-		f.addComment("game.defaults.actionbar", "Actionbar messages when a player get points or killed someone.");
-		f.addComment("game.defaults.lobby-delay", "Lobby delay to start the game in seconds.");
-		f.addComment("game.defaults.gametime", "Default game time in minutes.");
 		f.addComment("game.tablist.player-format",
 				"Player prefix/suffix format to show for example the player kills, deaths etc.");
 		f.addComment("game.tablist.list", "Tablist header/footer");
@@ -169,6 +163,7 @@ public class ConfigValues {
 				"You can set to 0 to do not decrease the points amount from player if suicides itself.");
 
 		lang = f.get("language", "en");
+		developerMode = f.get("developerMode", false);
 		checkForUpdates = f.get("check-for-updates", true);
 		downloadUpdates = f.get("download-updates", false);
 		logConsole = f.get("log-console", true);
@@ -217,7 +212,6 @@ public class ConfigValues {
 		playersCanJoinRandomToRunningGames = f.get("players-can-join-random-to-running-games", true);
 		perJoinPermissions = f.get("per-join-permissions", false);
 		damagePlayerFall = f.get("game.damage-player-fall", false);
-		preventFastBowEvent = f.get("game.prevent-fastbow-event", true);
 		respawnProtectTime = f.get("game.respawn-protection", 3);
 		hidePlayerNameTag = f.get("game.hide-players-name-tag", false);
 		cancelRedstoneActivating = f.get("game.cancel-redstone-activating-blocks", true);
@@ -231,10 +225,6 @@ public class ConfigValues {
 		useArrowTrails = f.get("game.use-arrow-trails", false);
 		enableChatInGame = f.get("game.enable-chat-in-game", true);
 		kickRandomPlayerIfJoinsVipToFullGame = f.get("game.kickRandomPlayerIfJoinsVipToFullGame", true);
-		bossbarEnable = f.get("game.defaults.bossbar", false);
-		actionbarEnable = f.get("game.defaults.actionbar", true);
-		lobbyDelay = f.get("game.defaults.lobby-delay", 30);
-		gameTime = f.get("game.defaults.gametime", 10);
 		delayBeforeFirstZombiesSpawn = f.get("game.zombie-apocalypse.delay-before-first-spawn", 30);
 		delayAfterNextZombiesSpawning = f.get("game.zombie-apocalypse.delay-after-next-zombies-spawning", 30);
 		waitForNextSpawnAfterZombiesAreDead = f.get("game.zombie-apocalypse.wait-for-next-spawn-after-zombies-are-dead",
@@ -280,6 +270,12 @@ public class ConfigValues {
 		gameEndBroadcast = f.getIntList("game.end-broadcast-at-times", Arrays.asList(60, 30, 20, 10, 5, 4, 3, 2, 1));
 
 		f.save();
+		f.cleanUp();
+		f.save();
+	}
+
+	public static boolean isDeveloperMode() {
+		return developerMode;
 	}
 
 	public static String getLang() {
@@ -466,10 +462,6 @@ public class ConfigValues {
 		return damagePlayerFall;
 	}
 
-	public static boolean isPreventFastBowEvent() {
-		return preventFastBowEvent;
-	}
-
 	public static int getRespawnProtectTime() {
 		return respawnProtectTime;
 	}
@@ -500,22 +492,6 @@ public class ConfigValues {
 
 	public static boolean isKickRandomPlayerIfJoinsVip() {
 		return kickRandomPlayerIfJoinsVipToFullGame;
-	}
-
-	public static boolean isDefaultBossbarEnabled() {
-		return bossbarEnable;
-	}
-
-	public static boolean isDefaultActionbarEnabled() {
-		return actionbarEnable;
-	}
-
-	public static int getDefaultLobbyDelay() {
-		return lobbyDelay;
-	}
-
-	public static int getDefaultGameTime() {
-		return gameTime;
 	}
 
 	public static boolean isSwitchGMForPlayers() {

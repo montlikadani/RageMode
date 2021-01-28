@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -16,14 +17,13 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
 
-/**
- * @author montlikadani
- *
- */
-public class UpdateDownloader {
+public abstract class UpdateDownloader {
+
+	private static final File RELEASESFOLDER = new File(RageMode.getInstance().getFolder(), "releases");
 
 	public static void checkFromGithub(org.bukkit.command.CommandSender sender) {
 		if (!ConfigValues.isCheckForUpdates()) {
+			deleteDirectory();
 			return;
 		}
 
@@ -45,10 +45,12 @@ public class UpdateDownloader {
 				String versionString = lineWithVersion.split(": ")[1],
 						nVersion = versionString.replaceAll("[^0-9]", ""),
 						cVersion = RageMode.getInstance().getDescription().getVersion().replaceAll("[^0-9]", "");
+
 				int newVersion = Integer.parseInt(nVersion);
 				int currentVersion = Integer.parseInt(cVersion);
 
 				if (newVersion <= currentVersion || currentVersion >= newVersion) {
+					deleteDirectory();
 					return false;
 				}
 
@@ -65,19 +67,18 @@ public class UpdateDownloader {
 				sender.sendMessage(msg);
 
 				if (!ConfigValues.isDownloadUpdates()) {
+					deleteDirectory();
 					return false;
 				}
 
-				final String name = "RageMode-" + newVersion;
+				final String name = "RageMode-" + versionString;
 
-				String updatesFolder = RageMode.getInstance().getFolder() + File.separator + "releases";
-				File temp = new File(updatesFolder);
-				if (!temp.exists()) {
-					temp.mkdir();
+				if (!RELEASESFOLDER.exists()) {
+					RELEASESFOLDER.mkdir();
 				}
 
 				// Do not attempt to download the file again, when it is already downloaded
-				final File jar = new File(updatesFolder + File.separator + name + ".jar");
+				final File jar = new File(RELEASESFOLDER, name + ".jar");
 				if (jar.exists()) {
 					return false;
 				}
@@ -88,9 +89,14 @@ public class UpdateDownloader {
 						"https://github.com/montlikadani/RageMode/releases/latest/download/" + name + ".jar");
 
 				InputStream in = download.openStream();
-				Files.copy(in, jar.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				try {
+					Files.copy(in, jar.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				} finally {
+					in.close();
+				}
 
-				in.close();
+				return true;
+			} catch (FileNotFoundException f) {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -101,5 +107,23 @@ public class UpdateDownloader {
 				Debug.logConsole("The new RageMode has been downloaded to releases folder.");
 			}
 		});
+	}
+
+	private static void deleteDirectory() {
+		if (!RELEASESFOLDER.exists()) {
+			return;
+		}
+
+		for (File file : RELEASESFOLDER.listFiles()) {
+			try {
+				file.delete();
+			} catch (SecurityException e) {
+			}
+		}
+
+		try {
+			RELEASESFOLDER.delete();
+		} catch (SecurityException e) {
+		}
 	}
 }

@@ -8,6 +8,8 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.GameSpawn;
+import hu.montlikadani.ragemode.gameLogic.IGameSpawn;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.Items;
 
@@ -25,7 +27,7 @@ public class spectate implements ICommand {
 		}
 
 		String map = args[1];
-		if (!GameUtils.isGameWithNameExists(map)) {
+		if (!GameUtils.isGameExist(map)) {
 			sendMessage(p, RageMode.getLang().get("invalid-game"));
 			return false;
 		}
@@ -42,8 +44,9 @@ public class spectate implements ICommand {
 			return false;
 		}
 
-		if (game.addSpectatorPlayer(p)) {
-			p.teleport(GameUtils.getGameSpawn(map).getRandomSpawn());
+		IGameSpawn gameSpawn = game.getSpawn(GameSpawn.class);
+		if (gameSpawn != null && gameSpawn.haveAnySpawn() && game.addSpectatorPlayer(p)) {
+			p.teleport(gameSpawn.getRandomSpawn());
 
 			p.setAllowFlight(true);
 			p.setFlying(true);

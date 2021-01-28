@@ -26,7 +26,7 @@ public class togglegame implements ICommand {
 
 		String game = args[1];
 
-		if (!GameUtils.isGameWithNameExists(game)) {
+		if (!GameUtils.isGameExist(game)) {
 			sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", game));
 			return false;
 		}

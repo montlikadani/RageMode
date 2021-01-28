@@ -19,7 +19,6 @@ rewards:
          amount: 1
          slot: 6
          durability: 0
-         meta: true
          name: "&cKiller&6 Bow"
          lore:
          - "&4Killer bow!!"

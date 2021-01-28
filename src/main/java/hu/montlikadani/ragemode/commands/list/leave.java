@@ -30,8 +30,8 @@ public class leave implements ICommand {
 			return false;
 		}
 
-		GameUtils.runCommands(p, game.getName(), "leave");
-		GameUtils.sendActionMessage(p, game.getName(), ActionMessageType.LEAVE, ActionMessageType.asActionbar());
+		GameUtils.runCommands(p, game, "leave");
+		GameUtils.sendActionMessage(p, game, ActionMessageType.LEAVE, ActionMessageType.asActionbar());
 		GameUtils.leavePlayer(p, game);
 		return true;
 	}

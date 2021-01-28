@@ -1,8 +1,5 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import java.util.HashMap;
-import java.util.List;
-
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -29,7 +26,7 @@ public class stopgame implements ICommand {
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		if (args.length >= 2) {
 			String game = args[1];
-			if (!GameUtils.isGameWithNameExists(game)) {
+			if (!GameUtils.isGameExist(game)) {
 				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", game));
 				return false;
 			}
@@ -42,13 +39,12 @@ public class stopgame implements ICommand {
 
 			Utils.callEvent(new RMGameStopEvent(g));
 
-			List<PlayerManager> players = g.getPlayersFromList();
 			if (g.getGameType() != GameType.APOCALYPSE)
-				RageScores.calculateWinner(g, players);
+				RageScores.calculateWinner(g, g.getPlayers());
 			else
 				GameAreaManager.removeEntitiesFromGame(g);
 
-			for (PlayerManager pm : players) {
+			for (PlayerManager pm : g.getPlayers()) {
 				Player player = pm.getPlayer();
 
 				RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(g, player);
@@ -58,7 +54,7 @@ public class stopgame implements ICommand {
 				}
 			}
 
-			for (PlayerManager spec : new HashMap<>(g.getSpectatorPlayers()).values()) {
+			for (PlayerManager spec : g.getSpectatorPlayers()) {
 				g.removeSpectatorPlayer(spec.getPlayer());
 			}
 

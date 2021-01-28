@@ -1,8 +1,9 @@
 package hu.montlikadani.ragemode.scores;
 
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -26,7 +27,7 @@ import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 public class RageScores {
 
-	private static final HashMap<UUID, PlayerPoints> PLAYERPOINTS = new HashMap<>();
+	private static final Map<UUID, PlayerPoints> PLAYERPOINTS = new HashMap<>();
 
 	public static void addPointsToPlayer(Player killer, LivingEntity entity) {
 		getPlayerPoints(killer.getUniqueId()).ifPresent(killerPoints -> {
@@ -60,11 +61,11 @@ public class RageScores {
 		if (killerUUID.equals(victimUUID)) {
 			killer.sendMessage(RageMode.getLang().get("game.message.suicide"));
 
-			PlayerPoints pointsHolder = getPlayerPoints(killerUUID).orElse(null);
-			if (pointsHolder == null) {
-				pointsHolder = new PlayerPoints(killerUUID);
-				PLAYERPOINTS.put(killerUUID, pointsHolder);
-			}
+			PlayerPoints pointsHolder = getPlayerPoints(killerUUID).orElseGet(() -> {
+				PlayerPoints ph = new PlayerPoints(killerUUID);
+				PLAYERPOINTS.put(killerUUID, ph);
+				return ph;
+			});
 
 			int pointLoss = ConfigValues.getSuicide();
 			if (pointLoss != 0) {
@@ -248,7 +249,7 @@ public class RageScores {
 	 * 
 	 * @return the map of cached players
 	 */
-	public static HashMap<UUID, PlayerPoints> getPlayerPointsMap() {
+	public static Map<UUID, PlayerPoints> getPlayerPointsMap() {
 		return PLAYERPOINTS;
 	}
 
@@ -305,7 +306,7 @@ public class RageScores {
 		return pointsHolder.getPoints();
 	}
 
-	public static UUID calculateWinner(Game game, List<PlayerManager> players) {
+	public static UUID calculateWinner(Game game, Set<PlayerManager> players) {
 		game.setStatus(GameStatus.WINNER_CALCULATING);
 
 		UUID highest = UUID.randomUUID(),

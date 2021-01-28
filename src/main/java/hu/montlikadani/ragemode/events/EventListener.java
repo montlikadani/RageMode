@@ -18,13 +18,13 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
-import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.signs.SignCreator;
+import hu.montlikadani.ragemode.utils.Misc;
 import hu.montlikadani.ragemode.utils.UpdateDownloader;
 
 public class EventListener implements Listener {
@@ -63,15 +63,14 @@ public class EventListener implements Listener {
 			return;
 		}
 
-		org.bukkit.block.BlockState blockState = event.getBlock().getState();
-		if (blockState instanceof Sign && SignCreator.isSign(blockState.getLocation())) {
+		if (SignCreator.isSign(event.getBlock().getLocation())) {
 			if (!hasPerm(event.getPlayer(), "ragemode.admin.signs")) {
 				sendMessage(event.getPlayer(), RageMode.getLang().get("no-permission-to-interact-sign"));
 				event.setCancelled(true);
 				return;
 			}
 
-			SignCreator.removeSign((Sign) blockState);
+			SignCreator.removeSign((Sign) event.getBlock().getState());
 		}
 	}
 
@@ -89,8 +88,8 @@ public class EventListener implements Listener {
 		final Player p = event.getPlayer();
 		final org.bukkit.Location loc = b.getLocation();
 
-		if (hasPerm(p, "ragemode.admin.area") && NMS.getItemInHand(p).getType() == Material
-				.getMaterial(ConfigValues.getSelectionItem().toUpperCase())) {
+		if (hasPerm(p, "ragemode.admin.area")
+				&& Misc.getItemInHand(p).getType() == Material.matchMaterial(ConfigValues.getSelectionItem())) {
 			if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
 				RageMode.getInstance().getSelection().placeLoc1(p, loc);
 				sendMessage(p, RageMode.getLang().get("commands.area.selected1", "%x%", loc.getBlockX(), "%y%",
@@ -116,8 +115,8 @@ public class EventListener implements Listener {
 				return;
 			}
 
-			final String name = SignCreator.getSignData(loc) != null ? SignCreator.getSignData(loc).getGame() : null;
-			if (name == null || !GameUtils.isGameWithNameExists(name)) {
+			final String name = SignCreator.getSignData(loc) != null ? SignCreator.getSignData(loc).getGameName() : null;
+			if (name == null || !GameUtils.isGameExist(name)) {
 				sendMessage(p, RageMode.getLang().get("game.does-not-exist"));
 				return;
 			}
@@ -133,6 +132,11 @@ public class EventListener implements Listener {
 		}
 
 		Block b = event.getBlock();
+
+		if (!(b.getState() instanceof Sign)) {
+			return; // Probably never
+		}
+
 		Player p = event.getPlayer();
 		String l0 = event.getLine(0).toLowerCase();
 
@@ -144,7 +148,7 @@ public class EventListener implements Listener {
 			}
 
 			String l1 = event.getLine(1);
-			if (!GameUtils.isGameWithNameExists(l1)) {
+			if (!GameUtils.isGameExist(l1)) {
 				sendMessage(p, RageMode.getLang().get("invalid-game", "%game%", l1));
 				return;
 			}

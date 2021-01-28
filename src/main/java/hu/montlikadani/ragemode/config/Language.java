@@ -189,12 +189,8 @@ public class Language {
 		l.get("setup.lobby.set-success", "&2The lobby for the game&3 %game%&2 was set successfully!");
 		l.get("setup.lobby.not-set",
 				"&cThe lobby was not set yet for&3 %game%&c. Set it with&e /rm setlobby <gameName>&c command.");
-		l.get("setup.lobby.coords-not-set",
-				"&cThe lobby coordinates were not set properly. Ask an Admin to check the config.yml.");
-		l.get("setup.lobby.not-set-properly",
-				"&4The lobby was not set properly. Ask an Admin to check the config.yml.");
 		l.get("setup.lobby.worldname-not-set", "&cThe world key can't be empty! Ask an Admin to check the config.yml.");
-		l.get("setup.addgame.success-added", "&2The game &3%game%&2 was added successfully!");
+		l.get("setup.addgame.success-added", "&2The game &3%game%&2 was added successfully!&e Opening GUI... /rm setup");
 		l.get("setup.addgame.already-exists", "&cThis &e%game%&c game already exists.");
 		l.get("setup.addgame.special-chars", "&cThe name of the ragemode map contains special characters.");
 		l.get("setup.addgame.name-greater", "&cThe name of the ragemode map is too long&7 (< 20).");
@@ -218,7 +214,6 @@ public class Language {
 		l.get("game.spec-player-leave-notify", "&2You can leave this game by typing&e /rm leave");
 		l.get("game.lobby.start-message", "&9This round will start in&e %time%&9 seconds.");
 		l.get("game.lobby.chat-is-disabled", "&cThe chat currently is disabled in lobby!");
-		l.get("game.spawns-not-set-properly", "&cOne or more spawns are not set properly!");
 		l.get("game.areas-not-set", "&cAreas are not set properly.");
 		l.get("game.too-few-spawns", "&4The number of spawns must be greater than or equal the maxplayers value!");
 		l.get("game.no-spawns-configured", "&cIn&e %game%&c are no spawns configured!");
@@ -246,9 +241,6 @@ public class Language {
 		l.get("game.cant-bought-elements", "&cYou don't have enough money/points to buy these elements.");
 		l.get("game.chat-is-disabled", "&cThe chat currently is disabled!");
 		l.get("game.game-freeze.chat-is-disabled", "&cThe chat currently is disabled!");
-		l.get("game.name-or-maxplayers-not-set",
-				"&4The worldname or the maxplayers are not set. Please contact an Admin for further information.");
-		l.get("game.maxplayers-not-set", "&cThe maxplayers value for&e %game%&c is not set properly.");
 		l.get("game.worldname-not-set", "&4The world key can't be empty! Ask an Admin to check the config.yml.");
 		l.get("game.does-not-exist", "&cThe game you wish to join wasn't found.");
 		// l.get("game.no-enough-points", "&cThere are not enough points to pay for

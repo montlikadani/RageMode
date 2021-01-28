@@ -37,7 +37,7 @@ public class area implements ICommand {
 				return false;
 			}
 
-			if (!GameUtils.isGameWithNameExists(args[2])) {
+			if (!GameUtils.isGameExist(args[2])) {
 				sendMessage(p, RageMode.getLang().get("invalid-game", "%game%", args[2]));
 				return false;
 			}

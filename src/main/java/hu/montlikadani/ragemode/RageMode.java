@@ -3,11 +3,8 @@ package hu.montlikadani.ragemode;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.logging.Level;
 
 import org.bukkit.Material;
@@ -21,11 +18,10 @@ import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.area.Selection;
 import hu.montlikadani.ragemode.commands.RmCommand;
 import hu.montlikadani.ragemode.commands.RmTabCompleter;
+import hu.montlikadani.ragemode.config.CommentedConfig;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.Language;
-import hu.montlikadani.ragemode.database.DB;
-import hu.montlikadani.ragemode.database.DBType;
 import hu.montlikadani.ragemode.database.Database;
 import hu.montlikadani.ragemode.events.BungeeListener;
 import hu.montlikadani.ragemode.events.EventListener;
@@ -34,14 +30,10 @@ import hu.montlikadani.ragemode.events.Listeners_1_8;
 import hu.montlikadani.ragemode.events.Listeners_1_9;
 import hu.montlikadani.ragemode.events.PurpurListener;
 import hu.montlikadani.ragemode.gameLogic.Game;
-import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
-import hu.montlikadani.ragemode.gameLogic.GameZombieSpawn;
-import hu.montlikadani.ragemode.gameLogic.IGameSpawn;
-import hu.montlikadani.ragemode.gameUtils.BungeeUtils;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.gameUtils.gameSetup.SetupGui;
 import hu.montlikadani.ragemode.holder.ArmorStandHologram;
 import hu.montlikadani.ragemode.holder.HolographicDisplaysHolder;
 import hu.montlikadani.ragemode.holder.IHoloHolder;
@@ -59,15 +51,13 @@ import net.milkbowl.vault.economy.Economy;
 public class RageMode extends JavaPlugin {
 
 	private Configuration conf;
-	private BungeeUtils bungee;
 	private BossbarManager bossManager;
 	private Selection selection;
+	private SetupGui setupGui;
 
 	private IHoloHolder holoHolder;
 	private Economy econ;
 	private Database database;
-
-	private DBType dbType = DBType.YAML;
 
 	private static RageMode instance;
 	private static Language lang;
@@ -78,7 +68,6 @@ public class RageMode extends JavaPlugin {
 	private boolean vault = false;
 
 	private final List<Game> games = new ArrayList<>();
-	private final Set<IGameSpawn> spawns = new HashSet<>();
 
 	private final ItemHandler[] gameItems = new ItemHandler[7];
 	private final ItemHandler[] lobbyItems = new ItemHandler[4];
@@ -104,7 +93,7 @@ public class RageMode extends JavaPlugin {
 
 		if (serverVersion.getVersion().isEqualOrLower(Version.v1_8_R3))
 			getLogger().log(Level.INFO,
-					"[RageMode] This version not fully supported by this plugin, so some options will not work.");
+					"[RageMode] This version is not fully supported by this plugin, so some options will not work.");
 
 		conf = new Configuration(this);
 		conf.loadConfig();
@@ -115,7 +104,6 @@ public class RageMode extends JavaPlugin {
 		loadHooks();
 
 		if (ConfigValues.isBungee()) {
-			bungee = new BungeeUtils(this);
 			getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 		}
 
@@ -123,7 +111,7 @@ public class RageMode extends JavaPlugin {
 
 		registerListeners();
 		registerCommands();
-		connectDatabase();
+		connectDatabase(false);
 		loadGames();
 
 		if (serverVersion.getVersion().isEqualOrHigher(Version.v1_9_R1)) {
@@ -141,7 +129,7 @@ public class RageMode extends JavaPlugin {
 			metrics.addCustomChart(new Metrics.SimplePie("total_players",
 					() -> String.valueOf(RuntimePPManager.getRuntimePPList().size())));
 
-			metrics.addCustomChart(new Metrics.SimplePie("statistic_type", dbType.name()::toLowerCase));
+			metrics.addCustomChart(new Metrics.SimplePie("statistic_type", database.getDatabaseType().name()::toLowerCase));
 		}
 
 		Debug.logConsole("Loaded in " + (System.currentTimeMillis() - load) + "ms");
@@ -151,13 +139,17 @@ public class RageMode extends JavaPlugin {
 	public void onDisable() {
 		if (instance == null) return;
 
-		holoHolder.deleteAllHologram();
 		GameUtils.stopAllGames();
+		holoHolder.deleteAllHologram();
 		database.saveDatabase();
 
 		getServer().getScheduler().cancelTasks(this);
 		HandlerList.unregisterAll(this);
-		instance = null;
+	}
+
+	@Override
+	public CommentedConfig getConfig() {
+		return conf.getCfg();
 	}
 
 	private void loadHooks() {
@@ -194,7 +186,7 @@ public class RageMode extends JavaPlugin {
 		return softwareType;
 	}
 
-	private void connectDatabase() {
+	public void connectDatabase(boolean convert) {
 		switch (ConfigValues.databaseType.toLowerCase()) {
 		case "mysql":
 			database = new MySqlDB();
@@ -210,11 +202,9 @@ public class RageMode extends JavaPlugin {
 			break;
 		}
 
-		if (database.getClass().isAnnotationPresent(DB.class)) {
-			dbType = database.getClass().getAnnotation(DB.class).type();
+		if (!convert) {
+			database.loadDatabase(true);
 		}
-
-		database.loadDatabase(true);
 	}
 
 	private boolean initEconomy() {
@@ -227,8 +217,7 @@ public class RageMode extends JavaPlugin {
 		}
 
 		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-		econ = rsp == null ? null : rsp.getProvider();
-		return econ != null;
+		return (econ = rsp == null ? null : rsp.getProvider()) != null;
 	}
 
 	public synchronized boolean reload() {
@@ -239,14 +228,16 @@ public class RageMode extends JavaPlugin {
 
 			if (game.isGameRunning()) {
 				GameUtils.stopGame(game, false);
-				GameUtils.broadcastToGame(game, getLang().get("game.game-stopped-for-reload"));
+				GameUtils.broadcastToGame(game, lang.get("game.game-stopped-for-reload"));
 			} else if (game.getStatus() == GameStatus.WAITING) {
 				GameUtils.kickAllPlayers(game);
 			}
+
+			game.getGameLobby().saveToConfig();
+			game.saveGamesSettings();
 		}
 
 		games.clear();
-		spawns.clear();
 
 		loadHooks();
 
@@ -261,7 +252,7 @@ public class RageMode extends JavaPlugin {
 
 		registerListeners();
 		if (database == null) { // We don't need to save database on reload, due to duplications
-			connectDatabase();
+			connectDatabase(false);
 		}
 
 		holoHolder.loadHolos();
@@ -276,7 +267,7 @@ public class RageMode extends JavaPlugin {
 	}
 
 	private void registerListeners() {
-		Arrays.asList(new EventListener(), new GameListener(this))
+		Arrays.asList(new EventListener(), new GameListener(this), (setupGui = new SetupGui()))
 				.forEach(l -> getServer().getPluginManager().registerEvents(l, this));
 
 		if (softwareType == ServerSoftwareType.PURPUR) {
@@ -295,26 +286,19 @@ public class RageMode extends JavaPlugin {
 	private void loadGames() {
 		selection = new Selection();
 
-		if (conf.getArenasCfg().contains("arenas")) {
-			for (String game : GetGames.getGameNames()) {
+		if (conf.getArenasCfg().isConfigurationSection("arenas")) {
+			for (String game : conf.getArenasCfg().getConfigurationSection("arenas").getKeys(false)) {
 				if (!conf.getArenasCfg().contains("arenas." + game + ".gametype")) {
 					conf.getArenasCfg().set("arenas." + game + ".gametype", "normal");
 				}
 
-				GameType gameType = GameType
-						.valueOf(conf.getArenasCfg().getString("arenas." + game + ".gametype", "normal").toUpperCase());
-				Game g = new Game(game, gameType);
-				games.add(g);
-
-				if (gameType == GameType.APOCALYPSE) {
-					spawns.add(new GameZombieSpawn(g));
-				}
-
-				spawns.add(new GameSpawn(g));
+				Game g = new Game(game, GameType.valueOf(
+						conf.getArenasCfg().getString("arenas." + game + ".gametype", "normal").toUpperCase()));
 
 				// Loads the game locker
 				g.setStatus(conf.getArenasCfg().getBoolean("arenas." + game + ".lock", false) ? GameStatus.NOTREADY
 						: GameStatus.READY);
+				games.add(g);
 
 				Debug.logConsole("Loaded {0} game!", game);
 			}
@@ -442,7 +426,7 @@ public class RageMode extends JavaPlugin {
 	 * Removes a game from the list.
 	 * 
 	 * @see #removeGame(String)
-	 * @param game Game
+	 * @param game {@link Game}
 	 */
 	public void removeGame(Game game) {
 		removeGame(game.getName());
@@ -454,35 +438,7 @@ public class RageMode extends JavaPlugin {
 	 * @param name Game name
 	 */
 	public void removeGame(String name) {
-		for (Iterator<Game> gt = games.iterator(); gt.hasNext();) {
-			if (gt.next().getName().equalsIgnoreCase(name)) {
-				gt.remove();
-				break;
-			}
-		}
-	}
-
-	/**
-	 * Removes all set of spawns from the given game.
-	 * 
-	 * @see #removeSpawn(String)
-	 * @param game Game
-	 */
-	public void removeSpawn(Game game) {
-		removeSpawn(game.getName());
-	}
-
-	/**
-	 * Removes all set of spawns from the given game.
-	 * 
-	 * @param name Game name
-	 */
-	public void removeSpawn(String name) {
-		for (Iterator<IGameSpawn> it = spawns.iterator(); it.hasNext();) {
-			if (it.next().getGame().getName().equalsIgnoreCase(name)) {
-				it.remove();
-			}
-		}
+		games.removeIf(g -> g.getName().equalsIgnoreCase(name));
 	}
 
 	public boolean isPluginEnabled(String name) {
@@ -494,33 +450,6 @@ public class RageMode extends JavaPlugin {
 	 */
 	public Database getDatabase() {
 		return database;
-	}
-
-	/**
-	 * @return the current set of {@link DBType}
-	 */
-	public DBType getDatabaseType() {
-		return dbType;
-	}
-
-	/**
-	 * Sets the database to a new one by the given. If it changed it will tries to
-	 * connect to the new database, but the last database will still remains opens.
-	 * 
-	 * @param type the type which should be {@link DBType}
-	 * @return {@link DBType}
-	 */
-	public DBType setDatabase(String type) {
-		if (type != null && !type.trim().isEmpty()) {
-			dbType = DBType.valueOf(type.trim().toUpperCase());
-			if (dbType == null) {
-				dbType = DBType.YAML;
-			}
-
-			connectDatabase();
-		}
-
-		return dbType;
 	}
 
 	public static RageMode getInstance() {
@@ -547,10 +476,6 @@ public class RageMode extends JavaPlugin {
 		return conf;
 	}
 
-	public BungeeUtils getBungeeUtils() {
-		return bungee;
-	}
-
 	public BossbarManager getBossbarManager() {
 		return bossManager;
 	}
@@ -561,10 +486,6 @@ public class RageMode extends JavaPlugin {
 
 	public List<Game> getGames() {
 		return games;
-	}
-
-	public Set<IGameSpawn> getSpawns() {
-		return spawns;
 	}
 
 	public ItemHandler[] getGameItems() {
@@ -585,5 +506,9 @@ public class RageMode extends JavaPlugin {
 
 	public Selection getSelection() {
 		return selection;
+	}
+
+	public SetupGui getSetupGui() {
+		return setupGui;
 	}
 }

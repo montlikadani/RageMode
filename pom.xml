@@ -36,7 +36,7 @@
 		<dependency>
 			<groupId>net.pl3x.purpur</groupId>
 			<artifactId>purpur-api</artifactId>
-			<version>1.16.4-R0.1-SNAPSHOT</version>
+			<version>1.16.5-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -92,7 +92,7 @@
 		<dependency>
 			<groupId>com.gmail.filoghost.holographicdisplays</groupId>
 			<artifactId>holographicdisplays-api</artifactId>
-			<version>2.4.5</version>
+			<version>2.4.6</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

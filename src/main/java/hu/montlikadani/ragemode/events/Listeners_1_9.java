@@ -19,10 +19,7 @@ public class Listeners_1_9 implements Listener {
 
 	@EventHandler
 	public void onItemPickUpEvent(EntityPickupItemEvent e) {
-		if (e.isCancelled() || !(e.getEntity() instanceof Player))
-			return;
-
-		if (GameUtils.isPlayerPlaying((Player) e.getEntity()))
+		if (!e.isCancelled() && e.getEntity() instanceof Player && GameUtils.isPlayerPlaying((Player) e.getEntity()))
 			e.setCancelled(true);
 	}
 }

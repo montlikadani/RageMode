@@ -23,7 +23,7 @@ public class forcestart implements ICommand {
 		}
 
 		String name = args[1];
-		if (!GameUtils.isGameWithNameExists(name)) {
+		if (!GameUtils.isGameExist(name)) {
 			sendMessage(p, RageMode.getLang().get("commands.forcestart.game-not-exist"));
 			return false;
 		}

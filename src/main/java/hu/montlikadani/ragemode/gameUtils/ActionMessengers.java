@@ -1,7 +1,9 @@
 package hu.montlikadani.ragemode.gameUtils;
 
 import java.util.List;
+import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -15,17 +17,17 @@ import hu.montlikadani.ragemode.gameUtils.modules.TabTitles;
 public class ActionMessengers {
 
 	private Game game;
-	private Player player;
+	private UUID playerUUID;
 
-	private final ScoreBoard gameBoard = new ScoreBoard();
+	private final ScoreBoard gameBoard;
 	private final ScoreTeam scoreTeam;
 
-	public ActionMessengers(Game game, Player player) {
+	public ActionMessengers(Game game, UUID playerUUID) {
 		this.game = game;
-		this.player = player;
+		this.playerUUID = playerUUID;
 
-		scoreTeam = new ScoreTeam(player);
-		gameBoard.loadScoreboard(player);
+		scoreTeam = new ScoreTeam(playerUUID);
+		gameBoard = new ScoreBoard(getPlayer());
 	}
 
 	public Game getGame() {
@@ -33,7 +35,7 @@ public class ActionMessengers {
 	}
 
 	public Player getPlayer() {
-		return player;
+		return Bukkit.getPlayer(playerUUID);
 	}
 
 	public ScoreBoard getScoreboard() {
@@ -53,10 +55,13 @@ public class ActionMessengers {
 			return;
 		}
 
-		List<String> tabHeader = RageMode.getInstance().getConfiguration().getCfg()
-				.getStringList("game.tablist.list.header"),
-				tabFooter = RageMode.getInstance().getConfiguration().getCfg()
-						.getStringList("game.tablist.list.footer");
+		Player player = getPlayer();
+		if (player == null) {
+			return;
+		}
+
+		List<String> tabHeader = RageMode.getInstance().getConfig().getStringList("game.tablist.list.header"),
+				tabFooter = RageMode.getInstance().getConfig().getStringList("game.tablist.list.footer");
 
 		String header = "", footer = "";
 		int s = 0;
@@ -100,6 +105,11 @@ public class ActionMessengers {
 			return;
 		}
 
+		Player player = getPlayer();
+		if (player == null) {
+			return;
+		}
+
 		String boardTitle = ConfigValues.getSbTitle();
 		if (!boardTitle.isEmpty()) {
 			boardTitle = boardTitle.replace("%game-time%", time < -1 ? "0" : Utils.getFormattedTime(time));
@@ -107,7 +117,7 @@ public class ActionMessengers {
 			gameBoard.setTitle(player, boardTitle);
 		}
 
-		List<String> rows = RageMode.getInstance().getConfiguration().getCfg().getStringList("game.scoreboard.content");
+		List<String> rows = RageMode.getInstance().getConfig().getStringList("game.scoreboard.content");
 		if (!rows.isEmpty()) {
 			int scores = rows.size();
 			if (scores < 15) {
@@ -131,10 +141,13 @@ public class ActionMessengers {
 			return;
 		}
 
-		String prefix = ConfigValues.getTabPrefix(), suffix = ConfigValues.getTabSuffix();
+		Player player = getPlayer();
+		if (player == null) {
+			return;
+		}
 
-		prefix = Utils.setPlaceholders(prefix, player);
-		suffix = Utils.setPlaceholders(suffix, player);
+		String prefix = Utils.setPlaceholders(ConfigValues.getTabPrefix(), player);
+		String suffix = Utils.setPlaceholders(ConfigValues.getTabSuffix(), player);
 
 		scoreTeam.setTeam(prefix, suffix);
 	}

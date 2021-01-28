@@ -1,13 +1,12 @@
 package hu.montlikadani.ragemode.gameLogic;
 
-import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.gameUtils.GetGames;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public class LobbyTimer extends TimerTask {
@@ -28,7 +27,7 @@ public class LobbyTimer extends TimerTask {
 		this.time = time;
 	}
 
-	public void addLobbyTime(int newTime) {
+	public void increaseLobbyTime(int newTime) {
 		time += newTime;
 	}
 
@@ -36,24 +35,24 @@ public class LobbyTimer extends TimerTask {
 		return time;
 	}
 
-	public void loadTimer() {
+	public void beginScheduling() {
 		Timer timer = new Timer();
 		timer.scheduleAtFixedRate(this, 0, 60 * 20L);
 	}
 
 	@Override
 	public void run() {
-		List<PlayerManager> list = game.getPlayersFromList();
+		Set<PlayerManager> players = game.getPlayers();
 		if (game.isGameRunning()) {
 			// Set level counter back to 0
-			list.forEach(p -> p.getPlayer().setLevel(0));
+			players.forEach(p -> p.getPlayer().setLevel(0));
 			cancel();
 			return;
 		}
 
-		if (list.size() < GetGames.getMinPlayers(game.getName())) {
+		if (players.size() < game.minPlayers) {
 			game.setStatus(GameStatus.WAITING);
-			list.forEach(p -> p.getPlayer().setLevel(0));
+			players.forEach(p -> p.getPlayer().setLevel(0));
 			cancel();
 			return;
 		}
@@ -66,7 +65,7 @@ public class LobbyTimer extends TimerTask {
 		}
 
 		if (ConfigValues.isPlayerLevelAsTimeCounter()) {
-			list.forEach(pm -> pm.getPlayer().setLevel(time));
+			players.forEach(pm -> pm.getPlayer().setLevel(time));
 		}
 
 		if (ConfigValues.isLobbyTitle()) {
@@ -82,7 +81,7 @@ public class LobbyTimer extends TimerTask {
 					sTitle = sTitle.replace("%time%", Integer.toString(value));
 					sTitle = sTitle.replace("%game%", game.getName());
 
-					for (PlayerManager pm : list) {
+					for (PlayerManager pm : players) {
 						GameUtils.sendTitleMessages(pm.getPlayer(), title, sTitle, times);
 					}
 
@@ -93,10 +92,8 @@ public class LobbyTimer extends TimerTask {
 
 		if (time == 0) {
 			cancel();
-			list.forEach(pl -> pl.getPlayer().setLevel(0));
-
-			GameLoader loder = new GameLoader(game);
-			loder.startGame();
+			players.forEach(pl -> pl.getPlayer().setLevel(0));
+			new GameLoader(game).startGame();
 			return;
 		}
 

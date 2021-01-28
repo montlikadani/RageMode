@@ -13,12 +13,9 @@ public class PurpurListener implements Listener {
 	@EventHandler
 	public void onEntityMove(EntityMoveEvent event) {
 		if (event.getEntityType() == EntityType.ZOMBIE && !GameAreaManager.inArea(event.getTo())) {
-			GameAreaManager.getAreaByLocation(event.getFrom()).ifPresent(area -> {
-				if (area.getGame().isGameRunning()) {
-					event.getEntity().teleport(event.getFrom()
-							.subtract(event.getEntity().getLocation().clone().getDirection().multiply(1)));
-				}
-			});
+			GameAreaManager.getAreaByLocation(event.getFrom()).filter(area -> area.getGame().isGameRunning())
+					.ifPresent(area -> event.getEntity().teleport(event.getFrom()
+							.subtract(event.getEntity().getLocation().clone().getDirection().multiply(1))));
 		}
 	}
 }

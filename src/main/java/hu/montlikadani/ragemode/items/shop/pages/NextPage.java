@@ -66,8 +66,8 @@ public class NextPage implements IShop {
 
 		mainPath += "items.";
 
-		for (String guiItems : section.getKeys(false)) {
-			String category = section.getString(guiItems + ".category", "").toUpperCase();
+		for (String guiItem : section.getKeys(false)) {
+			String category = section.getString(guiItem + ".category", "").toUpperCase();
 			if (category.isEmpty() || ShopCategory.valueOf(category) != type) {
 				continue;
 			}
@@ -76,7 +76,7 @@ public class NextPage implements IShop {
 				continue;
 			}
 
-			mainPath += guiItems + ".gui";
+			mainPath += guiItem + ".gui";
 
 			String guiName = Utils.colors(conf.getString(mainPath + ".title", "&6RageMode shop"));
 
@@ -99,7 +99,7 @@ public class NextPage implements IShop {
 					item = "air";
 				}
 
-				Material mat = Material.getMaterial(item.toUpperCase());
+				Material mat = Material.matchMaterial(item);
 				if (mat == null) {
 					Debug.logConsole(Level.WARNING, "Unknown item type: " + item);
 					mat = Material.AIR;
@@ -108,7 +108,7 @@ public class NextPage implements IShop {
 				if (mat == Material.AIR) {
 					String filler = conf.getString(mainPath + ".fillEmptyFields", "air");
 					if (!filler.isEmpty()) {
-						mat = Material.getMaterial(filler.toUpperCase());
+						mat = Material.matchMaterial(filler);
 						if (mat == null) {
 							Debug.logConsole(Level.WARNING, "Unknown filler item type: " + filler);
 							mat = Material.AIR;
@@ -168,8 +168,8 @@ public class NextPage implements IShop {
 
 							itemAmount = elements.getItem() == null ? itemAmount : elements.getItem().getAmount();
 
-							l = l.replace("%activated%", elements.getTrail() != null
-									&& elements.getTrail().toString().equalsIgnoreCase(sec.getString(slots + ".trail"))
+							l = l.replace("%activated%", (elements.getTrail() != null
+									&& elements.getTrail().toString().equalsIgnoreCase(sec.getString(slots + ".trail")))
 											? "&a&lActivated!"
 											: "");
 						} else {
@@ -206,7 +206,7 @@ public class NextPage implements IShop {
 					iMeta.setDisplayName(itemName.replace("&", "\u00a7"));
 				}
 
-				hu.montlikadani.ragemode.NMS.setDurability(iStack, (short) sec.getDouble(slots + ".durability", 0));
+				hu.montlikadani.ragemode.utils.Misc.setDurability(iStack, (short) sec.getDouble(slots + ".durability", 0));
 
 				iStack.setItemMeta(iMeta);
 				inv.setItem(i, iStack);

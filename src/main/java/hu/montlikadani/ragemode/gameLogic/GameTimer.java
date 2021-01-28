@@ -33,31 +33,36 @@ public class GameTimer extends TimerTask {
 
 	public GameTimer(Game game, int time) {
 		this.game = game;
-		this.time = time;
-		timer = time;
+		timer = (this.time = time);
 	}
 
 	public Game getGame() {
 		return game;
 	}
 
+	/**
+	 * @return returns the fixed (final) game time
+	 */
 	public int getGameTime() {
 		return time;
 	}
 
+	/**
+	 * @return returns the current game time
+	 */
 	public int getCurrentGameTime() {
 		return timer;
 	}
 
 	@Override
 	public void run() {
-		try { // Stop the game if something wrong or missing
+		try { // Stop the game if something wrong
 			if (!game.isGameRunning() || !RageMode.getInstance().isEnabled()) {
 				cancel();
 				return;
 			}
 
-			if (game.getPlayers().size() < 2) {
+			if (!ConfigValues.isDeveloperMode() && game.getPlayers().size() < 2) {
 				GameUtils.broadcastToGame(game, RageMode.getLang().get("not-enough-players"));
 				GameUtils.stopGame(game);
 				cancel();
@@ -76,16 +81,16 @@ public class GameTimer extends TimerTask {
 			if (ConfigValues.isNotifySpectatorsToLeave() && canSendSpectatorNotify) {
 				canSendSpectatorNotify = false;
 
-				for (PlayerManager spec : game.getSpectatorPlayersFromList()) {
-					Bukkit.getScheduler().runTaskLater(RageMode.getInstance(), () -> {
+				Bukkit.getScheduler().runTaskLater(RageMode.getInstance(), () -> {
+					for (PlayerManager spec : game.getSpectatorPlayers()) {
 						spec.getPlayer().sendMessage(RageMode.getLang().get("game.spec-player-leave-notify"));
 						canSendSpectatorNotify = true;
-					}, ConfigValues.getSpecTimeBetweenMessageSending() * 20);
-				}
+					}
+				}, ConfigValues.getSpecTimeBetweenMessageSending() * 20);
 			}
 
-			if (game.getGameType() == GameType.APOCALYPSE) {
-				Location loc = GameUtils.getGameSpawn(game).getSpawnLocations().get(0);
+			if (game.getGameType() == GameType.APOCALYPSE && game.getSpawn(GameSpawn.class) != null) {
+				Location loc = game.getSpawn(GameSpawn.class).getSpawnLocations().get(0);
 
 				if (timeElapsed == null) { // wait for the scheduler task
 					if (!firstZombieSpawned) {
@@ -132,7 +137,7 @@ public class GameTimer extends TimerTask {
 
 						for (PressureMine mines : GameListener.PRESSUREMINES) {
 							for (Location mineLoc : mines.getMines()) {
-								if (mineLoc.getBlock().equals(f.getLocation().getBlock())) {
+								if (mineLoc.getBlock() == f.getLocation().getBlock()) {
 									EntityInteractEvent interact = new EntityInteractEvent(f,
 											f.getLocation().getBlock());
 									if (!interact.isCancelled()) {

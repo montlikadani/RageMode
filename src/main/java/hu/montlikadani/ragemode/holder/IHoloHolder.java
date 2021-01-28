@@ -1,7 +1,6 @@
 package hu.montlikadani.ragemode.holder;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +12,7 @@ import org.bukkit.entity.Player;
  */
 public abstract class IHoloHolder {
 
-	protected static final List<Location> HOLOS = Collections.synchronizedList(new ArrayList<Location>());
+	protected static final List<Location> HOLOS = new ArrayList<>();
 
 	/**
 	 * Displays a new hologram to the given location and sets into config.

@@ -1,43 +1,59 @@
 package hu.montlikadani.ragemode.gameUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.FixedMetadataValue;
 
-import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.scores.KilledWith;
 
 public final class CacheableHitTarget {
 
-	public static final Map<UUID, UUID> VICTIMS = new HashMap<>();
+	private Entity target;
+	private KilledWith tool;
 
-	public static void addMetadata(Entity target, int radius, KilledWith tool) {
+	private final Set<UUID> nearTargets = new HashSet<>();
+
+	public CacheableHitTarget(Entity target, KilledWith tool) {
+		this.target = target;
+		this.tool = tool;
+	}
+
+	public Entity getTarget() {
+		return target;
+	}
+
+	public KilledWith getTool() {
+		return tool;
+	}
+
+	public Set<UUID> getNearTargets() {
+		return nearTargets;
+	}
+
+	public void add(int radius) {
 		if (tool.getMetaName().isEmpty()) {
 			return;
 		}
 
 		if (tool == KilledWith.PRESSUREMINE && target instanceof Player) {
-			target.removeMetadata("killedWith", RageMode.getInstance());
-			target.setMetadata("killedWith", new FixedMetadataValue(RageMode.getInstance(), tool.getMetaName()));
+			nearTargets.add(target.getUniqueId());
 			return;
 		}
 
 		for (Entity near : Utils.getNearbyEntities(target, radius)) {
-			VICTIMS.remove(near.getUniqueId());
+			nearTargets.remove(near.getUniqueId());
 
-			if (target instanceof Arrow && ((Arrow) target).getShooter() != null) {
-				VICTIMS.put(near.getUniqueId(), ((Player) ((Arrow) target).getShooter()).getUniqueId());
+			if (target instanceof Arrow && ((Arrow) target).getShooter() instanceof Player) {
+				nearTargets.add(((Player) ((Arrow) target).getShooter()).getUniqueId());
 			}
 
 			if (near instanceof Player) {
-				near.removeMetadata("killedWith", RageMode.getInstance());
-				near.setMetadata("killedWith", new FixedMetadataValue(RageMode.getInstance(), tool.getMetaName()));
+				nearTargets.add(near.getUniqueId());
 			}
 		}
 	}

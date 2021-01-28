@@ -15,14 +15,4 @@ public class RageModeAPI {
 	public static Plugin getPlugin() {
 		return JavaPlugin.getPlugin(RageMode.class);
 	}
-
-	/**
-	 * Gets the RageMode instance
-	 * @deprecated We don't need to call another method
-	 * @return Instance
-	 */
-	@Deprecated
-	public static RageMode getRageMode() {
-		return RageMode.getInstance();
-	}
 }

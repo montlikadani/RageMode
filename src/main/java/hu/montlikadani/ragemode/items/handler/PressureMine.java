@@ -18,7 +18,7 @@ public class PressureMine {
 		this.playerUUID = playerUUID;
 	}
 
-	public UUID getPlayerUUID() {
+	public UUID getOwner() {
 		return playerUUID;
 	}
 

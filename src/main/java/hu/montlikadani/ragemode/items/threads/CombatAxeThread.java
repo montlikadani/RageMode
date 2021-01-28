@@ -4,9 +4,11 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.FixedMetadataValue;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.events.GameListener;
+import hu.montlikadani.ragemode.gameUtils.CacheableHitTarget;
+import hu.montlikadani.ragemode.scores.KilledWith;
 
 public class CombatAxeThread {
 
@@ -23,55 +25,54 @@ public class CombatAxeThread {
 	public void start() {
 		running = true;
 
-		if (running) {
-			new Thread(() -> {
-				while (running) {
-					if (item.isDead()) {
-						stop();
-						return;
-					}
-
-					// To prevent async catch
-					RageMode.getInstance().getServer().getScheduler().runTask(RageMode.getInstance(), () -> {
-						for (Entity entity : item.getNearbyEntities(0.4D, 0.5D, 0.4D)) {
-							if (!running) {
-								break;
-							}
-
-							if (entity instanceof Player) {
-								final Player victim = (Player) entity;
-								if (victim == player) {
-									continue;
-								}
-
-								victim.damage(25D, player);
-								victim.removeMetadata("killedWith", RageMode.getInstance());
-								victim.setMetadata("killedWith",
-										new FixedMetadataValue(RageMode.getInstance(), "combataxe"));
-							} else if (entity instanceof LivingEntity) {
-								((LivingEntity) entity).damage(25D, player);
-							}
-
-							item.remove();
-							stop();
-						}
-					});
-
-					if (item.isOnGround()) {
-						item.remove();
-						stop();
-						return;
-					}
-
-					try {
-						Thread.sleep(10L);
-					} catch (InterruptedException e) {
-						item.remove();
-						stop();
-					}
+		new Thread(() -> {
+			while (running) {
+				if (item.isDead()) {
+					stop();
+					return;
 				}
-			}).start();
-		}
+
+				// To prevent async catch
+				RageMode.getInstance().getServer().getScheduler().runTask(RageMode.getInstance(), () -> {
+					for (Entity entity : item.getNearbyEntities(0.4D, 0.5D, 0.4D)) {
+						if (!running) {
+							break;
+						}
+
+						if (entity instanceof Player) {
+							final Player victim = (Player) entity;
+							if (victim == player) {
+								continue;
+							}
+
+							victim.damage(25D, player);
+
+							CacheableHitTarget cht = new CacheableHitTarget(victim, KilledWith.COMBATAXE);
+							cht.add(0);
+							GameListener.HIT_TARGETS.put(victim.getUniqueId(), cht);
+						} else if (entity instanceof LivingEntity) {
+							((LivingEntity) entity).damage(25D, player);
+						}
+
+						item.remove();
+						stop();
+					}
+				});
+
+				if (item.isOnGround()) {
+					item.remove();
+					stop();
+					return;
+				}
+
+				try {
+					Thread.sleep(10L);
+				} catch (InterruptedException e) {
+					item.remove();
+					stop();
+				}
+			}
+		}).start();
 	}
 
 	public void stop() {

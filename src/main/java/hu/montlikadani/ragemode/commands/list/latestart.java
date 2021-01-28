@@ -47,7 +47,7 @@ public class latestart implements ICommand {
 			return false;
 		}
 
-		playerGame.getLobbyTimer().addLobbyTime(newTime);
+		playerGame.getGameLobby().getLobbyTimer().increaseLobbyTime(newTime);
 		sendMessage(sender, RageMode.getLang().get("commands.latestart.lobby-timer-increased", "%newtime%", newTime));
 		return true;
 	}

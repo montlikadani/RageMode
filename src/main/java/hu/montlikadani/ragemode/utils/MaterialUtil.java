@@ -115,6 +115,6 @@ public class MaterialUtil {
 	}
 
 	private static Material getMat(String name) {
-		return Material.getMaterial(name.toUpperCase());
+		return Material.matchMaterial(name);
 	}
 }

@@ -7,13 +7,13 @@ about: Suggest an idea for this project
 <!-- These comments will not show. -->
 
 ### Description
-<!-- Write the suggestion(s) for what you want. -->
+<!-- Describe your suggestion with appropriate informations -->
 <!-- Write it purely and intelligently. -->
 
 
 <!-- (Optional) Configuration option example(s) -->
-<!-- Use
-```
+<!-- Example
+```yml
 boo: true
 ```
-block to make the example more readable. -->
+-->

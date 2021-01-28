@@ -17,7 +17,7 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMSignsUpdateEvent;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.gameUtils.GetGames;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 public class SignCreator {
 
@@ -49,10 +49,7 @@ public class SignCreator {
 			String game = splited[4];
 			assert game != null;
 
-			Location loc = new Location(Bukkit.getWorld(world), x, y, z);
-			SignData data = new SignData(loc, game);
-
-			SIGNDATA.add(data);
+			SIGNDATA.add(new SignData(new Location(Bukkit.getWorld(world), x, y, z), game));
 			totalSigns++;
 		}
 
@@ -67,12 +64,11 @@ public class SignCreator {
 		FileConfiguration fileConf = SignConfiguration.getSignConfig();
 		List<String> signs = fileConf.getStringList("signs");
 		String index = locationSignToString(sign.getLocation(), game);
-		SignData data = new SignData(sign.getLocation(), game);
 
 		signs.add(index);
 		fileConf.set("signs", signs);
 
-		SIGNDATA.add(data);
+		SIGNDATA.add(new SignData(sign.getLocation(), game));
 
 		Configuration.saveFile(fileConf, SignConfiguration.getSignFile());
 		return true;
@@ -88,7 +84,7 @@ public class SignCreator {
 			if (signData.getLocation().equals(sign.getLocation())) {
 				FileConfiguration fileConf = SignConfiguration.getSignConfig();
 				List<String> signs = fileConf.getStringList("signs");
-				String index = locationSignToString(signData.getLocation(), signData.getGame());
+				String index = locationSignToString(signData.getLocation(), signData.getGameName());
 
 				signs.remove(index);
 
@@ -100,11 +96,7 @@ public class SignCreator {
 			}
 		}
 
-		if (data != null) {
-			return SIGNDATA.remove(data);
-		}
-
-		return false;
+		return data != null && SIGNDATA.remove(data);
 	}
 
 	/**
@@ -130,11 +122,11 @@ public class SignCreator {
 	 * @return {@link SignData} if the location is equal
 	 */
 	public static SignData getSignData(Location loc) {
-		Validate.notNull(loc, "Location can't be null!");
-
-		for (SignData data : SIGNDATA) {
-			if (loc.equals(data.getLocation())) {
-				return data;
+		if (loc != null) {
+			for (SignData data : SIGNDATA) {
+				if (data.getLocation().equals(loc)) {
+					return data;
+				}
 			}
 		}
 
@@ -151,7 +143,7 @@ public class SignCreator {
 		Validate.notEmpty(game, "Game name can't be empty/null");
 
 		for (SignData data : SIGNDATA) {
-			if (game.trim().equalsIgnoreCase(data.getGame())) {
+			if (game.equalsIgnoreCase(data.getGameName())) {
 				return data;
 			}
 		}
@@ -216,23 +208,12 @@ public class SignCreator {
 	 * @return true if the block found in the specified location.
 	 */
 	public static boolean isSign(Location loc) {
-		List<String> signs = SignConfiguration.getSignConfig().getStringList("signs");
-		if (signs.isEmpty()) {
-			return false;
-		}
-
-		for (String signString : signs) {
-			String game = getGameFromString(signString);
-			if (game == null) {
-				continue;
-			}
-
-			for (String gameName : GetGames.getGameNames()) {
-				if (gameName.equalsIgnoreCase(game)) {
-					Location signLocation = stringToLocationSign(signString);
-					if (signLocation != null && signLocation.getBlock().getState() instanceof Sign
-							&& signLocation.equals(loc))
-						return true;
+		for (String signString : SignConfiguration.getSignConfig().getStringList("signs")) {
+			if (GameUtils.isGameExist(getGameFromString(signString))) {
+				Location signLocation = stringToLocationSign(signString);
+				if (signLocation != null && signLocation.getBlock().getState() instanceof Sign
+						&& signLocation.equals(loc)) {
+					return true;
 				}
 			}
 		}

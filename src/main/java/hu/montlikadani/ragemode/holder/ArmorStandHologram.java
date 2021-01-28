@@ -34,9 +34,7 @@ public class ArmorStandHologram extends IHoloHolder {
 		loc.setPitch(0f);
 		loc.setYaw(0f);
 
-		synchronized (HOLOS) {
-			HOLOS.add(loc);
-		}
+		HOLOS.add(loc);
 
 		FileConfiguration c = RageMode.getInstance().getConfiguration().getHolosConfig();
 		c.set("data.holos", HOLOS);
@@ -57,10 +55,7 @@ public class ArmorStandHologram extends IHoloHolder {
 			return;
 		}
 
-		synchronized (HOLOS) {
-			loc.forEach(HOLOS::add);
-		}
-
+		loc.forEach(HOLOS::add);
 		Bukkit.getOnlinePlayers().forEach(this::showAllHolosToPlayer);
 	}
 
@@ -87,9 +82,7 @@ public class ArmorStandHologram extends IHoloHolder {
 		if (loc == null || !HOLOS.contains(loc))
 			return false;
 
-		synchronized (HOLOS) {
-			HOLOS.remove(loc);
-		}
+		HOLOS.remove(loc);
 
 		FileConfiguration c = RageMode.getInstance().getConfiguration().getHolosConfig();
 		c.set("data.holos", HOLOS);
@@ -166,10 +159,7 @@ public class ArmorStandHologram extends IHoloHolder {
 
 	@Override
 	public void showAllHolosToPlayer(Player player) {
-		if (player == null)
-			return;
-
-		synchronized (HOLOS) {
+		if (player != null) {
 			HOLOS.forEach(loc -> displayHoloToPlayer(player, loc));
 		}
 	}

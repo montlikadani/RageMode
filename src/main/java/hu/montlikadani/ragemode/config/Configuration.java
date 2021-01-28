@@ -59,8 +59,7 @@ public class Configuration {
 			plugin.saveResource("config.yml", false);
 		}
 
-		config = new CommentedConfig(config_file);
-		config.load();
+		(config = new CommentedConfig(config_file)).load();
 
 		ConfigValues.loadValues(config);
 

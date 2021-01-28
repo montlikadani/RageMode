@@ -1,7 +1,8 @@
 package hu.montlikadani.ragemode.gameUtils;
 
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
@@ -24,7 +25,6 @@ import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.area.GameArea;
 import hu.montlikadani.ragemode.area.GameAreaManager;
-import hu.montlikadani.ragemode.NMS;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.ServerSoftwareType;
 import hu.montlikadani.ragemode.Utils;
@@ -43,6 +43,7 @@ import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
+import hu.montlikadani.ragemode.utils.Misc;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
@@ -51,7 +52,7 @@ public final class GameUtils {
 	/**
 	 * When the game ended and players waiting for teleport.
 	 */
-	public static final HashMap<String, Boolean> WAITINGGAMES = new HashMap<>();
+	public static final Map<String, Boolean> WAITINGGAMES = new HashMap<>();
 
 	private GameUtils() {
 	}
@@ -80,13 +81,13 @@ public final class GameUtils {
 			return;
 		}
 
-		for (PlayerManager pm : game.getPlayersFromList()) {
+		for (PlayerManager pm : game.getPlayers()) {
 			if (game.getName().equalsIgnoreCase(pm.getGameName())) {
 				sendMessage(pm.getPlayer(), message);
 			}
 		}
 
-		for (PlayerManager pm2 : game.getSpectatorPlayersFromList()) {
+		for (PlayerManager pm2 : game.getSpectatorPlayers()) {
 			if (game.getName().equalsIgnoreCase(pm2.getGameName())) {
 				sendMessage(pm2.getPlayer(), message);
 			}
@@ -96,7 +97,7 @@ public final class GameUtils {
 	/**
 	 * Checks the game name if contains special chars or too long.
 	 * 
-	 * @param pl   Player
+	 * @param pl   the {@link Player} where to send the result
 	 * @param name Game
 	 * @return this returns false if:
 	 * 
@@ -120,75 +121,18 @@ public final class GameUtils {
 	}
 
 	/**
-	 * Checks whatever the specified game is exists or no.
+	 * Counts and returns max players from all games.
 	 * 
-	 * @param game Game
-	 * @return true if game exists
+	 * @return overall max players
 	 */
-	public static boolean isGameWithNameExists(String game) {
-		return GetGames.isGameExistent(game);
-	}
+	public static int getOverallMaxPlayers() {
+		int max = 0;
 
-	/**
-	 * Get the game spawn by name.
-	 * 
-	 * @param name game name
-	 * @return {@link GameSpawn}
-	 */
-	public static GameSpawn getGameSpawn(String name) {
-		Validate.notEmpty(name, "Game name can't be empty/null");
-
-		for (IGameSpawn gsg : RageMode.getInstance().getSpawns()) {
-			if (name.equals(gsg.getGame().getName()) && gsg instanceof GameSpawn) {
-				return (GameSpawn) gsg;
-			}
+		for (Game game : RageMode.getInstance().getGames()) {
+			max += game.maxPlayers;
 		}
 
-		return null;
-	}
-
-	/**
-	 * Get the game spawn by game.
-	 * 
-	 * @see #getGameSpawn(String)
-	 * @param game {@link Game}
-	 * @return {@link GameSpawn}
-	 */
-	public static GameSpawn getGameSpawn(Game game) {
-		Validate.notNull(game, "Game can't be null");
-
-		return getGameSpawn(game.getName());
-	}
-
-	/**
-	 * Get the game spawn by game name.
-	 * 
-	 * @param name game name
-	 * @return {@link GameZombieSpawn}
-	 */
-	public static GameZombieSpawn getGameZombieSpawn(String name) {
-		Validate.notEmpty(name, "Game name can't be empty/null");
-
-		for (IGameSpawn gsg : RageMode.getInstance().getSpawns()) {
-			if (name.equals(gsg.getGame().getName()) && gsg instanceof GameZombieSpawn) {
-				return (GameZombieSpawn) gsg;
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * Get the game spawn by game.
-	 * 
-	 * @see #getGameZombieSpawn(String)
-	 * @param game {@link Game}
-	 * @return {@link GameZombieSpawn}
-	 */
-	public static GameZombieSpawn getGameZombieSpawn(Game game) {
-		Validate.notNull(game, "Game can't be null");
-
-		return getGameZombieSpawn(game.getName());
+		return max;
 	}
 
 	/**
@@ -216,10 +160,8 @@ public final class GameUtils {
 		}
 
 		for (Game game : RageMode.getInstance().getGames()) {
-			for (PlayerManager pl : game.getPlayersFromList()) {
-				if (p == pl.getPlayer()) {
-					return game;
-				}
+			if (game.isPlayerInList(p)) {
+				return game;
 			}
 		}
 
@@ -249,10 +191,8 @@ public final class GameUtils {
 		}
 
 		for (Game game : RageMode.getInstance().getGames()) {
-			for (PlayerManager pl : game.getSpectatorPlayersFromList()) {
-				if (p == pl.getPlayer()) {
-					return game;
-				}
+			if (game.isSpectatorInList(p)) {
+				return game;
 			}
 		}
 
@@ -277,6 +217,16 @@ public final class GameUtils {
 	 */
 	public static boolean isSpectatorPlaying(Player p) {
 		return getGameBySpectator(p) != null;
+	}
+
+	/**
+	 * Checks if the given game is exist.
+	 * 
+	 * @param name game name
+	 * @return true if exist, otherwise false
+	 */
+	public static boolean isGameExist(String name) {
+		return getGame(name) != null;
 	}
 
 	/**
@@ -311,9 +261,8 @@ public final class GameUtils {
 		}
 
 		for (GameArea ga : GameAreaManager.getAreasByLocation(loc)) {
-			Game g = getGame(ga.getGame().getName());
-			if (g != null) {
-				return g;
+			if (isGameExist(ga.getGame().getName())) {
+				return ga.getGame();
 			}
 		}
 
@@ -331,7 +280,6 @@ public final class GameUtils {
 		if (clear)
 			Utils.clearPlayerInventory(p);
 
-		PlayerInventory inv = p.getInventory();
 		for (ItemHandler ih : RageMode.getInstance().getGameItems()) {
 			// flash do not affect entities
 			if (isPlayerPlaying(p) && getGameByPlayer(p).getGameType() == GameType.APOCALYPSE
@@ -340,9 +288,9 @@ public final class GameUtils {
 			}
 
 			if (ih.getSlot() != -1) {
-				inv.setItem(ih.getSlot(), ih.get());
+				p.getInventory().setItem(ih.getSlot(), ih.get());
 			} else {
-				inv.addItem(ih.get());
+				p.getInventory().addItem(ih.get());
 			}
 		}
 	}
@@ -381,10 +329,10 @@ public final class GameUtils {
 
 			data.set(path + "game-mode", p.getGameMode().name());
 
-			if (!p.getDisplayName().equals(p.getDisplayName()))
+			if (!p.getDisplayName().equals(p.getName()))
 				data.set(path + "display-name", p.getDisplayName());
 
-			if (!p.getPlayerListName().equals(p.getPlayerListName()))
+			if (!p.getPlayerListName().equals(p.getName()))
 				data.set(path + "list-name", p.getPlayerListName());
 
 			if (p.getFireTicks() > 0)
@@ -416,7 +364,6 @@ public final class GameUtils {
 	 */
 	public static void joinPlayer(Player p, Game game) {
 		final PlayerInventory inv = p.getInventory();
-		final String name = game.getName();
 		final GameStatus status = game.getStatus();
 
 		if (status == GameStatus.RUNNING) {
@@ -431,18 +378,16 @@ public final class GameUtils {
 			}
 
 			if (game.addSpectatorPlayer(p)) {
-				IGameSpawn spawn = getGameSpawn(name);
+				IGameSpawn spawn = game.getSpawn(GameSpawn.class);
 				if (spawn != null && spawn.haveAnySpawn()) {
-					Utils.teleport(p, spawn.getRandomSpawn());
-				}
+					Utils.teleport(p, spawn.getRandomSpawn()).thenAccept(success -> {
+						if (Items.getLobbyItem(1) != null) {
+							inv.setItem(Items.getLobbyItem(1).getSlot(), Items.getLobbyItem(1).get());
+						}
 
-				if (Items.getLobbyItem(1) != null) {
-					inv.setItem(Items.getLobbyItem(1).getSlot(), Items.getLobbyItem(1).get());
+						p.setGameMode(org.bukkit.GameMode.SPECTATOR);
+					});
 				}
-
-				// delay to avoid bad work of spectator
-				Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(),
-						() -> p.setGameMode(org.bukkit.GameMode.SPECTATOR), 5L);
 			}
 
 			return;
@@ -458,7 +403,7 @@ public final class GameUtils {
 			return;
 		}
 
-		MapChecker mapChecker = new MapChecker(name);
+		MapChecker mapChecker = new MapChecker(game);
 		if (!mapChecker.isValid()) {
 			sendMessage(p, mapChecker.getMessage());
 			return;
@@ -482,7 +427,7 @@ public final class GameUtils {
 
 		if (!game.addPlayer(p)) {
 			Debug.sendMessage(
-					RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", name));
+					RageMode.getLang().get("game.player-could-not-join", "%player%", p.getName(), "%game%", game.getName()));
 			return;
 		}
 
@@ -507,11 +452,12 @@ public final class GameUtils {
 			game.worldTime = p.getWorld().getFullTime();
 		}
 
-		Utils.teleport(p, GameLobby.getLobbyLocation(name)).thenAccept(success -> {
-			runCommands(p, name, "join");
-			sendActionMessage(p, name, ActionMessageType.JOIN, ActionMessageType.asBossbar());
-			sendActionMessage(p, name, ActionMessageType.JOIN, ActionMessageType.asActionbar());
+		Utils.teleport(p, game.getGameLobby().location).thenAccept(success -> {
 			game.setStatus(GameStatus.WAITING);
+
+			runCommands(p, game, "join");
+			sendActionMessage(p, game, ActionMessageType.JOIN, ActionMessageType.asBossbar());
+			sendActionMessage(p, game, ActionMessageType.JOIN, ActionMessageType.asActionbar());
 			broadcastToGame(game, RageMode.getLang().get("game.player-joined", "%player%", p.getName()));
 
 			String title = ConfigValues.getTitleJoinGame(), subtitle = ConfigValues.getSubTitleJoinGame(),
@@ -548,7 +494,7 @@ public final class GameUtils {
 				inv.setItem(items.getSlot(), builtItem);
 			}
 
-			SignCreator.updateAllSigns(name);
+			SignCreator.updateAllSigns(game.getName());
 		});
 	}
 
@@ -617,15 +563,7 @@ public final class GameUtils {
 	public static boolean forceStart(Game game) {
 		Validate.notNull(game, "Game can't be null");
 
-		if (game.getPlayers().size() < 2) {
-			return false;
-		}
-
-		GameLoader loader = new GameLoader(game);
-		loader.startGame();
-
-		SignCreator.updateAllSigns(game.getName());
-		return true;
+		return (ConfigValues.isDeveloperMode() || game.getPlayers().size() > 1) && new GameLoader(game).startGame();
 	}
 
 	/**
@@ -634,7 +572,7 @@ public final class GameUtils {
 	 * @param game {@link Game}
 	 */
 	public static void kickAllPlayers(Game game) {
-		game.getPlayersFromList().forEach(pm -> kickPlayer(pm.getPlayer(), game));
+		game.getPlayers().forEach(pm -> kickPlayer(pm.getPlayer(), game));
 	}
 
 	/**
@@ -666,8 +604,6 @@ public final class GameUtils {
 		GameStatus status = game.getStatus();
 
 		if ((status == GameStatus.RUNNING || status == GameStatus.WAITING) && game.removePlayer(p)) {
-
-			// Will execute some tasks when the player left the server, while the game running
 			if (status == GameStatus.RUNNING) {
 				Debug.logConsole("Player " + p.getName() + " left the server while playing.");
 
@@ -750,29 +686,25 @@ public final class GameUtils {
 			return;
 		}
 
-		IGameSpawn zombieSpawn = getGameZombieSpawn(game);
+		IGameSpawn zombieSpawn = game.getSpawn(GameZombieSpawn.class);
 		if (zombieSpawn == null || !zombieSpawn.haveAnySpawn()) {
 			return;
 		}
 
-		GetGames.getWorld(game.getName()).ifPresent(world -> {
-			org.bukkit.World w = Bukkit.getWorld(world);
-			if (w == null) {
-				return;
-			}
-
+		game.getWorld().ifPresent(world -> {
 			// Force night
-			w.setTime(14000L);
+			world.setTime(14000L);
 
 			for (int i = 0; i <= amount; i++) {
 				Location location = zombieSpawn.getRandomSpawn().clone();
 				org.bukkit.util.Vector vec = location.getDirection();
+
 				location.add(vec.setY(0).normalize().multiply(3));
-				while (!w.getBlockAt(location).getType().isAir()) {
+				while (!world.getBlockAt(location).getType().isAir()) {
 					location.add(vec.setY(0).normalize().multiply(3));
 				}
 
-				Zombie zombie = (Zombie) w.spawnEntity(location, org.bukkit.entity.EntityType.ZOMBIE);
+				Zombie zombie = (Zombie) world.spawnEntity(location, org.bukkit.entity.EntityType.ZOMBIE);
 
 				// Do not spawn too much baby zombie
 				if (Version.isCurrentEqualOrHigher(Version.v1_16_R2)) {
@@ -791,11 +723,11 @@ public final class GameUtils {
 	 * such as it died, joining, starting or stopping game.
 	 * 
 	 * @see #runCommands(Player, String, String)
-	 * @param game Game name
+	 * @param game {@link Game}
 	 * @param cmdType CommandProcessor type, such as death, join or other
 	 */
-	public static void runCommandsForAll(String game, String cmdType) {
-		for (PlayerManager pl : getGame(game).getPlayersFromList()) {
+	public static void runCommandsForAll(Game game, String cmdType) {
+		for (PlayerManager pl : game.getPlayers()) {
 			runCommands(pl.getPlayer(), game, cmdType);
 		}
 	}
@@ -805,39 +737,35 @@ public final class GameUtils {
 	 * died, joining, starting or stopping game.
 	 * 
 	 * @param p Player
-	 * @param game Game name
+	 * @param game {@link Game}
 	 * @param cmdType CommandProcessor type, such as death, join or other
 	 */
-	public static void runCommands(Player p, String game, String cmdType) {
-		if (!ConfigValues.isRewardEnabled()) {
+	public static void runCommands(Player p, Game game, String cmdType) {
+		if (!ConfigValues.isRewardEnabled() || !game.isGameRunning()) {
 			return;
 		}
 
-		List<String> list = RageMode.getInstance().getConfiguration().getRewardsCfg()
-				.getStringList("rewards.in-game.run-commands");
-		for (String cmd : list) {
-			if (cmd.split(":").length < 3 && cmd.split(":").length > 4) {
+		for (String cmd : RageMode.getInstance().getConfiguration().getRewardsCfg()
+				.getStringList("rewards.in-game.run-commands")) {
+			String[] split = cmd.split(":");
+			if (split.length < 3 && split.length > 4) {
 				Debug.logConsole(Level.WARNING,
 						"In the rewards file the in-game commands the split length is equal to 3.");
 				continue;
 			}
 
 			if (cmd.contains("chance:")) {
-				String value = cmd;
-				value = value.split("chance:")[1].replaceAll("[^0-9]+", "");
-				double chance = Double.parseDouble(value);
-
-				if (ThreadLocalRandom.current().nextInt(0, 100) > chance)
+				String value = cmd.split("chance:")[1].replaceAll("[^0-9]+", "");
+				if (ThreadLocalRandom.current().nextInt(0, 100) > Double.parseDouble(value))
 					continue;
 
 				cmd = cmd.replace("chance:" + value + "-", "");
 			}
 
-			String type = cmd.split(":")[0];
-			if (type.equalsIgnoreCase(cmdType)) {
-				String consoleOrPlayer = cmd.split(":")[1];
+			if (split[0].equalsIgnoreCase(cmdType)) {
+				String consoleOrPlayer = split[1];
 
-				cmd = cmd.split(":")[2].replace("%world%", p.getWorld().getName()).replace("%game%", game)
+				cmd = split[2].replace("%world%", p.getWorld().getName()).replace("%game%", game.getName())
 						.replace("%player%", p.getName());
 				cmd = Utils.colors(cmd);
 
@@ -858,28 +786,22 @@ public final class GameUtils {
 	 * returns. If the message type is disabled per configuration, returns.
 	 * 
 	 * @param player      {@link Player}
-	 * @param game        game name
+	 * @param game        {@link Game}
 	 * @param type        {@link ActionMessageType}
 	 * @param messageType {@link ActionMessageType.MessageTypes}
 	 */
-	public static void sendActionMessage(Player player, String game, ActionMessageType type,
+	public static void sendActionMessage(Player player, Game game, ActionMessageType type,
 			ActionMessageType.MessageTypes messageType) {
+		if (!game.isGameRunning())
+			return;
+
 		if (messageType == ActionMessageType.MessageTypes.BOSSBAR && Version.isCurrentLower(Version.v1_9_R1)) {
 			Debug.logConsole(Level.WARNING, "Your server version does not support for Bossbar. Only 1.9+");
 			return;
 		}
 
-		if (!isGameWithNameExists(game))
-			return;
-
-		if (RageMode.getInstance().getConfiguration().getArenasCfg()
-				.isSet("arenas." + game + "." + messageType.toString())) {
-			if (!RageMode.getInstance().getConfiguration().getArenasCfg()
-					.getBoolean("arenas." + game + "." + messageType.toString()))
-				return;
-		} else if ((messageType == ActionMessageType.MessageTypes.ACTIONBAR
-				&& !ConfigValues.isDefaultActionbarEnabled())
-				|| (messageType == ActionMessageType.MessageTypes.BOSSBAR && !ConfigValues.isDefaultBossbarEnabled()))
+		if ((messageType == ActionMessageType.MessageTypes.ACTIONBAR && !game.actionbarEnabled)
+				|| (messageType == ActionMessageType.MessageTypes.BOSSBAR && !game.bossbarEnabled))
 			return;
 
 		for (String msg : ConfigValues.getMessageActions()) {
@@ -902,7 +824,7 @@ public final class GameUtils {
 
 			if (action.equalsIgnoreCase(type.name())) {
 				String message = split[1];
-				message = message.replace("%game%", game).replace("%player%", player.getName());
+				message = message.replace("%game%", game.getName()).replace("%player%", player.getName());
 				message = Utils.colors(message);
 
 				if (messageType == ActionMessageType.MessageTypes.ACTIONBAR) {
@@ -911,12 +833,9 @@ public final class GameUtils {
 					BarColor color = split.length > 2 ? BarColor.valueOf(split[2].toUpperCase()) : BarColor.BLUE;
 					BarStyle style = split.length > 3 ? BarStyle.valueOf(split[3].toUpperCase()) : BarStyle.SOLID;
 
-					int second = 6;
-					if (split.length > 4 && Utils.isInt(split[4])) {
-						second = Integer.parseInt(split[4]);
-					}
-
+					int second = (split.length > 4 && Utils.isInt(split[4])) ? Integer.parseInt(split[4]) : 6;
 					BossbarManager manager = RageMode.getInstance().getBossbarManager();
+
 					manager.createBossbar(player, message, color, style);
 					manager.showBossbar(player, second);
 				}
@@ -932,7 +851,7 @@ public final class GameUtils {
 	 */
 	public static void teleportPlayersToGameSpawns(IGameSpawn gameSpawn) {
 		if (gameSpawn != null) {
-			gameSpawn.getGame().getPlayersFromList().forEach(pm -> teleportPlayerToGameSpawn(pm.getPlayer(), gameSpawn));
+			gameSpawn.getGame().getPlayers().forEach(pm -> teleportPlayerToGameSpawn(pm.getPlayer(), gameSpawn));
 		}
 	}
 
@@ -966,7 +885,7 @@ public final class GameUtils {
 		GameAreaManager.removeEntitiesFromGame(game);
 
 		Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
-			for (PlayerManager pm : game.getPlayersFromList()) {
+			for (PlayerManager pm : game.getPlayers()) {
 				final Player p = pm.getPlayer();
 
 				RageScores.removePointsForPlayer(p.getUniqueId());
@@ -993,9 +912,7 @@ public final class GameUtils {
 	/**
 	 * Stops the specified game if running. This calculates the players who has the
 	 * highest points and announcing to a title message. If there are no winner
-	 * player valid, players will be removed from the game with some rewards. This
-	 * will saves the player statistic to the database and finally stopping the
-	 * game.
+	 * player valid, players will be removed from the game with some rewards.
 	 * 
 	 * @param game {@link Game}
 	 * @param useFreeze if true using game freeze
@@ -1009,17 +926,14 @@ public final class GameUtils {
 
 		Utils.callEvent(new RMGameStopEvent(game));
 
-		final List<PlayerManager> players = game.getPlayersFromList();
+		final Set<PlayerManager> players = game.getPlayers();
 		final String name = game.getName();
 
 		if (game.getGameType() != GameType.APOCALYPSE) {
-			boolean winnervalid = false;
-			UUID winnerUUID = RageScores.calculateWinner(game, players);
-			if (winnerUUID != null && Bukkit.getPlayer(winnerUUID) != null) {
-				winnervalid = true;
+			final UUID winnerUUID = RageScores.calculateWinner(game, players);
+			final Player winner = winnerUUID != null ? Bukkit.getPlayer(winnerUUID) : null;
 
-				Player winner = Bukkit.getPlayer(winnerUUID);
-
+			if (winner != null) {
 				String wonTitle = ConfigValues.getWonTitle(), wonSubtitle = ConfigValues.getWonSubTitle(),
 						youWonTitle = ConfigValues.getYouWonTitle(), youWonSubtitle = ConfigValues.getYouWonSubTitle();
 
@@ -1035,35 +949,25 @@ public final class GameUtils {
 					final Player p = pm.getPlayer();
 
 					if (p != winner) {
-						String wonTime = ConfigValues.getWonTitleTime();
-						sendTitleMessages(p, wonTitle, wonSubtitle, wonTime);
+						sendTitleMessages(p, wonTitle, wonSubtitle, ConfigValues.getWonTitleTime());
 
 						if (ConfigValues.isSwitchGMForPlayers()) {
 							p.setGameMode(GameMode.SPECTATOR);
 						}
 					} else {
-						String wonTime = ConfigValues.getYouWonTitleTime();
-						sendTitleMessages(p, youWonTitle, youWonSubtitle, wonTime);
+						sendTitleMessages(p, youWonTitle, youWonSubtitle, ConfigValues.getYouWonTitleTime());
 					}
 				}
-			}
-
-			if (!winnervalid) {
+			} else {
 				broadcastToGame(game, RageMode.getLang().get("game.no-won"));
-
 				players.forEach(pm -> pm.getPlayer().setGameMode(GameMode.SPECTATOR));
 			}
 
 			players.forEach(pm -> game.removePlayerSynced(pm.getPlayer()));
 
-			final Player winner = winnerUUID != null ? Bukkit.getPlayer(winnerUUID) : null;
 			if (!useFreeze) {
 				finishStopping(game, winner, false);
 				return;
-			}
-
-			if (WAITINGGAMES.containsKey(name)) {
-				WAITINGGAMES.remove(name);
 			}
 
 			WAITINGGAMES.put(name, true);
@@ -1071,13 +975,8 @@ public final class GameUtils {
 			game.setStatus(GameStatus.GAMEFREEZE);
 			SignCreator.updateAllSigns(name);
 
-			RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
-				if (WAITINGGAMES.containsKey(name)) {
-					WAITINGGAMES.remove(name);
-				}
-
-				finishStopping(game, winner, true);
-			}, ConfigValues.getGameFreezeTime() * 20);
+			RageMode.getInstance().getServer().getScheduler().runTaskLater(RageMode.getInstance(),
+					() -> finishStopping(game, winner, true), ConfigValues.getGameFreezeTime() * 20);
 		} else {
 			GameAreaManager.removeEntitiesFromGame(game);
 
@@ -1088,26 +987,21 @@ public final class GameUtils {
 				return;
 			}
 
-			if (WAITINGGAMES.containsKey(name)) {
-				WAITINGGAMES.remove(name);
-			}
-
 			WAITINGGAMES.put(name, true);
 
 			game.setStatus(GameStatus.GAMEFREEZE);
 			SignCreator.updateAllSigns(name);
 
-			RageMode.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> {
-				if (WAITINGGAMES.containsKey(name)) {
-					WAITINGGAMES.remove(name);
-				}
-
-				finishStopping(game, null, true);
-			}, ConfigValues.getGameFreezeTime() * 20);
+			RageMode.getInstance().getServer().getScheduler().runTaskLater(RageMode.getInstance(),
+					() -> finishStopping(game, null, true), ConfigValues.getGameFreezeTime() * 20);
 		}
 	}
 
 	private static void finishStopping(Game game, Player winner, boolean serverStop) {
+		if (WAITINGGAMES.containsKey(game.getName())) {
+			WAITINGGAMES.remove(game.getName());
+		}
+
 		if (!game.isGameRunning()) {
 			return;
 		}
@@ -1121,14 +1015,14 @@ public final class GameUtils {
 			RuntimePPManager.loadPPListFromDatabase();
 		}
 
-		for (PlayerManager spec : new HashMap<>(game.getSpectatorPlayers()).values()) {
+		for (PlayerManager spec : game.getSpectatorPlayers()) {
 			game.removeSpectatorPlayer(spec.getPlayer());
 		}
 
 		game.getActionMessengers().clear();
 
 		RewardManager reward = new RewardManager(gName);
-		for (PlayerManager pm : game.getPlayersFromList()) {
+		for (PlayerManager pm : game.getPlayers()) {
 			final Player p = pm.getPlayer();
 
 			RageScores.getPlayerPoints(p.getUniqueId()).ifPresent(pP -> {
@@ -1147,10 +1041,12 @@ public final class GameUtils {
 				continue; // We need this if the event was cancelled only in one player
 			}
 
-			runCommands(p, gName, "stop");
-			sendActionMessage(p, gName, ActionMessageType.STOP, ActionMessageType.asBossbar());
-			sendActionMessage(p, gName, ActionMessageType.STOP, ActionMessageType.asActionbar());
+			runCommands(p, game, "stop");
+			sendActionMessage(p, game, ActionMessageType.STOP, ActionMessageType.asBossbar());
+			sendActionMessage(p, game, ActionMessageType.STOP, ActionMessageType.asActionbar());
+
 			RageScores.removePointsForPlayer(p.getUniqueId());
+
 			if (game.removePlayer(p)) {
 				sendMessage(p, RageMode.getLang().get("game.stopped", "%game%", gName));
 
@@ -1188,38 +1084,33 @@ public final class GameUtils {
 	public static void stopAllGames() {
 		Debug.logConsole("Searching games to stop...");
 
-		for (String game : GetGames.getGameNames()) {
-			Game g = getGame(game);
-			if (g == null) {
-				continue;
-			}
+		for (Game game : RageMode.getInstance().getGames()) {
+			Set<PlayerManager> pList = game.getPlayers();
 
-			GameStatus status = g.getStatus();
+			if (game.getStatus() == GameStatus.RUNNING && game.isGameRunning()) {
+				Debug.logConsole("Stopping " + game.getName() + " ...");
 
-			List<PlayerManager> pList = new java.util.ArrayList<>(g.getPlayersFromList());
-			if (status == GameStatus.RUNNING && g.isGameRunning()) {
-				Debug.logConsole("Stopping " + game + " ...");
-
-				GameAreaManager.removeEntitiesFromGame(g);
-				RageScores.calculateWinner(g, pList);
+				GameAreaManager.removeEntitiesFromGame(game);
+				RageScores.calculateWinner(game, pList);
 
 				for (PlayerManager players : pList) {
-					Player p = players.getPlayer();
-
-					g.removePlayer(p);
-					RageScores.removePointsForPlayer(p.getUniqueId());
+					game.removePlayer(players.getPlayer());
+					RageScores.removePointsForPlayer(players.getPlayer().getUniqueId());
 				}
 
-				for (PlayerManager spec : new HashMap<>(g.getSpectatorPlayers()).values()) {
-					g.removeSpectatorPlayer(spec.getPlayer());
+				for (PlayerManager spec : game.getSpectatorPlayers()) {
+					game.removeSpectatorPlayer(spec.getPlayer());
 				}
 
-				g.setGameRunning(false);
+				game.setGameRunning(false);
 
 				Debug.logConsole(game + " has been stopped.");
-			} else if (status == GameStatus.WAITING) {
-				pList.forEach(pl -> g.removePlayer(pl.getPlayer()));
+			} else if (game.getStatus() == GameStatus.WAITING) {
+				pList.forEach(pl -> game.removePlayer(pl.getPlayer()));
 			}
+
+			game.getGameLobby().saveToConfig();
+			game.saveGamesSettings();
 		}
 	}
 
@@ -1249,7 +1140,7 @@ public final class GameUtils {
 	 * @return true if similar
 	 */
 	public static boolean isGameItem(Player p) {
-		return isGameItem(NMS.getItemInHand(p));
+		return isGameItem(Misc.getItemInHand(p));
 	}
 
 	/**
@@ -1279,24 +1170,14 @@ public final class GameUtils {
 	}
 
 	/**
-	 * Checks if the specified game is in the freeze room.
+	 * Checks if the specified game is in the freeze room. This also checks the game
+	 * status if it equal to {@link GameStatus#GAMEFREEZE}
 	 * 
-	 * @see #isGameInFreezeRoom(String)
-	 * @param game Game
-	 * @return true if the game is in
+	 * @param game {@link Game}
+	 * @return true if the game is in freeze status
 	 */
 	public static boolean isGameInFreezeRoom(Game game) {
-		return isGameInFreezeRoom(game.getName());
-	}
-
-	/**
-	 * Checks if the specified game is in the freeze room.
-	 * 
-	 * @param game Game name
-	 * @return true if the game is in
-	 */
-	public static boolean isGameInFreezeRoom(String game) {
-		return WAITINGGAMES.getOrDefault(game, false);
+		return game.getStatus() == GameStatus.GAMEFREEZE && WAITINGGAMES.getOrDefault(game.getName(), false);
 	}
 
 	/**

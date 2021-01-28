@@ -29,9 +29,7 @@ public class HolographicDisplaysHolder extends IHoloHolder {
 		loc.setPitch(0f);
 		loc.setYaw(0f);
 
-		synchronized (HOLOS) {
-			HOLOS.add(loc);
-		}
+		HOLOS.add(loc);
 
 		FileConfiguration c = RageMode.getInstance().getConfiguration().getHolosConfig();
 		c.set("data.holos", HOLOS);
@@ -53,9 +51,7 @@ public class HolographicDisplaysHolder extends IHoloHolder {
 			return;
 		}
 
-		synchronized (HOLOS) {
-			loc.forEach(HOLOS::add);
-		}
+		loc.forEach(HOLOS::add);
 
 		Bukkit.getOnlinePlayers().forEach(this::showAllHolosToPlayer);
 	}
@@ -81,9 +77,7 @@ public class HolographicDisplaysHolder extends IHoloHolder {
 		if (loc == null || !HOLOS.contains(loc))
 			return false;
 
-		synchronized (HOLOS) {
-			HOLOS.remove(loc);
-		}
+		HOLOS.remove(loc);
 
 		FileConfiguration c = RageMode.getInstance().getConfiguration().getHolosConfig();
 		c.set("data.holos", HOLOS);
@@ -99,11 +93,6 @@ public class HolographicDisplaysHolder extends IHoloHolder {
 
 	@Override
 	public void deleteAllHologram() {
-		FileConfiguration c = RageMode.getInstance().getConfiguration().getHolosConfig();
-		c.set("data.holos", null);
-
-		Configuration.saveFile(c, RageMode.getInstance().getConfiguration().getHolosFile());
-
 		HOLOS.forEach(loc -> HologramsAPI.getHolograms(RageMode.getInstance()).stream()
 				.filter(h -> loc.equals(h.getLocation())).forEach(Hologram::delete));
 
@@ -112,12 +101,10 @@ public class HolographicDisplaysHolder extends IHoloHolder {
 
 	@Override
 	public void deleteHoloObjectsOfPlayer(Player player) {
-		if (player == null) {
-			return;
+		if (player != null) {
+			HologramsAPI.getHolograms(RageMode.getInstance()).stream()
+					.filter(h -> h.getVisibilityManager().isVisibleTo(player)).forEach(Hologram::delete);
 		}
-
-		HologramsAPI.getHolograms(RageMode.getInstance()).stream()
-				.filter(h -> h.getVisibilityManager().isVisibleTo(player)).forEach(Hologram::delete);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -141,10 +128,7 @@ public class HolographicDisplaysHolder extends IHoloHolder {
 
 	@Override
 	public void showAllHolosToPlayer(Player player) {
-		if (player == null)
-			return;
-
-		synchronized (HOLOS) {
+		if (player != null) {
 			HOLOS.forEach(loc -> displayHoloToPlayer(player, loc));
 		}
 	}

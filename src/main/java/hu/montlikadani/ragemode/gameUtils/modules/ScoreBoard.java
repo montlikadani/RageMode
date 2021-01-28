@@ -1,6 +1,7 @@
 package hu.montlikadani.ragemode.gameUtils.modules;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.bukkit.Bukkit;
@@ -16,12 +17,16 @@ import hu.montlikadani.ragemode.holder.ScoreBoardHolder;
 
 public class ScoreBoard {
 
-	private final HashMap<Player, ScoreBoardHolder> scoreboards = new HashMap<>();
+	private final Map<Player, ScoreBoardHolder> scoreboards = new HashMap<>();
 
 	private final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 
 	@SuppressWarnings("deprecation")
-	public void loadScoreboard(Player player) {
+	public ScoreBoard(Player player) {
+		if (player == null) {
+			return;
+		}
+
 		Objective objective = scoreboard.getObjective("ragescores");
 		if (objective == null) {
 			objective = scoreboard.registerNewObjective("ragescores", "dummy");
@@ -42,34 +47,38 @@ public class ScoreBoard {
 	}
 
 	/**
-	 * Sets the title for the created ScoreBoard.
+	 * Sets the title for the created ScoreBoard if present.
+	 * 
 	 * @param player The player who needs to set the title
-	 * @param title The String, where the title should be set to.
+	 * @param title  The String, where the title should be set to.
 	 */
-	public void setTitle(Player player, String title) {
-		if (Version.isCurrentLower(Version.v1_13_R1) && title.length() > 32) {
-			title = title.substring(0, 32);
-		} else if (Version.isCurrentEqualOrHigher(Version.v1_13_R1) && title.length() > 128) {
-			title = title.substring(0, 128);
-		}
+	public void setTitle(final Player player, final String title) {
+		getScoreboard(player).ifPresent(board -> {
+			String newTitle = title;
 
-		final String newTitle = title;
+			if (Version.isCurrentLower(Version.v1_13_R1) && newTitle.length() > 32) {
+				newTitle = newTitle.substring(0, 32);
+			} else if (Version.isCurrentEqualOrHigher(Version.v1_13_R1) && newTitle.length() > 128) {
+				newTitle = newTitle.substring(0, 128);
+			}
 
-		getScoreboard(player).ifPresent(board -> board.getObjective().setDisplayName(newTitle));
+			board.getObjective().setDisplayName(newTitle);
+		});
 	}
 
 	/**
-	 * Sets one score-line with the given String as the name and the Integer as
-	 * a score which should be displayed next to the name.
+	 * Sets one score-line with the given String as the name and the Integer as a
+	 * score which should be displayed next to the name if the scoreboard for the
+	 * player is present.
 	 * 
-	 * @param player The player who needs to set the lines
-	 * @param line The name of the new score.
+	 * @param player     The player who needs to set the lines
+	 * @param line       The name of the new score.
 	 * @param dummyScore The integer, the score should be set to.
 	 */
 	public void setLine(Player player, String line, int dummyScore) {
 		getScoreboard(player).ifPresent(board -> {
 			Team team = board.getScoreboard().getTeam("SLOT_" + dummyScore);
-			if (team == null) {
+			if (team == null || dummyScore >= ChatColor.values().length) {
 				return;
 			}
 
@@ -90,11 +99,12 @@ public class ScoreBoard {
 
 	/**
 	 * Resets the scores with the given score to prevent duplication on scoreboard.
+	 * 
 	 * @param player {@link Player}
-	 * @param score where the line should reset
+	 * @param score  where the line should reset
 	 */
 	public void resetScores(Player player, int score) {
-		getScoreboard(player).ifPresent(board -> {
+		getScoreboard(player).filter(b -> score >= ChatColor.values().length).ifPresent(board -> {
 			String entry = ChatColor.values()[score].toString();
 			if (board.getScoreboard().getEntries().contains(entry)) {
 				board.getScoreboard().resetScores(entry);
@@ -103,15 +113,17 @@ public class ScoreBoard {
 	}
 
 	/**
-	 * Sets the ScoreBoard for the given Player.
-	 * @param player The Player instance for which the ScoreBoard should be set.
+	 * Sets the ScoreBoard (if present) for the given player.
+	 * 
+	 * @param player {@link Player}
 	 */
 	public void setScoreBoard(Player player) {
 		getScoreboard(player).ifPresent(board -> player.setScoreboard(board.getScoreboard()));
 	}
 
 	/**
-	 * Removes the ScoreBoard and the player who exist in the list for the given Player.
+	 * Removes this ScoreBoard if present.
+	 * 
 	 * @param pl The Player instance for which the ScoreBoard should be removed.
 	 */
 	public void remove(Player pl) {
@@ -130,15 +142,18 @@ public class ScoreBoard {
 	}
 
 	/**
-	 * Returns the HashMap with all the ScoreBoardHolder elements for each Player within this ScoreBoard.
-	 * @return {@link #scoreboards}
+	 * Returns the Map with all the ScoreBoardHolder elements for each Player within
+	 * this ScoreBoard.
+	 * 
+	 * @return {@link Map}
 	 */
-	public HashMap<Player, ScoreBoardHolder> getScoreboards() {
+	public Map<Player, ScoreBoardHolder> getScoreboards() {
 		return scoreboards;
 	}
 
 	/**
-	 * Returns an {@link Optional} player scoreboard which is saved.
+	 * Returns the given player scoreboard if present.
+	 * 
 	 * @param player {@link Player}
 	 * @return {@link Optional}
 	 */

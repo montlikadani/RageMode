@@ -43,16 +43,18 @@ public class GameZombieSpawn implements IGameSpawn {
 	private void loadSpawns() {
 		removeAllSpawn();
 
-		isReady = false;
-
 		FileConfiguration conf = RageMode.getInstance().getConfiguration().getArenasCfg();
 		String path = "arenas." + game.getName() + ".zombie-spawns";
-		if (!conf.contains(path)) {
+		if (!conf.isConfigurationSection(path)) {
 			return;
 		}
 
 		for (String spawnName : conf.getConfigurationSection(path).getKeys(false)) {
-			String world = conf.getString(path + "." + spawnName + ".world");
+			String world = conf.getString(path + "." + spawnName + ".world", "");
+			if (world.isEmpty()) {
+				continue;
+			}
+
 			double spawnX = conf.getDouble(path + "." + spawnName + ".x"),
 					spawnY = conf.getDouble(path + "." + spawnName + ".y"),
 					spawnZ = conf.getDouble(path + "." + spawnName + ".z"),
@@ -84,6 +86,7 @@ public class GameZombieSpawn implements IGameSpawn {
 	@Override
 	public void removeAllSpawn() {
 		spawnLocations.clear();
+		isReady = false;
 	}
 
 	@Override
@@ -93,11 +96,6 @@ public class GameZombieSpawn implements IGameSpawn {
 
 	@Override
 	public Location getRandomSpawn() {
-		if (!haveAnySpawn()) {
-			return null;
-		}
-
-		int x = ThreadLocalRandom.current().nextInt(spawnLocations.size());
-		return spawnLocations.get(x);
+		return haveAnySpawn() ? spawnLocations.get(ThreadLocalRandom.current().nextInt(spawnLocations.size())) : null;
 	}
 }

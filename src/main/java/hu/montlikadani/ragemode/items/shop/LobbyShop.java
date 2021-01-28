@@ -1,10 +1,6 @@
 package hu.montlikadani.ragemode.items.shop;
 
-import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
-
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -22,6 +18,8 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import com.google.common.collect.ImmutableList;
 
 import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
@@ -41,6 +39,7 @@ import hu.montlikadani.ragemode.items.shop.pages.NextPage;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.utils.Misc;
 import net.milkbowl.vault.economy.Economy;
 
 public class LobbyShop implements Listener {
@@ -104,10 +103,10 @@ public class LobbyShop implements Listener {
 		}, 2L);
 	}
 
-	public List<ShopItem> getItems(IShop currentPage, ShopCategory category) {
-		return (currentPage == null || category == null) ? new ArrayList<>()
-				: currentPage.getItems().stream().filter(si -> category.equals(si.getCategory()))
-						.collect(Collectors.toList());
+	public ImmutableList<ShopItem> getItems(IShop currentPage, ShopCategory category) {
+		return (currentPage == null || category == null) ? ImmutableList.of()
+				: ImmutableList.copyOf(currentPage.getItems().stream().filter(si -> category == si.getCategory())
+						.collect(Collectors.toList()));
 	}
 
 	@EventHandler
@@ -121,20 +120,11 @@ public class LobbyShop implements Listener {
 
 	@EventHandler
 	public void onGameStart(RMGameStartEvent event) {
-		for (PlayerManager pm : event.getGame().getPlayersFromList()) {
-			Player player = pm.getPlayer();
-			removeShop(player);
-			player.closeInventory();
+		for (PlayerManager pm : event.getGame().getPlayers()) {
+			removeShop(pm.getPlayer());
+			pm.getPlayer().closeInventory();
 		}
 	}
-
-	/*@EventHandler
-	public void onDrag(InventoryDragEvent event) {
-		if (event.getInventory().geth(getCurrentPage((Player) event.getWhoClicked()).getInventory().getHolder())) {
-			event.setCancelled(true);
-		}
-		//ev.getInventory().getHolder() instanceof IShop
-	}*/
 
 	@EventHandler
 	public void onClose(InventoryCloseEvent e) {
@@ -154,7 +144,6 @@ public class LobbyShop implements Listener {
 
 		if (!GameUtils.isPlayerPlaying(p) || GameUtils.getGameByPlayer(p).getStatus() != GameStatus.WAITING) {
 			removeShop(p);
-			p.closeInventory();
 			return;
 		}
 
@@ -419,7 +408,7 @@ public class LobbyShop implements Listener {
 		}
 
 		if (!enough) {
-			sendMessage(player, RageMode.getLang().get("game.cant-bought-elements"));
+			Misc.sendMessage(player, RageMode.getLang().get("game.cant-bought-elements"));
 			return;
 		}
 

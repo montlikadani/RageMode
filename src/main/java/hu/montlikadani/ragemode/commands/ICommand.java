@@ -7,4 +7,5 @@ import hu.montlikadani.ragemode.RageMode;
 public interface ICommand {
 
 	boolean run(RageMode plugin, CommandSender sender, String[] args);
+
 }

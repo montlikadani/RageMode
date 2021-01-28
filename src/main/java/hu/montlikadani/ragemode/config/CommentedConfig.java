@@ -25,13 +25,8 @@ public class CommentedConfig extends YamlConfiguration {
 	private File file;
 
 	public CommentedConfig(File file) {
-		super();
-
 		this.file = file;
-
-		if (file != null) {
-			this.config = getYml(file);
-		}
+		this.config = getYml();
 	}
 
 	public YamlConfiguration getConfig() {
@@ -70,8 +65,13 @@ public class CommentedConfig extends YamlConfiguration {
 		Validate.notNull(file, "File cannot be null");
 
 		Files.createParentDirs(file);
-		String data = insertComments(saveToString());
-		// 2. arg should be string for j8 users
+
+		String saveToString = saveToString();
+		if (saveToString.trim().isEmpty()) {
+			return;
+		}
+
+		String data = insertComments(saveToString);
 		PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8.name());
 
 		try {
@@ -230,16 +230,33 @@ public class CommentedConfig extends YamlConfiguration {
 		comments.put(path, comment.toString());
 	}
 
-	public YamlConfiguration getYml(File file) {
+	public void cleanUp() {
+		// Get rid of removed options by cleaning the file content
+		PrintWriter writer = null;
+		try {
+			writer = new PrintWriter(file);
+			writer.write("");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (writer != null) {
+				writer.close();
+			}
+		}
+	}
+
+	public YamlConfiguration getYml() {
 		YamlConfiguration config = new YamlConfiguration();
+		if (file == null || !file.exists()) {
+			return config;
+		}
+
 		FileInputStream inputStream = null;
+		InputStreamReader reader = null;
 
 		try {
-			inputStream = new FileInputStream(file);
-			InputStreamReader read = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-
-			config.load(read);
-			read.close();
+			reader = new InputStreamReader(inputStream = new FileInputStream(file), StandardCharsets.UTF_8);
+			config.load(reader);
 		} catch (FileNotFoundException e) {
 		} catch (InvalidConfigurationException | IOException e) {
 			System.out.println(e.getLocalizedMessage());
@@ -247,6 +264,14 @@ public class CommentedConfig extends YamlConfiguration {
 			if (inputStream != null) {
 				try {
 					inputStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+
+			if (reader != null) {
+				try {
+					reader.close();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -284,12 +309,12 @@ public class CommentedConfig extends YamlConfiguration {
 	public List<String> get(String path, List<String> def) {
 		path = process(path, def);
 
-		List<String> ls = config.getStringList(path);
-		for (int p = 0; p < ls.size(); p++) {
-			ls.set(p, ls.get(p));
+		List<String> value = config.getStringList(path);
+		for (int p = 0; p < value.size(); p++) {
+			value.set(p, value.get(p));
 		}
 
-		return ls;
+		return value;
 	}
 
 	public String get(String path, String def) {
@@ -302,7 +327,7 @@ public class CommentedConfig extends YamlConfiguration {
 		return config.getDouble(path);
 	}
 
-	private synchronized void copySetting(String path) {
+	private void copySetting(String path) {
 		set(path, config.get(path));
 	}
 }

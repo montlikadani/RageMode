@@ -46,8 +46,7 @@ public class MainPage implements IShop {
 	@Override
 	public void create(Player player) {
 		Configuration conf = RageMode.getInstance().getConfiguration();
-		if (!conf.getItemsCfg().contains("lobbyitems.shopitem")
-				|| !conf.getItemsCfg().getBoolean("lobbyitems.shopitem.enabled")) {
+		if (!conf.getItemsCfg().getBoolean("lobbyitems.shopitem.enabled")) {
 			return;
 		}
 
@@ -69,7 +68,7 @@ public class MainPage implements IShop {
 				item = "air";
 			}
 
-			Material mat = Material.getMaterial(item.toUpperCase());
+			Material mat = Material.matchMaterial(item);
 			if (mat == null) {
 				Debug.logConsole(Level.WARNING, "Unknown item type: " + item);
 				mat = Material.AIR;
@@ -78,7 +77,7 @@ public class MainPage implements IShop {
 			if (mat == Material.AIR) {
 				String filler = conf.getItemsCfg().getString("lobbyitems.shopitem.gui.fillEmptyFields", "air");
 				if (!filler.isEmpty()) {
-					mat = Material.getMaterial(filler.toUpperCase());
+					mat = Material.matchMaterial(filler);
 					if (mat == null) {
 						Debug.logConsole(Level.WARNING, "Unknown filler item type: " + filler);
 						mat = Material.AIR;
@@ -107,7 +106,7 @@ public class MainPage implements IShop {
 				iMeta.setDisplayName(itemName.replace('&', '\u00a7'));
 			}
 
-			hu.montlikadani.ragemode.NMS.setDurability(iStack,
+			hu.montlikadani.ragemode.utils.Misc.setDurability(iStack,
 					(short) conf.getItemsCfg().getDouble(path + "slot-" + i + ".durability", 0));
 
 			iStack.setItemMeta(iMeta);

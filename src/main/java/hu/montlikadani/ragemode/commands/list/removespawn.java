@@ -10,6 +10,7 @@ import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.IGameSpawn;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
@@ -27,12 +28,12 @@ public class removespawn implements ICommand {
 		}
 
 		String name = args[1];
-		if (!GameUtils.isGameWithNameExists(name)) {
+		if (!GameUtils.isGameExist(name)) {
 			sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", name));
 			return false;
 		}
 
-		IGameSpawn spawn = GameUtils.getGameSpawn(name);
+		IGameSpawn spawn = GameUtils.getGame(name).getSpawn(GameSpawn.class);
 		FileConfiguration aFile = plugin.getConfiguration().getArenasCfg();
 
 		if (args[2].equalsIgnoreCase("all")) {

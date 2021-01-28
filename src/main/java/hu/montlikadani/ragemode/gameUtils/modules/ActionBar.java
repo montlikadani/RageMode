@@ -1,7 +1,5 @@
 package hu.montlikadani.ragemode.gameUtils.modules;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -19,21 +17,14 @@ public abstract class ActionBar {
 		if (message == null)
 			message = "";
 
-		String nmsver = Bukkit.getServer().getClass().getPackage().getName();
-		nmsver = nmsver.substring(nmsver.lastIndexOf(".") + 1);
-
 		try {
-			Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + nmsver + ".entity.CraftPlayer");
-
-			Object craftPlayer = craftPlayerClass.cast(player);
 			Object packet;
 
 			Class<?> packetPlayOutChatClass = Reflections.getNMSClass("PacketPlayOutChat"),
-					packetClass = Reflections.getNMSClass("Packet"),
-					chatComponentTextClass = Reflections.getNMSClass("ChatComponentText"),
 					iChatBaseComponentClass = Reflections.getNMSClass("IChatBaseComponent");
 
-			Object chatCompontentText = chatComponentTextClass.getConstructor(String.class).newInstance(message);
+			Object chatCompontentText = Reflections.getNMSClass("ChatComponentText").getConstructor(String.class)
+					.newInstance(message);
 			try {
 				Class<?> chatMessageTypeClass = Reflections.getNMSClass("ChatMessageType");
 				Object chatMessageType = null;
@@ -61,12 +52,16 @@ public abstract class ActionBar {
 						.newInstance(chatCompontentText, (byte) 2);
 			}
 
-			Method craftPlayerHandleMethod = craftPlayerClass.getDeclaredMethod("getHandle");
-			Object craftPlayerHandle = craftPlayerHandleMethod.invoke(craftPlayer);
-			Field playerConnectionField = craftPlayerHandle.getClass().getDeclaredField("playerConnection");
-			Object playerConnection = playerConnectionField.get(craftPlayerHandle);
-			Method sendPacketMethod = playerConnection.getClass().getDeclaredMethod("sendPacket", packetClass);
-			sendPacketMethod.invoke(playerConnection, packet);
+			String nmsver = Bukkit.getServer().getClass().getPackage().getName();
+			nmsver = nmsver.substring(nmsver.lastIndexOf(".") + 1);
+
+			Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + nmsver + ".entity.CraftPlayer");
+			Object craftPlayerHandle = craftPlayerClass.getDeclaredMethod("getHandle")
+					.invoke(craftPlayerClass.cast(player));
+			Object playerConnection = craftPlayerHandle.getClass().getDeclaredField("playerConnection")
+					.get(craftPlayerHandle);
+			playerConnection.getClass().getDeclaredMethod("sendPacket", Reflections.getNMSClass("Packet"))
+					.invoke(playerConnection, packet);
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}

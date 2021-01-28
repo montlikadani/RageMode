@@ -1,6 +1,7 @@
 package hu.montlikadani.ragemode.database;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import com.google.common.collect.ImmutableList;
 
@@ -11,6 +12,14 @@ import hu.montlikadani.ragemode.scores.PlayerPoints;
  * data(s).
  */
 public interface Database {
+
+	/**
+	 * @return the current database type of this inherited class. If annotation is
+	 *         not present returns YAML as default
+	 */
+	default DBType getDatabaseType() {
+		return getClass().isAnnotationPresent(DB.class) ? getClass().getAnnotation(DB.class).type() : DBType.YAML;
+	}
 
 	/**
 	 * Returns the current connected database. In some situations this will returns
@@ -40,13 +49,13 @@ public interface Database {
 	void saveDatabase();
 
 	/**
-	 * Attempts to convert the database to the given type. The type should be the
-	 * same as in {@link DBType}
+	 * Attempts to convert the database to the given type and completes it. The type
+	 * should be the same as in {@link DBType}
 	 * 
 	 * @param type the new type of database
 	 * @return true if it success
 	 */
-	boolean convertDatabase(String type);
+	CompletableFuture<Boolean> convertDatabase(String type);
 
 	/**
 	 * Attempts to load all player statistic from the database.

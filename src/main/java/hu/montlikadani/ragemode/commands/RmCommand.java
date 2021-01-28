@@ -22,7 +22,6 @@ public class RmCommand implements CommandExecutor {
 
 	private final Set<ICommand> cmds = new HashSet<>();
 
-	@SuppressWarnings("deprecation")
 	public RmCommand() {
 		@SuppressWarnings("serial")
 		final Set<Class<?>> subCmds = new HashSet<Class<?>>() {
@@ -55,19 +54,14 @@ public class RmCommand implements CommandExecutor {
 		for (Class<?> s : subCmds) {
 			try {
 				Class<?> c = RageMode.class.getClassLoader().loadClass(s.getName());
-				if (c == null) {
+				if (c == null || !c.isAnnotationPresent(CommandProcessor.class)) {
 					continue;
 				}
 
-				ICommand cmd;
 				if (Utils.Reflections.getCurrentJavaVersion() >= 9) {
-					cmd = (ICommand) c.getDeclaredConstructor().newInstance();
+					cmds.add((ICommand) c.getDeclaredConstructor().newInstance());
 				} else {
-					cmd = (ICommand) c.newInstance();
-				}
-
-				if (cmd.getClass().isAnnotationPresent(CommandProcessor.class)) {
-					cmds.add(cmd);
+					cmds.add((ICommand) c.newInstance());
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -113,13 +107,15 @@ public class RmCommand implements CommandExecutor {
 			}
 
 			if (hasPerm(sender, "ragemode.help.playercommands") || hasPerm(sender, "ragemode.listgames"))
-				msg += "&7-&6 /rm listgames&a - Listing available games.\n \n"; // Style
+				msg += "&7-&6 /rm listgames&a - Listing available games.\n \n";
 
 			if (hasPerm(sender, "ragemode.admin.help")) {
 				msg += "&7-&6 /rm admin&a - Lists all admin commands.\n";
 
-				if (sender instanceof Player && hasPerm(sender, "ragemode.admin.setup"))
-					msg += "&7-&6 /rm setup&a - Lists all admin setup commands.\n";
+				if (sender instanceof Player && hasPerm(sender, "ragemode.admin.setup")) {
+					msg += "&7-&6 /rm setupgame&a - Lists all admin setup commands.\n";
+					msg += "&7-&6 /rm setup&a - Opens setup GUI\n";
+				}
 			}
 
 			msg += "&7==========";
@@ -129,7 +125,7 @@ public class RmCommand implements CommandExecutor {
 		}
 
 		if (args.length >= 1) {
-			if (args[0].equalsIgnoreCase("setup")) {
+			if (args[0].equalsIgnoreCase("setupgame")) {
 				if (!(sender instanceof Player)) {
 					sendMessage(sender, RageMode.getLang().get("in-game-only"));
 					return true;
@@ -142,7 +138,6 @@ public class RmCommand implements CommandExecutor {
 
 				String msg = "";
 
-				// Setup
 				if (hasPerm(sender, "ragemode.admin.addgame"))
 					msg += "&7-&6 /rm addgame <gameName>&a - Adds a new game.\n";
 
@@ -172,12 +167,6 @@ public class RmCommand implements CommandExecutor {
 
 				if (hasPerm(sender, "ragemode.admin.holostats"))
 					msg += "&7-&6 /rm holostats <add/remove/tp>&a - Adds/remove/teleports a new hologram.\n";
-
-				if (hasPerm(sender, "ragemode.admin.setactionbar"))
-					msg += "&7-&6 /rm actionbar <gameName> <true/false>&a - Actionbar on/off which display in the game.\n";
-
-				if (hasPerm(sender, "ragemode.admin.setbossbar"))
-					msg += "&7-&6 /rm bossbar <gameName> <true/false>&a - Bossbar on/off which display in the game.\n";
 
 				if (hasPerm(sender, "ragemode.admin.setgametime"))
 					msg += "&7-&6 /rm gametime <gameName> <minutes>&a - Adding game time (in minutes) to game.\n";

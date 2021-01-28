@@ -135,12 +135,8 @@ public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 
 	@Override
 	public ItemStack get() {
-		if (builtItem != null) {
+		if (builtItem != null || item == null) {
 			return builtItem;
-		}
-
-		if (item == null) {
-			return null;
 		}
 
 		ItemStack item = new ItemStack(this.item, amount);
