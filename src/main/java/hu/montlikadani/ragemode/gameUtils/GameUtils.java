@@ -706,6 +706,11 @@ public final class GameUtils {
 
 				Zombie zombie = (Zombie) world.spawnEntity(location, org.bukkit.entity.EntityType.ZOMBIE);
 
+				if (RageMode.getSoftwareType() == ServerSoftwareType.PAPER
+						&& Version.isCurrentEqualOrHigher(Version.v1_16_R3)) {
+					zombie.setCanBreakDoors(false);
+				}
+
 				// Do not spawn too much baby zombie
 				if (Version.isCurrentEqualOrHigher(Version.v1_16_R2)) {
 					if (!zombie.isAdult() && ThreadLocalRandom.current().nextInt(0, 10) < 2) {
@@ -741,12 +746,12 @@ public final class GameUtils {
 	 * @param cmdType CommandProcessor type, such as death, join or other
 	 */
 	public static void runCommands(Player p, Game game, String cmdType) {
-		if (!ConfigValues.isRewardEnabled() || !game.isGameRunning()) {
+		org.bukkit.configuration.file.FileConfiguration cfg = RageMode.getInstance().getConfiguration().getRewardsCfg();
+		if (!cfg.getBoolean("enabled") || !game.isGameRunning()) {
 			return;
 		}
 
-		for (String cmd : RageMode.getInstance().getConfiguration().getRewardsCfg()
-				.getStringList("rewards.in-game.run-commands")) {
+		for (String cmd : cfg.getStringList("rewards.in-game.run-commands")) {
 			String[] split = cmd.split(":");
 			if (split.length < 3 && split.length > 4) {
 				Debug.logConsole(Level.WARNING,
@@ -1050,7 +1055,7 @@ public final class GameUtils {
 			if (game.removePlayer(p)) {
 				sendMessage(p, RageMode.getLang().get("game.stopped", "%game%", gName));
 
-				if (ConfigValues.isRewardEnabled()) {
+				if (RageMode.getInstance().getConfiguration().getRewardsCfg().getBoolean("enabled")) {
 					if (winner == p) {
 						reward.rewardForWinner(winner);
 						continue;

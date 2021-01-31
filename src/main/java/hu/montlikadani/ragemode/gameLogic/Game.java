@@ -27,7 +27,7 @@ import hu.montlikadani.ragemode.managers.PlayerManager;
 
 public final class Game extends GameSettings {
 
-	private final GameLobby gameLobby = new GameLobby(this);
+	private final GameLobby gameLobby;
 
 	private String name;
 	private GameType gameType;
@@ -55,6 +55,7 @@ public final class Game extends GameSettings {
 
 		setGameType(gameType);
 		loadSpawns();
+		gameLobby = new GameLobby(this);
 	}
 
 	private void loadSpawns() {

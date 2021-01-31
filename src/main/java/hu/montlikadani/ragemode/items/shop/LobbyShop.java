@@ -40,19 +40,18 @@ import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.utils.Misc;
-import net.milkbowl.vault.economy.Economy;
 
 public class LobbyShop implements Listener {
 
 	public static final Map<Player, BoughtElements> BOUGHTITEMS = new HashMap<>();
-	public static final HashMap<UUID, Object> USERPARTICLES = new HashMap<>();
+	public static final HashMap<UUID, Enum<?>> USERPARTICLES = new HashMap<>();
 
 	private final Map<Player, IShop> shops = new HashMap<>();
 
-	private final RageMode plugin = RageMode.getInstance();
+	private static final RageMode RM = RageMode.getInstance();
 
 	public LobbyShop() {
-		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
+		Bukkit.getServer().getPluginManager().registerEvents(this, RM);
 	}
 
 	public Map<Player, IShop> getShops() {
@@ -97,7 +96,7 @@ public class LobbyShop implements Listener {
 		}
 
 		removeShop(player);
-		Bukkit.getScheduler().runTaskLater(plugin, () -> {
+		Bukkit.getScheduler().runTaskLater(RM, () -> {
 			player.openInventory(next.getInventory());
 			shops.put(player, next);
 		}, 2L);
@@ -215,7 +214,7 @@ public class LobbyShop implements Listener {
 			return false;
 		}
 
-		Configuration conf = plugin.getConfiguration();
+		Configuration conf = RM.getConfiguration();
 		BoughtElements elements = BOUGHTITEMS.get(player);
 		PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
 
@@ -252,7 +251,7 @@ public class LobbyShop implements Listener {
 				}
 			}
 
-			if ((plugin.isVaultEnabled() && !plugin.getEconomy().has(player, finalCost))
+			if ((RM.isVaultEnabled() && !RM.getEconomy().has(player, finalCost))
 					|| (pp != null && !pp.hasPoints(finalPoints))) {
 				return false;
 			}
@@ -262,7 +261,7 @@ public class LobbyShop implements Listener {
 			if (elements == null) {
 				elements = new BoughtElements(pe, finalCost, finalPoints);
 			} else {
-				elements.setPotion(pe);
+				elements.setBought(pe);
 			}
 		} else if (shopCategory == ShopCategory.GAMEITEMS && conf.getItemsCfg().contains(path + ".giveitem")) {
 			String[] splitItem = conf.getItemsCfg().getString(path + ".giveitem").split(":");
@@ -281,7 +280,7 @@ public class LobbyShop implements Listener {
 				amount += amount;
 			}
 
-			if ((plugin.isVaultEnabled() && !plugin.getEconomy().has(player, finalCost))
+			if ((RM.isVaultEnabled() && !RM.getEconomy().has(player, finalCost))
 					|| (pp != null && !pp.hasPoints(finalPoints))) {
 				return false;
 			}
@@ -307,7 +306,7 @@ public class LobbyShop implements Listener {
 			if (elements == null) {
 				elements = new BoughtElements(item.get(), finalCost, finalPoints);
 			} else {
-				elements.setItem(item.get());
+				elements.setBought(item.get());
 			}
 		} else if (ConfigValues.isUseArrowTrails() && shopCategory == ShopCategory.ITEMTRAILS
 				&& conf.getItemsCfg().contains(path + ".trail")) {
@@ -345,11 +344,11 @@ public class LobbyShop implements Listener {
 				return false;
 			}
 
-			if (elements != null && particle == elements.getTrail()) {
+			if (elements != null && particle == elements.getBought()) {
 				return false;
 			}
 
-			if ((plugin.isVaultEnabled() && !plugin.getEconomy().has(player, finalCost))
+			if ((RM.isVaultEnabled() && !RM.getEconomy().has(player, finalCost))
 					|| (pp != null && !pp.hasPoints(finalPoints))) {
 				return false;
 			}
@@ -357,7 +356,7 @@ public class LobbyShop implements Listener {
 			if (elements == null) {
 				elements = new BoughtElements(particle, finalCost, finalPoints);
 			} else {
-				elements.setTrail(particle);
+				elements.setBought(particle);
 			}
 		}
 
@@ -373,8 +372,7 @@ public class LobbyShop implements Listener {
 			}
 		}
 
-		// update shop items
-		player.closeInventory();
+		// update inventory components
 		openNextPage(player, shopCategory);
 		return true;
 	}
@@ -388,7 +386,7 @@ public class LobbyShop implements Listener {
 
 		boolean enough = false;
 		if (RageMode.getInstance().isVaultEnabled()) {
-			Economy economy = RageMode.getInstance().getEconomy();
+			net.milkbowl.vault.economy.Economy economy = RageMode.getInstance().getEconomy();
 			double cost = bought.getCost();
 
 			if (cost > 0d && economy.has(player, cost)) {
@@ -412,16 +410,19 @@ public class LobbyShop implements Listener {
 			return;
 		}
 
-		if (bought.getPotion() != null) {
-			player.addPotionEffect(bought.getPotion());
-		}
+		// This also should be on main thread, spigot async catchop
+		Bukkit.getScheduler().runTaskLater(RM, () -> {
+			if (bought.getBought() instanceof PotionEffect) {
+				player.addPotionEffect(bought.<PotionEffect>getBought());
+			}
 
-		if (bought.getItem() != null) {
-			player.getInventory().addItem(bought.getItem());
-		}
+			if (bought.getBought() instanceof ItemStack) {
+				player.getInventory().addItem(bought.<ItemStack>getBought());
+			}
+		}, 1L);
 
-		if (bought.getTrail() != null) {
-			USERPARTICLES.put(player.getUniqueId(), bought.getTrail());
+		if (bought.getBought() instanceof Effect || bought.getBought() instanceof Particle) {
+			USERPARTICLES.put(player.getUniqueId(), bought.getBought());
 		}
 	}
 }

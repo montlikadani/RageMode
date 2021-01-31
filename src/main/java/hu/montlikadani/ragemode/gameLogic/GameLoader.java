@@ -39,7 +39,7 @@ public class GameLoader {
 		game.setGameRunning(true);
 		game.setStatus(GameStatus.RUNNING);
 
-		new Timer().scheduleAtFixedRate(new GameTimer(game, game.gameTime * 60), 0, 60 * 20L);
+		new Timer().scheduleAtFixedRate(new GameTimer(game), 0, 60 * 20L);
 
 		SignCreator.updateAllSigns(game.getName());
 

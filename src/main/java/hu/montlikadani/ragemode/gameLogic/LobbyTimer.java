@@ -14,9 +14,8 @@ public class LobbyTimer extends TimerTask {
 	private Game game;
 	private int time;
 
-	public LobbyTimer(Game game, int time) {
+	public LobbyTimer(Game game) {
 		this.game = game;
-		this.time = time;
 	}
 
 	public Game getGame() {
@@ -27,6 +26,7 @@ public class LobbyTimer extends TimerTask {
 		this.time = time;
 	}
 
+	// TODO do we need AtomicInteger for this?
 	public void increaseLobbyTime(int newTime) {
 		time += newTime;
 	}
@@ -36,6 +36,8 @@ public class LobbyTimer extends TimerTask {
 	}
 
 	public void beginScheduling() {
+		setLobbyTime(game.getGameLobby().lobbyTime);
+
 		Timer timer = new Timer();
 		timer.scheduleAtFixedRate(this, 0, 60 * 20L);
 	}
@@ -43,15 +45,13 @@ public class LobbyTimer extends TimerTask {
 	@Override
 	public void run() {
 		Set<PlayerManager> players = game.getPlayers();
-		if (game.isGameRunning()) {
-			// Set level counter back to 0
-			players.forEach(p -> p.getPlayer().setLevel(0));
-			cancel();
-			return;
-		}
 
 		if (players.size() < game.minPlayers) {
 			game.setStatus(GameStatus.WAITING);
+		}
+
+		if (game.isGameRunning() || players.size() < game.minPlayers) {
+			// Set level counter back to 0
 			players.forEach(p -> p.getPlayer().setLevel(0));
 			cancel();
 			return;

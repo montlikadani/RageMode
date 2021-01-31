@@ -28,7 +28,7 @@ public class GameLobby {
 		this.game = game;
 
 		loadFromConfig();
-		lobbyTimer = new LobbyTimer(game, lobbyTime);
+		lobbyTimer = new LobbyTimer(game);
 	}
 
 	private void loadFromConfig() {
@@ -68,6 +68,8 @@ public class GameLobby {
 		conf.set(path + "z", location.getZ());
 		conf.set(path + "yaw", location.getYaw());
 		conf.set(path + "pitch", location.getPitch());
+
+		conf.set(path + "lobbydelay", lobbyTime);
 
 		Configuration.saveFile(conf, RageMode.getInstance().getConfiguration().getArenasFile());
 	}

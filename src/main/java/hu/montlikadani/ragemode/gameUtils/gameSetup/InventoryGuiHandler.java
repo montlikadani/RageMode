@@ -36,9 +36,7 @@ public final class InventoryGuiHandler implements InventoryHolder {
 		this.game = game;
 		this.guiItems.addAll(guiItems);
 
-		title = Utils.colors(title);
-
-		inv = Bukkit.createInventory(this, InventoryType.ENDER_CHEST, title);
+		inv = Bukkit.createInventory(this, InventoryType.ENDER_CHEST, Utils.colors(title));
 		setItems();
 	}
 

@@ -9,6 +9,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.IGameSpawn;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -21,6 +22,7 @@ public class addspawn implements ICommand {
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
 		Player p = (Player) sender;
+
 		if (args.length < 2) {
 			sendMessage(p, RageMode.getLang().get("missing-arguments", "%usage%", "/rm addspawn <gameName>"));
 			return false;
@@ -28,6 +30,12 @@ public class addspawn implements ICommand {
 
 		if (!GameUtils.isGameExist(args[1])) {
 			sendMessage(p, RageMode.getLang().get("invalid-game"));
+			return false;
+		}
+
+		Game game = GameUtils.getGame(args[1]);
+		if (game.isGameRunning()) {
+			sendMessage(p, RageMode.getLang().get("game.running"));
 			return false;
 		}
 
@@ -55,12 +63,12 @@ public class addspawn implements ICommand {
 		aFile.set(path + "pitch", loc.getPitch());
 		Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
-		IGameSpawn spawn = GameUtils.getGame(args[1]).getSpawn(GameSpawn.class);
+		IGameSpawn spawn = game.getSpawn(GameSpawn.class);
 		if (spawn != null) {
 			spawn.addSpawn(loc);
 		}
 
-		sendMessage(p, RageMode.getLang().get("setup.spawn-set-success", "%number%", i, "%game%", args[1]));
+		sendMessage(p, RageMode.getLang().get("setup.spawn-set-success", "%number%", i, "%game%", game.getName()));
 		return true;
 	}
 }

@@ -5,7 +5,6 @@ import java.util.TimerTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
-import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.scheduler.BukkitTask;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -22,7 +21,6 @@ import hu.montlikadani.ragemode.managers.PlayerManager;
 public class GameTimer extends TimerTask {
 
 	private Game game;
-	private final int time;
 	private int timer;
 
 	private BukkitTask timeElapsed;
@@ -31,20 +29,13 @@ public class GameTimer extends TimerTask {
 	private boolean firstZombieSpawned = false;
 	private boolean canSendSpectatorNotify = true;
 
-	public GameTimer(Game game, int time) {
+	public GameTimer(Game game) {
 		this.game = game;
-		timer = (this.time = time);
+		timer = game.gameTime;
 	}
 
 	public Game getGame() {
 		return game;
-	}
-
-	/**
-	 * @return returns the fixed (final) game time
-	 */
-	public int getGameTime() {
-		return time;
 	}
 
 	/**
@@ -105,7 +96,8 @@ public class GameTimer extends TimerTask {
 						}
 					} else {
 						GameAreaManager.getAreaByLocation(loc).ifPresent(area -> {
-							java.util.List<Entity> entities = area.getEntities(org.bukkit.entity.EntityType.ZOMBIE);
+							java.util.List<Entity> entities = area.getEntities(e -> !e.isDead(),
+									org.bukkit.entity.EntityType.ZOMBIE);
 							if (entities.size() <= 150
 									&& ((ConfigValues.isWaitForNextSpawnAfterZombiesAreDead() && entities.isEmpty())
 											|| !ConfigValues.isWaitForNextSpawnAfterZombiesAreDead())) {
@@ -128,27 +120,27 @@ public class GameTimer extends TimerTask {
 					}
 				}
 
-				// Fire EntityInteractEvent to call pressure mines to be exploded
-				GameAreaManager.getAreaByLocation(loc).ifPresent(area -> {
-					e: for (Entity f : area.getEntities()) {
-						if (f.isDead()) {
-							continue;
-						}
-
-						for (PressureMine mines : GameListener.PRESSUREMINES) {
-							for (Location mineLoc : mines.getMines()) {
-								if (mineLoc.getBlock() == f.getLocation().getBlock()) {
-									EntityInteractEvent interact = new EntityInteractEvent(f,
-											f.getLocation().getBlock());
-									if (!interact.isCancelled()) {
-										Utils.callEvent(interact);
+				// Only fire this if this option is disabled for old servers
+				// See PaperListener#entityMoveEvent for better performance
+				if (!ConfigValues.isPreventZombiesMovingOutsideOfArea()) {
+					GameAreaManager.getAreaByLocation(loc).ifPresent(area -> {
+						e: for (Entity f : area.getEntities(e -> !e.isDead(), org.bukkit.entity.EntityType.ZOMBIE)) {
+							for (PressureMine mines : GameListener.PRESSUREMINES) {
+								for (Location mineLoc : mines.getMines()) {
+									if (mineLoc.getBlock().getType() == f.getLocation().getBlock().getType()) {
+										// Good news! Async catchop throwable error, lmao
+										Bukkit.getScheduler()
+												.runTaskLater(RageMode.getInstance(),
+														() -> GameListener.explodeMine(
+																Bukkit.getPlayer(mines.getOwner()), f.getLocation()),
+														1L);
 										break e;
 									}
 								}
 							}
 						}
-					}
-				});
+					});
+				}
 			}
 
 			for (ActionMessengers ac : game.getActionMessengers()) {

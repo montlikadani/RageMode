@@ -2,11 +2,21 @@
 RageMode is an open source and free plugin, that contains a lot of configurable settings, compared to the old plugin.
 ***
 
-Old plugin page: [spigot](https://www.spigotmc.org/resources/12690/), [github](https://github.com/KWStudios/RageMode)
+Old plugin page: [spigot](https://www.spigotmc.org/resources/12690/), [github](https://github.com/KWStudios/RageMode)<br/>
 New plugin page: [spigot](https://www.spigotmc.org/resources/69169/)
 
 # RageMode API
-You can manually add the jar file to your build path or you can use jitpack if you use maven (don't know gradle):
+You can manually add the jar file to your build path or you can use jitpack repository site.
+
+For javadoc:
+
+**Manually included into build path**
+- Download the RageMode jar file and add this jar to Javadoc Location
+
+**Using one of build environment**
+- During the building of the project the javadoc will be included automatically to the dependencies.
+
+## Maven
 ```xml
 <repositories>
     <repository>
@@ -23,6 +33,19 @@ You can manually add the jar file to your build path or you can use jitpack if y
         <scope>provided</scope>
     </dependency>
 </dependencies>
+```
+
+## Gradle
+```gradle
+repositories {
+    maven { 
+        url 'https://jitpack.io' 
+    }
+}
+
+dependencies {
+    implementation 'com.github.montlikadani:RageMode:LATEST' // Change the LATEST to the current version of this plugin
+}
 ```
 
 For API events: https://github.com/montlikadani/RageMode/wiki/API

@@ -28,7 +28,7 @@ public class RuntimePPManager {
 	 */
 	public static PlayerPoints getPPForPlayer(UUID uuid) {
 		for (PlayerPoints pp : RUNTIMEPPLIST) {
-			if (pp != null && pp.getUUID().equals(uuid)) {
+			if (pp.getUUID().equals(uuid)) {
 				return pp;
 			}
 		}

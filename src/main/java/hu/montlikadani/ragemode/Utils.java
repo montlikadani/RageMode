@@ -74,11 +74,20 @@ public class Utils {
 		final ServerSoftwareType softwareType = RageMode.getSoftwareType();
 
 		if (softwareType != ServerSoftwareType.UNKNOWN && softwareType != ServerSoftwareType.SPIGOT) {
-			entity.teleportAsync(loc).thenAccept(done -> {
-				if (!done) {
-					entity.teleport(loc);
-				}
-			});
+			if (!Bukkit.isPrimaryThread()) { // Perform on main thread to prevent async catchop
+				Bukkit.getScheduler().runTaskLater(RageMode.getInstance(),
+						() -> entity.teleportAsync(loc).thenAccept(done -> {
+							if (!done) {
+								entity.teleport(loc);
+							}
+						}), 1L);
+			} else {
+				entity.teleportAsync(loc).thenAccept(done -> {
+					if (!done) {
+						entity.teleport(loc);
+					}
+				});
+			}
 		} else if (!Bukkit.isPrimaryThread()) { // Check if current thread is async
 			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> entity.teleport(loc));
 		} else {

@@ -166,10 +166,12 @@ public class NextPage implements IShop {
 								points = "&c" + elements.getPoints();
 							}
 
-							itemAmount = elements.getItem() == null ? itemAmount : elements.getItem().getAmount();
+							if (elements.getBought() instanceof ItemStack) {
+								itemAmount = elements.<ItemStack>getBought().getAmount();
+							}
 
-							l = l.replace("%activated%", (elements.getTrail() != null
-									&& elements.getTrail().toString().equalsIgnoreCase(sec.getString(slots + ".trail")))
+							l = l.replace("%activated%", (elements.getBought() != null
+									&& elements.getBought().toString().equalsIgnoreCase(sec.getString(slots + ".trail")))
 											? "&a&lActivated!"
 											: "");
 						} else {

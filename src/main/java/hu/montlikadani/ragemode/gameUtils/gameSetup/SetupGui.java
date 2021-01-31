@@ -61,41 +61,34 @@ public class SetupGui implements Listener {
 
 	@EventHandler
 	public void onPluginDisable(PluginDisableEvent event) {
-		if (org.bukkit.plugin.java.JavaPlugin.getProvidingPlugin(RageMode.class).equals(event.getPlugin())) {
-			for (InventoryGuiHandler igh : activeInventories) {
-				new HashSet<>(igh.getViewers()).forEach(viewer -> {
-					viewer.closeCurrent();
-					viewer.getSource().closeInventory();
-				});
-			}
-
-			activeInventories.clear();
+		if (!org.bukkit.plugin.java.JavaPlugin.getProvidingPlugin(RageMode.class).equals(event.getPlugin())) {
+			return;
 		}
+
+		for (InventoryGuiHandler igh : activeInventories) {
+			new HashSet<>(igh.getViewers()).forEach(viewer -> {
+				viewer.closeCurrent();
+				viewer.getSource().closeInventory();
+			});
+		}
+
+		activeInventories.clear();
 	}
 
 	@EventHandler
 	public void onInvClose(InventoryCloseEvent event) {
-		InventoryGuiHandler inv = null;
-
-		for (InventoryGuiHandler igh : activeInventories) {
-			if (igh.isUpdating) {
-				continue;
-			}
-
-			for (GuiViewer viewer : new HashSet<>(igh.getViewers())) {
-				if (viewer.getSource() == event.getPlayer()) {
-					viewer.closeCurrent();
-					inv = igh;
-					break;
+		activeInventories.removeIf(igh -> {
+			if (!igh.isUpdating) {
+				for (GuiViewer viewer : new HashSet<>(igh.getViewers())) {
+					if (viewer.getSource() == event.getPlayer()) {
+						viewer.closeCurrent();
+						return true;
+					}
 				}
 			}
 
-			if (inv != null) {
-				break;
-			}
-		}
-
-		activeInventories.remove(inv);
+			return false;
+		});
 	}
 
 	@EventHandler(priority = EventPriority.HIGH)
@@ -140,7 +133,7 @@ public class SetupGui implements Listener {
 	private final AtomicReference<InventoryGuiHandler> ref = new AtomicReference<>();
 
 	private InventoryGuiHandler load(Game game, boolean firstLoad) {
-		ref.set(null);
+		ref.set(null); // Set to null every time to display items after 3th open
 
 		// hack - we're using references to update inventory item components
 		if (!firstLoad) {
@@ -196,17 +189,9 @@ public class SetupGui implements Listener {
 					c.setLore(Arrays.asList("&eCurrent time: " + Utils.getFormattedTime(game.gameTime), " ",
 							"&6Right click to decrease with 5 minute", "&6Left click to increase with 5 minute"));
 				}).clickEvent(event -> {
-					if (event.isRightClick()) {
-						if (game.gameTime - (5 * 60) < 30) {
-							return;
-						}
-
+					if (event.isRightClick() && game.gameTime - (5 * 60) > 30) {
 						game.gameTime -= 5 * 60;
-					} else if (event.isLeftClick()) {
-						if (game.gameTime + (5 * 60) > 3600) {
-							return;
-						}
-
+					} else if (event.isLeftClick() && game.gameTime + (5 * 60) < 3600) {
 						game.gameTime += 5 * 60;
 					}
 				}).build()).addItem(i -> i.item(5, Material.LAPIS_LAZULI, item -> {
@@ -215,11 +200,7 @@ public class SetupGui implements Listener {
 							"&eCurrent time: " + Utils.getFormattedTime(game.getGameLobby().lobbyTime), " ",
 							"&6Right click to decrease with 5 seconds", "&6Left click to increase with 5 seconds"));
 				}).clickEvent(event -> {
-					if (event.isRightClick()) {
-						if (game.getGameLobby().lobbyTime - 5 < 5) {
-							return;
-						}
-
+					if (event.isRightClick() && game.getGameLobby().lobbyTime - 5 > 5) {
 						game.getGameLobby().lobbyTime -= 5;
 					} else if (event.isLeftClick()) {
 						game.getGameLobby().lobbyTime += 5;
@@ -308,7 +289,8 @@ public class SetupGui implements Listener {
 
 		builder.addItem(item -> item.item(17, Material.BLUE_WOOL, cond -> {
 			cond.setDisplayName("&9Set lobby position");
-			cond.setLore(Arrays.asList(" ", "&6Left click to set lobby to your current position"));
+			cond.setLore(Arrays.asList(game.getGameLobby().location != null ? "&a\u2714 Lobby set" : "", " ",
+					"&6Left click to set lobby to your current position"));
 		}).clickEvent(event -> {
 			if (event.isLeftClick()) {
 				game.getGameLobby().location = event.getWhoClicked().getLocation();

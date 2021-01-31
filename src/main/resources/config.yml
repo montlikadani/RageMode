@@ -86,15 +86,6 @@ signs:
     # Possible types: glass, wool, terracotta (clay), none
     type: none
 
-# Actionbar/Bossbar message when started the game and sends to player.
-# This will be ignored, when the actionbar/bossbar option is disabled, or
-# this list is empty.
-# Usage found on https://github.com/montlikadani/RageMode/wiki/Actionbar-&-Bossbar-actions
-message-actions:
-- "[actionbar];join:&cHello&a %player%&c in this game!"
-- "[actionbar];start:&aGame has started!&2 We wish you a good game!"
-- "[bossbar];start:&bWelcome&a %player%&b to the&c %game%&b game!:green:segmented_6:8"
-
 # Title texts
 titles:
   # When a player join to the game, and send title for him.
@@ -203,6 +194,12 @@ game:
     # If the player dead 3 times, player will not be respawned again.
     player-lives: 3
 
+    # Enabling this will causes for timings to report unnecessary memory things, because it checks all entity move event.
+    # This also has advantages. If you have a pressure mine put down and a zombie or player steps on it,
+    # it explodes immediately. However, without it, it takes more time, memory is more demanding and at
+    # some point the pressure mine does not explode.
+    prevent-zombies-moving-outside-of-game-area: false
+
   # Game freeze settings
   game-freeze:
     # When the game is over, the players will freeze (if the game mode is not in spectator),
@@ -305,11 +302,6 @@ rejoin-delay:
     minute: 0
     second: 30
 
-# The player rewards if the game end or doing something else in a game.
-# Rewards can be found in the rewards.yml file.
-rewards:
-  enable: true
-
 # Points for killing or deaths
 points:
   bowkill: 25
@@ -320,3 +312,12 @@ points:
   grenadeKill: 45
   # You can set to 0 to do not decrease the points amount from player if suicides itself.
   suicide: -20
+
+# Actionbar/Bossbar message when started the game and sends to player.
+# This will be ignored, when the actionbar/bossbar option is disabled, or
+# this list is empty.
+# Usage found on https://github.com/montlikadani/RageMode/wiki/Actionbar-&-Bossbar-actions
+message-actions:
+- "[actionbar];join:&cHello&a %player%&c in this game!"
+- "[actionbar];start:&aGame has started!&2 We wish you a good game!"
+- "[bossbar];start:&bWelcome&a %player%&b to the&c %game%&b game!:green:segmented_6:8"

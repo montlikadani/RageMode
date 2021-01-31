@@ -11,6 +11,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameZombieSpawn;
 import hu.montlikadani.ragemode.gameLogic.IGameSpawn;
 import hu.montlikadani.ragemode.gameUtils.GameType;
@@ -32,7 +33,13 @@ public class addzombiespawn implements ICommand {
 			return false;
 		}
 
-		if (GameUtils.getGame(args[1]).getGameType() != GameType.APOCALYPSE) {
+		Game game = GameUtils.getGame(args[1]);
+		if (game.getGameType() != GameType.APOCALYPSE) {
+			return false;
+		}
+
+		if (game.isGameRunning()) {
+			sendMessage(p, RageMode.getLang().get("game.running"));
 			return false;
 		}
 
@@ -60,12 +67,12 @@ public class addzombiespawn implements ICommand {
 		aFile.set(path + "pitch", loc.getPitch());
 		Configuration.saveFile(aFile, plugin.getConfiguration().getArenasFile());
 
-		IGameSpawn spawn = GameUtils.getGame(args[1]).getSpawn(GameZombieSpawn.class);
+		IGameSpawn spawn = game.getSpawn(GameZombieSpawn.class);
 		if (spawn != null) {
 			spawn.addSpawn(loc);
 		}
 
-		sendMessage(p, RageMode.getLang().get("setup.spawn-set-success", "%number%", i, "%game%", args[1]));
+		sendMessage(p, RageMode.getLang().get("setup.spawn-set-success", "%number%", i, "%game%", game.getName()));
 		return true;
 	}
 }

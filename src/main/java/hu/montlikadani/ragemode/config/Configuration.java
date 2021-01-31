@@ -59,8 +59,7 @@ public class Configuration {
 			plugin.saveResource("config.yml", false);
 		}
 
-		(config = new CommentedConfig(config_file)).load();
-
+		config = new CommentedConfig(config_file);
 		ConfigValues.loadValues(config);
 
 		if (arenas_file.exists()) {
@@ -71,13 +70,11 @@ public class Configuration {
 			arenas = createFile(arenas_file, "arenas.yml", true);
 		}
 
-		if (ConfigValues.isRewardEnabled()) {
-			if (rewards_file.exists()) {
-				rewards = YamlConfiguration.loadConfiguration(rewards_file);
-				loadFile(rewards, rewards_file);
-			} else {
-				rewards = createFile(rewards_file, "rewards.yml", false);
-			}
+		if (rewards_file.exists()) {
+			rewards = YamlConfiguration.loadConfiguration(rewards_file);
+			loadFile(rewards, rewards_file);
+		} else {
+			rewards = createFile(rewards_file, "rewards.yml", false);
 		}
 
 		if (ConfigValues.isSavePlayerData()) {

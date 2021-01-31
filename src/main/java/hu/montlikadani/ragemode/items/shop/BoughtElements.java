@@ -1,39 +1,21 @@
 package hu.montlikadani.ragemode.items.shop;
 
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
-
 public class BoughtElements {
 
-	private ItemStack item;
+	private Object bought;
 
 	private double cost;
 	private int points;
 
-	private PotionEffect potion;
-	private Object trail;
-
 	public BoughtElements(double cost, int points) {
-		this.cost = cost;
-		this.points = points;
+		setCost(cost);
+		setPoints(points);
 	}
 
-	public BoughtElements(ItemStack item, double cost, int points) {
+	public BoughtElements(Object bought, double cost, int points) {
 		this(cost, points);
 
-		this.item = item;
-	}
-
-	public BoughtElements(PotionEffect potion, double cost, int points) {
-		this(cost, points);
-
-		this.potion = potion;
-	}
-
-	public BoughtElements(Object trail, double cost, int points) {
-		this(cost, points);
-
-		this.trail = trail;
+		setBought(bought);
 	}
 
 	public double getCost() {
@@ -52,27 +34,12 @@ public class BoughtElements {
 		this.points = points;
 	}
 
-	public ItemStack getItem() {
-		return item;
+	@SuppressWarnings("unchecked")
+	public <T> T getBought() {
+		return (T) bought;
 	}
 
-	public void setItem(ItemStack item) {
-		this.item = item;
-	}
-
-	public PotionEffect getPotion() {
-		return potion;
-	}
-
-	public void setPotion(PotionEffect potion) {
-		this.potion = potion;
-	}
-
-	public Object getTrail() {
-		return trail;
-	}
-
-	public void setTrail(Object trail) {
-		this.trail = trail;
+	public void setBought(Object bought) {
+		this.bought = bought;
 	}
 }

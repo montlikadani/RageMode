@@ -1,3 +1,5 @@
+enabled: true
+
 rewards:
   end-game:
     winner:
@@ -42,7 +44,6 @@ rewards:
           type: STONE
           amount: 5
   in-game:
-    # How to use this section read:
     # https://github.com/montlikadani/RageMode/wiki/Configuring-rewards#what-means-the-in-game-section
     run-commands:
     - "chance:3-death:console:msg %player% &aNext time do not die ;)"

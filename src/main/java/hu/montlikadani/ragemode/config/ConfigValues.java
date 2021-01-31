@@ -3,6 +3,10 @@ package hu.montlikadani.ragemode.config;
 import java.util.Arrays;
 import java.util.List;
 
+import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.ServerSoftwareType;
+import hu.montlikadani.ragemode.ServerVersion.Version;
+
 /**
  * @author montlikadani
  */
@@ -22,8 +26,8 @@ public class ConfigValues {
 			damagePlayerFall, hidePlayerNameTag, cancelRedstoneActivating, cancelDoorUse, useGrenadeTrails,
 			useArrowTrails, enableChatInGame, kickRandomPlayerIfJoinsVipToFullGame, switchGMForPlayers,
 			disableAllCommandsInGameFreeze, enableChatAfterEnd, tabFormatEnable, tabEnable, scoreboardEnable,
-			enableChatFormat, restartServer, stopServer, rewardEnable, rejoinDelayEnabled, rememberRejoinDelay,
-			freezePlayers, waitForNextSpawnAfterZombiesAreDead, notifySpectatorsToLeave;
+			enableChatFormat, restartServer, stopServer, rejoinDelayEnabled, rememberRejoinDelay, freezePlayers,
+			waitForNextSpawnAfterZombiesAreDead, notifySpectatorsToLeave, preventZombiesMovingOutsideOfArea = false;
 
 	private static int gameFreezeTime, bowKill, axeKill, axeDeath, knifeKill, explosionKill, suicide, grenadeKill,
 			respawnProtectTime, rejoinDelayHour, rejoinDelayMinute, rejoinDelaySecond, delayBeforeFirstZombiesSpawn,
@@ -156,8 +160,6 @@ public class ConfigValues {
 		f.addComment("rejoin-delay.remember-to-database", "Save the currently running delays to the database.",
 				"The loaded delays will be removed when this setting is enabled and when the server starting.");
 		f.addComment("rejoin-delay.times", "The waiting time for allowing player to join again.");
-		f.addComment("rewards", "The player rewards if the game end or doing something else in a game.",
-				"Rewards can be found in the rewards.yml file.");
 		f.addComment("points", "Points for killing or deaths");
 		f.addComment("points.suicide",
 				"You can set to 0 to do not decrease the points amount from player if suicides itself.");
@@ -214,6 +216,9 @@ public class ConfigValues {
 		damagePlayerFall = f.get("game.damage-player-fall", false);
 		respawnProtectTime = f.get("game.respawn-protection", 3);
 		hidePlayerNameTag = f.get("game.hide-players-name-tag", false);
+
+		gameEndBroadcast = f.getIntList("game.end-broadcast-at-times", Arrays.asList(60, 30, 20, 10, 5, 4, 3, 2, 1));
+
 		cancelRedstoneActivating = f.get("game.cancel-redstone-activating-blocks", true);
 		cancelDoorUse = f.get("game.cancel-door-use", false);
 		gameFreezeTime = f.get("game.game-freeze.time", 10);
@@ -230,12 +235,33 @@ public class ConfigValues {
 		waitForNextSpawnAfterZombiesAreDead = f.get("game.zombie-apocalypse.wait-for-next-spawn-after-zombies-are-dead",
 				true);
 		playerLives = f.get("game.zombie-apocalypse.player-lives", 3);
+
+		if (Version.isCurrentEqualOrHigher(Version.v1_16_R3)
+				&& RageMode.getSoftwareType() == ServerSoftwareType.PAPER) {
+			f.addComment("game.zombie-apocalypse.prevent-zombies-moving-outside-of-game-area",
+					"Enabling this will causes for timings to report unnecessary memory things, because it checks all entity move event.",
+					"This also has advantages. If you have a pressure mine put down and a zombie or player steps on it,",
+					"it explodes immediately. However, without it, it takes more time, memory is more demanding and at",
+					"some point the pressure mine does not explode.");
+			preventZombiesMovingOutsideOfArea = f
+					.get("game.zombie-apocalypse.prevent-zombies-moving-outside-of-game-area", false);
+		}
+
 		tabFormatEnable = f.get("game.tablist.player-format.enable", false);
 		tabPrefix = f.get("game.tablist.player-format.prefix", "");
 		tabSuffix = f.get("game.tablist.player-format.suffix", "&e %kills%");
 		tabEnable = f.get("game.tablist.list.enable", false);
+
+		f.get("game.tablist.list.header",
+				Arrays.asList("&cRage&bMode&e minigame stats", "&aYour kills/deaths:&e %kd%"));
+		f.get("game.tablist.list.footer", Arrays.asList("&6Points:&e %points%"));
+
 		scoreboardEnable = f.get("game.scoreboard.enable", true);
 		sbTitle = f.get("game.scoreboard.title", "&6RageMode");
+
+		f.get("game.scoreboard.content", Arrays.asList("", "&7------", "&aPoints:&e %points%", "",
+				"&6Remaining times:&7 %game-time%", "", "&5Wins:&e %wins%", "&7------", ""));
+
 		enableChatFormat = f.get("game.chat-format.enable", false);
 		chatFormat = f.get("game.chat-format.format", "&e[%points%]&r %player%&7:&r %message%");
 		restartServer = f.get("game-stop.restart-server", false);
@@ -245,7 +271,6 @@ public class ConfigValues {
 		rejoinDelayHour = f.get("rejoin-delay.times.hour", 0);
 		rejoinDelayMinute = f.get("rejoin-delay.times.minute", 0);
 		rejoinDelaySecond = f.get("rejoin-delay.times.second", 30);
-		rewardEnable = f.get("rewards.enable", true);
 		bowKill = f.get("points.bowkill", 25);
 		axeKill = f.get("points.axekill", 30);
 		axeDeath = f.get("points.axedeath", -50);
@@ -267,7 +292,6 @@ public class ConfigValues {
 				Arrays.asList("/rm leave", "/ragemode leave", "/ragemode stopgame"));
 		executeCommandsOnPlayerLeaveWhilePlaying = f.get("game.execute-commands-on-player-left-while-playing",
 				Arrays.asList("tell %player% &cWhy you left from the game while playing?"));
-		gameEndBroadcast = f.getIntList("game.end-broadcast-at-times", Arrays.asList(60, 30, 20, 10, 5, 4, 3, 2, 1));
 
 		f.save();
 		f.cleanUp();
@@ -566,10 +590,6 @@ public class ConfigValues {
 		return rejoinDelaySecond;
 	}
 
-	public static boolean isRewardEnabled() {
-		return rewardEnable;
-	}
-
 	public static int getBowKill() {
 		return bowKill;
 	}
@@ -660,5 +680,9 @@ public class ConfigValues {
 
 	public static List<String> getMessageActions() {
 		return messageActions;
+	}
+
+	public static boolean isPreventZombiesMovingOutsideOfArea() {
+		return preventZombiesMovingOutsideOfArea;
 	}
 }

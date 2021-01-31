@@ -38,7 +38,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
@@ -731,7 +730,7 @@ public class GameListener implements Listener {
 
 		Bukkit.getScheduler().runTaskLater(plugin, () -> {
 			// Remove egg when the player is not in-game or is in freeze room.
-			if (!GameUtils.isPlayerPlaying(p) || GameUtils.isPlayerInFreezeRoom(p)) {
+			if (!p.isOnline() || !GameUtils.isPlayerPlaying(p) || GameUtils.isPlayerInFreezeRoom(p)) {
 				grenade.remove();
 				return;
 			}
@@ -975,14 +974,6 @@ public class GameListener implements Listener {
 			event.setCancelled(true);
 	}
 
-	// This will fired in GameTimer to simulate pressure mine
-	@EventHandler
-	public void onMonsterInteract(EntityInteractEvent e) {
-		if (GameAreaManager.inArea(e.getEntity().getLocation())) {
-			explodeMine(null, e.getEntity().getLocation());
-		}
-	}
-
 	@EventHandler
 	public void onBlockGrow(BlockGrowEvent e) {
 		GameAreaManager.getAreaByLocation(e.getBlock().getLocation()).filter(area -> area.getGame().isGameRunning())
@@ -1064,7 +1055,7 @@ public class GameListener implements Listener {
 		explodeMine(null, e.getEntity().getLocation());
 	}
 
-	private boolean explodeMine(Player p, Location currentLoc) {
+	public static boolean explodeMine(Player p, Location currentLoc) {
 		org.bukkit.World w = currentLoc.getWorld();
 		if (w == null) {
 			return false;
@@ -1072,7 +1063,12 @@ public class GameListener implements Listener {
 
 		Block b = currentLoc.getBlock();
 
-		if (b.getType() != Material.TRIPWIRE) {
+		if (b.getType() != Material.TRIPWIRE
+				&& b.getRelative(org.bukkit.block.BlockFace.DOWN).getType() != Material.TRIPWIRE) {
+			return false;
+		}
+
+		if (GameUtils.getGame(currentLoc) == null) {
 			return false;
 		}
 
@@ -1083,42 +1079,40 @@ public class GameListener implements Listener {
 		w.createExplosion(x, y, z, 4f, false, false);
 		b.setType(Material.AIR);
 
-		if (GameUtils.getGame(currentLoc) != null) {
-			for (final Entity near : nears) {
-				final UUID uuid = near.getUniqueId();
+		for (final Entity near : nears) {
+			final UUID uuid = near.getUniqueId();
 
-				for (CacheableHitTarget cht : HIT_TARGETS.values()) {
-					if (cht.getNearTargets().contains(uuid)) {
-						cht.getNearTargets().remove(uuid);
-					}
+			for (CacheableHitTarget cht : HIT_TARGETS.values()) {
+				if (cht.getNearTargets().contains(uuid)) {
+					cht.getNearTargets().remove(uuid);
 				}
-
-				if (GameUtils.getGame(currentLoc).getGameType() == GameType.APOCALYPSE) {
-					for (PressureMine mines : PRESSUREMINES) {
-						if (mines.getMines().contains(currentLoc)) {
-							if (HIT_TARGETS.containsKey(mines.getOwner())) {
-								HIT_TARGETS.get(mines.getOwner()).getNearTargets().add(uuid);
-							}
-
-							break;
-						}
-					}
-
-					continue;
-				}
-
-				if (p != null) {
-					if (HIT_TARGETS.containsKey(p.getUniqueId())) {
-						HIT_TARGETS.get(p.getUniqueId()).getNearTargets().add(uuid);
-					}
-				} else if (near instanceof Player && HIT_TARGETS.containsKey(uuid)) {
-					HIT_TARGETS.get(uuid).getNearTargets().add(uuid);
-				}
-
-				CacheableHitTarget cht = new CacheableHitTarget(near, KilledWith.PRESSUREMINE);
-				cht.add(0);
-				HIT_TARGETS.put(uuid, cht);
 			}
+
+			if (GameUtils.getGame(currentLoc).getGameType() == GameType.APOCALYPSE) {
+				for (PressureMine mines : PRESSUREMINES) {
+					if (mines.getMines().contains(currentLoc)) {
+						if (HIT_TARGETS.containsKey(mines.getOwner())) {
+							HIT_TARGETS.get(mines.getOwner()).getNearTargets().add(uuid);
+						}
+
+						break;
+					}
+				}
+
+				continue;
+			}
+
+			if (p != null) {
+				if (HIT_TARGETS.containsKey(p.getUniqueId())) {
+					HIT_TARGETS.get(p.getUniqueId()).getNearTargets().add(uuid);
+				}
+			} else if (near instanceof Player && HIT_TARGETS.containsKey(uuid)) {
+				HIT_TARGETS.get(uuid).getNearTargets().add(uuid);
+			}
+
+			CacheableHitTarget cht = new CacheableHitTarget(near, KilledWith.PRESSUREMINE);
+			cht.add(0);
+			HIT_TARGETS.put(uuid, cht);
 		}
 
 		for (PressureMine mines : PRESSUREMINES) {

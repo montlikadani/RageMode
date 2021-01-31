@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.area;
 import java.util.ArrayList;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -86,6 +87,32 @@ public class GameArea {
 		for (EntityType filtered : filter) {
 			for (Entity e : area.getLowLoc().getWorld().getEntities()) {
 				if (filtered == e.getType() && inArea(e.getLocation())) {
+					entities.add(e);
+				}
+			}
+		}
+
+		return ImmutableList.copyOf(entities);
+	}
+
+	/**
+	 * Gets the given entities from the location from the filter array with the
+	 * given predicate.
+	 * 
+	 * @param predicate the test condition to filter
+	 * @param filter    the array of entities
+	 * @return {@link ImmutableList} of {@link Entity}
+	 */
+	public ImmutableList<Entity> getEntities(Predicate<Entity> predicate, EntityType... filter) {
+		if (filter.length == 0) {
+			return ImmutableList.of();
+		}
+
+		List<Entity> entities = new ArrayList<>();
+
+		for (EntityType filtered : filter) {
+			for (Entity e : area.getLowLoc().getWorld().getEntities()) {
+				if (filtered == e.getType() && inArea(e.getLocation()) && predicate.test(e)) {
 					entities.add(e);
 				}
 			}

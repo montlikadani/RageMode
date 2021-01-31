@@ -28,7 +28,7 @@ import hu.montlikadani.ragemode.events.EventListener;
 import hu.montlikadani.ragemode.events.GameListener;
 import hu.montlikadani.ragemode.events.Listeners_1_8;
 import hu.montlikadani.ragemode.events.Listeners_1_9;
-import hu.montlikadani.ragemode.events.PurpurListener;
+import hu.montlikadani.ragemode.events.PaperListener;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameType;
@@ -39,8 +39,6 @@ import hu.montlikadani.ragemode.holder.HolographicDisplaysHolder;
 import hu.montlikadani.ragemode.holder.IHoloHolder;
 import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.managers.BossbarManager;
-import hu.montlikadani.ragemode.metrics.Metrics;
-import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.storage.MySqlDB;
 import hu.montlikadani.ragemode.storage.SqlDB;
@@ -120,16 +118,6 @@ public class RageMode extends JavaPlugin {
 
 		if (ConfigValues.isSignsEnable()) {
 			SignCreator.loadSigns();
-		}
-
-		Metrics metrics = new Metrics(this, 5076);
-		if (metrics.isEnabled()) {
-			metrics.addCustomChart(new Metrics.SingleLineChart("amount_of_games", games::size));
-
-			metrics.addCustomChart(new Metrics.SimplePie("total_players",
-					() -> String.valueOf(RuntimePPManager.getRuntimePPList().size())));
-
-			metrics.addCustomChart(new Metrics.SimplePie("statistic_type", database.getDatabaseType().name()::toLowerCase));
 		}
 
 		Debug.logConsole("Loaded in " + (System.currentTimeMillis() - load) + "ms");
@@ -217,7 +205,7 @@ public class RageMode extends JavaPlugin {
 		}
 
 		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-		return (econ = rsp == null ? null : rsp.getProvider()) != null;
+		return rsp != null && (econ = rsp.getProvider()) != null;
 	}
 
 	public synchronized boolean reload() {
@@ -270,8 +258,8 @@ public class RageMode extends JavaPlugin {
 		Arrays.asList(new EventListener(), new GameListener(this), (setupGui = new SetupGui()))
 				.forEach(l -> getServer().getPluginManager().registerEvents(l, this));
 
-		if (softwareType == ServerSoftwareType.PURPUR) {
-			getManager().registerEvents(new PurpurListener(), this);
+		if (ConfigValues.isPreventZombiesMovingOutsideOfArea()) {
+			getManager().registerEvents(new PaperListener(), this);
 		}
 
 		if (ConfigValues.isBungee()) {
@@ -288,10 +276,6 @@ public class RageMode extends JavaPlugin {
 
 		if (conf.getArenasCfg().isConfigurationSection("arenas")) {
 			for (String game : conf.getArenasCfg().getConfigurationSection("arenas").getKeys(false)) {
-				if (!conf.getArenasCfg().contains("arenas." + game + ".gametype")) {
-					conf.getArenasCfg().set("arenas." + game + ".gametype", "normal");
-				}
-
 				Game g = new Game(game, GameType.valueOf(
 						conf.getArenasCfg().getString("arenas." + game + ".gametype", "normal").toUpperCase()));
 

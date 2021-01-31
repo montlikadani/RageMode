@@ -50,7 +50,7 @@ public interface Database {
 
 	/**
 	 * Attempts to convert the database to the given type and completes it. The type
-	 * should be the same as in {@link DBType}
+	 * should be the same with {@link DBType}
 	 * 
 	 * @param type the new type of database
 	 * @return true if it success
