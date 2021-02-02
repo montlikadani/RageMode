@@ -10,11 +10,10 @@ import org.bukkit.entity.Player;
 
 import com.google.common.collect.ImmutableMap;
 
-import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.ConfigValues;
 
-public class ReJoinDelay {
+public final class ReJoinDelay {
 
 	private static final Map<OfflinePlayer, Long> PLAYERTIMES = new HashMap<>();
 

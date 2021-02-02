@@ -19,13 +19,13 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.utils.Misc;
 import hu.montlikadani.ragemode.utils.UpdateDownloader;
+import hu.montlikadani.ragemode.utils.ServerVersion.Version;
 
 public class EventListener implements Listener {
 

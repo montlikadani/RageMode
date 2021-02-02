@@ -3,11 +3,11 @@ package hu.montlikadani.ragemode.signs;
 import java.util.ArrayList;
 import java.util.List;
 
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.utils.Utils;
 
 public class SignPlaceholder {
 
@@ -28,14 +28,13 @@ public class SignPlaceholder {
 			return variables;
 		}
 
-		while (lines.size() < 4) {
-			lines.add(""); // Sign lines should be 4
-		}
-
 		Game game = GameUtils.getGame(gameName);
-		GameStatus status = game.getStatus();
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 4; i++) {
+			if (i >= lines.size()) {
+				break;
+			}
+
 			String line = lines.get(i);
 
 			if (line.contains("%game%"))
@@ -43,7 +42,7 @@ public class SignPlaceholder {
 
 			if (line.contains("%current-players%")) {
 				line = line.replace("%current-players%",
-						(status == GameStatus.RUNNING || status == GameStatus.WAITING)
+						(game.getStatus() == GameStatus.RUNNING || game.getStatus() == GameStatus.WAITING)
 								? Integer.toString(game.getPlayers().size())
 								: "0");
 			}
@@ -52,7 +51,7 @@ public class SignPlaceholder {
 				line = line.replace("%max-players%", Integer.toString(game.maxPlayers));
 
 			if (line.contains("%running%")) {
-				switch (status) {
+				switch (game.getStatus()) {
 				case WAITING:
 					line = line.replace("%running%",
 							(game.getPlayers().size() == game.maxPlayers) ? ConfigValues.getSignGameFull()
@@ -76,9 +75,7 @@ public class SignPlaceholder {
 				}
 			}
 
-			line = Utils.colors(line);
-
-			variables.add(line);
+			variables.add(line = Utils.colors(line));
 		}
 
 		return variables;

@@ -7,12 +7,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.modules.ScoreBoard;
 import hu.montlikadani.ragemode.gameUtils.modules.ScoreTeam;
 import hu.montlikadani.ragemode.gameUtils.modules.TabTitles;
+import hu.montlikadani.ragemode.utils.Utils;
 
 public class ActionMessengers {
 

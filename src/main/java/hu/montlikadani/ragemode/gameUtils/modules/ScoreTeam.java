@@ -9,8 +9,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.utils.ServerVersion.Version;
 
 @SuppressWarnings("deprecation")
 public class ScoreTeam {
@@ -43,7 +43,13 @@ public class ScoreTeam {
 		final String teamName = player.getName();
 		final Team team = Optional.ofNullable(scoreboard.getTeam(teamName)).orElse(scoreboard.registerNewTeam(teamName));
 
-		addEntry(player, team);
+		if (Version.isCurrentLower(Version.v1_9_R1)) {
+			if (!team.hasPlayer(player)) {
+				team.addPlayer(player);
+			}
+		} else if (!team.hasEntry(player.getName())) {
+			team.addEntry(player.getName());
+		}
 
 		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1) && !prefix.isEmpty()) {
 			// Retrieves the last char from prefix
@@ -76,7 +82,12 @@ public class ScoreTeam {
 			return;
 		}
 
-		removeEntry(player, scoreboard);
+		if (Version.isCurrentLower(Version.v1_9_R1)) {
+			team.removePlayer(player);
+		} else {
+			team.removeEntry(team.getName());
+		}
+
 		team.unregister();
 
 		if (GameUtils.isPlayerPlaying(player)) {
@@ -92,23 +103,5 @@ public class ScoreTeam {
 		}
 
 		return s;
-	}
-
-	private void addEntry(Player player, Team team) {
-		if (Version.isCurrentLower(Version.v1_9_R1)) {
-			if (!team.hasPlayer(player)) {
-				team.addPlayer(player);
-			}
-		} else if (!team.hasEntry(player.getName())) {
-			team.addEntry(player.getName());
-		}
-	}
-
-	private void removeEntry(Player player, Scoreboard board) {
-		if (Version.isCurrentLower(Version.v1_9_R1)) {
-			Optional.ofNullable(board.getPlayerTeam(player)).ifPresent(team -> team.removePlayer(player));
-		} else {
-			Optional.ofNullable(board.getEntryTeam(player.getName())).ifPresent(team -> team.removeEntry(team.getName()));
-		}
 	}
 }

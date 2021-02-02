@@ -12,12 +12,10 @@ import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
 
-public abstract class UpdateDownloader {
+public final class UpdateDownloader {
 
 	private static final File RELEASESFOLDER = new File(RageMode.getInstance().getFolder(), "releases");
 

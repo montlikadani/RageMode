@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameJoinAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStatusChangeEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorJoinToGameEvent;
@@ -24,6 +23,7 @@ import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.modules.TabTitles;
 import hu.montlikadani.ragemode.managers.PlayerManager;
+import hu.montlikadani.ragemode.utils.Utils;
 
 public final class Game extends GameSettings {
 

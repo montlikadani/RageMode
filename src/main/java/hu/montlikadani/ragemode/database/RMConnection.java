@@ -1,12 +1,13 @@
 package hu.montlikadani.ragemode.database;
 
 import java.sql.Statement;
+
+import hu.montlikadani.ragemode.utils.Debug;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import hu.montlikadani.ragemode.Debug;
 
 public class RMConnection {
 

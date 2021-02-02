@@ -69,10 +69,7 @@ import org.bukkit.potion.PotionEffectType;
 import com.google.common.collect.Iterables;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.ServerSoftwareType;
-import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.area.GameAreaManager;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerKilledEvent;
@@ -98,6 +95,9 @@ import hu.montlikadani.ragemode.scores.KilledWith;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.utils.MaterialUtil;
 import hu.montlikadani.ragemode.utils.Misc;
+import hu.montlikadani.ragemode.utils.ServerSoftwareType;
+import hu.montlikadani.ragemode.utils.Utils;
+import hu.montlikadani.ragemode.utils.ServerVersion.Version;
 
 public class GameListener implements Listener {
 

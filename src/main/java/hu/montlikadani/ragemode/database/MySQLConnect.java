@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 import org.apache.commons.lang.Validate;
 
-import hu.montlikadani.ragemode.Debug;
+import hu.montlikadani.ragemode.utils.Debug;
 
 public class MySQLConnect extends DBConnector implements DBMethods {
 

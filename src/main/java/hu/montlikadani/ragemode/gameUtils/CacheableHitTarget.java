@@ -8,8 +8,8 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.scores.KilledWith;
+import hu.montlikadani.ragemode.utils.Utils;
 
 public final class CacheableHitTarget {
 
@@ -45,12 +45,12 @@ public final class CacheableHitTarget {
 			return;
 		}
 
+		if (target instanceof Arrow && ((Arrow) target).getShooter() instanceof Player) {
+			nearTargets.add(((Player) ((Arrow) target).getShooter()).getUniqueId());
+		}
+
 		for (Entity near : Utils.getNearbyEntities(target, radius)) {
 			nearTargets.remove(near.getUniqueId());
-
-			if (target instanceof Arrow && ((Arrow) target).getShooter() instanceof Player) {
-				nearTargets.add(((Player) ((Arrow) target).getShooter()).getUniqueId());
-			}
 
 			if (near instanceof Player) {
 				nearTargets.add(near.getUniqueId());

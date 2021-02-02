@@ -15,7 +15,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.google.common.collect.ImmutableList;
 
-import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.CommentedConfig;
 import hu.montlikadani.ragemode.config.ConfigValues;
@@ -27,6 +26,7 @@ import hu.montlikadani.ragemode.database.Database;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.utils.Debug;
 import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
 @DB(type = DBType.YAML)

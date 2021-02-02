@@ -15,9 +15,9 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
+import hu.montlikadani.ragemode.utils.Debug;
+import hu.montlikadani.ragemode.utils.Utils;
 
 public class Language {
 

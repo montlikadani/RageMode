@@ -8,7 +8,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.scheduler.BukkitTask;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.events.GameListener;
@@ -17,6 +16,7 @@ import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.handler.PressureMine;
 import hu.montlikadani.ragemode.managers.PlayerManager;
+import hu.montlikadani.ragemode.utils.Utils;
 
 public class GameTimer extends TimerTask {
 

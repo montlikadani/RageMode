@@ -13,10 +13,10 @@ public class PaperListener implements Listener {
 
 	@EventHandler
 	public void onEntityMove(EntityMoveEvent event) {
-		if (event.getEntityType() == EntityType.ZOMBIE || event.getEntityType() == EntityType.PLAYER) {
+		if (event.getEntityType() == EntityType.ZOMBIE) {
 			GameAreaManager.getAreaByLocation(event.getFrom()).filter(area -> area.getGame().isGameRunning())
 					.ifPresent(area -> {
-						if (event.getEntityType() == EntityType.ZOMBIE && !GameAreaManager.inArea(event.getTo())) {
+						if (!GameAreaManager.inArea(event.getTo())) {
 							event.getEntity().teleport(event.getFrom()
 									.subtract(event.getEntity().getLocation().clone().getDirection().multiply(1)));
 							return;

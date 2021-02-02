@@ -14,8 +14,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.utils.Utils;
 
 public class ArmorStandHologram extends IHoloHolder {
 

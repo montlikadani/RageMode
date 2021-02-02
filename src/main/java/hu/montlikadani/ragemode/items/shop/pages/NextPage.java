@@ -14,9 +14,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.items.shop.BoughtElements;
 import hu.montlikadani.ragemode.items.shop.IShop;
@@ -27,6 +25,8 @@ import hu.montlikadani.ragemode.items.shop.ShopItem;
 import hu.montlikadani.ragemode.items.shop.ShopItemCommands;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.utils.Debug;
+import hu.montlikadani.ragemode.utils.Utils;
 
 public class NextPage implements IShop {
 

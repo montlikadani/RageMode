@@ -11,8 +11,8 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.utils.ServerVersion.Version;
 
 public class BossbarManager {
 

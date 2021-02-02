@@ -11,13 +11,13 @@ import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMSignsUpdateEvent;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.utils.Debug;
+import hu.montlikadani.ragemode.utils.Utils;
 
 public class SignCreator {
 
@@ -63,9 +63,8 @@ public class SignCreator {
 	public static boolean createNewSign(Sign sign, String game) {
 		FileConfiguration fileConf = SignConfiguration.getSignConfig();
 		List<String> signs = fileConf.getStringList("signs");
-		String index = locationSignToString(sign.getLocation(), game);
 
-		signs.add(index);
+		signs.add(locationSignToString(sign.getLocation(), game));
 		fileConf.set("signs", signs);
 
 		SIGNDATA.add(new SignData(sign.getLocation(), game));
@@ -84,11 +83,10 @@ public class SignCreator {
 			if (signData.getLocation().equals(sign.getLocation())) {
 				FileConfiguration fileConf = SignConfiguration.getSignConfig();
 				List<String> signs = fileConf.getStringList("signs");
-				String index = locationSignToString(signData.getLocation(), signData.getGameName());
 
-				signs.remove(index);
-
+				signs.remove(locationSignToString(signData.getLocation(), signData.getGameName()));
 				fileConf.set("signs", signs);
+
 				Configuration.saveFile(fileConf, SignConfiguration.getSignFile());
 
 				data = signData;
@@ -177,12 +175,7 @@ public class SignCreator {
 		}
 
 		for (String signString : signs) {
-			String game = getGameFromString(signString);
-			if (game == null) {
-				continue;
-			}
-
-			if (game.equalsIgnoreCase(gameName)) {
+			if (getGameFromString(signString).equalsIgnoreCase(gameName)) {
 				Location signLocation = stringToLocationSign(signString);
 				if (signLocation == null) {
 					continue;
@@ -222,7 +215,7 @@ public class SignCreator {
 	}
 
 	/**
-	 * Gets the set of SignData
+	 * Returns the set of SignData
 	 * 
 	 * @return Set of {@link SignData}
 	 */

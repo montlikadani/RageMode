@@ -1,6 +1,5 @@
-package hu.montlikadani.ragemode;
+package hu.montlikadani.ragemode.utils;
 
-import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.List;
@@ -19,11 +18,12 @@ import org.bukkit.entity.Player;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
-import hu.montlikadani.ragemode.ServerVersion.Version;
+import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
+import hu.montlikadani.ragemode.utils.ServerVersion.Version;
 
 public class Utils {
 
@@ -298,6 +298,8 @@ public class Utils {
 
 	public abstract static class Reflections {
 
+		private static int jVersion = -1;
+
 		public static void sendPacket(Player player, Object packet) throws Exception {
 			Object handle = player.getClass().getMethod("getHandle").invoke(player);
 			Object playerConnection = handle.getClass().getField("playerConnection").get(handle);
@@ -310,15 +312,15 @@ public class Utils {
 
 		public static Object getAsIChatBaseComponent(String name) throws Exception {
 			Class<?> iChatBaseComponent = getNMSClass("IChatBaseComponent");
+
 			if (Version.isCurrentEqualOrLower(Version.v1_8_R2)) {
 				Class<?> chatSerializer = getNMSClass("ChatSerializer");
-				Method m = chatSerializer.getMethod("a", String.class);
-				return iChatBaseComponent.cast(m.invoke(chatSerializer, "{\"text\":\"" + name + "\"}"));
+				return iChatBaseComponent.cast(chatSerializer.getMethod("a", String.class).invoke(chatSerializer,
+						"{\"text\":\"" + name + "\"}"));
 			}
 
-			Class<?> declaredClass = iChatBaseComponent.getDeclaredClasses()[0];
-			Method m = declaredClass.getMethod("a", String.class);
-			return m.invoke(iChatBaseComponent, "{\"text\":\"" + name + "\"}");
+			return iChatBaseComponent.getDeclaredClasses()[0].getMethod("a", String.class).invoke(iChatBaseComponent,
+					"{\"text\":\"" + name + "\"}");
 		}
 
 		public static String getClassVersion() {
@@ -326,6 +328,10 @@ public class Utils {
 		}
 
 		public static int getCurrentJavaVersion() {
+			if (jVersion != -1) {
+				return jVersion;
+			}
+
 			String currentVersion = System.getProperty("java.version");
 			if (currentVersion.contains("_")) {
 				currentVersion = currentVersion.split("_")[0];
@@ -335,7 +341,7 @@ public class Utils {
 
 			for (int i = 8; i <= 18; i++) {
 				if (currentVersion.contains(Integer.toString(i))) {
-					return i;
+					return jVersion = i;
 				}
 			}
 

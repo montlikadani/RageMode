@@ -10,10 +10,10 @@ import org.bukkit.entity.Player;
 import com.google.common.base.Preconditions;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameUtils.StorePlayerStuffs;
+import hu.montlikadani.ragemode.utils.Utils;
 
 public class PlayerManager {
 

@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode;
+package hu.montlikadani.ragemode.utils;
 
 public class ServerVersion {
 

@@ -4,7 +4,6 @@ import java.util.logging.Level;
 
 import org.apache.commons.lang.Validate;
 
-import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.area.GameArea;
 import hu.montlikadani.ragemode.area.GameAreaManager;
@@ -13,6 +12,7 @@ import hu.montlikadani.ragemode.gameLogic.GameLobby;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.GameZombieSpawn;
 import hu.montlikadani.ragemode.gameLogic.IGameSpawn;
+import hu.montlikadani.ragemode.utils.Debug;
 
 public class MapChecker {
 

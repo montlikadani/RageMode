@@ -13,8 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 
-import hu.montlikadani.ragemode.Utils;
-import hu.montlikadani.ragemode.ServerVersion.Version;
+import hu.montlikadani.ragemode.utils.ServerVersion.Version;
 
 @SuppressWarnings("deprecation")
 public class Misc {
@@ -111,11 +110,9 @@ public class Misc {
 		if (Version.isCurrentLower(Version.v1_9_R1)) {
 			loc.getWorld().playEffect(loc, (Effect) effect, 1);
 		} else if (particle == Particle.REDSTONE) {
-			DustOptions dustOptions = new DustOptions(Color.RED, 2);
-			loc.getWorld().spawnParticle(particle, loc, count, dustOptions);
+			loc.getWorld().spawnParticle(particle, loc, count, new DustOptions(Color.RED, 2));
 		} else if (particle == Particle.ITEM_CRACK) {
-			ItemStack itemCrackData = new ItemStack(loc.getBlock().getType());
-			loc.getWorld().spawnParticle(particle, loc, count, itemCrackData);
+			loc.getWorld().spawnParticle(particle, loc, count, new ItemStack(loc.getBlock().getType()));
 		} else if (particle == Particle.BLOCK_CRACK || particle == Particle.BLOCK_DUST
 				|| particle == Particle.FALLING_DUST) {
 			loc.getWorld().spawnParticle(particle, loc, count, loc.getBlock().getType().createBlockData());

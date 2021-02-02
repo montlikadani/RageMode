@@ -13,7 +13,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.area.Selection;
 import hu.montlikadani.ragemode.commands.RmCommand;
@@ -43,7 +42,12 @@ import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.storage.MySqlDB;
 import hu.montlikadani.ragemode.storage.SqlDB;
 import hu.montlikadani.ragemode.storage.YamlDB;
+import hu.montlikadani.ragemode.utils.Debug;
+import hu.montlikadani.ragemode.utils.ServerSoftwareType;
+import hu.montlikadani.ragemode.utils.ServerVersion;
 import hu.montlikadani.ragemode.utils.UpdateDownloader;
+import hu.montlikadani.ragemode.utils.Utils;
+import hu.montlikadani.ragemode.utils.ServerVersion.Version;
 import net.milkbowl.vault.economy.Economy;
 
 public class RageMode extends JavaPlugin {
@@ -183,8 +187,6 @@ public class RageMode extends JavaPlugin {
 		case "sqlite":
 			database = new SqlDB();
 			break;
-		case "yml":
-		case "yaml":
 		default:
 			database = new YamlDB();
 			break;

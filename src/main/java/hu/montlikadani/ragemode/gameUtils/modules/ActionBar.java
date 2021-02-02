@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.ragemode.Utils.Reflections;
+import hu.montlikadani.ragemode.utils.Utils.Reflections;
 
 public abstract class ActionBar {
 

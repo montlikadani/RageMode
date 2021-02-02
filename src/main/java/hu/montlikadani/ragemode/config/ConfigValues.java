@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.ServerSoftwareType;
-import hu.montlikadani.ragemode.ServerVersion.Version;
+import hu.montlikadani.ragemode.utils.ServerSoftwareType;
+import hu.montlikadani.ragemode.utils.ServerVersion.Version;
 
 /**
  * @author montlikadani

@@ -13,12 +13,12 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.material.Directional;
 
-import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.MaterialUtil;
+import hu.montlikadani.ragemode.utils.ServerVersion.Version;
 
 public class SignData {
 
@@ -105,6 +105,10 @@ public class SignData {
 	}
 
 	private void updateBackground(Material mat, int color) {
+		if (mat == null) {
+			return;
+		}
+
 		Location loc = getLocation();
 		BlockState s = loc.getBlock().getState();
 		BlockFace bf = null;
@@ -125,6 +129,7 @@ public class SignData {
 		Block wall = loc2.getBlock();
 
 		wall.setType(mat);
+
 		if (Version.isCurrentLower(Version.v1_13_R1)) {
 			try {
 				Block.class.getMethod("setData", byte.class).invoke(wall, (byte) color);

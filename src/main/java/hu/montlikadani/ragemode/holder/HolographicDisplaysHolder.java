@@ -13,8 +13,8 @@ import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.gmail.filoghost.holographicdisplays.api.VisibilityManager;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.utils.Utils;
 
 public class HolographicDisplaysHolder extends IHoloHolder {
 

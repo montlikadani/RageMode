@@ -20,7 +20,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.server.PluginDisableEvent;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameSpawn;
@@ -30,6 +29,7 @@ import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.gameSetup.InventoryGuiHandler.GuiItem;
 import hu.montlikadani.ragemode.gameUtils.gameSetup.InventoryGuiHandler.InvGuiBuilder;
+import hu.montlikadani.ragemode.utils.Utils;
 
 public class SetupGui implements Listener {
 
@@ -65,12 +65,10 @@ public class SetupGui implements Listener {
 			return;
 		}
 
-		for (InventoryGuiHandler igh : activeInventories) {
-			new HashSet<>(igh.getViewers()).forEach(viewer -> {
-				viewer.closeCurrent();
-				viewer.getSource().closeInventory();
-			});
-		}
+		activeInventories.forEach(igh -> new HashSet<>(igh.getViewers()).forEach(viewer -> {
+			viewer.closeCurrent();
+			viewer.getSource().closeInventory();
+		}));
 
 		activeInventories.clear();
 	}
@@ -234,7 +232,7 @@ public class SetupGui implements Listener {
 					path += index + ".";
 
 					Location loc = event.getWhoClicked().getLocation();
-					aFile.set(path + "world", event.getWhoClicked().getWorld().getName());
+					aFile.set(path + "world", loc.getWorld().getName());
 					aFile.set(path + "x", loc.getX());
 					aFile.set(path + "y", loc.getY());
 					aFile.set(path + "z", loc.getZ());
@@ -273,7 +271,7 @@ public class SetupGui implements Listener {
 			path += index + ".";
 
 			Location loc = event.getWhoClicked().getLocation();
-			aFile.set(path + "world", event.getWhoClicked().getWorld().getName());
+			aFile.set(path + "world", loc.getWorld().getName());
 			aFile.set(path + "x", loc.getX());
 			aFile.set(path + "y", loc.getY());
 			aFile.set(path + "z", loc.getZ());

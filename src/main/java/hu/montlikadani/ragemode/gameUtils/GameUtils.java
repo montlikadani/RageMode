@@ -21,13 +21,9 @@ import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import hu.montlikadani.ragemode.Debug;
-import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.area.GameArea;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.ServerSoftwareType;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.config.ConfigValues;
@@ -43,7 +39,11 @@ import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.signs.SignCreator;
+import hu.montlikadani.ragemode.utils.Debug;
 import hu.montlikadani.ragemode.utils.Misc;
+import hu.montlikadani.ragemode.utils.ServerSoftwareType;
+import hu.montlikadani.ragemode.utils.Utils;
+import hu.montlikadani.ragemode.utils.ServerVersion.Version;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 

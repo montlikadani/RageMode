@@ -2,7 +2,7 @@ package hu.montlikadani.ragemode.gameUtils.modules;
 
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.ragemode.Utils.Reflections;
+import hu.montlikadani.ragemode.utils.Utils.Reflections;
 
 import java.lang.reflect.Constructor;
 

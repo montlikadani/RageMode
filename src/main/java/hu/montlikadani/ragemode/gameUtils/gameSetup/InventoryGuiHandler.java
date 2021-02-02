@@ -15,8 +15,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.utils.Utils;
 
 public final class InventoryGuiHandler implements InventoryHolder {
 

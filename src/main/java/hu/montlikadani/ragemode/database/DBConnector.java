@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 
-import hu.montlikadani.ragemode.Debug;
+import hu.montlikadani.ragemode.utils.Debug;
 
 public class DBConnector {
 

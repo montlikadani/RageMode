@@ -5,8 +5,8 @@ import java.lang.reflect.Field;
 
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.ragemode.ServerVersion.Version;
-import hu.montlikadani.ragemode.Utils.Reflections;
+import hu.montlikadani.ragemode.utils.ServerVersion.Version;
+import hu.montlikadani.ragemode.utils.Utils.Reflections;
 
 public abstract class TabTitles {
 

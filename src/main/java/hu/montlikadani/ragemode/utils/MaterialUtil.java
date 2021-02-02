@@ -6,7 +6,7 @@ import java.util.Set;
 import org.bukkit.Material;
 
 @SuppressWarnings("serial")
-public class MaterialUtil {
+public final class MaterialUtil {
 
 	private static final Set<Material> WALL_SIGNS = new HashSet<Material>() {
 		{

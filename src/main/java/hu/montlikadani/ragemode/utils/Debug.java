@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode;
+package hu.montlikadani.ragemode.utils;
 
 import java.util.logging.Level;
 

@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.gameUtils.modules;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -12,12 +13,12 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import hu.montlikadani.ragemode.ServerVersion.Version;
 import hu.montlikadani.ragemode.holder.ScoreBoardHolder;
+import hu.montlikadani.ragemode.utils.ServerVersion.Version;
 
 public class ScoreBoard {
 
-	private final Map<Player, ScoreBoardHolder> scoreboards = new HashMap<>();
+	private final Map<UUID, ScoreBoardHolder> scoreboards = new HashMap<>();
 
 	private final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 
@@ -43,7 +44,7 @@ public class ScoreBoard {
 			team.addEntry(ChatColor.values()[i].toString());
 		}
 
-		scoreboards.put(player, new ScoreBoardHolder(player, scoreboard, objective));
+		scoreboards.put(player.getUniqueId(), new ScoreBoardHolder(player, scoreboard, objective));
 	}
 
 	/**
@@ -82,18 +83,15 @@ public class ScoreBoard {
 				return;
 			}
 
-			String entry = ChatColor.values()[dummyScore].toString();
-			if (!board.getScoreboard().getEntries().contains(entry)) {
-				board.getObjective().getScore(entry).setScore(dummyScore);
+			board.getObjective().getScore(ChatColor.values()[dummyScore].toString()).setScore(dummyScore);
+
+			String prefix = line;
+			if (Version.isCurrentLower(Version.v1_9_R1) && prefix.length() > 16) {
+				prefix = prefix.substring(0, 16);
 			}
 
-			String l = line;
-			if (Version.isCurrentLower(Version.v1_9_R1) && l.length() > 16) {
-				l = l.substring(0, 16);
-			}
-
-			team.setPrefix(l);
-			team.setSuffix(ChatColor.getLastColors(l));
+			team.setPrefix(prefix);
+			team.setSuffix(ChatColor.getLastColors(prefix));
 		});
 	}
 
@@ -104,12 +102,8 @@ public class ScoreBoard {
 	 * @param score  where the line should reset
 	 */
 	public void resetScores(Player player, int score) {
-		getScoreboard(player).filter(b -> score >= ChatColor.values().length).ifPresent(board -> {
-			String entry = ChatColor.values()[score].toString();
-			if (board.getScoreboard().getEntries().contains(entry)) {
-				board.getScoreboard().resetScores(entry);
-			}
-		});
+		getScoreboard(player).filter(b -> score >= ChatColor.values().length)
+				.ifPresent(board -> board.getScoreboard().resetScores(ChatColor.values()[score].toString()));
 	}
 
 	/**
@@ -138,7 +132,7 @@ public class ScoreBoard {
 			pl.setScoreboard(board.getScoreboard());
 		});
 
-		scoreboards.remove(pl);
+		scoreboards.remove(pl.getUniqueId());
 	}
 
 	/**
@@ -147,7 +141,7 @@ public class ScoreBoard {
 	 * 
 	 * @return {@link Map}
 	 */
-	public Map<Player, ScoreBoardHolder> getScoreboards() {
+	public Map<UUID, ScoreBoardHolder> getScoreboards() {
 		return scoreboards;
 	}
 
@@ -158,6 +152,6 @@ public class ScoreBoard {
 	 * @return {@link Optional}
 	 */
 	public Optional<ScoreBoardHolder> getScoreboard(Player player) {
-		return Optional.ofNullable(scoreboards.get(player));
+		return Optional.ofNullable(scoreboards.get(player.getUniqueId()));
 	}
 }

@@ -21,10 +21,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import com.google.common.collect.ImmutableList;
 
-import hu.montlikadani.ragemode.Debug;
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.ServerVersion.Version;
-import hu.montlikadani.ragemode.Utils;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStartEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerBuyFromShopEvent;
@@ -39,7 +36,10 @@ import hu.montlikadani.ragemode.items.shop.pages.NextPage;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
+import hu.montlikadani.ragemode.utils.Debug;
 import hu.montlikadani.ragemode.utils.Misc;
+import hu.montlikadani.ragemode.utils.Utils;
+import hu.montlikadani.ragemode.utils.ServerVersion.Version;
 
 public class LobbyShop implements Listener {
 
