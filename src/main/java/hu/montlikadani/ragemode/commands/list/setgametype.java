@@ -33,6 +33,11 @@ public final class setgametype implements ICommand {
 			return false;
 		}
 
+		if (game.isRunning()) {
+			sendMessage(sender, RageMode.getLang().get("game.running"));
+			return false;
+		}
+
 		GameType type = GameType.getByName(args[2]);
 		if (type == null) {
 			type = GameType.NORMAL;

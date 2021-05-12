@@ -35,7 +35,7 @@ import hu.montlikadani.ragemode.utils.Misc;
 import hu.montlikadani.ragemode.utils.ServerVersion;
 import hu.montlikadani.ragemode.utils.Utils;
 
-public class LobbyShop implements Listener {
+public final class LobbyShop implements Listener {
 
 	public static final Map<UUID, BoughtElements> BOUGHT_ITEMS = new HashMap<>();
 	public static final Map<UUID, Enum<?>> USER_PARTICLES = new HashMap<>();
@@ -64,6 +64,7 @@ public class LobbyShop implements Listener {
 
 	public void removeShop(Player player) {
 		IShop shop = playerShops.remove(player.getUniqueId());
+
 		if (shop != null) {
 			shop.getItems().clear();
 		}
@@ -212,6 +213,7 @@ public class LobbyShop implements Listener {
 
 		if (shopCategory == ShopCategory.POTIONEFFECTS && itemSetting.getEffectSetting() != null) {
 			PotionEffectType type = itemSetting.getEffectSetting().getEffectType();
+
 			if (type == null) {
 				return false;
 			}
@@ -243,6 +245,7 @@ public class LobbyShop implements Listener {
 			}
 		} else if (shopCategory == ShopCategory.GAMEITEMS && itemSetting.getGiveGameItem() != null) {
 			ItemHandler item = itemSetting.getGiveGameItem().getItem();
+
 			if (item == null) {
 				return false;
 			}

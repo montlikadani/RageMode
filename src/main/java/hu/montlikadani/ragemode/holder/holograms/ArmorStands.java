@@ -40,7 +40,6 @@ public class ArmorStands {
 
 	public void delete() {
 		for (ArmorStand armor : armorStands) {
-			armor.setCustomNameVisible(false);
 			armor.remove();
 		}
 

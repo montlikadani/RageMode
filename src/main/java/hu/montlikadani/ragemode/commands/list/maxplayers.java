@@ -8,6 +8,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 @CommandProcessor(
@@ -26,9 +27,14 @@ public final class maxplayers implements ICommand {
 			return false;
 		}
 
-		String game = args[1];
-		if (!GameUtils.isGameExist(game)) {
-			sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", game));
+		Game game = GameUtils.getGame(args[1]);
+		if (game == null) {
+			sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", args[1]));
+			return false;
+		}
+
+		if (game.isRunning()) {
+			sendMessage(sender, RageMode.getLang().get("game.running"));
 			return false;
 		}
 
@@ -45,10 +51,10 @@ public final class maxplayers implements ICommand {
 			return false;
 		}
 
-		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".maxplayers", x);
+		plugin.getConfiguration().getArenasCfg().set("arenas." + game.getName() + ".maxplayers", x);
 		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 
-		sendMessage(sender, RageMode.getLang().get("commands.maxplayers.changed", "%game%", game, "%value%", x));
+		sendMessage(sender, RageMode.getLang().get("commands.maxplayers.changed", "%game%", game.getName(), "%value%", x));
 		return true;
 	}
 }

@@ -13,7 +13,6 @@ import hu.montlikadani.ragemode.items.shop.NavigationType;
 import hu.montlikadani.ragemode.items.shop.ShopCategory;
 import hu.montlikadani.ragemode.items.shop.ShopItem;
 import hu.montlikadani.ragemode.items.shop.ShopItemCommands;
-import hu.montlikadani.ragemode.items.shop.ShopItemCommands.CommandSetting;
 import hu.montlikadani.ragemode.utils.Utils;
 
 public final class MainPage implements IShop {
@@ -117,15 +116,16 @@ public final class MainPage implements IShop {
 			ShopItemCommands itemCmds = null;
 			if (conf.isList(path + "slot-" + i + ".commands")) {
 				List<String> commands = conf.getStringList(path + "slot-" + i + ".commands");
-				List<CommandSetting> commandSettings = new java.util.ArrayList<>(commands.size());
+				List<ShopItemCommands.CommandSetting> commandSettings = new java.util.ArrayList<>(commands.size());
 
 				NavigationType navigationType = null;
+
 				for (String one : commands) {
 					if ((navigationType = NavigationType.getByName(one)) == null) {
 						navigationType = NavigationType.WITHOUT;
 					}
 
-					commandSettings.add(new CommandSetting(one));
+					commandSettings.add(new ShopItemCommands.CommandSetting(one));
 				}
 
 				itemCmds = new ShopItemCommands(new ShopItemCommands.ItemSetting(conf, path + "slot-" + i),
@@ -139,7 +139,7 @@ public final class MainPage implements IShop {
 				}
 
 				itemCmds = new ShopItemCommands(new ShopItemCommands.ItemSetting(conf, path + "slot-" + i),
-						new CommandSetting(command), navigationType);
+						new ShopItemCommands.CommandSetting(command), navigationType);
 			}
 
 			ShopCategory category;
@@ -149,9 +149,11 @@ public final class MainPage implements IShop {
 				category = ShopCategory.MAIN;
 			}
 
-			ShopItem shopItem = new ShopItem(iStack, category, guiName);
+			ShopItem shopItem;
 			if (itemCmds != null) {
 				shopItem = new ShopItem(iStack, category, guiName, itemCmds);
+			} else {
+				shopItem = new ShopItem(iStack, category, guiName);
 			}
 
 			items.add(shopItem);

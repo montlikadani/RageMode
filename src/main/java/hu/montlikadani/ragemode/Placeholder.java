@@ -74,18 +74,16 @@ final class Placeholder extends PlaceholderExpansion {
 			String original = id;
 			String gameName = id;
 
-			if (gameName.contains("_")) {
-				for (int i = gameName.length() - 1; i > 0; i--) {
-					if (gameName.charAt(i) == '_') {
-						gameName = gameName.substring(i + 1);
-						original = original.substring(0, i);
-						break;
-					}
+			for (int i = gameName.length() - 1; i > 0; i--) {
+				if (gameName.charAt(i) == '_') {
+					gameName = gameName.substring(i + 1);
+					original = original.substring(0, i);
+					break;
 				}
 			}
 
 			for (RMPlaceholders holder : values()) {
-				if (StringUtils.startsWithIgnoreCase(original, holder.toString()) && holder.isComplexed()) {
+				if (holder.isComplexed() && StringUtils.startsWithIgnoreCase(original, holder.toString())) {
 					Game game = GameUtils.getGame(gameName);
 
 					if (game != null) {
