@@ -10,6 +10,8 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
@@ -20,27 +22,44 @@ import hu.montlikadani.ragemode.gameLogic.Game;
  */
 public class GameArea {
 
-	private Game game;
-	private Area area;
+	private final Game game;
+	private final Area area;
+	private final String name;
 
 	private double x1, y1, z1, x2, y2, z2;
 
-	public GameArea(Game game, Area area) {
+	private Location center;
+
+	public GameArea(Game game, Area area, String name) {
 		this.game = game;
 		this.area = area;
+		this.name = name;
 
-		x1 = Math.min(area.getLowLoc().getX(), area.getHighLoc().getX());
-		y1 = Math.min(area.getLowLoc().getY(), area.getHighLoc().getY());
-		z1 = Math.min(area.getLowLoc().getZ(), area.getHighLoc().getZ());
-		x2 = Math.max(area.getLowLoc().getX(), area.getHighLoc().getX());
-		y2 = Math.max(area.getLowLoc().getY(), area.getHighLoc().getY());
-		z2 = Math.max(area.getLowLoc().getZ(), area.getHighLoc().getZ());
+		double lowX = area.getLowLoc().getX(),
+				lowY = area.getLowLoc().getY(),
+				lowZ = area.getLowLoc().getZ(),
+				highX = area.getHighLoc().getX(),
+				highY = area.getHighLoc().getY(),
+				highZ = area.getHighLoc().getZ();
+
+		x1 = Math.min(lowX, highX);
+		y1 = Math.min(lowY, highY);
+		z1 = Math.min(lowZ, highZ);
+		x2 = Math.max(lowX, highX);
+		y2 = Math.max(lowY, highY);
+		z2 = Math.max(lowZ, highZ);
+
+		double x = (lowX + highX) / 2;
+		double z = (lowZ + highZ) / 2;
+
+		center = new Location(area.getLowLoc().getWorld(), x,
+				area.getLowLoc().getWorld().getHighestBlockYAt((int) x, (int) z), z).clone();
 	}
 
 	/**
-	 * @return {@link Game}
-	 * @return
+	 * @return the {@link Game} instance of this area
 	 */
+	@Nullable
 	public Game getGame() {
 		return game;
 	}
@@ -48,8 +67,27 @@ public class GameArea {
 	/**
 	 * @return {@link Area}
 	 */
+	@Nullable
 	public Area getArea() {
 		return area;
+	}
+
+	/**
+	 * @return the name of this area
+	 */
+	@Nullable
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Returns the cloned center location of this area.
+	 * 
+	 * @return the cloned center location of this area
+	 */
+	@NotNull
+	public Location getCenter() {
+		return center;
 	}
 
 	/**
@@ -57,9 +95,8 @@ public class GameArea {
 	 * 
 	 * @return {@link ImmutableList} of {@link Entity}
 	 */
+	@NotNull
 	public ImmutableList<Entity> getEntities() {
-		// NOTE: don't use stream in here (slowest)
-
 		List<Entity> entities = new ArrayList<>();
 
 		for (Entity e : area.getLowLoc().getWorld().getEntities()) {
@@ -77,6 +114,7 @@ public class GameArea {
 	 * @param filter the array of entities
 	 * @return {@link ImmutableList} of {@link Entity}
 	 */
+	@NotNull
 	public ImmutableList<Entity> getEntities(EntityType... filter) {
 		if (filter.length == 0) {
 			return ImmutableList.of();
@@ -103,6 +141,7 @@ public class GameArea {
 	 * @param filter    the array of entities
 	 * @return {@link ImmutableList} of {@link Entity}
 	 */
+	@NotNull
 	public ImmutableList<Entity> getEntities(Predicate<Entity> predicate, EntityType... filter) {
 		if (filter.length == 0) {
 			return ImmutableList.of();
@@ -126,6 +165,7 @@ public class GameArea {
 	 * 
 	 * @return {@link ImmutableList} of {@link Player}
 	 */
+	@NotNull
 	public ImmutableList<Player> getPlayers() {
 		List<Player> players = new ArrayList<>();
 
@@ -145,6 +185,7 @@ public class GameArea {
 	 * @deprecated This method makes no sense until there is no feature to change
 	 *             ragemode area blocks.
 	 */
+	@NotNull
 	@Deprecated
 	public ImmutableList<Block> getBlocks() {
 		List<Block> blocks = new ArrayList<>();
@@ -172,6 +213,7 @@ public class GameArea {
 		}
 
 		double x = loc.getX(), y = loc.getY(), z = loc.getZ();
+
 		return (x >= x1 && x <= x2 && y >= y1 && y <= y2 && z >= z1 && z <= z2);
 	}
 }

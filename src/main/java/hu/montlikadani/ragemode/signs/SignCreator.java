@@ -8,15 +8,16 @@ import java.util.logging.Level;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.RMSignsUpdateEvent;
-import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.Debug;
+import hu.montlikadani.ragemode.utils.SchedulerUtil;
 import hu.montlikadani.ragemode.utils.Utils;
 
 public class SignCreator {
@@ -30,29 +31,26 @@ public class SignCreator {
 		if (list.isEmpty())
 			return false;
 
-		int totalSigns = 0;
-
 		for (String one : list) {
-			String[] splited = one.split(",");
-			String world = splited[0];
-			assert world != null;
+			String[] splitted = one.split(",", 5);
 
-			if (Bukkit.getWorld(world) == null) {
-				Debug.logConsole(Level.WARNING, "World {0} not found to load this sign.", world);
+			if (splitted.length < 5) {
 				continue;
 			}
 
-			double x = Double.parseDouble(splited[1]),
-					y = Double.parseDouble(splited[2]),
-					z = Double.parseDouble(splited[3]);
+			World world = Bukkit.getWorld(splitted[0]);
+			if (world == null) {
+				Debug.logConsole(Level.WARNING, "World {0} is not exist to load this sign.", splitted[0]);
+				continue;
+			}
 
-			String game = splited[4];
-			assert game != null;
+			double x = Utils.tryParse(splitted[1]).orElse(0d), y = Utils.tryParse(splitted[2]).orElse(0d),
+					z = Utils.tryParse(splitted[3]).orElse(0d);
 
-			SIGNDATA.add(new SignData(new Location(Bukkit.getWorld(world), x, y, z), game));
-			totalSigns++;
+			SIGNDATA.add(new SignData(new Location(world, x, y, z), splitted[4]));
 		}
 
+		int totalSigns = SIGNDATA.size();
 		if (totalSigns > 0) {
 			Debug.logConsole("Loaded {0} sign{1}.", totalSigns, (totalSigns > 1 ? "s" : ""));
 		}
@@ -63,11 +61,12 @@ public class SignCreator {
 	public static boolean createNewSign(Sign sign, String game) {
 		FileConfiguration fileConf = SignConfiguration.getSignConfig();
 		List<String> signs = fileConf.getStringList("signs");
+		Location loc = sign.getLocation();
 
-		signs.add(locationSignToString(sign.getLocation(), game));
+		signs.add(locationSignToString(loc, game));
 		fileConf.set("signs", signs);
 
-		SIGNDATA.add(new SignData(sign.getLocation(), game));
+		SIGNDATA.add(new SignData(loc, game));
 
 		Configuration.saveFile(fileConf, SignConfiguration.getSignFile());
 		return true;
@@ -78,13 +77,17 @@ public class SignCreator {
 			return false;
 		}
 
+		Location loc = sign.getLocation();
+
 		SignData data = null;
 		for (SignData signData : SIGNDATA) {
-			if (signData.getLocation().equals(sign.getLocation())) {
+			Location signLoc = signData.getLocation();
+
+			if (signLoc.equals(loc)) {
 				FileConfiguration fileConf = SignConfiguration.getSignConfig();
 				List<String> signs = fileConf.getStringList("signs");
 
-				signs.remove(locationSignToString(signData.getLocation(), signData.getGameName()));
+				signs.remove(locationSignToString(signLoc, signData.getGameName()));
 				fileConf.set("signs", signs);
 
 				Configuration.saveFile(fileConf, SignConfiguration.getSignFile());
@@ -105,6 +108,7 @@ public class SignCreator {
 	 */
 	public static boolean updateSign(Location loc) {
 		SignData data = getSignData(loc);
+
 		if (data != null) {
 			data.updateSign();
 			return true;
@@ -174,24 +178,27 @@ public class SignCreator {
 			return false;
 		}
 
+		boolean updated = false;
+
 		for (String signString : signs) {
 			if (getGameFromString(signString).equalsIgnoreCase(gameName)) {
 				Location signLocation = stringToLocationSign(signString);
+
 				if (signLocation == null) {
 					continue;
 				}
 
-				Bukkit.getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
+				SchedulerUtil.submitSync(() -> {
 					if (signLocation.getBlock().getState() instanceof Sign) {
 						SIGNDATA.forEach(SignData::updateSign);
 					}
+				}, true);
 
-					return true;
-				});
+				updated = true;
 			}
 		}
 
-		return false;
+		return updated;
 	}
 
 	/**
@@ -224,7 +231,7 @@ public class SignCreator {
 	}
 
 	private static String getGameFromString(String raw) {
-		return raw.split(",")[4];
+		return raw.split(",", 5)[4];
 	}
 
 	private static String locationSignToString(Location loc, String game) {
@@ -232,12 +239,16 @@ public class SignCreator {
 	}
 
 	private static Location stringToLocationSign(String raw) {
-		String[] splited = raw.split(",");
-		String world = splited[0];
-		double x = Double.parseDouble(splited[1]),
-				y = Double.parseDouble(splited[2]),
-				z = Double.parseDouble(splited[3]);
+		String[] splitted = raw.split(",", 4);
 
-		return Bukkit.getWorld(world) != null ? new Location(Bukkit.getWorld(world), x, y, z) : null;
+		if (splitted.length < 4) {
+			return null;
+		}
+
+		World world = Bukkit.getWorld(splitted[0]);
+		double x = Utils.tryParse(splitted[1]).orElse(0d), y = Utils.tryParse(splitted[2]).orElse(0d),
+				z = Utils.tryParse(splitted[3]).orElse(0d);
+
+		return world != null ? new Location(world, x, y, z) : null;
 	}
 }

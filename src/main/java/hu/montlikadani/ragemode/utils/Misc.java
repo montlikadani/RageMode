@@ -13,22 +13,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 
-import hu.montlikadani.ragemode.utils.ServerVersion.Version;
-
 @SuppressWarnings("deprecation")
 public class Misc {
 
-	public static boolean hasPerm(CommandSender sender, String perm) {
-		return !(sender instanceof Player) || sender.hasPermission(perm);
-	}
-
 	public static void sendMessage(CommandSender sender, String msg) {
-		sendMessage(sender, msg, false);
-	}
-
-	public static void sendMessage(CommandSender sender, String msg, boolean colored) {
 		if (sender != null && msg != null && !msg.isEmpty()) {
-			sender.sendMessage(colored ? Utils.colors(msg) : msg);
+			sender.sendMessage(Utils.colors(msg));
 		}
 	}
 
@@ -40,7 +30,7 @@ public class Misc {
 	 * @return ItemStack
 	 */
 	public static ItemStack getItemInHand(Player p) {
-		return Version.isCurrentEqualOrLower(Version.v1_8_R3) ? p.getInventory().getItemInHand()
+		return ServerVersion.isCurrentEqualOrLower(ServerVersion.v1_8_R3) ? p.getInventory().getItemInHand()
 				: p.getInventory().getItemInMainHand();
 	}
 
@@ -52,7 +42,7 @@ public class Misc {
 	 * @param item ItemStack
 	 */
 	public static void setItemInHand(Player p, ItemStack item) {
-		if (Version.isCurrentEqualOrLower(Version.v1_8_R3))
+		if (ServerVersion.isCurrentEqualOrLower(ServerVersion.v1_8_R3))
 			p.setItemInHand(item);
 		else
 			p.getInventory().setItemInMainHand(item);
@@ -66,7 +56,7 @@ public class Misc {
 	 * @param number short item durability
 	 */
 	public static void setDurability(ItemStack item, short number) {
-		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
+		if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_13_R1)) {
 			Optional.ofNullable(item.getItemMeta()).filter(meta -> meta instanceof Damageable)
 					.ifPresent(meta -> ((Damageable) meta).setDamage(number));
 		} else
@@ -84,7 +74,7 @@ public class Misc {
 	 * @return Enchantment type
 	 */
 	public static Enchantment getEnchant(String type) {
-		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1))
+		if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_13_R1))
 			return Enchantment.getByKey(org.bukkit.NamespacedKey.minecraft(type.toLowerCase()));
 
 		return Enchantment.getByName(type.toUpperCase());
@@ -97,7 +87,7 @@ public class Misc {
 	 * @return player max health
 	 */
 	public static double getMaxHealth(Player p) {
-		if (Version.isCurrentLower(Version.v1_9_R1)) {
+		if (ServerVersion.isCurrentLower(ServerVersion.v1_9_R1)) {
 			return p.getMaxHealth();
 		}
 
@@ -107,7 +97,7 @@ public class Misc {
 	}
 
 	public static void spawnParticle(Particle particle, Object effect, Location loc, int count) {
-		if (Version.isCurrentLower(Version.v1_9_R1)) {
+		if (ServerVersion.isCurrentLower(ServerVersion.v1_9_R1)) {
 			loc.getWorld().playEffect(loc, (Effect) effect, 1);
 		} else if (particle == Particle.REDSTONE) {
 			loc.getWorld().spawnParticle(particle, loc, count, new DustOptions(Color.RED, 2));

@@ -11,7 +11,6 @@ import hu.montlikadani.ragemode.config.Configuration;
 
 public class SignConfiguration {
 
-	private static boolean inited = false;
 	private static File signsFile;
 	private static FileConfiguration signConfig;
 
@@ -20,17 +19,16 @@ public class SignConfiguration {
 	}
 
 	public static FileConfiguration getSignConfig() {
-		if (inited) {
+		if (signConfig != null) {
 			return signConfig;
 		}
 
-		File file = new File(RageMode.getInstance().getFolder(), "signs.yml");
+		File file = new File(org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class).getFolder(), "signs.yml");
 		FileConfiguration config;
 		signsFile = file;
 
 		if (!file.exists()) {
-			if (!file.getParentFile().exists())
-				file.getParentFile().mkdirs();
+			file.getParentFile().mkdirs();
 
 			try {
 				file.createNewFile();
@@ -47,7 +45,6 @@ public class SignConfiguration {
 
 		signConfig = config;
 		Configuration.saveFile(config, file);
-		inited = true;
 
 		return signConfig;
 	}

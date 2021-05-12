@@ -4,7 +4,7 @@ import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 
-import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 
 public class Debug {
 

@@ -65,13 +65,10 @@ commands:
     not-valid-spawn-id: "&cJáték spawn azonosító&e %id%&c nem egy érvényes spawn."
     remove-success: "&cA spawn&e %number%&3 %game%&c játékhoz törölve!"
     no-more-spawn: "&cNincs több spawn, hogy töröld, mert már törölted az összes spawn-t..."
-  removezombiespawn:
-    not-valid-spawn-id: "&cJáték spawn azonosító&e %id%&c nem egy érvényes zombi spawn."
-    remove-success: "&cA zombi spawn&e %number%&3 %game%&c játékhoz törölve!"
-    no-more-spawn: "&cNincs több spawn, hogy töröld, mert már törölted az összes spawn-t..."
+    all-spawn-removed: "&cAz összes spawn eltávolítva a&3 %game%&c játékban."
   givesaveditems:
     not-enabled: "&cEz az opció nincs engedélyezve a konfigurációs fájlban."
-    player-not-found-in-data-file: "&cEz a játékos&7 %player%&c nem található az adat fájlban."
+    not-saved: "&cNem volt egyetlen játékos mentve."
     player-is-in-game: "&cEz a játékos&7 %player%&c játékban."
   latestart:
     player-not-in-lobby: "&cNem vagy a lobbyban, hogy növeld az időt."

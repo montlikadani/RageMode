@@ -1,49 +1,44 @@
 package hu.montlikadani.ragemode.gameUtils;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.config.ConfigValues;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.modules.ScoreBoard;
-import hu.montlikadani.ragemode.gameUtils.modules.ScoreTeam;
-import hu.montlikadani.ragemode.gameUtils.modules.TabTitles;
+import hu.montlikadani.ragemode.gameUtils.modules.TitleSender;
 import hu.montlikadani.ragemode.utils.Utils;
 
 public class ActionMessengers {
 
-	private Game game;
-	private UUID playerUUID;
-
+	private final UUID playerUUID;
 	private final ScoreBoard gameBoard;
-	private final ScoreTeam scoreTeam;
 
-	public ActionMessengers(Game game, UUID playerUUID) {
-		this.game = game;
+	private final RageMode rm = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
+
+	public ActionMessengers(UUID playerUUID) {
 		this.playerUUID = playerUUID;
 
-		scoreTeam = new ScoreTeam(playerUUID);
 		gameBoard = new ScoreBoard(getPlayer());
 	}
 
-	public Game getGame() {
-		return game;
-	}
-
+	@Nullable
 	public Player getPlayer() {
 		return Bukkit.getPlayer(playerUUID);
 	}
 
-	public ScoreBoard getScoreboard() {
-		return gameBoard;
+	@NotNull
+	public UUID getUniqueId() {
+		return playerUUID;
 	}
 
-	public ScoreTeam getScoreTeam() {
-		return scoreTeam;
+	@NotNull
+	public ScoreBoard getScoreboard() {
+		return gameBoard;
 	}
 
 	public void setTabList() {
@@ -60,12 +55,10 @@ public class ActionMessengers {
 			return;
 		}
 
-		List<String> tabHeader = RageMode.getInstance().getConfig().getStringList("game.tablist.list.header"),
-				tabFooter = RageMode.getInstance().getConfig().getStringList("game.tablist.list.footer");
-
 		String header = "", footer = "";
 		int s = 0;
-		for (String line : tabHeader) {
+
+		for (String line : ConfigValues.getTabListHeader()) {
 			s++;
 
 			if (s > 1) {
@@ -77,7 +70,7 @@ public class ActionMessengers {
 
 		s = 0;
 
-		for (String line : tabFooter) {
+		for (String line : ConfigValues.getTabListFooter()) {
 			s++;
 
 			if (s > 1) {
@@ -90,10 +83,12 @@ public class ActionMessengers {
 		header = Utils.setPlaceholders(header, player);
 		footer = Utils.setPlaceholders(footer, player);
 
-		header = header.replace("%game-time%", time < -1 ? "0" : Utils.getFormattedTime(time));
-		footer = footer.replace("%game-time%", time < -1 ? "0" : Utils.getFormattedTime(time));
+		String formattedTime = time < 0 ? "0" : Utils.getFormattedTime(time);
 
-		TabTitles.sendTabTitle(player, header, footer);
+		header = header.replace("%game-time%", formattedTime);
+		footer = footer.replace("%game-time%", formattedTime);
+
+		TitleSender.sendTabTitle(player, header, footer);
 	}
 
 	public void setScoreboard() {
@@ -110,24 +105,26 @@ public class ActionMessengers {
 			return;
 		}
 
+		String formattedTime = time < 0 ? "0" : Utils.getFormattedTime(time);
+
 		String boardTitle = ConfigValues.getSbTitle();
 		if (!boardTitle.isEmpty()) {
-			boardTitle = boardTitle.replace("%game-time%", time < -1 ? "0" : Utils.getFormattedTime(time));
+			boardTitle = boardTitle.replace("%game-time%", formattedTime);
 			boardTitle = Utils.setPlaceholders(boardTitle, player);
 			gameBoard.setTitle(player, boardTitle);
 		}
 
-		List<String> rows = RageMode.getInstance().getConfig().getStringList("game.scoreboard.content");
-		if (!rows.isEmpty()) {
-			int scores = rows.size();
+		if (!ConfigValues.getScoreboardContent().isEmpty()) {
+			int scores = ConfigValues.getScoreboardContent().size();
+
 			if (scores < 15) {
 				for (int i = (scores + 1); i <= 15; i++) {
 					gameBoard.resetScores(player, i);
 				}
 			}
 
-			for (String row : rows) {
-				row = row.replace("%game-time%", time < -1 ? "0" : Utils.getFormattedTime(time));
+			for (String row : ConfigValues.getScoreboardContent()) {
+				row = row.replace("%game-time%", formattedTime);
 				row = Utils.setPlaceholders(row, player);
 				gameBoard.setLine(player, row, scores--);
 			}
@@ -136,19 +133,18 @@ public class ActionMessengers {
 		gameBoard.setScoreBoard(player);
 	}
 
-	public void setTeam() {
-		if (!ConfigValues.isTabFormatEnabled()) {
+	public void setPlayerName() {
+		if (ConfigValues.getTabPlayerListName().isEmpty()) {
 			return;
 		}
 
 		Player player = getPlayer();
-		if (player == null) {
-			return;
+
+		if (player != null) {
+			String name = Utils.setPlaceholders(ConfigValues.getTabPlayerListName(), player);
+			name = name.replace("%player_name%", player.getName());
+
+			rm.getComplement().setPlayerListName(player, name);
 		}
-
-		String prefix = Utils.setPlaceholders(ConfigValues.getTabPrefix(), player);
-		String suffix = Utils.setPlaceholders(ConfigValues.getTabSuffix(), player);
-
-		scoreTeam.setTeam(prefix, suffix);
 	}
 }

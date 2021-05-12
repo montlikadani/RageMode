@@ -7,8 +7,8 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.area.GameAreaManager;
-import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
+import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -19,56 +19,61 @@ import hu.montlikadani.ragemode.utils.Utils;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-@CommandProcessor(name = "stopgame", permission = "ragemode.admin.stopgame")
-public class stopgame implements ICommand {
+@CommandProcessor(
+		name = "stopgame",
+		desc = "Stops the specified game",
+		params = "<gameName>",
+		permission = "ragemode.admin.stopgame")
+public final class stopgame implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (args.length >= 2) {
-			String game = args[1];
-			if (!GameUtils.isGameExist(game)) {
-				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", game));
-				return false;
-			}
-
-			Game g = GameUtils.getGame(game);
-			if (!g.isGameRunning()) {
-				sendMessage(sender, RageMode.getLang().get("game.not-running"));
-				return false;
-			}
-
-			Utils.callEvent(new RMGameStopEvent(g));
-
-			if (g.getGameType() != GameType.APOCALYPSE)
-				RageScores.calculateWinner(g, g.getPlayers());
-			else
-				GameAreaManager.removeEntitiesFromGame(g);
-
-			for (PlayerManager pm : g.getPlayers()) {
-				Player player = pm.getPlayer();
-
-				RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(g, player);
-				Utils.callEvent(gameLeaveEvent);
-				if (!gameLeaveEvent.isCancelled()) {
-					g.removePlayer(player);
-				}
-			}
-
-			for (PlayerManager spec : g.getSpectatorPlayers()) {
-				g.removeSpectatorPlayer(spec.getPlayer());
-			}
-
-			g.getActionMessengers().clear();
-			g.setGameRunning(false);
-			g.setStatus(null);
-			SignCreator.updateAllSigns(game);
-			sendMessage(sender, RageMode.getLang().get("game.stopped", "%game%", game));
-		} else {
+		if (args.length < 2) {
 			sendMessage(sender,
 					RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <gameName>"));
 			return false;
 		}
 
+		Game game = GameUtils.getGame(args[1]);
+		if (game == null) {
+			sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", args[1]));
+			return false;
+		}
+
+		if (!game.isRunning()) {
+			sendMessage(sender, RageMode.getLang().get("game.not-running"));
+			return false;
+		}
+
+		Utils.callEvent(new RMGameStopEvent(game));
+
+		if (game.getGameType() != GameType.APOCALYPSE)
+			RageScores.calculateWinner(game, game.getPlayers());
+		else
+			GameAreaManager.removeEntitiesFromGame(game);
+
+		for (PlayerManager pm : game.getPlayers()) {
+			if (pm.isSpectator()) {
+				game.removePlayer(pm.getPlayer());
+				continue;
+			}
+
+			Player player = pm.getPlayer();
+
+			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, player);
+			Utils.callEvent(gameLeaveEvent);
+
+			if (!gameLeaveEvent.isCancelled()) {
+				game.removePlayer(player);
+			}
+		}
+
+		game.getActionMessengers().clear();
+		game.setRunning(false);
+		game.setStatus(null);
+		SignCreator.updateAllSigns(game.getName());
+
+		sendMessage(sender, RageMode.getLang().get("game.stopped", "%game%", game.getName()));
 		return true;
 	}
 }

@@ -5,61 +5,54 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
+import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.utils.Utils;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-@CommandProcessor(name = "stats", permission = "ragemode.stats")
-public class stats implements ICommand {
+@CommandProcessor(
+		name = "stats",
+		desc = "Showing statistic of a target player",
+		params = "[player]",
+		permission = { "ragemode.stats", "ragemode.help.playercommands" })
+public final class stats implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (!(sender instanceof Player)) {
-			if (args.length < 2) {
-				sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-null"));
-				return false;
-			}
+		boolean isPlayer = sender instanceof Player;
 
-			Player target = Bukkit.getPlayer(args[1]);
-			if (target == null) {
-				sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-found"));
-				return false;
-			}
+		if (!isPlayer && args.length < 2) {
+			sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-null"));
+			return false;
+		}
 
-			showStats(sender, target);
+		Player target = isPlayer ? (Player) sender : null;
+
+		if ((!isPlayer || args.length >= 2) && (target = Bukkit.getPlayer(args[1])) == null) {
+			sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-found"));
+			return false;
+		}
+
+		if (target == null) {
 			return true;
 		}
 
-		Player p = (Player) sender;
-		Player target = p;
-		if (args.length == 2) {
-			target = Bukkit.getPlayer(args[1]);
-			if (target == null) {
-				sendMessage(p, RageMode.getLang().get("commands.stats.player-not-found"));
-				return false;
-			}
-		}
-
-		showStats(p, target);
-		return true;
-	}
-
-	private void showStats(CommandSender sender, Player t) {
-		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(t.getUniqueId());
+		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(target.getUniqueId());
 		if (rpp == null) {
-			sendMessage(sender, RageMode.getLang().get("not-played-yet", "%player%", t.getName()));
-			return;
+			sendMessage(sender, RageMode.getLang().get("not-played-yet", "%player%", target.getName()));
+			return true;
 		}
 
 		for (String list : RageMode.getLang().getList("statistic-list")) {
-			list = list.replace("%player%", t.getName());
-			list = Utils.setPlaceholders(list, t);
+			list = list.replace("%player%", target.getName());
+			list = Utils.setPlaceholders(list, target);
 
 			sendMessage(sender, list);
 		}
+
+		return true;
 	}
 }

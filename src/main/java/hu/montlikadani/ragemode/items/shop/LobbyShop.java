@@ -3,9 +3,7 @@ package hu.montlikadani.ragemode.items.shop;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
@@ -19,93 +17,84 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import com.google.common.collect.ImmutableList;
-
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStartEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerBuyFromShopEvent;
-import hu.montlikadani.ragemode.config.ConfigValues;
-import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.ItemHandler;
-import hu.montlikadani.ragemode.items.Items;
+import hu.montlikadani.ragemode.items.shop.ShopItemCommands.CommandSetting;
 import hu.montlikadani.ragemode.items.shop.pages.MainPage;
 import hu.montlikadani.ragemode.items.shop.pages.NextPage;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
-import hu.montlikadani.ragemode.utils.Debug;
 import hu.montlikadani.ragemode.utils.Misc;
+import hu.montlikadani.ragemode.utils.ServerVersion;
 import hu.montlikadani.ragemode.utils.Utils;
-import hu.montlikadani.ragemode.utils.ServerVersion.Version;
 
 public class LobbyShop implements Listener {
 
-	public static final Map<Player, BoughtElements> BOUGHTITEMS = new HashMap<>();
-	public static final HashMap<UUID, Enum<?>> USERPARTICLES = new HashMap<>();
+	public static final Map<UUID, BoughtElements> BOUGHT_ITEMS = new HashMap<>();
+	public static final Map<UUID, Enum<?>> USER_PARTICLES = new HashMap<>();
 
-	private final Map<Player, IShop> shops = new HashMap<>();
+	private static final RageMode RM = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 
-	private static final RageMode RM = RageMode.getInstance();
+	private final Map<UUID, IShop> playerShops = new HashMap<>();
+
+	private final IShop mainPage = new MainPage(), nextPage = new NextPage();
 
 	public LobbyShop() {
-		Bukkit.getServer().getPluginManager().registerEvents(this, RM);
+		RM.getServer().getPluginManager().registerEvents(this, RM);
 	}
 
-	public Map<Player, IShop> getShops() {
-		return shops;
+	public Map<UUID, IShop> getPlayerShops() {
+		return playerShops;
 	}
 
 	public boolean isOpened(Player player) {
-		return shops.containsKey(player);
+		return getCurrentPage(player) != null;
 	}
 
 	public IShop getCurrentPage(Player player) {
-		return shops.get(player);
+		return playerShops.get(player.getUniqueId());
 	}
 
 	public void removeShop(Player player) {
-		if (isOpened(player)) {
-			shops.get(player).getItems().clear();
-			shops.remove(player);
+		IShop shop = playerShops.remove(player.getUniqueId());
+		if (shop != null) {
+			shop.getItems().clear();
 		}
 	}
 
 	public void openMainPage(Player player) {
 		removeShop(player);
 
-		IShop main = new MainPage();
-		main.create(player);
+		mainPage.create(player);
 
-		if (main.getInventory() == null) {
+		if (mainPage.getInventory() == null) {
 			return;
 		}
 
-		shops.put(player, main);
-		player.openInventory(main.getInventory());
+		playerShops.put(player.getUniqueId(), mainPage);
+		player.openInventory(mainPage.getInventory());
 	}
 
 	public void openNextPage(Player player, ShopCategory category) {
-		IShop next = new NextPage();
-		next.create(player, category);
+		nextPage.create(player, category);
 
-		if (next.getInventory() == null) {
-			return; // When some options are disabled
+		if (nextPage.getInventory() == null) {
+			return;
 		}
 
 		removeShop(player);
-		Bukkit.getScheduler().runTaskLater(RM, () -> {
-			player.openInventory(next.getInventory());
-			shops.put(player, next);
-		}, 2L);
-	}
 
-	public ImmutableList<ShopItem> getItems(IShop currentPage, ShopCategory category) {
-		return (currentPage == null || category == null) ? ImmutableList.of()
-				: ImmutableList.copyOf(currentPage.getItems().stream().filter(si -> category == si.getCategory())
-						.collect(Collectors.toList()));
+		RM.getServer().getScheduler().runTaskLater(RM, () -> {
+			player.openInventory(nextPage.getInventory());
+			playerShops.put(player.getUniqueId(), nextPage);
+		}, 2L);
 	}
 
 	@EventHandler
@@ -113,15 +102,20 @@ public class LobbyShop implements Listener {
 		Player player = e.getPlayer();
 
 		removeShop(player);
-		BOUGHTITEMS.remove(player);
+
+		BOUGHT_ITEMS.remove(player.getUniqueId());
 		player.closeInventory();
 	}
 
 	@EventHandler
 	public void onGameStart(RMGameStartEvent event) {
 		for (PlayerManager pm : event.getGame().getPlayers()) {
-			removeShop(pm.getPlayer());
-			pm.getPlayer().closeInventory();
+			Player player = pm.getPlayer();
+
+			if (player != null) {
+				removeShop(player);
+				player.closeInventory();
+			}
 		}
 	}
 
@@ -136,59 +130,56 @@ public class LobbyShop implements Listener {
 			return;
 		}
 
-		Player p = (Player) ev.getWhoClicked();
-		if (!isOpened(p)) {
+		Player who = (Player) ev.getWhoClicked();
+		if (!isOpened(who)) {
 			return;
 		}
 
-		if (!GameUtils.isPlayerPlaying(p) || GameUtils.getGameByPlayer(p).getStatus() != GameStatus.WAITING) {
-			removeShop(p);
+		hu.montlikadani.ragemode.gameLogic.Game game = GameUtils.getGameByPlayer(who);
+		if (game == null || game.getStatus() != GameStatus.WAITING) {
+			removeShop(who);
 			return;
 		}
 
 		ev.setCancelled(true);
 
 		if (ev.getClick() != ClickType.UNKNOWN) {
-			doItemClick(ev);
+			handleItemClick(ev);
 		}
 	}
 
-	private void doItemClick(InventoryClickEvent ev) {
+	private void handleItemClick(InventoryClickEvent ev) {
 		final ItemStack currentItem = ev.getCurrentItem();
 		if (currentItem == null) {
 			return;
 		}
 
 		final Player player = (Player) ev.getWhoClicked();
-		shops.get(player).getShopItem(currentItem).ifPresent(shopItem -> {
+
+		getCurrentPage(player).getShopItem(currentItem).ifPresent(shopItem -> {
 			if (shopItem.getItem().getType() != currentItem.getType()) {
 				return;
 			}
 
-			String title = Version.isCurrentEqualOrHigher(Version.v1_13_R1) ? ev.getView().getTitle()
-					: player.getOpenInventory().getTitle();
+			String title = RM.getComplement()
+					.getTitle(ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_13_R1) ? ev.getView()
+							: player.getOpenInventory());
+
 			if (!title.equalsIgnoreCase(shopItem.getInventoryName())) {
 				return;
 			}
 
-			ShopItemCommands cmds = shopItem.getItemCommands();
-			if (cmds != null) {
-				NavigationType type = cmds.getNavigationType();
-				if (type == NavigationType.WITHOUT && currentItem.getItemMeta().getDisplayName()
-						.equalsIgnoreCase(shopItem.getItem().getItemMeta().getDisplayName())) {
-					if (buyElement(player, cmds.getConfigPath(), shopItem.getCategory())) {
-						for (String c : cmds.getCommands()) {
-							if (c.startsWith("console:")) {
-								c = c.replace("console:", "");
-
-								if (c.startsWith("/")) {
-									c = c.substring(1);
-								}
-
-								c = Utils.setPlaceholders(c, player);
-								c = c.replace("%player%", player.getName());
-
-								Bukkit.dispatchCommand(Bukkit.getConsoleSender(), c);
+			ShopItemCommands itemCommand = shopItem.getItemCommands();
+			if (itemCommand != null) {
+				if (itemCommand.getNavigationType() == NavigationType.WITHOUT
+						&& RM.getComplement().getDisplayName(currentItem.getItemMeta()).equalsIgnoreCase(
+								RM.getComplement().getDisplayName(shopItem.getItem().getItemMeta()))) {
+					if (buyElement(player, itemCommand.getItemSetting(), shopItem.getCategory())) {
+						for (CommandSetting cmd : itemCommand.getCommands()) {
+							if (cmd.getType() == CommandSetting.SenderType.CONSOLE) {
+								String command = Utils.setPlaceholders(cmd.getCommand(), player);
+								command = command.replace("%player%", player.getName());
+								RM.getServer().dispatchCommand(RM.getServer().getConsoleSender(), command);
 							}
 						}
 					}
@@ -196,10 +187,10 @@ public class LobbyShop implements Listener {
 					return;
 				}
 
-				player.closeInventory();
-
-				if (type == NavigationType.MAIN) {
+				if (itemCommand.getNavigationType() == NavigationType.MAIN) {
 					openMainPage(player);
+				} else {
+					player.closeInventory();
 				}
 
 				return;
@@ -209,37 +200,24 @@ public class LobbyShop implements Listener {
 		});
 	}
 
-	private boolean buyElement(Player player, String path, ShopCategory shopCategory) {
-		if (!isOpened(player)) {
-			return false;
-		}
-
-		Configuration conf = RM.getConfiguration();
-		BoughtElements elements = BOUGHTITEMS.get(player);
+	private boolean buyElement(Player player, ShopItemCommands.ItemSetting itemSetting, ShopCategory shopCategory) {
+		BoughtElements elements = BOUGHT_ITEMS.get(player.getUniqueId());
 		PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
 
-		final double cost = conf.getItemsCfg().getDouble(path + ".cost.value", 0d);
-		final double currentCost = elements != null ? elements.getCost() : cost;
+		final double cost = itemSetting.getCost();
+		final int points = itemSetting.getPoints();
 
-		final int points = conf.getItemsCfg().getInt(path + "cost.points", 0);
-		final int currentPoints = elements != null ? elements.getPoints() : points;
+		double finalCost = elements != null ? elements.getCost() : cost;
+		int finalPoints = elements != null ? elements.getPoints() : points;
 
-		double finalCost = currentCost;
-		int finalPoints = currentPoints;
-
-		if (shopCategory == ShopCategory.POTIONEFFECTS && conf.getItemsCfg().contains(path + ".effect")) {
-			String[] effect = conf.getItemsCfg().getString(path + ".effect").split(":");
-			if (effect.length < 1) {
-				return false;
-			}
-
-			PotionEffectType type = PotionEffectType.getByName(effect[0]);
+		if (shopCategory == ShopCategory.POTIONEFFECTS && itemSetting.getEffectSetting() != null) {
+			PotionEffectType type = itemSetting.getEffectSetting().getEffectType();
 			if (type == null) {
 				return false;
 			}
 
-			int duration = effect.length > 1 ? Integer.parseInt(effect[1]) : 5;
-			int amplifier = effect.length > 2 ? Integer.parseInt(effect[2]) : 1;
+			int duration = itemSetting.getEffectSetting().getDuration();
+			int amplifier = itemSetting.getEffectSetting().getAmplifier();
 
 			if (elements != null) {
 				finalCost += cost;
@@ -263,16 +241,13 @@ public class LobbyShop implements Listener {
 			} else {
 				elements.setBought(pe);
 			}
-		} else if (shopCategory == ShopCategory.GAMEITEMS && conf.getItemsCfg().contains(path + ".giveitem")) {
-			String[] splitItem = conf.getItemsCfg().getString(path + ".giveitem").split(":");
-			if (splitItem.length < 1) {
+		} else if (shopCategory == ShopCategory.GAMEITEMS && itemSetting.getGiveGameItem() != null) {
+			ItemHandler item = itemSetting.getGiveGameItem().getItem();
+			if (item == null) {
 				return false;
 			}
 
-			int amount = splitItem.length > 1 ? Integer.parseInt(splitItem[1]) : 1;
-			if (amount < 1) {
-				amount = 1;
-			}
+			int amount = itemSetting.getGiveGameItem().getAmount();
 
 			if (elements != null) {
 				finalCost += cost;
@@ -285,21 +260,6 @@ public class LobbyShop implements Listener {
 				return false;
 			}
 
-			ItemHandler item = null;
-			if ("grenade".equals(splitItem[0])) {
-				item = Items.getGameItem(1);
-			} else if ("combataxe".equals(splitItem[0])) {
-				item = Items.getGameItem(0);
-			} else if ("flash".equals(splitItem[0])) {
-				item = Items.getGameItem(5);
-			} else if ("pressuremine".equals(splitItem[0]) || "mine".equals(splitItem[0])) {
-				item = Items.getGameItem(6);
-			}
-
-			if (item == null) {
-				return false;
-			}
-
 			item = (ItemHandler) item.clone();
 			item.setAmount(amount);
 
@@ -309,42 +269,10 @@ public class LobbyShop implements Listener {
 				elements.setBought(item.get());
 			}
 		} else if (ConfigValues.isUseArrowTrails() && shopCategory == ShopCategory.ITEMTRAILS
-				&& conf.getItemsCfg().contains(path + ".trail")) {
-			String name = conf.getItemsCfg().getString(path + ".trail", "");
-			if (name.isEmpty()) {
-				return false;
-			}
+				&& itemSetting.getItemTrail() != null) {
+			Object particle = itemSetting.getItemTrail().getParticle();
 
-			Object particle = null;
-			if (Version.isCurrentLower(Version.v1_9_R1)) {
-				try {
-					for (Effect effect : Effect.values()) {
-						Object effectType = Effect.class.getDeclaredClasses()[0].getDeclaredField("PARTICLE")
-								.get(effect);
-						if (effect.toString().equalsIgnoreCase(name)
-								&& effect.getClass().getDeclaredMethod("getType").invoke(effect) == effectType) {
-							particle = effect;
-							break;
-						}
-					}
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
-			} else {
-				for (Particle p : Particle.values()) {
-					if (p.toString().equalsIgnoreCase(name)) {
-						particle = p;
-						break;
-					}
-				}
-			}
-
-			if (particle == null) {
-				Debug.logConsole("Trail particle type is not exist with this name: " + name);
-				return false;
-			}
-
-			if (elements != null && particle == elements.getBought()) {
+			if (particle == null || (elements != null && particle == elements.getBought())) {
 				return false;
 			}
 
@@ -364,11 +292,11 @@ public class LobbyShop implements Listener {
 			Utils.callEvent(
 					new RMPlayerBuyFromShopEvent(GameUtils.getGameByPlayer(player), player, elements, shopCategory));
 
-			if (BOUGHTITEMS.containsKey(player)) {
+			if (BOUGHT_ITEMS.containsKey(player.getUniqueId())) {
 				elements.setCost(finalCost);
 				elements.setPoints(finalPoints);
 			} else {
-				BOUGHTITEMS.put(player, elements);
+				BOUGHT_ITEMS.put(player.getUniqueId(), elements);
 			}
 		}
 
@@ -378,15 +306,16 @@ public class LobbyShop implements Listener {
 	}
 
 	public static void buyElements(Player player) {
-		if (!BOUGHTITEMS.containsKey(player)) {
+		BoughtElements bought = BOUGHT_ITEMS.remove(player.getUniqueId());
+
+		if (bought == null) {
 			return;
 		}
 
-		BoughtElements bought = BOUGHTITEMS.remove(player);
-
 		boolean enough = false;
-		if (RageMode.getInstance().isVaultEnabled()) {
-			net.milkbowl.vault.economy.Economy economy = RageMode.getInstance().getEconomy();
+
+		if (RM.isVaultEnabled()) {
+			net.milkbowl.vault.economy.Economy economy = RM.getEconomy();
 			double cost = bought.getCost();
 
 			if (cost > 0d && economy.has(player, cost)) {
@@ -397,7 +326,8 @@ public class LobbyShop implements Listener {
 
 		if (bought.getPoints() > 0) {
 			PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
-			if (pp != null && pp.getPoints() >= bought.getPoints()) {
+
+			if (pp != null && pp.hasPoints(bought.getPoints())) {
 				pp.takePoints(bought.getPoints());
 				enough = true;
 			} else {
@@ -411,7 +341,7 @@ public class LobbyShop implements Listener {
 		}
 
 		// This also should be on main thread, spigot async catchop
-		Bukkit.getScheduler().runTaskLater(RM, () -> {
+		RM.getServer().getScheduler().runTaskLater(RM, () -> {
 			if (bought.getBought() instanceof PotionEffect) {
 				player.addPotionEffect(bought.<PotionEffect>getBought());
 			}
@@ -422,7 +352,7 @@ public class LobbyShop implements Listener {
 		}, 1L);
 
 		if (bought.getBought() instanceof Effect || bought.getBought() instanceof Particle) {
-			USERPARTICLES.put(player.getUniqueId(), bought.getBought());
+			USER_PARTICLES.put(player.getUniqueId(), bought.getBought());
 		}
 	}
 }

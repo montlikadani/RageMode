@@ -18,7 +18,8 @@ public interface Database {
 	 *         not present returns YAML as default
 	 */
 	default DBType getDatabaseType() {
-		return getClass().isAnnotationPresent(DB.class) ? getClass().getAnnotation(DB.class).type() : DBType.YAML;
+		DB annotate = getClass().getAnnotation(DB.class);
+		return annotate != null ? annotate.type() : DBType.YAML;
 	}
 
 	/**

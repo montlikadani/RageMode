@@ -8,17 +8,17 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.ragemode.scores.KilledWith;
+import hu.montlikadani.ragemode.items.GameItems;
 import hu.montlikadani.ragemode.utils.Utils;
 
 public final class CacheableHitTarget {
 
 	private Entity target;
-	private KilledWith tool;
+	private GameItems tool;
 
 	private final Set<UUID> nearTargets = new HashSet<>();
 
-	public CacheableHitTarget(Entity target, KilledWith tool) {
+	public CacheableHitTarget(Entity target, GameItems tool) {
 		this.target = target;
 		this.tool = tool;
 	}
@@ -27,7 +27,7 @@ public final class CacheableHitTarget {
 		return target;
 	}
 
-	public KilledWith getTool() {
+	public GameItems getTool() {
 		return tool;
 	}
 
@@ -40,7 +40,7 @@ public final class CacheableHitTarget {
 			return;
 		}
 
-		if (tool == KilledWith.PRESSUREMINE && target instanceof Player) {
+		if (tool == GameItems.PRESSUREMINE && target instanceof Player) {
 			nearTargets.add(target.getUniqueId());
 			return;
 		}
@@ -50,10 +50,10 @@ public final class CacheableHitTarget {
 		}
 
 		for (Entity near : Utils.getNearbyEntities(target, radius)) {
-			nearTargets.remove(near.getUniqueId());
-
 			if (near instanceof Player) {
 				nearTargets.add(near.getUniqueId());
+			} else {
+				nearTargets.remove(near.getUniqueId());
 			}
 		}
 	}

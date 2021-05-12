@@ -4,66 +4,80 @@ import java.util.Optional;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.gameUtils.GameType;
 
 public class GameSettings {
 
 	private String worldName, gameName = "";
 
 	/**
-	 * Returns the max players size from this game.
+	 * The field for defining or retrieving the max players size.
 	 */
 	public int maxPlayers = 0;
 
 	/**
-	 * Returns the minimum players size from this game.
+	 * The field for defining or retrieving the minimum players size.
 	 */
 	public int minPlayers = 0;
 
 	/**
-	 * Returns the game time for this game.
+	 * The field for defining or retrieving the game time.
 	 */
 	public int gameTime = 0;
 
 	/**
-	 * Returns the actionbar boolean if it is enabled for this game, otherwise
-	 * false.
+	 * The field to determine if the actionbar should be enabled for this game, or
+	 * not.
 	 */
 	public boolean actionbarEnabled = false;
 
 	/**
-	 * Returns the bossbar boolean if it is enabled for this game, otherwise false.
+	 * The field to determine if the bossbar should be enabled for this game or not.
 	 */
 	public boolean bossbarEnabled = false;
 
+	/**
+	 * The field for determining if the spawning for zombies should be random or
+	 * not.
+	 */
+	public boolean randomSpawnForZombies = false;
+
 	public GameSettings(String gameName) {
-		if (gameName != null) {
-			this.gameName = gameName;
-			loadFromConfig();
-		}
+		org.apache.commons.lang.Validate.notEmpty(gameName, "Game name cannot be null/empty");
+
+		this.gameName = gameName;
+		loadFromConfig();
 	}
 
 	private void loadFromConfig() {
-		FileConfiguration conf = RageMode.getInstance().getConfiguration().getArenasCfg();
+		org.bukkit.configuration.MemorySection conf = JavaPlugin.getPlugin(RageMode.class).getConfiguration()
+				.getArenasCfg();
 		String path = "arenas." + gameName + ".";
 
 		maxPlayers = conf.getInt(path + "maxplayers", 2);
 		minPlayers = conf.getInt(path + "minplayers", 1);
-		gameTime = conf.getInt(path + "gametime") < 0 ? 5 : conf.getInt(path + "gametime");
+
+		int gt = conf.getInt(path + "gametime");
+		gameTime = gt < 0 ? 5 : gt;
+
 		worldName = conf.getString(path + "world");
-		actionbarEnabled = conf.getBoolean(path + "actionbar", false);
-		bossbarEnabled = conf.getBoolean(path + "bossbar", false);
+		actionbarEnabled = conf.getBoolean(path + "actionbar");
+		bossbarEnabled = conf.getBoolean(path + "bossbar");
+		randomSpawnForZombies = conf.getBoolean(path + "randomspawnforzombies");
 	}
 
-	public void saveGamesSettings() {
+	public final void saveGamesSettings() {
 		if (gameName.isEmpty()) {
 			return;
 		}
 
-		FileConfiguration conf = RageMode.getInstance().getConfiguration().getArenasCfg();
+		final RageMode plugin = JavaPlugin.getPlugin(RageMode.class);
+
+		org.bukkit.configuration.file.FileConfiguration conf = plugin.getConfiguration().getArenasCfg();
 		String path = "arenas." + gameName + ".";
 
 		conf.set(path + "maxplayers", maxPlayers);
@@ -73,7 +87,12 @@ public class GameSettings {
 		conf.set(path + "actionbar", actionbarEnabled);
 		conf.set(path + "bossbar", bossbarEnabled);
 
-		Configuration.saveFile(conf, RageMode.getInstance().getConfiguration().getArenasFile());
+		if (randomSpawnForZombies && GameType.getByName(conf.getString(path + "gametype", "")) == GameType.APOCALYPSE) {
+			conf.set(path + "zombie-spawns", null);
+			conf.set(path + "randomspawnforzombies", randomSpawnForZombies);
+		}
+
+		Configuration.saveFile(conf, plugin.getConfiguration().getArenasFile());
 	}
 
 	/**
@@ -81,7 +100,7 @@ public class GameSettings {
 	 * 
 	 * @return the world object if present, otherwise {@link Optional#empty()}
 	 */
-	public Optional<World> getWorld() {
-		return worldName == null ? Optional.empty() : Optional.ofNullable(Bukkit.getWorld(worldName));
+	public final Optional<World> getWorld() {
+		return worldName == null ? Optional.empty() : Optional.ofNullable(Bukkit.getServer().getWorld(worldName));
 	}
 }

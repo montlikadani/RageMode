@@ -5,16 +5,20 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
+import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-@CommandProcessor(name = "points", permission = "ragemode.admin.points")
-public class points implements ICommand {
+@CommandProcessor(
+		name = "points",
+		params = "set/add/take <player> <amount>",
+		desc = "Changes the player points",
+		permission = "ragemode.admin.points")
+public final class points implements ICommand {
 
 	private enum Actions {
 		Set, Add, Take;

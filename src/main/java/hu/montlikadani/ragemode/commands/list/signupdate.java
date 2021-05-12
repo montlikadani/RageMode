@@ -3,17 +3,21 @@ package hu.montlikadani.ragemode.commands.list;
 import org.bukkit.command.CommandSender;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
-import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
+import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.signs.SignCreator;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-@CommandProcessor(name = "signupdate", permission = "ragemode.admin.signupdate")
-public class signupdate implements ICommand {
+@CommandProcessor(
+		name = "signupdate",
+		desc = "Refresh the specified or all game signs",
+		params = "<gameName/all>",
+		permission = "ragemode.admin.signupdate")
+public final class signupdate implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
@@ -30,13 +34,12 @@ public class signupdate implements ICommand {
 				SignCreator.updateAllSigns(game.getName());
 			}
 		} else {
-			String name = args[1];
-			if (GameUtils.getGame(name) == null) {
-				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", name));
+			if (!GameUtils.isGameExist(args[1])) {
+				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", args[1]));
 				return false;
 			}
 
-			SignCreator.updateAllSigns(name);
+			SignCreator.updateAllSigns(args[1]);
 		}
 
 		return true;

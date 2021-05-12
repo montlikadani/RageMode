@@ -4,70 +4,66 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
+import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
-import static hu.montlikadani.ragemode.utils.Misc.hasPerm;
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-@CommandProcessor(name = "listplayers", permission = "ragemode.listplayers")
-public class listplayers implements ICommand {
+@CommandProcessor(
+	name = "listplayers",
+	desc = "Lists all currently playing players",
+	params = "<gameName>",
+	permission = "ragemode.listplayers")
+public final class listplayers implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		if (!hasPerm(sender, "ragemode.listplayers")) {
-			sendMessage(sender, RageMode.getLang().get("no-permission"));
-			return false;
-		}
-
 		if (args.length <= 1) {
 			if (!(sender instanceof Player)) {
-				sendMessage(sender, RageMode.getLang().get("missing-arguments", "%usage%", "/rm listplayers <game>"));
+				sendMessage(sender,
+						RageMode.getLang().get("missing-arguments", "%usage%", "/rm listplayers <gameName>"));
 				return false;
 			}
 
-			Player p = (Player) sender;
-			boolean isPlayerPlaying = GameUtils.isPlayerPlaying(p);
-			boolean isSpectatorPlaying = GameUtils.isSpectatorPlaying(p);
+			Player player = (Player) sender;
+			PlayerManager plManager = GameUtils.getPlayerManager(player);
 
-			if (!isPlayerPlaying && !isSpectatorPlaying) {
-				sendMessage(p, RageMode.getLang().get("commands.listplayers.player-currently-not-playing"));
+			if (plManager == null) {
+				sendMessage(player, RageMode.getLang().get("commands.listplayers.player-currently-not-playing"));
 				return false;
 			}
 
-			if (isPlayerPlaying) {
-				StringBuilder sb = new StringBuilder();
-				for (PlayerManager pm : GameUtils.getGameByPlayer(p).getPlayers()) {
+			StringBuilder sb = new StringBuilder();
+
+			if (plManager.isSpectator()) {
+				for (PlayerManager pm : plManager.getPlayerGame().getSpectatorPlayers()) {
 					sb.append("&7-&6 " + pm.getPlayer().getName() + "&a - " + pm.getGameName());
 				}
 
-				sendMessage(p, "&7Players:\n" + sb.toString(), true);
-			}
-
-			if (isSpectatorPlaying) {
-				StringBuilder sb = new StringBuilder();
-				for (PlayerManager pm : GameUtils.getGameBySpectator(p).getSpectatorPlayers()) {
+				sendMessage(sender, "&7Spectator players:\n" + sb.toString());
+			} else {
+				for (PlayerManager pm : plManager.getPlayerGame().getPlayers()) {
 					sb.append("&7-&6 " + pm.getPlayer().getName() + "&a - " + pm.getGameName());
 				}
 
-				sendMessage(sender, "&7Spectator players:\n" + sb.toString(), true);
+				sendMessage(player, "&7Players:\n" + sb.toString());
 			}
 
 			return true;
 		}
 
 		if (args.length >= 2) {
-			String gameName = args[1];
-			if (!GameUtils.isGameExist(gameName)) {
-				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", gameName));
+			Game game = GameUtils.getGame(args[1]);
+
+			if (game == null) {
+				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", args[1]));
 				return false;
 			}
 
-			Game game = GameUtils.getGame(gameName);
 			if (!(game.getStatus() == GameStatus.RUNNING || game.getStatus() == GameStatus.WAITING)) {
 				sendMessage(sender, RageMode.getLang().get("commands.listplayers.game-not-running"));
 				return false;
@@ -75,20 +71,24 @@ public class listplayers implements ICommand {
 
 			if (!game.getPlayers().isEmpty()) {
 				StringBuilder sb = new StringBuilder();
+
 				for (PlayerManager pm : game.getPlayers()) {
-					sb.append("&7-&6 " + pm.getPlayer().getName() + "&a - " + gameName);
+					sb.append("&7-&6 " + pm.getPlayer().getName() + "&a - " + args[1]);
 				}
 
-				sendMessage(sender, "&7Players:\n" + sb.toString(), true);
+				sendMessage(sender, "&7Players:\n" + sb.toString());
 			}
 
-			if (!game.getSpectatorPlayers().isEmpty()) {
+			java.util.Set<PlayerManager> specs = game.getSpectatorPlayers();
+
+			if (!specs.isEmpty()) {
 				StringBuilder sb = new StringBuilder();
-				for (PlayerManager spec : game.getSpectatorPlayers()) {
+
+				for (PlayerManager spec : specs) {
 					sb.append("\n&7-&6 " + spec.getPlayer().getName() + "&a - " + spec.getGameName());
 				}
 
-				sendMessage(sender, "&7Spectator players:\n" + sb.toString(), true);
+				sendMessage(sender, "&7Spectator players:\n" + sb.toString());
 			}
 		}
 

@@ -1,94 +1,48 @@
 package hu.montlikadani.ragemode.utils;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.bukkit.Material;
 
-@SuppressWarnings("serial")
+import com.google.common.collect.ImmutableSet;
+
 public final class MaterialUtil {
 
-	private static final Set<Material> WALL_SIGNS = new HashSet<Material>() {
-		{
-			add(getMat("WALL_SIGN"));
-			add(getMat("ACACIA_WALL_SIGN"));
-			add(getMat("BIRCH_WALL_SIGN"));
-			add(getMat("DARK_OAK_WALL_SIGN"));
-			add(getMat("JUNGLE_WALL_SIGN"));
-			add(getMat("OAK_WALL_SIGN"));
-			add(getMat("SPRUCE_WALL_SIGN"));
-			add(getMat("WARPED_WALL_SIGN"));
-			add(getMat("CRIMSON_WALL_SIGN"));
-		}
-	};
-	private static final Set<Material> PRESSURE_PLATES = new HashSet<Material>() {
-		{
-			add(getMat("WOODEN_PRESSURE_PLATE"));
-			add(getMat("OAK_PRESSURE_PLATE"));
-			add(getMat("ACACIA_PRESSURE_PLATE"));
-			add(getMat("BIRCH_PRESSURE_PLATE"));
-			add(getMat("DARK_OAK_PRESSURE_PLATE"));
-			add(getMat("JUNGLE_PRESSURE_PLATE"));
-			add(getMat("SPRUCE_PRESSURE_PLATE"));
-			add(getMat("WARPED_PRESSURE_PLATE"));
-			add(getMat("POLISHED_BLACKSTONE_PRESSURE_PLATE"));
-			add(getMat("CRIMSON_PRESSURE_PLATE"));
-			add(getMat("STONE_PRESSURE_PLATE"));
-			add(getMat("HEAVY_WEIGHTED_PRESSURE_PLATE"));
-			add(getMat("LIGHT_WEIGHTED_PRESSURE_PLATE"));
-		}
-	};
-	private static final Set<Material> TRAPDOORS = new HashSet<Material>() {
-		{
-			add(getMat("TRAP_DOOR"));
-			add(getMat("IRON_TRAPDOOR"));
-			add(getMat("OAK_TRAPDOOR"));
-			add(getMat("ACACIA_TRAPDOOR"));
-			add(getMat("BIRCH_TRAPDOOR"));
-			add(getMat("DARK_OAK_TRAPDOOR"));
-			add(getMat("JUNGLE_TRAPDOOR"));
-			add(getMat("SPRUCE_TRAPDOOR"));
-			add(getMat("WARPED_TRAPDOOR"));
-			add(getMat("CRIMSON_TRAPDOOR"));
-		}
-	};
-	private static final Set<Material> BUTTONS = new HashSet<Material>() {
-		{
-			add(getMat("WOODEN_BUTTON"));
-			add(getMat("STONE_BUTTON"));
-			add(getMat("OAK_BUTTON"));
-			add(getMat("ACACIA_BUTTON"));
-			add(getMat("BIRCH_BUTTON"));
-			add(getMat("DARK_OAK_BUTTON"));
-			add(getMat("JUNGLE_BUTTON"));
-			add(getMat("SPRUCE_BUTTON"));
-			add(getMat("WARPED_BUTTON"));
-			add(getMat("POLISHED_BLACKSTONE_BUTTON"));
-			add(getMat("CRIMSON_BUTTON"));
-		}
-	};
-	private static final Set<Material> DOORS = new HashSet<Material>() {
-		{
-			add(getMat("WOODEN_DOOR"));
-			add(getMat("ACACIA_DOOR"));
-			add(getMat("BIRCH_DOOR"));
-			add(getMat("DARK_OAK_DOOR"));
-			add(getMat("JUNGLE_DOOR"));
-			add(getMat("SPRUCE_DOOR"));
-			add(getMat("WOOD_DOOR"));
-			add(getMat("OAK_DOOR"));
-			add(getMat("WARPED_DOOR"));
-			add(getMat("CRIMSON_DOOR"));
-		}
-	};
-	private static final Set<Material> COMPARATORS = new HashSet<Material>() {
-		{
-			add(getMat("REDSTONE_COMPARATOR"));
-			add(getMat("REDSTONE_COMPARATOR_ON"));
-			add(getMat("REDSTONE_COMPARATOR_OFF"));
-			add(getMat("COMPARATOR"));
-		}
-	};
+	private static final ImmutableSet<Material> WALL_SIGNS = ImmutableSet.<Material>builder()
+			.add(getMat("WALL_SIGN"), getMat("ACACIA_WALL_SIGN"), getMat("BIRCH_WALL_SIGN"),
+					getMat("DARK_OAK_WALL_SIGN"), getMat("JUNGLE_WALL_SIGN"), getMat("OAK_WALL_SIGN"),
+					getMat("SPRUCE_WALL_SIGN"), getMat("WARPED_WALL_SIGN"), getMat("CRIMSON_WALL_SIGN"))
+			.build();
+
+	private static final ImmutableSet<Material> PRESSURE_PLATES = ImmutableSet.<Material>builder()
+			.add(getMat("WOODEN_PRESSURE_PLATE"), getMat("OAK_PRESSURE_PLATE"), getMat("ACACIA_PRESSURE_PLATE"),
+					getMat("BIRCH_PRESSURE_PLATE"), getMat("DARK_OAK_PRESSURE_PLATE"), getMat("JUNGLE_PRESSURE_PLATE"),
+					getMat("SPRUCE_PRESSURE_PLATE"), getMat("WARPED_PRESSURE_PLATE"),
+					getMat("POLISHED_BLACKSTONE_PRESSURE_PLATE"), getMat("CRIMSON_PRESSURE_PLATE"),
+					getMat("STONE_PRESSURE_PLATE"), getMat("HEAVY_WEIGHTED_PRESSURE_PLATE"),
+					getMat("LIGHT_WEIGHTED_PRESSURE_PLATE"))
+			.build();
+
+	private static final ImmutableSet<Material> TRAPDOORS = ImmutableSet.<Material>builder()
+			.add(getMat("TRAP_DOOR"), getMat("IRON_TRAPDOOR"), getMat("OAK_TRAPDOOR"), getMat("ACACIA_TRAPDOOR"),
+					getMat("BIRCH_TRAPDOOR"), getMat("DARK_OAK_TRAPDOOR"), getMat("JUNGLE_TRAPDOOR"),
+					getMat("SPRUCE_TRAPDOOR"), getMat("WARPED_TRAPDOOR"), getMat("CRIMSON_TRAPDOOR"))
+			.build();
+
+	private static final ImmutableSet<Material> BUTTONS = ImmutableSet.<Material>builder()
+			.add(getMat("WOODEN_BUTTON"), getMat("STONE_BUTTON"), getMat("OAK_BUTTON"), getMat("ACACIA_BUTTON"),
+					getMat("BIRCH_BUTTON"), getMat("DARK_OAK_BUTTON"), getMat("JUNGLE_BUTTON"), getMat("SPRUCE_BUTTON"),
+					getMat("WARPED_BUTTON"), getMat("POLISHED_BLACKSTONE_BUTTON"), getMat("CRIMSON_BUTTON"))
+			.build();
+
+	private static final ImmutableSet<Material> DOORS = ImmutableSet.<Material>builder()
+			.add(getMat("WOODEN_DOOR"), getMat("ACACIA_DOOR"), getMat("BIRCH_DOOR"), getMat("DARK_OAK_DOOR"),
+					getMat("JUNGLE_DOOR"), getMat("SPRUCE_DOOR"), getMat("WOOD_DOOR"), getMat("OAK_DOOR"),
+					getMat("WARPED_DOOR"), getMat("CRIMSON_DOOR"))
+			.build();
+
+	private static final ImmutableSet<Material> COMPARATORS = ImmutableSet.<Material>builder()
+			.add(getMat("REDSTONE_COMPARATOR"), getMat("REDSTONE_COMPARATOR_ON"), getMat("REDSTONE_COMPARATOR_OFF"),
+					getMat("COMPARATOR"))
+			.build();
 
 	public static boolean isWallSign(Material mat) {
 		return WALL_SIGNS.contains(mat);
@@ -115,6 +69,7 @@ public final class MaterialUtil {
 	}
 
 	private static Material getMat(String name) {
-		return Material.matchMaterial(name);
+		Material mat = Material.getMaterial(name);
+		return mat == null ? Material.AIR : mat;
 	}
 }

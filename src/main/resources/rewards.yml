@@ -3,19 +3,16 @@ enabled: true
 rewards:
   end-game:
     winner:
-      cash: 15.0
       commands:
       - "console: tell %player% &aWe waiting you to the next game!"
-
-      messages:
-      #- "&aYou have won this game&c %game%&a!"
-      #- "&eYour reward:&7 %reward%"
+      - "eo give %player% 15"
 
       items:
         # Any section name are accepted.
         stone:
-          type: COBBLESTONE
+          type: cobblestone
           amount: 128
+
         bow:
          type: BOW
          amount: 1
@@ -26,33 +23,37 @@ rewards:
          - "&4Killer bow!!"
          - "&7One shot..."
          enchants:
-         - ARROW_INFINITE:1 #1.13+: infinity:1
-         - ARROW_DAMAGE:2 #1.13+: power:2
+         - ARROW_INFINITE:1
+         - arrow_damage:2
+
         '3':
           type: GRASS
           amount: 64
+
     players:
-      cash: 2.0
       commands:
       - "tell %player% &2We waiting you to the next game!"
-
-      #messages:
-      #- "&eYour reward:&7 %reward%"
+      - "eco give %player% 2"
 
       items:
         granite:
           type: STONE
           amount: 5
+
   in-game:
     # https://github.com/montlikadani/RageMode/wiki/Configuring-rewards#what-means-the-in-game-section
     run-commands:
-    - "chance:3-death:console:msg %player% &aNext time do not die ;)"
-    - "join:console:msg %player% &aWe wish you a good game!"
+      death:
+      - "chance:3_console:msg %player% &aNext time do not die ;)"
+      join:
+      - "console:msg %player% &aWe wish you a good game!"
 
     # Various bonuses which will execute in the game.
     bonuses:
+
       # When a player kills someone
       kill-bonuses:
+
         # The list of bonuses
         # If you don't know how to modify this list, follow this:
         # https://github.com/montlikadani/RageMode/wiki/Using-bonuses

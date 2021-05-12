@@ -7,7 +7,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
+import hu.montlikadani.ragemode.RageMode;
+
 public interface IShop extends InventoryHolder {
+
+	static final RageMode RM = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 
 	List<ShopItem> getItems();
 

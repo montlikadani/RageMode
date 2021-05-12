@@ -7,18 +7,19 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.PlayerWinEvent;
+import hu.montlikadani.ragemode.area.GameArea;
 import hu.montlikadani.ragemode.area.GameAreaManager;
-import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.items.GameItems;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.utils.Debug;
 import hu.montlikadani.ragemode.utils.Utils;
@@ -29,22 +30,22 @@ public class RageScores {
 
 	private static final Map<UUID, PlayerPoints> PLAYERPOINTS = new HashMap<>();
 
+	private static final RageMode PLUGIN = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
+
 	public static void addPointsToPlayer(Player killer, LivingEntity entity) {
 		getPlayerPoints(killer.getUniqueId()).ifPresent(killerPoints -> {
-			int currentZombieKills = killerPoints.getZombieKills();
-			int newZombieKills = currentZombieKills + 1;
-			killerPoints.setZombieKills(newZombieKills);
+			killerPoints.setZombieKills(killerPoints.getZombieKills() + 1);
 
 			int totalPoints = addPoints(killer, 1, true);
 
-			if (!PlayerManager.DEATHMESSAGESTOGGLE.getOrDefault(killer.getUniqueId(), false)
+			if (!PlayerManager.DEATH_MESSAGES_TOGGLE.getOrDefault(killer.getUniqueId(), false)
 					&& java.util.concurrent.ThreadLocalRandom.current().nextInt(0, 100) < 25) {
-				String msg = RageMode.getLang().get("game.broadcast.zombie-kill", "%entity%", entity.getName(),
-						"%killer%", killer.getName(), "%remainEntities%",
-						GameAreaManager.inArea(killer.getLocation())
-								? GameAreaManager.getAreaByLocation(killer.getLocation()).get().getEntities().size()
-								: 0);
-				GameUtils.broadcastToGame(GameUtils.getGameByPlayer(killer), msg);
+				Optional<GameArea> area = GameAreaManager.getAreaByLocation(killer.getLocation());
+
+				GameUtils.broadcastToGame(GameUtils.getGameByPlayer(killer),
+						RageMode.getLang().get("game.broadcast.zombie-kill", "%entity%", entity.getName(), "%killer%",
+								killer.getName(), "%remainEntities%",
+								area.isPresent() ? area.get().getEntities().size() : 0));
 
 				sendMessage(killer, RageMode.getLang().get("game.message.zombie-kill", "%entity%", entity.getName(),
 						"%points%", "+1"));
@@ -53,9 +54,8 @@ public class RageScores {
 		});
 	}
 
-	public static void addPointsToPlayer(Player killer, Player victim, KilledWith killCause) {
-		UUID killerUUID = killer.getUniqueId(),
-				victimUUID = victim.getUniqueId();
+	public static void addPointsToPlayer(Player killer, Player victim, GameItems killCause) {
+		UUID killerUUID = killer.getUniqueId(), victimUUID = victim.getUniqueId();
 
 		// Check if player not killed itself
 		if (killerUUID.equals(victimUUID)) {
@@ -67,24 +67,17 @@ public class RageScores {
 				return ph;
 			});
 
-			int pointLoss = ConfigValues.getSuicide();
-			if (pointLoss != 0) {
-				pointsHolder.addPoints(pointLoss);
-				/*if ((pointsHolder.getPoints() + pointLoss) < 0) {
-					killer.sendMessage(RageMode.getLang().get("game.no-enough-points"));
-				}*/
+			if (ConfigValues.getSuicide() != 0) {
+				pointsHolder.addPoints(ConfigValues.getSuicide());
 			}
 
 			pointsHolder.setDeaths(pointsHolder.getDeaths() + 1);
 			return;
 		}
 
-		PlayerPoints killerPoints = null,
-				victimPoints = null;
+		PlayerPoints killerPoints = null, victimPoints = null;
 
-		String killerMessage = "",
-				victimMsg = "",
-				killerMsg2 = "";
+		String killerMessage = "", victimMsg = "", killerMsg2 = "";
 
 		int totalPoints = 0;
 
@@ -94,12 +87,12 @@ public class RageScores {
 			totalPoints = addPoints(killer, bowPoints, true);
 			addPoints(victim, 0, false);
 
-			killerPoints = getPlayerPoints(killerUUID).get();
+			killerPoints = PLAYERPOINTS.get(killerUUID);
 			int oldDirectArrowKills = killerPoints.getDirectArrowKills();
 			int newDirectArrowKills = oldDirectArrowKills + 1;
 			killerPoints.setDirectArrowKills(newDirectArrowKills);
 
-			victimPoints = getPlayerPoints(victimUUID).get();
+			victimPoints = PLAYERPOINTS.get(victimUUID);
 			int oldDirectArrowDeaths = victimPoints.getDirectArrowDeaths();
 			int newDirectArrowDeaths = oldDirectArrowDeaths + 1;
 			victimPoints.setDirectArrowDeaths(newDirectArrowDeaths);
@@ -118,12 +111,12 @@ public class RageScores {
 			totalPoints = addPoints(killer, axePoints, true);
 			addPoints(victim, axeMinusPoints, false);
 
-			killerPoints = getPlayerPoints(killerUUID).get();
+			killerPoints = PLAYERPOINTS.get(killerUUID);
 			int oldAxeKills = killerPoints.getAxeKills();
 			int newAxeKills = oldAxeKills + 1;
 			killerPoints.setAxeKills(newAxeKills);
 
-			victimPoints = getPlayerPoints(victimUUID).get();
+			victimPoints = PLAYERPOINTS.get(victimUUID);
 			int oldAxeDeaths = victimPoints.getAxeDeaths();
 			int newAxeDeaths = oldAxeDeaths + 1;
 			victimPoints.setAxeDeaths(newAxeDeaths);
@@ -141,12 +134,12 @@ public class RageScores {
 			totalPoints = addPoints(killer, knifePoints, true);
 			addPoints(victim, 0, false);
 
-			killerPoints = getPlayerPoints(killerUUID).get();
+			killerPoints = PLAYERPOINTS.get(killerUUID);
 			int oldKnifeKills = killerPoints.getKnifeKills();
 			int newKnifeKills = oldKnifeKills + 1;
 			killerPoints.setKnifeKills(newKnifeKills);
 
-			victimPoints = getPlayerPoints(victimUUID).get();
+			victimPoints = PLAYERPOINTS.get(victimUUID);
 			int oldKnifeDeaths = victimPoints.getKnifeDeaths();
 			int newKnifeDeaths = oldKnifeDeaths + 1;
 			victimPoints.setKnifeDeaths(newKnifeDeaths);
@@ -164,12 +157,12 @@ public class RageScores {
 			totalPoints = addPoints(killer, explosionPoints, true);
 			addPoints(victim, 0, false);
 
-			killerPoints = getPlayerPoints(killerUUID).get();
+			killerPoints = PLAYERPOINTS.get(killerUUID);
 			int oldExplosionKills = killerPoints.getExplosionKills();
 			int newExplosionKills = oldExplosionKills + 1;
 			killerPoints.setExplosionKills(newExplosionKills);
 
-			victimPoints = getPlayerPoints(victimUUID).get();
+			victimPoints = PLAYERPOINTS.get(victimUUID);
 			int oldExplosionDeaths = victimPoints.getExplosionDeaths();
 			int newExplosionDeaths = oldExplosionDeaths + 1;
 			victimPoints.setExplosionDeaths(newExplosionDeaths);
@@ -187,7 +180,7 @@ public class RageScores {
 			totalPoints = addPoints(killer, grenadePoints, true);
 			addPoints(victim, 0, false);
 
-			killerPoints = getPlayerPoints(killerUUID).orElse(null);
+			killerPoints = PLAYERPOINTS.get(killerUUID);
 
 			killerMessage = RageMode.getLang().get("game.message.grenade-kill", "%victim%", victim.getName(),
 					"%points%", "+" + grenadePoints);
@@ -220,32 +213,17 @@ public class RageScores {
 	}
 
 	/**
-	 * Removes the given player cached points statistic.
+	 * Returns the given player points if present.
 	 * 
-	 * @param playerUUID {@link UUID}
-	 */
-	public static void removePointsForPlayer(UUID playerUUID) {
-		Validate.notNull(playerUUID, "Player UUID can't be null!");
-
-		if (PLAYERPOINTS.containsKey(playerUUID)) {
-			PLAYERPOINTS.remove(playerUUID);
-		}
-	}
-
-	/**
-	 * Gets the given player points
-	 * 
-	 * @param playerUUID UUID of player
-	 * @return {@link PlayerPoints} if present
+	 * @param playerUUID {@link UUID} of player
+	 * @return {@link PlayerPoints} if present, otherwise {@link Optional#empty()}
 	 */
 	public static Optional<PlayerPoints> getPlayerPoints(UUID playerUUID) {
-		Validate.notNull(playerUUID, "Player UUID can't be null!");
-
 		return Optional.ofNullable(PLAYERPOINTS.get(playerUUID));
 	}
 
 	/**
-	 * Gets the map of cached players containing {@link PlayerPoints}
+	 * Returns the cached players in map containing {@link PlayerPoints}
 	 * 
 	 * @return the map of cached players
 	 */
@@ -255,18 +233,17 @@ public class RageScores {
 
 	private static int addPoints(Player player, int points, boolean killer) {
 		UUID playerUUID = player.getUniqueId();
-		int totalKills = 0,
-				totalDeaths = 0,
-				currentStreak = 0,
-				longestStreak = 0;
+		int totalKills = 0, totalDeaths = 0, currentStreak = 0, longestStreak = 0;
 
-		if (PLAYERPOINTS.containsKey(playerUUID)) {
-			PlayerPoints pointsHolder = getPlayerPoints(playerUUID).get();
+		PlayerPoints pointsHolder = PLAYERPOINTS.get(playerUUID);
+
+		if (pointsHolder != null) {
 			int oldKills = pointsHolder.getKills();
 			int oldDeaths = pointsHolder.getDeaths();
 
 			totalKills = oldKills;
 			totalDeaths = oldDeaths;
+
 			if (killer) {
 				totalKills++;
 				currentStreak = pointsHolder.getCurrentStreak() + 1;
@@ -274,6 +251,7 @@ public class RageScores {
 				totalDeaths++;
 				currentStreak = 0;
 			}
+
 			longestStreak = (currentStreak > pointsHolder.getLongestStreak()) ? currentStreak
 					: pointsHolder.getLongestStreak();
 
@@ -281,8 +259,7 @@ public class RageScores {
 			pointsHolder.setDeaths(totalDeaths);
 			pointsHolder.setCurrentStreak(currentStreak);
 			pointsHolder.setLongestStreak(longestStreak);
-			pointsHolder.addPoints(
-					killer ? (points + hu.montlikadani.ragemode.gameLogic.Bonus.getPointBonus()) : points);
+			pointsHolder.addPoints(killer ? points + PLUGIN.getRewardManager().getPointBonus() : points);
 
 			return pointsHolder.getPoints();
 		}
@@ -296,12 +273,13 @@ public class RageScores {
 			currentStreak = 0;
 		}
 
-		PlayerPoints pointsHolder = new PlayerPoints(playerUUID);
+		pointsHolder = new PlayerPoints(playerUUID);
 		pointsHolder.setPoints(points);
 		pointsHolder.setKills(totalKills);
 		pointsHolder.setDeaths(totalDeaths);
 		pointsHolder.setCurrentStreak(currentStreak);
 		pointsHolder.setLongestStreak(longestStreak);
+
 		PLAYERPOINTS.put(playerUUID, pointsHolder);
 		return pointsHolder.getPoints();
 	}
@@ -309,16 +287,16 @@ public class RageScores {
 	public static UUID calculateWinner(Game game, Set<PlayerManager> players) {
 		game.setStatus(GameStatus.WINNER_CALCULATING);
 
-		UUID highest = UUID.randomUUID(),
-				resultPlayer = null,
-				goy = highest;
+		UUID highest = UUID.randomUUID(), resultPlayer = null, goy = highest;
 		int highestPoints = 0;
+
 		for (PlayerManager pm : players) {
-			UUID uuid = pm.getPlayer().getUniqueId();
-			if (getPlayerPoints(uuid).isPresent() && getPlayerPoints(uuid).get().getPoints() > highestPoints) {
-				highest = uuid;
-				highestPoints = getPlayerPoints(uuid).get().getPoints();
-				resultPlayer = uuid;
+			PlayerPoints pp = PLAYERPOINTS.get(pm.getUniqueId());
+
+			if (pp != null && pp.getPoints() > highestPoints) {
+				highest = pm.getUniqueId();
+				highestPoints = pp.getPoints();
+				resultPlayer = pm.getUniqueId();
 			}
 		}
 

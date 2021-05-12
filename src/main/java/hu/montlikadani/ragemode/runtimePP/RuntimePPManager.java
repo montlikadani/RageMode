@@ -7,7 +7,7 @@ import java.util.UUID;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 
-public class RuntimePPManager {
+public final class RuntimePPManager {
 
 	private static final List<PlayerPoints> RUNTIMEPPLIST = new ArrayList<>();
 
@@ -17,19 +17,22 @@ public class RuntimePPManager {
 
 	public static void loadPPListFromDatabase() {
 		RUNTIMEPPLIST.clear();
-		RUNTIMEPPLIST.addAll(RageMode.getInstance().getDatabase().getAllPlayerStatistics());
+		RUNTIMEPPLIST.addAll(
+				org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class).getDatabase().getAllPlayerStatistics());
 	}
 
 	/**
-	 * Get the points database for the given player uuid.
+	 * Returns the player points instance of a specific uuid.
 	 * 
-	 * @param uuid Player uuid
-	 * @return {@link PlayerPoints} the player current stats
+	 * @param uuid a valid uuid
+	 * @return the instance of {@link PlayerPoints}, otherwise <code>false</code>
 	 */
 	public static PlayerPoints getPPForPlayer(UUID uuid) {
-		for (PlayerPoints pp : RUNTIMEPPLIST) {
-			if (pp.getUUID().equals(uuid)) {
-				return pp;
+		if (uuid != null) {
+			for (PlayerPoints pp : RUNTIMEPPLIST) {
+				if (pp.getUUID().equals(uuid)) {
+					return pp;
+				}
 			}
 		}
 
@@ -41,8 +44,8 @@ public class RuntimePPManager {
 	 * 
 	 * @param uuid   Player uuid
 	 * @param points points
-	 * @return <code>true</code> if the player is in the database and have enough
-	 *         points, otherwise <code>false</code>
+	 * @return <code>true</code> if the given player with uuid have enough points,
+	 *         otherwise <code>false</code>
 	 */
 	public static boolean hasPoints(UUID uuid, int points) {
 		PlayerPoints pp = getPPForPlayer(uuid);
@@ -51,14 +54,20 @@ public class RuntimePPManager {
 
 	/**
 	 * Attempts to update the given player statistic to a new one if the given
-	 * parameter not null.
+	 * parameter is not null.
 	 * 
 	 * @param pp {@link PlayerPoints}
 	 */
-	public synchronized static void updatePlayerEntry(PlayerPoints pp) {
+	public static void updatePlayerEntry(PlayerPoints pp) {
+		if (pp == null) {
+			return;
+		}
+
 		PlayerPoints oldPP = getPPForPlayer(pp.getUUID());
+
 		if (oldPP == null) {
 			PlayerPoints newPP = new PlayerPoints(pp.getUUID());
+
 			newPP.setAxeDeaths(pp.getAxeDeaths());
 			newPP.setAxeKills(pp.getAxeKills());
 			newPP.setCurrentStreak(pp.getCurrentStreak());
@@ -74,7 +83,9 @@ public class RuntimePPManager {
 			newPP.setZombieKills(pp.getZombieKills());
 			newPP.setPoints(pp.getPoints());
 
-			newPP.setWins(pp.isWinner() ? 1 : 0);
+			if (pp.isWinner()) {
+				newPP.setWins(1);
+			}
 
 			if (pp.getDeaths() != 0)
 				newPP.setKD(((double) (pp.getKills())) / ((double) (pp.getDeaths())));
@@ -90,8 +101,10 @@ public class RuntimePPManager {
 		int i = 0;
 		while (i < RUNTIMEPPLIST.size()) {
 			PlayerPoints plp = RUNTIMEPPLIST.get(i);
+
 			if (plp != null && plp.getUUID().equals(pp.getUUID())) {
 				PlayerPoints newPP = new PlayerPoints(pp.getUUID());
+
 				newPP.setAxeDeaths(oldPP.getAxeDeaths() + pp.getAxeDeaths());
 				newPP.setAxeKills(oldPP.getAxeKills() + pp.getAxeKills());
 				newPP.setCurrentStreak(oldPP.getCurrentStreak() + pp.getCurrentStreak());

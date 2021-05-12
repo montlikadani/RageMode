@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.API.event;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.jetbrains.annotations.NotNull;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
 
@@ -15,6 +16,7 @@ public class RMGameJoinAttemptEvent extends GameEvent implements Cancellable {
 
 	public RMGameJoinAttemptEvent(Game game, Player player) {
 		super(game);
+
 		this.player = player;
 	}
 
@@ -23,6 +25,7 @@ public class RMGameJoinAttemptEvent extends GameEvent implements Cancellable {
 	 * 
 	 * @return {@link Player}
 	 */
+	@NotNull
 	public Player getPlayer() {
 		return player;
 	}

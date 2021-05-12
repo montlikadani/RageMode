@@ -1,6 +1,7 @@
 package hu.montlikadani.ragemode.API.event;
 
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
 
@@ -13,6 +14,7 @@ public class SpectatorJoinToGameEvent extends GameEvent {
 
 	public SpectatorJoinToGameEvent(Game game, Player player) {
 		super(game);
+
 		this.player = player;
 	}
 
@@ -21,6 +23,7 @@ public class SpectatorJoinToGameEvent extends GameEvent {
 	 * 
 	 * @return {@link Player}
 	 */
+	@NotNull
 	public Player getPlayer() {
 		return player;
 	}

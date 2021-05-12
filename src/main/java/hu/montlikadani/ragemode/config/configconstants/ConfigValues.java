@@ -1,50 +1,64 @@
-package hu.montlikadani.ragemode.config;
+package hu.montlikadani.ragemode.config.configconstants;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.utils.ServerSoftwareType;
-import hu.montlikadani.ragemode.utils.ServerVersion.Version;
+import org.bukkit.Material;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
 
-/**
- * @author montlikadani
- */
+import hu.montlikadani.ragemode.config.CommentedConfig;
+import hu.montlikadani.ragemode.signs.SignBackgrounds;
+import hu.montlikadani.ragemode.utils.ServerVersion;
+import hu.montlikadani.ragemode.utils.Utils;
+
 public class ConfigValues {
 
 	public static String databaseType;
 
-	private static String lang, hubName, selectionItem, databaseTablePrefix, username, password, database, host, port,
-			encoding, sqlFileName, signGameRunning, signGameWaiting, signGameFull, signGameLocked, signBackgrType,
-			titleJoinGame, subtitleJoinGame, joinTitleTime, lobbyTitle, subtitleLobby, lobbyTitleTime, wonTitle,
-			wonsubtitle, wonTitleTime, youwonTitle, youwonsubtitle, youwonTitleTime, tabPrefix, tabSuffix, sbTitle,
+	private static String lang, hubName, databaseTablePrefix, username, password, database, host, port, encoding,
+			sqlFileName, signGameRunning, signGameWaiting, signGameFull, signGameLocked, tabPlayerListName, sbTitle,
 			chatFormat;
 
 	private static boolean developerMode, checkForUpdates, downloadUpdates, logConsole, savePlayerData, requireEmptyInv,
-			bungee, autoReconnect, useSSL, unicode, certificate, signsEnable, enableLobbyTitle, spectatorEnable,
-			chatEnableinLobby, playerLevelAsTimeCounter, playersCanJoinRandomToRunningGames, perJoinPermissions,
-			damagePlayerFall, hidePlayerNameTag, cancelRedstoneActivating, cancelDoorUse, useGrenadeTrails,
-			useArrowTrails, enableChatInGame, kickRandomPlayerIfJoinsVipToFullGame, switchGMForPlayers,
-			disableAllCommandsInGameFreeze, enableChatAfterEnd, tabFormatEnable, tabEnable, scoreboardEnable,
-			enableChatFormat, restartServer, stopServer, rejoinDelayEnabled, rememberRejoinDelay, freezePlayers,
-			waitForNextSpawnAfterZombiesAreDead, notifySpectatorsToLeave, preventZombiesMovingOutsideOfArea = false;
+			bungee, autoReconnect, useSSL, unicode, certificate, signsEnable, spectatorEnable, chatEnableinLobby,
+			playerLevelAsTimeCounter, playersCanJoinRandomToRunningGames, perJoinPermissions, damagePlayerFall,
+			hidePlayerNameTag, cancelRedstoneActivating, cancelDoorUse, useGrenadeTrails, useArrowTrails,
+			enableChatInGame, kickRandomPlayerIfJoinsVipToFullGame, switchGMForPlayers, disableAllCommandsInGameFreeze,
+			enableChatAfterEnd, tabEnable, scoreboardEnable, enableChatFormat, restartServer, stopServer,
+			rejoinDelayEnabled, rememberRejoinDelay, freezePlayers, waitForNextSpawnAfterZombiesAreDead,
+			notifySpectatorsToLeave;
 
 	private static int gameFreezeTime, bowKill, axeKill, axeDeath, knifeKill, explosionKill, suicide, grenadeKill,
 			respawnProtectTime, rejoinDelayHour, rejoinDelayMinute, rejoinDelaySecond, delayBeforeFirstZombiesSpawn,
 			delayAfterNextZombiesSpawning, playerLives, timeBetweenMessageSending;
 
-	private static List<String> signTextLines, messageActions, allowedSpectatorCommands, allowedInGameCommands,
-			executeCommandsOnPlayerLeaveWhilePlaying;
+	private static List<String> signTextLines, allowedSpectatorCommands, allowedInGameCommands, scoreboardContent,
+			tabListHeader, tabListFooter;
+
+	private static final List<MessageAction> messageActions = new ArrayList<>();
 
 	private static List<Integer> lobbyBeginTimes, lobbyTitleBeginTimes, gameEndBroadcast;
 
+	private static final Map<TitleSettings.TitleType, TitleSettings> titleSettings = new HashMap<>();
+
+	private static SignBackgrounds signBackground;
+
+	private static Material selectionItem;
+
 	public static void loadValues(CommentedConfig f) {
+		titleSettings.clear();
+		messageActions.clear();
+
 		f.copyDefaults(true);
 
 		f.addComment("developerMode", "This will allows you for example to force start a game with only 1 player.");
 		f.addComment("language", "Default language. Example: en, hu, de etc.",
 				"You can find all supported languages on: https://github.com/montlikadani/RageMode/wiki/Languages");
-		f.addComment("log-console", "Logging console messages, such as error description");
+		f.addComment("log-console", "Logging console messages, like useful debug messages");
 		f.addComment("check-for-updates", "Check for updates on plugin startup.");
 		f.addComment("download-updates", "Download new updates to releases folder",
 				"This only works if the \"check-update\" is true.");
@@ -52,20 +66,17 @@ public class ConfigValues {
 				"This saves the player data, such as inventory, effects etc. to a file.",
 				"This can be useful for a random server shutdown.",
 				"If this false and \"require-empty-inventory-to-join\" also false then the players ",
-				"loses his items from inventory.",
-				"If this is false, we still need some data to save that will not cause any problems ",
-				"at the end of the game.",
-				"This will be ignored and the data not saved when the bungee-mode is enabled.");
+				"loses every items from inventory.",
+				"If this is false, player data will not be stored in the file but some data will still be saved.");
 		f.addComment("require-empty-inventory-to-join", "Require empty inventory to join to game?",
 				"If this false and \"save-player-datas-to-file\" also false then the players ",
-				"loses his items from inventory.");
-		f.addComment("selection-item", "Used to select the game area to be protected zone.");
+				"loses every items from inventory.");
+		f.addComment("selection-item", "Used to select the game area to be a protected area.");
 		f.addComment("bungee", "Hook into bungee");
 		f.addComment("bungee.hub-name",
 				"Bungeecord server name when the game end and teleport players to this server.");
 		f.addComment("database", "The database where to save plugin data.");
-		f.addComment("database.type", "Database types: yaml, mysql, sqlite",
-				"To database where the player data will be saved.");
+		f.addComment("database.type", "Database types: yaml, mysql, sqlite");
 		f.addComment("database.table-prefix", "The database table name", "This is only for sql databases.");
 		f.addComment("database.SQL", "SQLite database settings");
 		f.addComment("database.MySQL", "MySQL database settings");
@@ -75,30 +86,30 @@ public class ConfigValues {
 				"Use %game%, %current-players%, %max-players%, %running% placeholder.");
 		f.addComment("signs.background", "Defines a background of the sign.");
 		f.addComment("signs.background.type", "Possible types: glass, wool, terracotta (clay), none");
-		f.addComment("message-actions", "Actionbar/Bossbar message when started the game and sends to player.",
-				"This will be ignored, when the actionbar/bossbar option is disabled, or", "this list is empty.",
-				"Usage found on https://github.com/montlikadani/RageMode/wiki/Actionbar-&-Bossbar-actions");
+		f.addComment("message-actions",
+				"Message actions to send some actionbar or bossbar messages or execute some commands to players.",
+				"Documentation: https://github.com/montlikadani/RageMode/wiki/Actionbar-&-Bossbar-actions");
 		f.addComment("titles", "Title texts");
-		f.addComment("titles.join-game", "When a player join to the game, and send title for him.");
+		f.addComment("titles.join-game", "When a player joins to a game it will send a title.");
 		f.addComment("titles.join-game.time", "Title time settings (in ticks)",
-				"First number (fade-in): The time it takes for the title to fade into the screen.",
-				"Second number (stay): The time it takes for the title to stay on the screen.",
-				"Third number (fade-out): The time it takes for the title to fade out of the screen.");
-		f.addComment("titles.lobby-waiting", "Lobby waiting timer title.");
+				"(fade-in) The time it takes for the title to fade into the screen.",
+				"(stay) The time it takes for the title to stay on the screen.",
+				"(fade-out) The time it takes for the title to fade out of the screen.");
+		f.addComment("titles.lobby-waiting", "Lobby waiting timer title");
 		f.addComment("titles.lobby-waiting.begin-times",
-				"Intervals when the lobby timer reaches e.g. 5 intervals, then send it on the screen.");
+				"Intervals when the lobby timer reaches e.g. 5 interval it will send on the screen.");
 		f.addComment("titles.player-won",
-				"When a player won a game, and send title for all players that in the game currently.");
-		f.addComment("titles.you-won", "When you won a game, and send title for him that in the game currently.");
+				"When a player won a game it will send a title for all players that in the game currently.");
+		f.addComment("titles.you-won", "When you won a game it will send a title");
 		f.addComment("spectator",
-				"Enables the spectator mode in the already running game, to see what happens in that game.");
+				"Enables the spectator mode in the already running game, to see what happens specific game.");
 		f.addComment("spectator.notify-spectators-to-leave", "Notify spectators in message, how to leave the game.");
 		f.addComment("spectator.notify-spectators-to-leave.time-between-message-sending",
 				"Time in seconds between sending notify message.");
 		f.addComment("spectator.allowed-commands", "Which spectator commands will be allowed to use in-game?");
 		f.addComment("lobby", "Lobby settings");
 		f.addComment("lobby.enable-chat-in-lobby", "Should be enable chat in lobby?",
-				"This ignores with ragemode.bypass.lobby.lockchat permission.");
+				"This option will be ignored with \"ragemode.bypass.lobby.lockchat\" permission");
 		f.addComment("lobby.player-level-as-time-counter",
 				"Does count the player's level with the start time of the game in the lobby?");
 		f.addComment("lobby.begin-times",
@@ -106,7 +117,7 @@ public class ConfigValues {
 		f.addComment("players-can-join-random-to-running-games",
 				"Does the player can join to running games when types /rm joinrandom command to spectate?");
 		f.addComment("per-join-permissions", "Enables per join permissions for joining.",
-				"Use \"ragemode.join.gameName\" permission.");
+				"The permission is \"ragemode.join.gameName\"");
 		f.addComment("game", "Global settings for game.");
 		f.addComment("game.damage-player-fall", "If this false if player has fallen to ground then not damage.");
 		f.addComment("game.respawn-protection", "Respawn protection when player dead and respawned.",
@@ -146,15 +157,13 @@ public class ConfigValues {
 		f.addComment("game.kickRandomPlayerIfJoinsVipToFullGame",
 				"Kicks random player from the game if that game is full, and",
 				"the joining player have permission \"ragemode.vip\".");
-		f.addComment("game.tablist.player-format",
-				"Player prefix/suffix format to show for example the player kills, deaths etc.");
+		f.addComment("game.tablist.player-list-name",
+				"Player list name format to show for example player kills, deaths or just a custom one.",
+				"Leave it empty \"\" to do not set any list name.");
 		f.addComment("game.tablist.list", "Tablist header/footer");
 		f.addComment("game.scoreboard", "Displays the score board on the right screen.");
 		f.addComment("game.chat-format", "Chat formatting");
 		f.addComment("game.allowed-commands", "The in game allowed commands, which the player can use in the game.");
-		f.addComment("game.execute-commands-on-player-left-while-playing",
-				"Execute commands when the player left the game while playing. (Only console commands)",
-				"This is related to the \"Exit from the game\" button on Esc menu.");
 		f.addComment("game-stop", "Stop the server or restart at the end of the game?");
 		f.addComment("rejoin-delay", "Rejoin delay to add how many times a player can join to games.");
 		f.addComment("rejoin-delay.remember-to-database", "Save the currently running delays to the database.",
@@ -171,7 +180,9 @@ public class ConfigValues {
 		logConsole = f.get("log-console", true);
 		savePlayerData = f.get("save-player-datas-to-file", false);
 		requireEmptyInv = f.get("require-empty-inventory-to-join", true);
-		selectionItem = f.get("selection-item", "golden_shovel");
+
+		selectionItem = Material.matchMaterial(f.get("selection-item", "golden_shovel"));
+
 		bungee = f.get("bungee.enable", false);
 		hubName = f.get("bungee.hub-name", "lobby");
 		databaseType = f.get("database.type", "yaml");
@@ -192,23 +203,9 @@ public class ConfigValues {
 		signGameWaiting = f.get("signs.game.waiting", "&cWaiting...");
 		signGameFull = f.get("signs.game.full", "&4FULL");
 		signGameLocked = f.get("signs.game.locked", "&9Locked");
-		signBackgrType = f.get("signs.background.type", "none");
-		titleJoinGame = f.get("titles.join-game.title", "&e%game%");
-		subtitleJoinGame = f.get("titles.join-game.subtitle", "&3by yourname");
-		joinTitleTime = f.get("titles.join-game.time", "20, 50, 20");
-		enableLobbyTitle = f.get("titles.lobby-waiting.enable", true);
-		lobbyTitle = f.get("titles.lobby-waiting.title", "");
-		subtitleLobby = f.get("titles.lobby-waiting.subtitle", "&9%time%");
-		lobbyTitleTime = f.get("titles.lobby-waiting.time", "10, 30, 10");
-		wonTitle = f.get("titles.player-won.title", "&2Congratulations!");
-		wonsubtitle = f.get("titles.player-won.subtitle", "&e%winner%&6 won this round!");
-		wonTitleTime = f.get("titles.player-won.time", "20, 80, 20");
-		youwonTitle = f.get("titles.you-won.title", "&aCongratulations!");
-		youwonsubtitle = f.get("titles.you-won.subtitle", "&2You won this round!");
-		youwonTitleTime = f.get("titles.you-won.time", "20, 80, 20");
 		spectatorEnable = f.get("spectator.enable", true);
 		notifySpectatorsToLeave = f.get("spectator.notify-spectators-to-leave.enabled", true);
-		timeBetweenMessageSending = f.get("spectator.notify-spectators-to-leave.time-between-message-sending", 10);
+		timeBetweenMessageSending = f.get("spectator.notify-spectators-to-leave.time-between-message-sending", 40);
 		chatEnableinLobby = f.get("lobby.enable-chat-in-lobby", true);
 		playerLevelAsTimeCounter = f.get("lobby.player-level-as-time-counter", false);
 		playersCanJoinRandomToRunningGames = f.get("players-can-join-random-to-running-games", true);
@@ -236,25 +233,12 @@ public class ConfigValues {
 				true);
 		playerLives = f.get("game.zombie-apocalypse.player-lives", 3);
 
-		if (Version.isCurrentEqualOrHigher(Version.v1_16_R3)
-				&& RageMode.getSoftwareType() == ServerSoftwareType.PAPER) {
-			f.addComment("game.zombie-apocalypse.prevent-zombies-moving-outside-of-game-area",
-					"Enabling this will causes for timings to report unnecessary memory things, because it checks all entity move event.",
-					"This also has advantages. If you have a pressure mine put down and a zombie or player steps on it,",
-					"it explodes immediately. However, without it, it takes more time, memory is more demanding and at",
-					"some point the pressure mine does not explode.");
-			preventZombiesMovingOutsideOfArea = f
-					.get("game.zombie-apocalypse.prevent-zombies-moving-outside-of-game-area", false);
-		}
-
-		tabFormatEnable = f.get("game.tablist.player-format.enable", false);
-		tabPrefix = f.get("game.tablist.player-format.prefix", "");
-		tabSuffix = f.get("game.tablist.player-format.suffix", "&e %kills%");
+		tabPlayerListName = f.get("game.tablist.player-list-name", "&c%player_name%&e %kills%");
 		tabEnable = f.get("game.tablist.list.enable", false);
 
-		f.get("game.tablist.list.header",
+		tabListHeader = f.get("game.tablist.list.header",
 				Arrays.asList("&cRage&bMode&e minigame stats", "&aYour kills/deaths:&e %kd%"));
-		f.get("game.tablist.list.footer", Arrays.asList("&6Points:&e %points%"));
+		tabListFooter = f.get("game.tablist.list.footer", Arrays.asList("&6Points:&e %points%"));
 
 		scoreboardEnable = f.get("game.scoreboard.enable", true);
 		sbTitle = f.get("game.scoreboard.title", "&6RageMode");
@@ -283,19 +267,212 @@ public class ConfigValues {
 				"&ePlayers&3 [%current-players%/%max-players%&3]", "%running%"));
 		lobbyTitleBeginTimes = f.getIntList("titles.lobby-waiting.begin-times", Arrays.asList(5, 4, 3, 2, 1));
 		lobbyBeginTimes = f.getIntList("lobby.begin-times", Arrays.asList(30, 20, 10, 5, 4, 3, 2, 1));
-		messageActions = f.get("message-actions",
-				Arrays.asList("[actionbar];join:&cHello&a %player%&c in this game!",
-						"[actionbar];start:&aGame has started!&2 We wish you a good game!",
-						"[bossbar];start:&bWelcome&a %player%&b to the&c %game%&b game!:green:segmented_6:8"));
 		allowedSpectatorCommands = f.get("spectator.allowed-commands", Arrays.asList("/rm leave", "/ragemode leave"));
 		allowedInGameCommands = f.get("game.allowed-commands",
 				Arrays.asList("/rm leave", "/ragemode leave", "/ragemode stopgame"));
-		executeCommandsOnPlayerLeaveWhilePlaying = f.get("game.execute-commands-on-player-left-while-playing",
-				Arrays.asList("tell %player% &cWhy you left from the game while playing?"));
+
+		try {
+			signBackground = SignBackgrounds.valueOf(f.get("signs.background.type", "none").toUpperCase());
+		} catch (IllegalArgumentException e) {
+			signBackground = SignBackgrounds.NONE;
+		}
+
+		scoreboardContent = f.get("game.scoreboard.content", Arrays.asList(""));
+
+		for (String action : f.get("message-actions",
+				Arrays.asList("[actionbar];join:&cHello&a %player%&c in this game!",
+						"[actionbar];start:&aGame has started!&2 We wish you a good game!",
+						"[bossbar];start:&bWelcome&a %player%&b to the&c %game%&b game!:green:segmented_6:8"))) {
+			messageActions.add(new MessageAction(action));
+		}
+
+		for (TitleSettings.TitleType type : TitleSettings.TitleType.values()) {
+			titleSettings.put(type, new TitleSettings(f, type));
+		}
 
 		f.save();
 		f.cleanUp();
 		f.save();
+	}
+
+	public static final class TitleSettings {
+
+		private String title = "", subTitle = "";
+
+		private final int[] times = new int[] { 0, 20, 5 };
+
+		public TitleSettings(CommentedConfig c, TitleType type) {
+			title = c.get("titles." + type.toString() + ".title", "");
+			subTitle = c.get("titles." + type.toString() + ".subtitle", "");
+
+			String[] split = c.get("titles." + type.toString() + ".time", "").split(", ", times.length);
+
+			for (int i = 0; i < times.length; i++) {
+				try {
+					this.times[i] = Integer.parseInt(split[i]);
+				} catch (NumberFormatException e) {
+				}
+			}
+		}
+
+		public String getTitle() {
+			return title;
+		}
+
+		public String getSubTitle() {
+			return subTitle;
+		}
+
+		public int[] getTimes() {
+			return times;
+		}
+
+		public enum TitleType {
+			JOIN_GAME, LOBBY_WAITING, PLAYER_WON, YOU_WON;
+
+			private String name = name().toLowerCase().replace('_', '-');
+
+			@Override
+			public String toString() {
+				return name;
+			}
+		}
+	}
+
+	public static final class MessageAction {
+
+		private ActionMessageType.MessageTypes type;
+		private ActionMessageType action;
+		private String message;
+
+		private BossBarSettings bossSettings;
+
+		public MessageAction(String one) {
+			String[] actionSplit = one.replace("[", "").split("];", 2);
+			if (actionSplit.length == 0) {
+				return;
+			}
+
+			try {
+				type = ActionMessageType.MessageTypes.valueOf(actionSplit[0].toUpperCase());
+			} catch (IllegalArgumentException e) {
+				type = ActionMessageType.MessageTypes.ACTIONBAR;
+			}
+
+			String[] split = one.split(":", 5);
+			if (split.length < 2) {
+				return;
+			}
+
+			try {
+				action = ActionMessageType.valueOf(split[0].toUpperCase());
+			} catch (IllegalArgumentException e) {
+				return;
+			}
+
+			message = split[1];
+
+			if (type == ActionMessageType.MessageTypes.BOSSBAR) {
+				if (action == ActionMessageType.LEAVE || action == ActionMessageType.KICK
+						|| ServerVersion.isCurrentLower(ServerVersion.v1_9_R1)) {
+					return; // We don't allow leave action for boss bar, it will be unused and old version
+							// is not supported
+				}
+
+				BarColor color = BarColor.BLUE;
+
+				if (split.length > 2) {
+					try {
+						color = BarColor.valueOf(split[2].toUpperCase());
+					} catch (IllegalArgumentException e) {
+					}
+				}
+
+				BarStyle style = BarStyle.SOLID;
+
+				if (split.length > 3) {
+					try {
+						style = BarStyle.valueOf(split[3].toUpperCase());
+					} catch (IllegalArgumentException e) {
+					}
+				}
+
+				int bossExpirementSeconds = 6;
+				if (split.length > 4) {
+					bossExpirementSeconds = Utils.tryParseInt(split[4]).orElse(6);
+				}
+
+				bossSettings = new BossBarSettings(color, style, bossExpirementSeconds);
+			} else if (type == ActionMessageType.MessageTypes.COMMAND) {
+				if (message.charAt(0) == '/') {
+					message = message.substring(1, message.length());
+				}
+			}
+		}
+
+		public ActionMessageType.MessageTypes getType() {
+			return type;
+		}
+
+		public ActionMessageType getAction() {
+			return action;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+
+		public BossBarSettings getBossSettings() {
+			return bossSettings;
+		}
+
+		// sooo many inner classes
+
+		// This class is for handling the boss bar enum exception and avoiding other
+		// conflicts.
+		public final class BossBarSettings {
+
+			private BarColor color;
+			private BarStyle style;
+			private int bossExpirementSeconds;
+
+			public BossBarSettings(BarColor color, BarStyle style, int bossExpirementSeconds) {
+				this.color = color;
+				this.style = style;
+				this.bossExpirementSeconds = bossExpirementSeconds;
+			}
+
+			public BarColor getColor() {
+				return color;
+			}
+
+			public BarStyle getStyle() {
+				return style;
+			}
+
+			public int getBossExpirementSeconds() {
+				return bossExpirementSeconds;
+			}
+		}
+
+		/**
+		 * The enum for send various message types, like bossbar to player when
+		 * something happen in the game
+		 */
+		public enum ActionMessageType {
+			JOIN, LEAVE, START, STOP, KICK;
+
+			private String name = name().toLowerCase(java.util.Locale.ENGLISH);
+
+			@Override
+			public String toString() {
+				return name;
+			}
+
+			public enum MessageTypes {
+				ACTIONBAR, BOSSBAR, COMMAND
+			}
+		}
 	}
 
 	public static boolean isDeveloperMode() {
@@ -310,7 +487,7 @@ public class ConfigValues {
 		return hubName;
 	}
 
-	public static String getSelectionItem() {
+	public static Material getSelectionItem() {
 		return selectionItem;
 	}
 
@@ -406,60 +583,8 @@ public class ConfigValues {
 		return signGameLocked;
 	}
 
-	public static String getSignBackground() {
-		return signBackgrType;
-	}
-
-	public static String getTitleJoinGame() {
-		return titleJoinGame;
-	}
-
-	public static String getSubTitleJoinGame() {
-		return subtitleJoinGame;
-	}
-
-	public static String getJoinTitleTime() {
-		return joinTitleTime;
-	}
-
-	public static boolean isLobbyTitle() {
-		return enableLobbyTitle;
-	}
-
-	public static String getLobbyTitle() {
-		return lobbyTitle;
-	}
-
-	public static String getLobbySubTitle() {
-		return subtitleLobby;
-	}
-
-	public static String getLobbyTitleTime() {
-		return lobbyTitleTime;
-	}
-
-	public static String getWonTitle() {
-		return wonTitle;
-	}
-
-	public static String getWonSubTitle() {
-		return wonsubtitle;
-	}
-
-	public static String getWonTitleTime() {
-		return wonTitleTime;
-	}
-
-	public static String getYouWonTitle() {
-		return youwonTitle;
-	}
-
-	public static String getYouWonSubTitle() {
-		return youwonsubtitle;
-	}
-
-	public static String getYouWonTitleTime() {
-		return youwonTitleTime;
+	public static SignBackgrounds getSignBackground() {
+		return signBackground;
 	}
 
 	public static boolean isSpectatorEnabled() {
@@ -528,18 +653,6 @@ public class ConfigValues {
 
 	public static boolean isEnableChatAfterEnd() {
 		return enableChatAfterEnd;
-	}
-
-	public static boolean isTabFormatEnabled() {
-		return tabFormatEnable;
-	}
-
-	public static String getTabPrefix() {
-		return tabPrefix;
-	}
-
-	public static String getTabSuffix() {
-		return tabSuffix;
 	}
 
 	public static boolean isTabEnabled() {
@@ -662,10 +775,6 @@ public class ConfigValues {
 		return allowedInGameCommands;
 	}
 
-	public static List<String> getExecuteCommandsOnPlayerLeaveWhilePlaying() {
-		return executeCommandsOnPlayerLeaveWhilePlaying;
-	}
-
 	public static List<Integer> getGameEndBroadcast() {
 		return gameEndBroadcast;
 	}
@@ -678,11 +787,27 @@ public class ConfigValues {
 		return lobbyTitleBeginTimes;
 	}
 
-	public static List<String> getMessageActions() {
+	public static List<MessageAction> getMessageActions() {
 		return messageActions;
 	}
 
-	public static boolean isPreventZombiesMovingOutsideOfArea() {
-		return preventZombiesMovingOutsideOfArea;
+	public static List<String> getScoreboardContent() {
+		return scoreboardContent;
+	}
+
+	public static List<String> getTabListHeader() {
+		return tabListHeader;
+	}
+
+	public static List<String> getTabListFooter() {
+		return tabListFooter;
+	}
+
+	public static Map<TitleSettings.TitleType, TitleSettings> getTitleSettings() {
+		return titleSettings;
+	}
+
+	public static String getTabPlayerListName() {
+		return tabPlayerListName;
 	}
 }

@@ -1,8 +1,12 @@
-package hu.montlikadani.ragemode.gameLogic;
+package hu.montlikadani.ragemode.gameLogic.spawn;
 
 import java.util.List;
 
 import org.bukkit.Location;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import hu.montlikadani.ragemode.gameLogic.Game;
 
 /**
  * Interface to handle game spawns
@@ -12,6 +16,7 @@ public interface IGameSpawn {
 	/**
 	 * @return the {@link Game} of this spawn
 	 */
+	@NotNull
 	Game getGame();
 
 	/**
@@ -22,30 +27,31 @@ public interface IGameSpawn {
 	boolean isReady();
 
 	/**
-	 * Gets all spawn locations from list.
+	 * Returns all spawn locations in an unmodifiable list.
 	 * 
 	 * @return an unmodifiable list
 	 */
+	@NotNull
 	List<Location> getSpawnLocations();
 
 	/**
 	 * Adds a new spawn location to the list.
 	 * 
-	 * @param loc The location where we want to save.
+	 * @param loc The {@link Location} where to save
 	 * @return true if added
 	 */
-	boolean addSpawn(Location loc);
+	boolean addSpawn(@NotNull Location loc);
 
 	/**
 	 * Removes a spawn by location.
 	 * 
-	 * @param loc The location where we want to remove.
+	 * @param loc The {@link Location} where to remove.
 	 * @return true if removed
 	 */
-	boolean removeSpawn(Location loc);
+	boolean removeSpawn(@NotNull Location loc);
 
 	/**
-	 * Removes all spawns location in game.
+	 * Removes all cached spawns locations.
 	 */
 	void removeAllSpawn();
 
@@ -57,10 +63,10 @@ public interface IGameSpawn {
 	boolean haveAnySpawn();
 
 	/**
-	 * Gets a random spawn location from the list. <br>
-	 * This will returns <code>null</code> if there are no spawns added to list.
+	 * Gets a random spawn location from the list.
 	 * 
 	 * @return {@link org.bukkit.Location}
 	 */
+	@Nullable
 	Location getRandomSpawn();
 }

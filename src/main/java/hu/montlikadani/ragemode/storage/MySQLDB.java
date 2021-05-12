@@ -1,5 +1,6 @@
 package hu.montlikadani.ragemode.storage;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,14 +18,12 @@ import org.bukkit.OfflinePlayer;
 import com.google.common.collect.ImmutableList;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.config.CommentedConfig;
-import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.database.DB;
 import hu.montlikadani.ragemode.database.DBType;
 import hu.montlikadani.ragemode.database.Database;
 import hu.montlikadani.ragemode.database.MySQLConnect;
-import hu.montlikadani.ragemode.database.RMConnection;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
@@ -54,13 +53,30 @@ public class MySqlDB implements Database {
 
 			double kd = 0d;
 
-			RMConnection conn = connect.getConnection();
-			Statement statement = null;
-			try {
-				statement = conn.createStatement();
-				ResultSet rs = conn.executeQuery(statement,
-						"SELECT * FROM `" + connect.getPrefix() + "stats_players`;");
+			try (Connection conn = connect.getConnection();
+					Statement statement = conn.createStatement();
+					ResultSet rs = statement
+							.executeQuery("SELECT * FROM `" + connect.getPrefix() + "stats_players`;")) {
 				while (rs.next()) {
+					String stringId = rs.getString("uuid");
+
+					if (stringId == null) {
+						continue;
+					}
+
+					UUID uuid;
+
+					try {
+						uuid = UUID.fromString(stringId);
+					} catch (IllegalArgumentException e) {
+						continue;
+					}
+
+					PlayerPoints rPP = RuntimePPManager.getPPForPlayer(uuid);
+					if (rPP == null) {
+						rPP = new PlayerPoints(uuid);
+					}
+
 					kills = rs.getInt("kills");
 					axeKills = rs.getInt("axe_kills");
 					directArrowKills = rs.getInt("direct_arrow_kills");
@@ -79,13 +95,6 @@ public class MySqlDB implements Database {
 					currentWins = rs.getInt("wins");
 					currentGames = rs.getInt("games");
 					currentScore = rs.getInt("score");
-
-					String playerUUID = rs.getString("uuid");
-					UUID uuid = UUID.fromString(playerUUID);
-					PlayerPoints rPP = RuntimePPManager.getPPForPlayer(uuid);
-					if (rPP == null) {
-						rPP = new PlayerPoints(uuid);
-					}
 
 					rPP.setAxeDeaths(axeDeaths);
 					rPP.setAxeKills(axeKills);
@@ -107,20 +116,8 @@ public class MySqlDB implements Database {
 
 					totalPlayers++;
 				}
-
-				rs.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
-			} finally {
-				if (statement != null) {
-					try {
-						statement.close();
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-				}
-
-				// Do not close the connection to prevent loading issues
 			}
 
 			return totalPlayers;
@@ -147,100 +144,75 @@ public class MySqlDB implements Database {
 					oldZombieKills = 0, oldDeaths = 0, oldAxeDeaths = 0, oldDirectArrowDeaths = 0,
 					oldExplosionDeaths = 0, oldKnifeDeaths = 0, oldWins = 0, oldScore = 0, oldGames = 0;
 
-			RMConnection conn = connect.getConnection();
-			Statement statement = null;
-			try {
-				statement = conn.createStatement();
-				ResultSet rs = conn.executeQuery(statement, "SELECT * FROM `" + connect.getPrefix()
-						+ "stats_players` WHERE `uuid` LIKE '" + playerPoints.getUUID().toString() + "';");
-				if (rs.next()) {
-					oldKills = rs.getInt("kills");
-					oldAxeKills = rs.getInt("axe_kills");
-					oldDirectArrowKills = rs.getInt("direct_arrow_kills");
-					oldExplosionKills = rs.getInt("explosion_kills");
-					oldKnifeKills = rs.getInt("knife_kills");
-					oldZombieKills = rs.getInt("zombie_kills");
+			try (Connection conn = connect.getConnection()) {
+				try (Statement statement = conn.createStatement();
+						ResultSet rs = statement.executeQuery("SELECT * FROM `" + connect.getPrefix()
+								+ "stats_players` WHERE `uuid` LIKE '" + playerPoints.toStringUUID() + "';")) {
+					if (rs.next()) {
+						oldKills = rs.getInt("kills");
+						oldAxeKills = rs.getInt("axe_kills");
+						oldDirectArrowKills = rs.getInt("direct_arrow_kills");
+						oldExplosionKills = rs.getInt("explosion_kills");
+						oldKnifeKills = rs.getInt("knife_kills");
+						oldZombieKills = rs.getInt("zombie_kills");
 
-					oldDeaths = rs.getInt("deaths");
-					oldAxeDeaths = rs.getInt("axe_deaths");
-					oldDirectArrowDeaths = rs.getInt("direct_arrow_deaths");
-					oldExplosionDeaths = rs.getInt("explosion_deaths");
-					oldKnifeDeaths = rs.getInt("knife_deaths");
+						oldDeaths = rs.getInt("deaths");
+						oldAxeDeaths = rs.getInt("axe_deaths");
+						oldDirectArrowDeaths = rs.getInt("direct_arrow_deaths");
+						oldExplosionDeaths = rs.getInt("explosion_deaths");
+						oldKnifeDeaths = rs.getInt("knife_deaths");
 
-					oldWins = rs.getInt("wins");
-					oldScore = rs.getInt("score");
-					oldGames = rs.getInt("games");
-				}
-
-				rs.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-				return null;
-			} finally {
-				if (statement != null) {
-					try {
-						statement.close();
-					} catch (SQLException e) {
-						e.printStackTrace();
+						oldWins = rs.getInt("wins");
+						oldScore = rs.getInt("score");
+						oldGames = rs.getInt("games");
 					}
 				}
-			}
 
-			int newKills = oldKills + playerPoints.getKills(), newAxeKills = oldAxeKills + playerPoints.getAxeKills(),
-					newDirectArrowKills = oldDirectArrowKills + playerPoints.getDirectArrowKills(),
-					newExplosionKills = oldExplosionKills + playerPoints.getExplosionKills(),
-					newKnifeKills = oldKnifeKills + playerPoints.getKnifeKills(),
-					newZombieKills = oldZombieKills + playerPoints.getZombieKills(),
+				int newKills = oldKills + playerPoints.getKills(),
+						newAxeKills = oldAxeKills + playerPoints.getAxeKills(),
+						newDirectArrowKills = oldDirectArrowKills + playerPoints.getDirectArrowKills(),
+						newExplosionKills = oldExplosionKills + playerPoints.getExplosionKills(),
+						newKnifeKills = oldKnifeKills + playerPoints.getKnifeKills(),
+						newZombieKills = oldZombieKills + playerPoints.getZombieKills(),
 
-					newDeaths = oldDeaths + playerPoints.getDeaths(),
-					newAxeDeaths = oldAxeDeaths + playerPoints.getAxeDeaths(),
-					newDirectArrowDeaths = oldDirectArrowDeaths + playerPoints.getDirectArrowDeaths(),
-					newExplosionDeaths = oldExplosionDeaths + playerPoints.getExplosionDeaths(),
-					newKnifeDeaths = oldKnifeDeaths + playerPoints.getKnifeDeaths(),
+						newDeaths = oldDeaths + playerPoints.getDeaths(),
+						newAxeDeaths = oldAxeDeaths + playerPoints.getAxeDeaths(),
+						newDirectArrowDeaths = oldDirectArrowDeaths + playerPoints.getDirectArrowDeaths(),
+						newExplosionDeaths = oldExplosionDeaths + playerPoints.getExplosionDeaths(),
+						newKnifeDeaths = oldKnifeDeaths + playerPoints.getKnifeDeaths(),
 
-					newWins = (playerPoints.isWinner()) ? oldWins + 1 : oldWins,
-					newScore = oldScore + playerPoints.getPoints(), newGames = oldGames + 1;
+						newWins = (playerPoints.isWinner()) ? oldWins + 1 : oldWins,
+						newScore = oldScore + playerPoints.getPoints(), newGames = oldGames + 1;
 
-			double newKD = (newDeaths != 0) ? (((double) newKills) / ((double) newDeaths)) : 1;
+				double newKD = (newDeaths != 0) ? (((double) newKills) / ((double) newDeaths)) : 1;
 
-			PreparedStatement prestt = null;
-			try {
-				prestt = conn.prepareStatement("REPLACE INTO `" + connect.getPrefix()
+				try (PreparedStatement prestt = conn.prepareStatement("REPLACE INTO `" + connect.getPrefix()
 						+ "stats_players` (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills,"
 						+ " knife_kills, zombie_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
-						+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
-				if (prestt == null) {
-					return null;
-				}
+						+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
+					prestt.setString(1, Bukkit.getOfflinePlayer(playerPoints.getUUID()).getName());
+					prestt.setString(2, playerPoints.toStringUUID());
 
-				prestt.setString(1, Bukkit.getOfflinePlayer(playerPoints.getUUID()).getName());
-				prestt.setString(2, playerPoints.getUUID().toString());
-				prestt.setInt(3, newKills);
-				prestt.setInt(4, newAxeKills);
-				prestt.setInt(5, newDirectArrowKills);
-				prestt.setInt(6, newExplosionKills);
-				prestt.setInt(7, newKnifeKills);
-				prestt.setInt(8, newZombieKills);
-				prestt.setInt(9, newDeaths);
-				prestt.setInt(10, newAxeDeaths);
-				prestt.setInt(11, newDirectArrowDeaths);
-				prestt.setInt(12, newExplosionDeaths);
-				prestt.setInt(13, newKnifeDeaths);
-				prestt.setInt(14, newWins);
-				prestt.setInt(15, newScore);
-				prestt.setInt(16, newGames);
-				prestt.setDouble(17, newKD);
-				prestt.executeUpdate();
+					prestt.setInt(3, newKills);
+					prestt.setInt(4, newAxeKills);
+					prestt.setInt(5, newDirectArrowKills);
+					prestt.setInt(6, newExplosionKills);
+					prestt.setInt(7, newKnifeKills);
+					prestt.setInt(8, newZombieKills);
+					prestt.setInt(9, newDeaths);
+					prestt.setInt(10, newAxeDeaths);
+					prestt.setInt(11, newDirectArrowDeaths);
+					prestt.setInt(12, newExplosionDeaths);
+					prestt.setInt(13, newKnifeDeaths);
+					prestt.setInt(14, newWins);
+					prestt.setInt(15, newScore);
+					prestt.setInt(16, newGames);
+					prestt.setDouble(17, newKD);
+
+					prestt.executeUpdate();
+				}
 			} catch (SQLException e) {
 				e.printStackTrace();
-			} finally {
-				if (prestt != null) {
-					try {
-						prestt.close();
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-				}
 			}
 
 			return null;
@@ -254,51 +226,27 @@ public class MySqlDB implements Database {
 		}
 
 		connect.dispatchAsync(() -> {
+			String stringId = uuid.toString();
 			int oldPoints = 0;
-			RMConnection conn = connect.getConnection();
-			Statement statement = null;
-			try {
-				statement = conn.createStatement();
-				ResultSet rs = conn.executeQuery(statement, "SELECT * FROM `" + connect.getPrefix()
-						+ "stats_players` WHERE `uuid` LIKE '" + uuid.toString() + "';");
-				if (rs.next()) {
-					oldPoints = rs.getInt("score");
-				}
 
-				rs.close();
-			} catch (SQLException e) {
-			} finally {
-				if (statement != null) {
-					try {
-						statement.close();
-					} catch (SQLException e) {
-						e.printStackTrace();
+			try (Connection conn = connect.getConnection()) {
+				try (Statement statement = conn.createStatement();
+						ResultSet rs = statement.executeQuery("SELECT * FROM `" + connect.getPrefix()
+								+ "stats_players` WHERE `uuid` LIKE '" + stringId + "';")) {
+					if (rs.next()) {
+						oldPoints = rs.getInt("score");
 					}
 				}
-			}
 
-			PreparedStatement prestt = null;
-			try {
-				prestt = conn.prepareStatement("REPLACE INTO `" + connect.getPrefix()
-						+ "stats_players` (name, uuid, score) VALUES (?, ?, ?);");
-				if (prestt == null) {
-					return null;
+				try (PreparedStatement prestt = conn.prepareStatement("REPLACE INTO `" + connect.getPrefix()
+						+ "stats_players` (name, uuid, score) VALUES (?, ?, ?);")) {
+					prestt.setString(1, Bukkit.getOfflinePlayer(uuid).getName());
+					prestt.setString(2, stringId);
+					prestt.setInt(3, oldPoints + points);
+					prestt.executeUpdate();
 				}
-
-				prestt.setString(1, Bukkit.getOfflinePlayer(uuid).getName());
-				prestt.setString(2, uuid.toString());
-				prestt.setInt(3, oldPoints + points);
-				prestt.executeUpdate();
 			} catch (SQLException e) {
 				e.printStackTrace();
-			} finally {
-				if (prestt != null) {
-					try {
-						prestt.close();
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-				}
 			}
 
 			return null;
@@ -314,35 +262,32 @@ public class MySqlDB implements Database {
 		return connect.dispatchAsync(() -> {
 			final List<PlayerPoints> allRPPs = new ArrayList<>();
 
-			RMConnection conn = connect.getConnection();
-			Statement statement = null;
-			try {
-				statement = conn.createStatement();
-				ResultSet rs = conn.executeQuery(statement,
-						"SELECT * FROM `" + connect.getPrefix() + "stats_players`;");
+			try (Connection conn = connect.getConnection();
+					Statement statement = conn.createStatement();
+					ResultSet rs = statement
+							.executeQuery("SELECT * FROM `" + connect.getPrefix() + "stats_players`;")) {
 				while (rs.next()) {
-					String uuid = rs.getString("uuid");
-					if (uuid != null) {
-						UUID uuid2 = UUID.fromString(uuid);
-						PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid2);
+					String stringId = rs.getString("uuid");
+
+					if (stringId != null) {
+						UUID uuid;
+
+						try {
+							uuid = UUID.fromString(stringId);
+						} catch (IllegalArgumentException e) {
+							continue;
+						}
+
+						PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid);
 						if (pp == null) {
-							pp = new PlayerPoints(uuid2);
+							pp = new PlayerPoints(uuid);
 						}
 
 						allRPPs.add(pp);
 					}
 				}
-
-				rs.close();
 			} catch (SQLException e) {
-			} finally {
-				if (statement != null) {
-					try {
-						statement.close();
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-				}
+				e.printStackTrace();
 			}
 
 			return ImmutableList.copyOf(allRPPs);
@@ -357,6 +302,7 @@ public class MySqlDB implements Database {
 
 		return connect.dispatchAsync(() -> {
 			PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid);
+
 			if (pp == null) {
 				return null;
 			}
@@ -364,70 +310,32 @@ public class MySqlDB implements Database {
 			// Cloning to ignore overwrite
 			pp = (PlayerPoints) pp.clone();
 
-			RMConnection conn = connect.getConnection();
-
-			Statement statement = null;
-
-			int currentKills = 0, currentAxeKills = 0, currentDirectArrowKills = 0, currentExplosionKills = 0,
-					currentKnifeKills = 0, currentZombieKills = 0, currentDeaths = 0, currentAxeDeaths = 0,
-					currentDirectArrowDeaths = 0, currentExplosionDeaths = 0, currentKnifeDeaths = 0, currentWins = 0,
-					currentScore = 0, currentGames = 0;
-
-			double currentKD = 0;
-
-			try {
-				statement = conn.createStatement();
-				ResultSet rs = conn.executeQuery(statement, "SELECT * FROM `" + connect.getPrefix()
-						+ "stats_players` WHERE `uuid` LIKE '" + uuid.toString() + "';");
+			try (Connection conn = connect.getConnection();
+					Statement statement = conn.createStatement();
+					ResultSet rs = statement.executeQuery("SELECT * FROM `" + connect.getPrefix()
+							+ "stats_players` WHERE `uuid` LIKE '" + uuid.toString() + "';")) {
 				if (rs.next()) {
-					currentKills = rs.getInt("kills");
-					currentAxeKills = rs.getInt("axe_kills");
-					currentDirectArrowKills = rs.getInt("direct_arrow_kills");
-					currentExplosionKills = rs.getInt("explosion_kills");
-					currentKnifeKills = rs.getInt("knife_kills");
-					currentZombieKills = rs.getInt("zombie_kills");
+					pp.setKills(rs.getInt("kills"));
+					pp.setAxeKills(rs.getInt("axe_kills"));
+					pp.setDirectArrowKills(rs.getInt("direct_arrow_kills"));
+					pp.setExplosionKills(rs.getInt("explosion_kills"));
+					pp.setKnifeKills(rs.getInt("knife_kills"));
+					pp.setZombieKills(rs.getInt("zombie_kills"));
 
-					currentDeaths = rs.getInt("deaths");
-					currentAxeDeaths = rs.getInt("axe_deaths");
-					currentDirectArrowDeaths = rs.getInt("direct_arrow_deaths");
-					currentExplosionDeaths = rs.getInt("explosion_deaths");
-					currentKnifeDeaths = rs.getInt("knife_deaths");
+					pp.setDeaths(rs.getInt("deaths"));
+					pp.setAxeDeaths(rs.getInt("axe_deaths"));
+					pp.setDirectArrowDeaths(rs.getInt("direct_arrow_deaths"));
+					pp.setExplosionDeaths(rs.getInt("explosion_deaths"));
+					pp.setKnifeDeaths(rs.getInt("knife_deaths"));
 
-					currentWins = rs.getInt("wins");
-					currentScore = rs.getInt("score");
-					currentGames = rs.getInt("games");
-					currentKD = rs.getDouble("kd");
-
-					pp.setKills(currentKills);
-					pp.setAxeKills(currentAxeKills);
-					pp.setDirectArrowKills(currentDirectArrowKills);
-					pp.setExplosionKills(currentExplosionKills);
-					pp.setKnifeKills(currentKnifeKills);
-					pp.setZombieKills(currentZombieKills);
-
-					pp.setDeaths(currentDeaths);
-					pp.setAxeDeaths(currentAxeDeaths);
-					pp.setDirectArrowDeaths(currentDirectArrowDeaths);
-					pp.setExplosionDeaths(currentExplosionDeaths);
-					pp.setKnifeDeaths(currentKnifeDeaths);
-
-					pp.setWins(currentWins);
-					pp.setPoints(currentScore);
-					pp.setGames(currentGames);
-					pp.setKD(currentKD);
+					pp.setWins(rs.getInt("wins"));
+					pp.setPoints(rs.getInt("score"));
+					pp.setGames(rs.getInt("games"));
+					pp.setKD(rs.getDouble("kd"));
 				}
-
-				rs.close();
 			} catch (SQLException e) {
+				e.printStackTrace();
 				return null;
-			} finally {
-				if (statement != null) {
-					try {
-						statement.close();
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-				}
 			}
 
 			return pp;
@@ -459,39 +367,27 @@ public class MySqlDB implements Database {
 		rpp.setGames(0);
 		rpp.setKD(0d);
 
-		final RMConnection conn = connect.getConnection();
-		if (!conn.isConnected()) {
+		if (!connect.isConnected()) {
 			return false;
 		}
 
 		return connect.dispatchAsync(() -> {
-			PreparedStatement prestt = null;
-			try {
-				prestt = conn.prepareStatement("REPLACE INTO `" + connect.getPrefix()
-						+ "stats_players` (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills,"
-						+ " knife_kills, zombie_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
-						+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
-				if (prestt == null) {
-					return false;
-				}
-
+			try (Connection conn = connect.getConnection();
+					PreparedStatement prestt = conn.prepareStatement("REPLACE INTO `" + connect.getPrefix()
+							+ "stats_players` (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills,"
+							+ " knife_kills, zombie_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
+							+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
 				prestt.setString(1, Bukkit.getOfflinePlayer(rpp.getUUID()).getName());
-				prestt.setString(2, rpp.getUUID().toString());
+				prestt.setString(2, rpp.toStringUUID());
+
 				for (int i = 3; i <= 16; i++) {
 					prestt.setInt(i, 0);
 				}
+
 				prestt.setDouble(16, 0d);
 				prestt.executeUpdate();
 			} catch (SQLException e) {
 				e.printStackTrace();
-			} finally {
-				if (prestt != null) {
-					try {
-						prestt.close();
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-				}
 			}
 
 			return true;
@@ -501,12 +397,18 @@ public class MySqlDB implements Database {
 	@Override
 	public void connectDatabase() {
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException c) {
-			c.printStackTrace();
-			Debug.logConsole(Level.WARNING, "Could not connect to the MySQL database. No MySql found.");
-			return;
+			Class.forName("com.mysql.cj.jdbc.Driver");
+		} catch (ClassNotFoundException e) {
+			try {
+				Class.forName("com.mysql.jdbc.Driver");
+			} catch (ClassNotFoundException c) {
+				c.printStackTrace();
+				Debug.logConsole(Level.WARNING, "Could not connect to the MySQL database. No MySql driver found.");
+				return;
+			}
 		}
+
+		Debug.logConsole("Attempting to connect to mysql...");
 
 		String prefix = ConfigValues.getDatabaseTablePrefix();
 		if (prefix.isEmpty()) {
@@ -526,7 +428,7 @@ public class MySqlDB implements Database {
 
 		if ((connect = new MySQLConnect(host, port, database, username, password, serverCertificate, useUnicode,
 				charEncode, autoReconnect, useSSL, prefix)).isConnected()) {
-			Debug.logConsole("Successfully connected to MySQL!");
+			Debug.logConsole("Connected to MySQL!");
 		}
 	}
 
@@ -553,7 +455,7 @@ public class MySqlDB implements Database {
 	@Override
 	public CompletableFuture<Boolean> convertDatabase(final String type) {
 		return CompletableFuture.supplyAsync(() -> {
-			if (type == null || type.trim().isEmpty() || getDatabaseType().toString().equalsIgnoreCase(type.trim())) {
+			if (type == null || type.isEmpty() || getDatabaseType().toString().equalsIgnoreCase(type)) {
 				return false;
 			}
 
@@ -567,13 +469,14 @@ public class MySqlDB implements Database {
 
 			ConfigValues.databaseType = type;
 
-			final CommentedConfig conf = RageMode.getInstance().getConfig();
-			conf.set("database.type", type);
-			Configuration.saveFile(conf, RageMode.getInstance().getConfiguration().getCfgFile());
+			RageMode plugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 
-			RageMode.getInstance().connectDatabase(true);
+			plugin.getConfig().set("database.type", type);
+			Configuration.saveFile(plugin.getConfig(), plugin.getConfiguration().getCfgFile());
 
-			RuntimePPManager.getRuntimePPList().forEach(RageMode.getInstance().getDatabase()::addPlayerStatistics);
+			plugin.connectDatabase(true);
+
+			RuntimePPManager.getRuntimePPList().forEach(plugin.getDatabase()::addPlayerStatistics);
 			RuntimePPManager.loadPPListFromDatabase();
 			return false;
 		});
@@ -586,41 +489,38 @@ public class MySqlDB implements Database {
 		}
 
 		connect.dispatchAsync(() -> {
-			RMConnection conn = connect.getConnection();
-			Statement statement = null;
-			try {
-				statement = conn.createStatement();
-				ResultSet rs = conn.executeQuery(statement, "SELECT * FROM `" + connect.getPrefix() + "players`;");
-				while (rs.next()) {
-					String uuid = rs.getString("uuid");
-					if (uuid != null) {
-						if (rs.getBoolean("deathMessagesEnabled")) {
-							PlayerManager.DEATHMESSAGESTOGGLE.put(UUID.fromString(uuid), true);
-						}
+			try (Connection conn = connect.getConnection()) {
+				try (Statement statement = conn.createStatement();
+						ResultSet rs = statement.executeQuery("SELECT * FROM `" + connect.getPrefix() + "players`;")) {
+					while (rs.next()) {
+						String stringUuId = rs.getString("uuid");
 
-						if (ConfigValues.isRejoinDelayEnabled() && ConfigValues.isRememberRejoinDelay()) {
-							ReJoinDelay.setTime(Bukkit.getOfflinePlayer(UUID.fromString(uuid)), rs.getLong("time"));
+						if (stringUuId != null) {
+							UUID uuid;
+
+							try {
+								uuid = UUID.fromString(stringUuId);
+							} catch (IllegalArgumentException e) {
+								continue;
+							}
+
+							if (rs.getBoolean("deathMessagesEnabled")) {
+								PlayerManager.DEATH_MESSAGES_TOGGLE.put(uuid, true);
+							}
+
+							if (ConfigValues.isRejoinDelayEnabled() && ConfigValues.isRememberRejoinDelay()) {
+								ReJoinDelay.setTime(Bukkit.getOfflinePlayer(uuid), rs.getLong("time"));
+							}
 						}
 					}
 				}
 
-				PreparedStatement ps = conn.prepareStatement(
-						"ALTER TABLE `" + connect.getPrefix() + "players` DROP COLUMN deathMessagesEnabled;");
-				if (ps != null) {
+				try (PreparedStatement ps = conn.prepareStatement(
+						"ALTER TABLE `" + connect.getPrefix() + "players` DROP COLUMN deathMessagesEnabled;")) {
 					ps.executeUpdate();
-					ps.close();
 				}
-
-				rs.close();
 			} catch (SQLException e) {
-			} finally {
-				if (statement != null) {
-					try {
-						statement.close();
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-				}
+				e.printStackTrace();
 			}
 
 			return null;
@@ -629,57 +529,51 @@ public class MySqlDB implements Database {
 
 	@Override
 	public void saveMiscPlayersData() {
+		if (!ConfigValues.isRejoinDelayEnabled() && !ConfigValues.isRememberRejoinDelay()
+				&& PlayerManager.DEATH_MESSAGES_TOGGLE.isEmpty()) {
+			return;
+		}
+
 		if (!connect.isConnected()) {
 			return;
 		}
 
 		connect.dispatchAsync(() -> {
-			PreparedStatement prestt = null;
 			try {
-				if (ConfigValues.isRejoinDelayEnabled() && ConfigValues.isRememberRejoinDelay()
-						&& !ReJoinDelay.getPlayerTimes().isEmpty()) {
-					prestt = connect.getConnection().prepareStatement(
-							"REPLACE INTO `" + connect.getPrefix() + "players` (uuid, time) VALUES (?, ?);");
-					if (prestt == null) {
-						return null;
-					}
+				try (Connection conn = connect.getConnection()) {
+					if (ConfigValues.isRejoinDelayEnabled() && ConfigValues.isRememberRejoinDelay()) {
+						Map<OfflinePlayer, Long> map = ReJoinDelay.getPlayerTimes();
 
-					for (Map.Entry<OfflinePlayer, Long> m : ReJoinDelay.getPlayerTimes().entrySet()) {
-						if (m.getValue().longValue() > System.currentTimeMillis()) {
-							prestt.setString(1, m.getKey().getUniqueId().toString());
-							prestt.setLong(2, m.getValue());
-							prestt.executeUpdate();
+						if (!map.isEmpty()) {
+							try (PreparedStatement prestt = conn.prepareStatement(
+									"REPLACE INTO `" + connect.getPrefix() + "players` (uuid, time) VALUES (?, ?);")) {
+								for (Map.Entry<OfflinePlayer, Long> m : map.entrySet()) {
+									if (m.getValue().longValue() > System.currentTimeMillis()) {
+										prestt.setString(1, m.getKey().getUniqueId().toString());
+										prestt.setLong(2, m.getValue());
+										prestt.executeUpdate();
+									}
+								}
+							}
 						}
 					}
 
-					prestt.close();
-				}
+					if (!PlayerManager.DEATH_MESSAGES_TOGGLE.isEmpty()) {
+						try (PreparedStatement prestt = conn.prepareStatement("REPLACE INTO `" + connect.getPrefix()
+								+ "players` (uuid, deathMessagesEnabled) VALUES (?, ?);")) {
 
-				if (!PlayerManager.DEATHMESSAGESTOGGLE.isEmpty()) {
-					prestt = connect.getConnection().prepareStatement("REPLACE INTO `" + connect.getPrefix()
-							+ "players` (uuid, deathMessagesEnabled) VALUES (?, ?);");
-					if (prestt == null) {
-						return null;
-					}
-
-					for (Map.Entry<UUID, Boolean> map : PlayerManager.DEATHMESSAGESTOGGLE.entrySet()) {
-						if (map.getValue()) {
-							prestt.setString(1, map.getKey().toString());
-							prestt.setBoolean(2, map.getValue());
-							prestt.executeUpdate();
+							for (Map.Entry<UUID, Boolean> map : PlayerManager.DEATH_MESSAGES_TOGGLE.entrySet()) {
+								if (map.getValue()) {
+									prestt.setString(1, map.getKey().toString());
+									prestt.setBoolean(2, true);
+									prestt.executeUpdate();
+								}
+							}
 						}
 					}
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
-			} finally {
-				if (prestt != null) {
-					try {
-						prestt.close();
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-				}
 			}
 
 			return null;

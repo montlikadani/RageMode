@@ -1,30 +1,24 @@
 package hu.montlikadani.ragemode.items.shop.pages;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
-import java.util.logging.Level;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.items.shop.IShop;
 import hu.montlikadani.ragemode.items.shop.NavigationType;
 import hu.montlikadani.ragemode.items.shop.ShopCategory;
 import hu.montlikadani.ragemode.items.shop.ShopItem;
 import hu.montlikadani.ragemode.items.shop.ShopItemCommands;
-import hu.montlikadani.ragemode.utils.Debug;
+import hu.montlikadani.ragemode.items.shop.ShopItemCommands.CommandSetting;
 import hu.montlikadani.ragemode.utils.Utils;
 
-public class MainPage implements IShop {
+public final class MainPage implements IShop {
 
-	private final List<ShopItem> items = new LinkedList<>();
+	private final List<ShopItem> items = new java.util.LinkedList<>();
 
 	private Inventory inv;
 
@@ -34,7 +28,7 @@ public class MainPage implements IShop {
 	}
 
 	@Override
-	public Optional<ShopItem> getShopItem(ItemStack item) {
+	public java.util.Optional<ShopItem> getShopItem(ItemStack item) {
 		return items.stream().filter(si -> si.getItem().isSimilar(item)).findFirst();
 	}
 
@@ -45,41 +39,49 @@ public class MainPage implements IShop {
 
 	@Override
 	public void create(Player player) {
-		Configuration conf = RageMode.getInstance().getConfiguration();
-		if (!conf.getItemsCfg().getBoolean("lobbyitems.shopitem.enabled")) {
+		if (inv != null) {
+			ItemStack[] contents = inv.getContents();
+
+			// Update existing inventory contents
+			for (int i = 0; i < items.size(); i++) {
+				if (contents[i] != null && contents[i].getType() != Material.AIR) {
+					inv.setItem(i, items.get(i).getItem());
+				}
+			}
+
+			return;
+		}
+
+		org.bukkit.configuration.MemorySection conf = RM.getConfiguration().getItemsCfg();
+
+		if (!conf.getBoolean("lobbyitems.shopitem.enabled")) {
 			return;
 		}
 
 		String path = "lobbyitems.shopitem.gui.";
-		String guiName = Utils.colors(conf.getItemsCfg().getString(path + "title", "&6RageMode shop"));
+		String guiName = Utils.colors(conf.getString(path + "title", "&6RageMode shop"));
 
-		int size = conf.getItemsCfg().getInt(path + "size", 9);
+		int size = conf.getInt(path + "size", 9);
 		if (size > 54) {
 			size = 54;
 		}
 
-		inv = Bukkit.createInventory(this, size, guiName);
+		inv = RM.getComplement().createInventory(this, size, guiName);
+
+		String filler = conf.getString(path + "fillEmptyFields", "air");
 
 		path += "items.";
 
 		for (int i = 0; i < size; i++) {
-			String item = conf.getItemsCfg().getString(path + "slot-" + i + ".item", "");
-			if (item.isEmpty()) {
-				item = "air";
-			}
+			Material mat = Material.matchMaterial(conf.getString(path + "slot-" + i + ".item", ""));
 
-			Material mat = Material.matchMaterial(item);
 			if (mat == null) {
-				Debug.logConsole(Level.WARNING, "Unknown item type: " + item);
 				mat = Material.AIR;
 			}
 
 			if (mat == Material.AIR) {
-				String filler = conf.getItemsCfg().getString("lobbyitems.shopitem.gui.fillEmptyFields", "air");
 				if (!filler.isEmpty()) {
-					mat = Material.matchMaterial(filler);
-					if (mat == null) {
-						Debug.logConsole(Level.WARNING, "Unknown filler item type: " + filler);
+					if ((mat = Material.matchMaterial(filler)) == null) {
 						mat = Material.AIR;
 					}
 
@@ -92,59 +94,60 @@ public class MainPage implements IShop {
 			ItemStack iStack = new ItemStack(mat);
 			ItemMeta iMeta = iStack.getItemMeta();
 			if (iMeta == null) {
-				inv.setItem(i, new ItemStack(mat));
+				inv.setItem(i, iStack);
 				continue;
 			}
 
-			List<String> lore = conf.getItemsCfg().getStringList(path + "slot-" + i + ".lore");
+			List<String> lore = conf.getStringList(path + "slot-" + i + ".lore");
 			if (!lore.isEmpty()) {
-				iMeta.setLore(Utils.colorList(lore));
+				RM.getComplement().setLore(iMeta, Utils.colorList(lore));
 			}
 
-			String itemName = conf.getItemsCfg().getString(path + "slot-" + i + ".name", "");
+			String itemName = conf.getString(path + "slot-" + i + ".name", "");
 			if (!itemName.isEmpty()) {
-				iMeta.setDisplayName(itemName.replace('&', '\u00a7'));
+				RM.getComplement().setDisplayName(iMeta, Utils.colors(itemName));
 			}
 
 			hu.montlikadani.ragemode.utils.Misc.setDurability(iStack,
-					(short) conf.getItemsCfg().getDouble(path + "slot-" + i + ".durability", 0));
+					(short) conf.getDouble(path + "slot-" + i + ".durability", 0));
 
 			iStack.setItemMeta(iMeta);
 			inv.setItem(i, iStack);
 
 			ShopItemCommands itemCmds = null;
-			if (conf.getItemsCfg().isList(path + "slot-" + i + ".commands")) {
-				List<String> commands = conf.getItemsCfg().getStringList(path + "slot-" + i + ".commands");
+			if (conf.isList(path + "slot-" + i + ".commands")) {
+				List<String> commands = conf.getStringList(path + "slot-" + i + ".commands");
+				List<CommandSetting> commandSettings = new java.util.ArrayList<>(commands.size());
 
 				NavigationType navigationType = null;
-				for (String n : commands) {
-					navigationType = NavigationType.getByName(n.toLowerCase());
-					if (navigationType == null) {
+				for (String one : commands) {
+					if ((navigationType = NavigationType.getByName(one)) == null) {
 						navigationType = NavigationType.WITHOUT;
 					}
 
-					if (navigationType != null) {
-						break;
-					}
+					commandSettings.add(new CommandSetting(one));
 				}
 
-				itemCmds = new ShopItemCommands(path + "slot-" + i, commands, navigationType);
-			} else if (conf.getItemsCfg().isString(path + "slot-" + i + ".command")) {
-				String command = conf.getItemsCfg().getString(path + "slot-" + i + ".command", "");
-				NavigationType navigationType = NavigationType.getByName(command.toLowerCase());
+				itemCmds = new ShopItemCommands(new ShopItemCommands.ItemSetting(conf, path + "slot-" + i),
+						commandSettings, navigationType);
+			} else if (conf.isString(path + "slot-" + i + ".command")) {
+				String command = conf.getString(path + "slot-" + i + ".command", "");
+
+				NavigationType navigationType = NavigationType.getByName(command);
 				if (navigationType == null) {
 					navigationType = NavigationType.WITHOUT;
 				}
 
-				itemCmds = new ShopItemCommands(path + "slot-" + i, command, navigationType);
+				itemCmds = new ShopItemCommands(new ShopItemCommands.ItemSetting(conf, path + "slot-" + i),
+						new CommandSetting(command), navigationType);
 			}
 
-			String type = conf.getItemsCfg().getString(path + "slot-" + i + ".category", "").toUpperCase();
-			if (type.isEmpty()) {
-				type = "MAIN";
+			ShopCategory category;
+			try {
+				category = ShopCategory.valueOf(conf.getString(path + "slot-" + i + ".category", "").toUpperCase());
+			} catch (IllegalArgumentException e) {
+				category = ShopCategory.MAIN;
 			}
-
-			ShopCategory category = ShopCategory.valueOf(type);
 
 			ShopItem shopItem = new ShopItem(iStack, category, guiName);
 			if (itemCmds != null) {

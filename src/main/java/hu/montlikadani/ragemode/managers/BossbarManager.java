@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.managers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
@@ -12,22 +13,26 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.utils.ServerVersion.Version;
+import hu.montlikadani.ragemode.utils.ServerVersion;
 
 public class BossbarManager {
 
-	private final Map<Player, BossBar> bossbarTask = new HashMap<>();
+	private final Map<UUID, BossBar> bossbarTask = new HashMap<>();
 
-	public Map<Player, BossBar> getBossbarMap() {
+	public Map<UUID, BossBar> getBossbarMap() {
 		return bossbarTask;
 	}
 
-	public void createBossbar(final Player p, String message, BarColor color, BarStyle style) {
-		if (Version.isCurrentLower(Version.v1_9_R1)) {
+	public void createBossbar(final Player player, String message, BarColor color, BarStyle style) {
+		if (ServerVersion.isCurrentLower(ServerVersion.v1_9_R1)) {
 			return;
 		}
 
-		Validate.notNull(p, "Player can't be null!");
+		Validate.notNull(player, "Player can't be null!");
+
+		if (bossbarTask.containsKey(player.getUniqueId())) {
+			return;
+		}
 
 		if (color == null) {
 			color = BarColor.BLUE;
@@ -37,29 +42,23 @@ public class BossbarManager {
 			style = BarStyle.SOLID;
 		}
 
-		if (bossbarTask.containsKey(p)) {
-			return;
-		}
-
 		final BossBar boss = Bukkit.createBossBar(message, color, style);
-		if (boss.getPlayers().contains(p)) {
-			boss.removePlayer(p);
-		}
 
-		boss.addPlayer(p);
+		boss.removePlayer(player);
+		boss.addPlayer(player);
 		boss.setVisible(true);
 
-		bossbarTask.put(p, boss);
+		bossbarTask.put(player.getUniqueId(), boss);
 	}
 
-	public void showBossbar(Player p) {
-		showBossbar(p, 4);
+	public void showBossbar(Player player) {
+		showBossbar(player, 4);
 	}
 
-	public void showBossbar(final Player p, int secAfterRemove) {
-		Validate.notNull(p, "Player can't be null!");
+	public void showBossbar(final Player player, int secAfterRemove) {
+		Validate.notNull(player, "Player can't be null!");
 
-		final BossBar boss = bossbarTask.getOrDefault(p, null);
+		final BossBar boss = bossbarTask.get(player.getUniqueId());
 		if (boss == null) {
 			return;
 		}
@@ -69,14 +68,14 @@ public class BossbarManager {
 		}
 
 		for (int i = 1; i <= secAfterRemove; ++i) {
-			if (!GameUtils.isPlayerPlaying(p)) {
-				removeBossbar(p);
+			if (!GameUtils.isPlayerPlaying(player)) {
+				removeBossbar(player);
 				break;
 			}
 
-			Bukkit.getScheduler().runTaskLater(RageMode.getInstance(), () -> {
-				if (!GameUtils.isPlayerPlaying(p) || boss.getProgress() <= 0.2D) {
-					removeBossbar(p);
+			Bukkit.getScheduler().runTaskLater(org.bukkit.plugin.java.JavaPlugin.getProvidingPlugin(RageMode.class), () -> {
+				if (!GameUtils.isPlayerPlaying(player) || boss.getProgress() <= 0.2D) {
+					removeBossbar(player);
 					return;
 				}
 
@@ -89,19 +88,15 @@ public class BossbarManager {
 		}
 	}
 
-	public void removeBossbar(Player p) {
-		Validate.notNull(p, "Player can't be null!");
+	public void removeBossbar(Player player) {
+		Validate.notNull(player, "Player can't be null!");
 
-		BossBar boss = bossbarTask.getOrDefault(p, null);
+		BossBar boss = bossbarTask.remove(player.getUniqueId());
 		if (boss == null) {
 			return;
 		}
 
-		if (boss.getPlayers().contains(p)) {
-			boss.removePlayer(p);
-		}
-
+		boss.removePlayer(player);
 		boss.setVisible(false);
-		bossbarTask.remove(p);
 	}
 }

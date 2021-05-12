@@ -1,7 +1,6 @@
-package hu.montlikadani.ragemode.holder;
+package hu.montlikadani.ragemode.holder.holograms;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -11,7 +10,7 @@ import org.bukkit.entity.EntityType;
 
 public class ArmorStands {
 
-	private List<String> list;
+	private String[] textLines;
 	private Location location;
 
 	private final List<ArmorStand> armorStands = new ArrayList<>();
@@ -23,8 +22,8 @@ public class ArmorStands {
 		return new TextBuilder();
 	}
 
-	public List<String> getLines() {
-		return list;
+	public String[] getTextLines() {
+		return textLines;
 	}
 
 	public List<ArmorStand> getArmorStands() {
@@ -51,15 +50,17 @@ public class ArmorStands {
 	public void append() {
 		delete();
 
-		if (location == null) {
+		if (location == null || textLines == null) {
 			return;
 		}
 
-		double distanceAbove = -0.27, y = location.getY();
-		for (int i = 0; i <= list.size() - 1; i++) {
-			y += distanceAbove;
+		double y = location.getY();
+
+		for (int i = 0; i <= textLines.length - 1; i++) {
+			y += -0.27;
+
 			ArmorStand eas = getNewEntityArmorStand(location, y);
-			eas.setCustomName(list.get(i));
+			eas.setCustomName(textLines[i]);
 			armorStands.add(eas);
 		}
 	}
@@ -74,7 +75,7 @@ public class ArmorStands {
 		return stand;
 	}
 
-	public static class TextBuilder {
+	public static final class TextBuilder {
 
 		private final List<String> texts = new ArrayList<>();
 
@@ -90,15 +91,17 @@ public class ArmorStands {
 		}
 
 		public TextBuilder addLines(String... lines) {
-			if (lines != null && lines.length > 0) {
-				texts.addAll(Arrays.asList(lines));
+			if (lines != null) {
+				for (String s : lines) {
+					texts.add(s);
+				}
 			}
 
 			return this;
 		}
 
 		public TextBuilder addLines(List<String> list) {
-			if (list != null && !list.isEmpty()) {
+			if (list != null) {
 				texts.addAll(list);
 			}
 
@@ -109,12 +112,12 @@ public class ArmorStands {
 		 * Set the text to the given index line. If the text is empty or null, from the
 		 * given index the text should be removed.
 		 * 
-		 * @param index the line of text (>= 0 && < size)
+		 * @param index the line of text (index >= 0 && index < size)
 		 * @param text  the text that should be added
 		 * @return {@link TextBuilder}
 		 */
 		public TextBuilder setLine(int index, String text) {
-			if (index < 0 || index > texts.size()) {
+			if (index < 0 || index >= texts.size()) {
 				return this;
 			}
 
@@ -129,7 +132,7 @@ public class ArmorStands {
 
 		public ArmorStands build() {
 			ArmorStands builtText = new ArmorStands();
-			builtText.list = texts;
+			builtText.textLines = texts.toArray(new String[texts.size()]);
 			return builtText;
 		}
 	}

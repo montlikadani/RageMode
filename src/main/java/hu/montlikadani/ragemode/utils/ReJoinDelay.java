@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 import com.google.common.collect.ImmutableMap;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 
 public final class ReJoinDelay {
 
@@ -47,7 +47,7 @@ public final class ReJoinDelay {
 		PLAYERTIMES.put(p, cal.getTimeInMillis());
 	}
 
-	public static String format(Long ticks) {
+	public static String format(long ticks) {
 		long hours = ticks / 1000 / 60 / 60;
 		ticks -= (hours * 1000 * 60 * 60);
 
@@ -79,10 +79,7 @@ public final class ReJoinDelay {
 	}
 
 	public static void resetTime(Player p) {
-		if (PLAYERTIMES.containsKey(p)) {
-			Calendar.getInstance().setTime(new Date());
-			PLAYERTIMES.remove(p);
-		}
+		PLAYERTIMES.remove(p);
 	}
 
 	public static boolean checkRejoinDelay(Player player, String j) {
@@ -100,8 +97,7 @@ public final class ReJoinDelay {
 			return false;
 		}
 
-		int hour = ConfigValues.getRejoinDelayHour(),
-				minute = ConfigValues.getRejoinDelayMinute(),
+		int hour = ConfigValues.getRejoinDelayHour(), minute = ConfigValues.getRejoinDelayMinute(),
 				second = ConfigValues.getRejoinDelaySecond();
 
 		if (hour == 0 && minute == 0 && second == 0) {
@@ -115,15 +111,15 @@ public final class ReJoinDelay {
 	}
 
 	public static boolean isValid(Player pl) {
-		return isValid(pl, getTimeByPlayer(pl));
+		return getTimeByPlayer(pl) > System.currentTimeMillis();
 	}
 
 	public static boolean isValid(Player pl, Long time) {
-		return PLAYERTIMES.containsKey(pl) && time != null && time.longValue() > System.currentTimeMillis();
+		return time != null && time.longValue() > System.currentTimeMillis() && PLAYERTIMES.containsKey(pl);
 	}
 
-	public static Long getTimeByPlayer(Player p) {
-		return PLAYERTIMES.getOrDefault(p, 0L);
+	public static long getTimeByPlayer(Player p) {
+		return PLAYERTIMES.getOrDefault(p, 0L).longValue();
 	}
 
 	public static ImmutableMap<OfflinePlayer, Long> getPlayerTimes() {

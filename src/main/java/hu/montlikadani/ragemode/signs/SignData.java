@@ -13,21 +13,22 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.material.Directional;
 
-import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.MaterialUtil;
-import hu.montlikadani.ragemode.utils.ServerVersion.Version;
+import hu.montlikadani.ragemode.utils.ServerVersion;
 
 public class SignData {
 
-	private String world;
+	private final String world, gameName;
+	private final SignPlaceholder placeholder;
 
 	private double x, y, z;
 
-	private String gameName;
-	private SignPlaceholder placeholder;
+	private final RageMode plugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 
 	public SignData(Location loc, String gameName) {
 		Validate.notNull(loc, "loc cannot be null");
@@ -71,6 +72,7 @@ public class SignData {
 
 	public void updateSign() {
 		Location location = getLocation();
+
 		if (!location.getWorld().getChunkAt(location).isLoaded()) {
 			return;
 		}
@@ -81,19 +83,22 @@ public class SignData {
 		}
 
 		Sign sign = (Sign) b.getState();
-		if (GameUtils.isGameExist(gameName)) {
-			List<String> lines = placeholder.parsePlaceholder(gameName);
+		Game game = GameUtils.getGame(gameName);
+
+		if (game != null) {
+			List<String> lines = placeholder.parsePlaceholder(game);
+
 			for (int i = 0; i < 4; i++) {
-				sign.setLine(i, lines.get(i));
+				plugin.getComplement().setLine(sign, i, lines.get(i));
 			}
 
-			if (!ConfigValues.getSignBackground().equalsIgnoreCase("none") && MaterialUtil.isWallSign(sign.getType())) {
-				changeBlockBackground();
+			if (ConfigValues.getSignBackground() != SignBackgrounds.NONE && MaterialUtil.isWallSign(sign.getType())) {
+				changeBlockBackground(game);
 			}
 		} else {
 			String[] errorLines = { "\u00a74ERROR:", "\u00a76Game", "\u00a76with that name", "\u00a7cnot found!" };
 			for (int i = 0; i < 4; i++) {
-				sign.setLine(i, errorLines[i]);
+				plugin.getComplement().setLine(sign, i, errorLines[i]);
 			}
 		}
 
@@ -130,7 +135,7 @@ public class SignData {
 
 		wall.setType(mat);
 
-		if (Version.isCurrentLower(Version.v1_13_R1)) {
+		if (ServerVersion.isCurrentLower(ServerVersion.v1_13_R1)) {
 			try {
 				Block.class.getMethod("setData", byte.class).invoke(wall, (byte) color);
 			} catch (Exception e) {
@@ -139,77 +144,84 @@ public class SignData {
 		}
 	}
 
-	private void changeBlockBackground() {
-		Game game = GameUtils.getGame(gameName);
+	// TODO Disgusting
+	private void changeBlockBackground(Game game) {
 		GameStatus status = game.getStatus();
-		String type = ConfigValues.getSignBackground().toLowerCase();
 
-		if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
+		if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_13_R1)) {
 			if (status == GameStatus.READY) {
-				if (type.contentEquals("wool"))
+				if (ConfigValues.getSignBackground() == SignBackgrounds.WOOL)
 					updateBackground(Material.YELLOW_WOOL);
-				else if (type.contentEquals("glass"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.GLASS)
 					updateBackground(Material.YELLOW_STAINED_GLASS);
-				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.TERRACOTTA
+						|| ConfigValues.getSignBackground() == SignBackgrounds.CLAY)
 					updateBackground(Material.YELLOW_TERRACOTTA);
 			}
 
-			if (status == GameStatus.WAITING && game.getPlayers().size() == game.maxPlayers) {
-				if (type.contentEquals("wool"))
+			if (status == GameStatus.WAITING && game.getPlayers().size() >= game.maxPlayers) {
+				if (ConfigValues.getSignBackground() == SignBackgrounds.WOOL)
 					updateBackground(Material.BLUE_WOOL);
-				else if (type.contentEquals("glass"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.GLASS)
 					updateBackground(Material.BLUE_STAINED_GLASS);
-				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.TERRACOTTA
+						|| ConfigValues.getSignBackground() == SignBackgrounds.CLAY)
 					updateBackground(Material.BLUE_TERRACOTTA);
 			}
 
-			if (status == GameStatus.RUNNING && game.isGameRunning()) {
-				if (type.contentEquals("wool"))
+			if (status == GameStatus.RUNNING && game.isRunning()) {
+				if (ConfigValues.getSignBackground() == SignBackgrounds.WOOL)
 					updateBackground(Material.LIME_WOOL);
-				else if (type.contentEquals("glass"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.GLASS)
 					updateBackground(Material.LIME_STAINED_GLASS);
-				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.TERRACOTTA
+						|| ConfigValues.getSignBackground() == SignBackgrounds.CLAY)
 					updateBackground(Material.LIME_TERRACOTTA);
 			} else if (status == GameStatus.STOPPED || status == GameStatus.NOTREADY) {
-				if (type.contentEquals("wool"))
+				if (ConfigValues.getSignBackground() == SignBackgrounds.WOOL)
 					updateBackground(Material.RED_WOOL);
-				else if (type.contentEquals("glass"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.GLASS)
 					updateBackground(Material.RED_STAINED_GLASS);
-				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.TERRACOTTA
+						|| ConfigValues.getSignBackground() == SignBackgrounds.CLAY)
 					updateBackground(Material.RED_TERRACOTTA);
 			}
 		} else {
 			if (status == GameStatus.READY) {
-				if (type.contentEquals("wool"))
+				if (ConfigValues.getSignBackground() == SignBackgrounds.WOOL)
 					updateBackground(Material.getMaterial("WOOL"), 4);
-				else if (type.contentEquals("glass"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.GLASS)
 					updateBackground(Material.getMaterial("STAINED_GLASS"), 4);
-				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.TERRACOTTA
+						|| ConfigValues.getSignBackground() == SignBackgrounds.CLAY)
 					updateBackground(Material.getMaterial("STAINED_CLAY"), 4);
 			}
 
-			if (status == GameStatus.WAITING && game.getPlayers().size() == game.maxPlayers) {
-				if (type.contentEquals("wool"))
+			if (status == GameStatus.WAITING && game.getPlayers().size() >= game.maxPlayers) {
+				if (ConfigValues.getSignBackground() == SignBackgrounds.WOOL)
 					updateBackground(Material.getMaterial("WOOL"), 11);
-				else if (type.contentEquals("glass"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.GLASS)
 					updateBackground(Material.getMaterial("STAINED_GLASS"), 11);
-				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.TERRACOTTA
+						|| ConfigValues.getSignBackground() == SignBackgrounds.CLAY)
 					updateBackground(Material.getMaterial("STAINED_CLAY"), 11);
 			}
 
-			if (status == GameStatus.RUNNING && game.isGameRunning()) {
-				if (type.contentEquals("wool"))
+			if (status == GameStatus.RUNNING && game.isRunning()) {
+				if (ConfigValues.getSignBackground() == SignBackgrounds.WOOL)
 					updateBackground(Material.getMaterial("WOOL"), 5);
-				else if (type.contentEquals("glass"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.GLASS)
 					updateBackground(Material.getMaterial("STAINED_GLASS"), 5);
-				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.TERRACOTTA
+						|| ConfigValues.getSignBackground() == SignBackgrounds.CLAY)
 					updateBackground(Material.getMaterial("STAINED_CLAY"), 5);
 			} else if (status == GameStatus.STOPPED || status == GameStatus.NOTREADY) {
-				if (type.contentEquals("wool"))
+				if (ConfigValues.getSignBackground() == SignBackgrounds.WOOL)
 					updateBackground(Material.getMaterial("WOOL"), 14);
-				else if (type.contentEquals("glass"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.GLASS)
 					updateBackground(Material.getMaterial("STAINED_GLASS"), 14);
-				else if (type.contentEquals("terracotta") || type.contentEquals("clay"))
+				else if (ConfigValues.getSignBackground() == SignBackgrounds.TERRACOTTA
+						|| ConfigValues.getSignBackground() == SignBackgrounds.CLAY)
 					updateBackground(Material.getMaterial("STAINED_CLAY"), 14);
 			}
 		}

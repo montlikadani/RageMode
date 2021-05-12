@@ -43,9 +43,8 @@ public class PressureMine {
 	}
 
 	public void removeMine(Location loc) {
-		if (mines.contains(loc)) {
+		if (mines.remove(loc)) {
 			loc.getBlock().setType(Material.AIR);
-			mines.remove(loc);
 		}
 	}
 }

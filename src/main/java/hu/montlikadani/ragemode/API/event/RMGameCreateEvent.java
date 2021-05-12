@@ -12,6 +12,7 @@ public class RMGameCreateEvent extends GameEvent {
 
 	public RMGameCreateEvent(Game game, int maxPlayers, int minPlayers) {
 		super(game);
+
 		this.maxPlayers = maxPlayers;
 		this.minPlayers = minPlayers;
 	}

@@ -2,9 +2,11 @@ package hu.montlikadani.ragemode.API.event;
 
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
-import hu.montlikadani.ragemode.scores.KilledWith;
+import hu.montlikadani.ragemode.items.GameItems;
 
 /**
  * Called when a player killed another living entity in game.
@@ -14,17 +16,18 @@ public class RMPlayerKilledEvent extends GameEvent {
 	private Player killer;
 	private LivingEntity entity;
 
-	private KilledWith tool;
+	private GameItems tool;
 
 	public RMPlayerKilledEvent(Game game, LivingEntity entity, Player killer) {
 		this(game, entity, killer, null);
 	}
 
-	public RMPlayerKilledEvent(Game game, LivingEntity entity, Player killer, KilledWith tool) {
+	public RMPlayerKilledEvent(Game game, LivingEntity entity, Player killer, GameItems tool) {
 		super(game);
+
 		this.entity = entity;
 		this.killer = killer;
-		this.tool = tool == null ? KilledWith.UNKNOWN : tool;
+		this.tool = tool == null ? GameItems.UNKNOWN : tool;
 	}
 
 	/**
@@ -32,6 +35,7 @@ public class RMPlayerKilledEvent extends GameEvent {
 	 * 
 	 * @return {@link Player}
 	 */
+	@Nullable
 	public Player getKiller() {
 		return killer;
 	}
@@ -41,6 +45,7 @@ public class RMPlayerKilledEvent extends GameEvent {
 	 * 
 	 * @return {@link LivingEntity}
 	 */
+	@NotNull
 	public LivingEntity getEntity() {
 		return entity;
 	}
@@ -48,9 +53,10 @@ public class RMPlayerKilledEvent extends GameEvent {
 	/**
 	 * The tool which the killer used and hold in their hand.
 	 * 
-	 * @return {@link KilledWith}
+	 * @return {@link GameItems}
 	 */
-	public KilledWith getTool() {
+	@NotNull
+	public GameItems getTool() {
 		return tool;
 	}
 }

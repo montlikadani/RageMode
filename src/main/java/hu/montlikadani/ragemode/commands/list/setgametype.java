@@ -5,14 +5,19 @@ import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 import org.bukkit.command.CommandSender;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
+import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-@CommandProcessor(name = "setgametype", permission = "ragemode.admin.setgametype")
-public class setgametype implements ICommand {
+@CommandProcessor(
+	name = "setgametype",
+	desc = "Sets the new type of the given game",
+	params = "<gameName> <gameType>",
+	permission = "ragemode.admin.setgametype")
+public final class setgametype implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
@@ -22,9 +27,9 @@ public class setgametype implements ICommand {
 			return false;
 		}
 
-		String game = args[1];
-		if (!GameUtils.isGameExist(game)) {
-			sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", game));
+		Game game = GameUtils.getGame(args[1]);
+		if (game == null) {
+			sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", args[1]));
 			return false;
 		}
 
@@ -33,11 +38,12 @@ public class setgametype implements ICommand {
 			type = GameType.NORMAL;
 		}
 
-		plugin.getConfiguration().getArenasCfg().set("arenas." + game + ".gametype", type.toString().toLowerCase());
+		plugin.getConfiguration().getArenasCfg().set("arenas." + game.getName() + ".gametype",
+				type.toString().toLowerCase());
 		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 
-		GameUtils.getGame(game).setGameType(type);
-		sendMessage(sender, RageMode.getLang().get("commands.setgametype.set", "%game%", game));
+		game.setGameType(type);
+		sendMessage(sender, RageMode.getLang().get("commands.setgametype.set", "%game%", game.getName()));
 		return true;
 	}
 }

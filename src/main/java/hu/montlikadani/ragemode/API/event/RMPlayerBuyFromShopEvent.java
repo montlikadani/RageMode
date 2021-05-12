@@ -1,6 +1,7 @@
 package hu.montlikadani.ragemode.API.event;
 
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.items.shop.BoughtElements;
@@ -17,6 +18,7 @@ public class RMPlayerBuyFromShopEvent extends GameEvent {
 
 	public RMPlayerBuyFromShopEvent(Game game, Player player, BoughtElements elements, ShopCategory shopCategory) {
 		super(game);
+
 		this.player = player;
 		this.elements = elements;
 		this.shopCategory = shopCategory;
@@ -27,6 +29,7 @@ public class RMPlayerBuyFromShopEvent extends GameEvent {
 	 * 
 	 * @return {@link Player}
 	 */
+	@NotNull
 	public Player getPlayer() {
 		return player;
 	}
@@ -36,6 +39,7 @@ public class RMPlayerBuyFromShopEvent extends GameEvent {
 	 * 
 	 * @return {@link BoughtElements}
 	 */
+	@NotNull
 	public BoughtElements getElements() {
 		return elements;
 	}
@@ -45,6 +49,7 @@ public class RMPlayerBuyFromShopEvent extends GameEvent {
 	 * 
 	 * @return {@link ShopCategory}
 	 */
+	@NotNull
 	public ShopCategory getShopCategory() {
 		return shopCategory;
 	}

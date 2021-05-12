@@ -1,25 +1,24 @@
 package hu.montlikadani.ragemode.area;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-public class GameAreaManager {
+public final class GameAreaManager {
 
-	private static final Map<String, GameArea> GAMEAREAS = new HashMap<>();
+	private static final Map<String, GameArea> GAMEAREAS = new java.util.HashMap<>();
 
 	public static Map<String, GameArea> getGameAreas() {
 		return GAMEAREAS;
@@ -28,53 +27,56 @@ public class GameAreaManager {
 	public static void load() {
 		GAMEAREAS.clear();
 
-		if (!RageMode.getInstance().getConfiguration().getAreasFile().exists()) {
+		final RageMode plugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
+
+		if (!plugin.getConfiguration().getAreasFile().exists()) {
 			return;
 		}
 
-		FileConfiguration c = RageMode.getInstance().getConfiguration().getAreasCfg();
-		if (!c.isConfigurationSection("areas")) {
+		org.bukkit.configuration.ConfigurationSection section = plugin.getConfiguration().getAreasCfg()
+				.getConfigurationSection("areas");
+		if (section == null) {
 			return;
 		}
 
-		for (String area : c.getConfigurationSection("areas").getKeys(false)) {
-			String path = "areas." + area + ".";
-			String gameName = c.getString(path + "game", "");
-			if (gameName.isEmpty() || !GameUtils.isGameExist(gameName)) {
+		for (String name : section.getKeys(false)) {
+			Game game = GameUtils.getGame(section.getString(name + ".game", ""));
+
+			if (game == null) {
 				continue;
 			}
 
-			World world = Bukkit.getWorld(c.getString(path + "world", ""));
+			World world = Bukkit.getWorld(section.getString(name + ".world", ""));
 			if (world == null) {
 				continue;
 			}
 
-			Location loc1 = new Location(world, c.getDouble(path + "loc1.x", 0), c.getDouble(path + "loc1.y", 0),
-					c.getDouble(path + "loc1.z", 0));
-			Location loc2 = new Location(world, c.getDouble(path + "loc2.x", 0), c.getDouble(path + "loc2.y", 0),
-					c.getDouble(path + "loc2.z", 0));
+			Location loc1 = new Location(world, section.getDouble(name + ".loc1.x"),
+					section.getDouble(name + ".loc1.y"), section.getDouble(name + ".loc1.z"));
+			Location loc2 = new Location(world, section.getDouble(name + ".loc2.x"),
+					section.getDouble(name + ".loc2.y"), section.getDouble(name + ".loc2.z"));
 
-			GAMEAREAS.put(area, new GameArea(GameUtils.getGame(gameName), new Area(loc1, loc2)));
+			GAMEAREAS.put(name, new GameArea(game, new Area(loc1, loc2), name));
 		}
 	}
 
 	/**
-	 * Checks if the given area name is exists.
+	 * Checks if the area exist with the given name.
 	 * 
 	 * @param name area name
-	 * @return true if yes
+	 * @return true if the map contains the key
 	 */
-	public static boolean isAreaExist(String name) {
+	public static boolean isAreaExist(@Nullable String name) {
 		return GAMEAREAS.containsKey(name);
 	}
 
 	/**
-	 * Remove all entities from the given game. If the game type is not
-	 * {@link GameType#APOCALYPSE} it will returns.
+	 * Remove all entities from the given game. The game type should be set to
+	 * {@link GameType#APOCALYPSE}.
 	 * 
 	 * @param game {@link Game}
 	 */
-	public static void removeEntitiesFromGame(Game game) {
+	public static void removeEntitiesFromGame(@Nullable Game game) {
 		if (game == null || game.getGameType() != GameType.APOCALYPSE) {
 			return;
 		}
@@ -92,7 +94,12 @@ public class GameAreaManager {
 	 * @param loc {@link Location}
 	 * @return {@link GameArea}
 	 */
-	public static Optional<GameArea> getAreaByLocation(Location loc) {
+	@NotNull
+	public static Optional<GameArea> getAreaByLocation(@Nullable Location loc) {
+		if (loc == null) {
+			return Optional.empty();
+		}
+
 		return GAMEAREAS.values().stream().filter(area -> area.inArea(loc)).findFirst();
 	}
 
@@ -102,7 +109,7 @@ public class GameAreaManager {
 	 * @param loc {@link Location}
 	 * @return true if yes
 	 */
-	public static boolean inArea(Location loc) {
+	public static boolean inArea(@Nullable Location loc) {
 		return getAreaByLocation(loc).isPresent();
 	}
 
@@ -112,17 +119,29 @@ public class GameAreaManager {
 	 * @param loc {@link Location}
 	 * @return the list of {@link GameArea}
 	 */
-	public static List<GameArea> getAreasByLocation(Location loc) {
-		return GAMEAREAS.values().stream().filter(area -> area.inArea(loc)).collect(Collectors.toList());
+	@NotNull
+	public static List<GameArea> getAreasByLocation(@Nullable Location loc) {
+		List<GameArea> list = new java.util.ArrayList<>();
+
+		if (loc != null) {
+			for (GameArea area : GAMEAREAS.values()) {
+				if (area.inArea(loc)) {
+					list.add(area);
+				}
+			}
+		}
+
+		return list;
 	}
 
 	/**
-	 * Gets the area by game.
+	 * Gets the area instance by game.
 	 * 
 	 * @param game {@link Game}
 	 * @return {@link GameArea}
 	 */
-	public static GameArea getAreaByGame(Game game) {
+	@Nullable
+	public static GameArea getAreaByGame(@Nullable Game game) {
 		if (game == null) {
 			return null;
 		}
@@ -134,5 +153,22 @@ public class GameAreaManager {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Removes all the areas by game object if exist.
+	 * 
+	 * @param game the {@link Game} from where to remove
+	 */
+	public static void removeAreaByGame(@Nullable Game game) {
+		if (game == null) {
+			return;
+		}
+
+		for (GameArea area : GAMEAREAS.values()) {
+			if (area.getGame().getName().equals(game.getName())) {
+				GAMEAREAS.remove(area.getName());
+			}
+		}
 	}
 }

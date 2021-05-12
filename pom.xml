@@ -2,12 +2,11 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<groupId>hu.montlikadani</groupId>
 	<artifactId>ragemode</artifactId>
 	<version>1.8.8</version>
-	<packaging>jar</packaging>
 	<name>ragemode</name>
-	<url>http://maven.apache.org</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -16,26 +15,29 @@
 	<repositories>
 		<repository>
 			<id>papi-repo</id>
-			<url>http://repo.extendedclip.com/content/repositories/placeholderapi/</url>
-		</repository>
-		<repository>
-			<id>codemc-repo</id>
-			<url>https://repo.codemc.io/repository/maven-public/</url>
+			<url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
 		</repository>
 		<repository>
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
 		</repository>
 		<repository>
-			<id>purpur</id>
-			<url>https://repo.pl3x.net/</url>
+			<id>papermc</id>
+			<url>https://papermc.io/repo/repository/maven-public/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>annotations</id>
+			<url>https://mvnrepository.com/artifact/org.jetbrains/annotations</url>
 		</repository>
 	</repositories>
 
 	<dependencies>
 		<dependency>
-			<groupId>net.pl3x.purpur</groupId>
-			<artifactId>purpur-api</artifactId>
+			<groupId>com.destroystokyo.paper</groupId>
+			<artifactId>paper-api</artifactId>
 			<version>1.16.5-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 			<exclusions>
@@ -90,10 +92,9 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>com.gmail.filoghost.holographicdisplays</groupId>
-			<artifactId>holographicdisplays-api</artifactId>
-			<version>2.4.6</version>
-			<scope>provided</scope>
+			<groupId>org.jetbrains</groupId>
+			<artifactId>annotations</artifactId>
+			<version>20.1.0</version>
 		</dependency>
 	</dependencies>
 

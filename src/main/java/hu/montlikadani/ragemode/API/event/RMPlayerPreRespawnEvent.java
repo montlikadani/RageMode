@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.API.event;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.jetbrains.annotations.NotNull;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
 
@@ -15,14 +16,16 @@ public class RMPlayerPreRespawnEvent extends GameEvent implements Cancellable {
 
 	public RMPlayerPreRespawnEvent(Game game, Player player) {
 		super(game);
+
 		this.player = player;
 	}
 
 	/**
-	 * Gets the died player.
+	 * Gets the player who's attempting to respawn.
 	 * 
 	 * @return {@link Player}
 	 */
+	@NotNull
 	public Player getPlayer() {
 		return player;
 	}

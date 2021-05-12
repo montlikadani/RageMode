@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.database;
 import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.apache.commons.lang.Validate;
 
@@ -40,8 +41,8 @@ public class SQLConnect extends DBConnector implements DBMethods {
 
 		return dispatchAsync(() -> {
 			if (isConnected()) {
-				try {
-					getConnection().executeUpdate(query);
+				try (Statement statement = getConnection().createStatement()) {
+					statement.executeUpdate(query);
 					return true;
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -66,8 +67,8 @@ public class SQLConnect extends DBConnector implements DBMethods {
 		}
 
 		return dispatchAsync(() -> {
-			try {
-				getConnection().executeUpdate("DELETE FROM " + table + ";");
+			try (Statement statement = getConnection().createStatement()) {
+				statement.executeUpdate("DELETE FROM " + table + ";");
 				return true;
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -83,8 +84,8 @@ public class SQLConnect extends DBConnector implements DBMethods {
 
 		return dispatchAsync(() -> {
 			if (isConnected()) {
-				try {
-					getConnection().executeUpdate("DROP TABLE IF EXISTS `" + table + "`;");
+				try (Statement statement = getConnection().createStatement()) {
+					statement.executeUpdate("DROP TABLE IF EXISTS `" + table + "`;");
 					return true;
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -101,14 +102,10 @@ public class SQLConnect extends DBConnector implements DBMethods {
 
 		return dispatchAsync(() -> {
 			if (isConnected()) {
-				try {
-					ResultSet tables = getConnection().getConnection().getMetaData().getTables(null, null, name, null);
+				try (ResultSet tables = getConnection().getMetaData().getTables(null, null, name, null)) {
 					if (tables.next()) {
-						tables.close();
 						return true;
 					}
-
-					tables.close();
 				} catch (SQLException e) {
 					Debug.logConsole("Table with name {0} does not exists or not a table!", name);
 				}
@@ -125,15 +122,10 @@ public class SQLConnect extends DBConnector implements DBMethods {
 
 		return dispatchAsync(() -> {
 			if (isConnected()) {
-				try {
-					ResultSet tables = getConnection().getConnection().getMetaData().getColumns(null, null, table,
-							collumn);
-					if (tables.next()) {
-						tables.close();
+				try (ResultSet columns = getConnection().getMetaData().getColumns(null, null, table, collumn)) {
+					if (columns.next()) {
 						return true;
 					}
-
-					tables.close();
 				} catch (SQLException e) {
 					Debug.logConsole("Could not check if table {0} exists, SQLException: {1}", table, e.getMessage());
 				}

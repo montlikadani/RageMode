@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.API.event;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
 
@@ -10,12 +11,13 @@ import hu.montlikadani.ragemode.gameLogic.Game;
  */
 public class PlayerKickedFromGame extends GameEvent {
 
-	private CommandSender by;
+	private CommandSender requestedBy;
 	private Player target;
 
-	public PlayerKickedFromGame(Game game, CommandSender by, Player target) {
+	public PlayerKickedFromGame(Game game, CommandSender requestedBy, Player target) {
 		super(game);
-		this.by = by;
+
+		this.requestedBy = requestedBy;
 		this.target = target;
 	}
 
@@ -24,8 +26,9 @@ public class PlayerKickedFromGame extends GameEvent {
 	 * 
 	 * @return {@link CommandSender} the sender
 	 */
+	@NotNull
 	public CommandSender getBySender() {
-		return by;
+		return requestedBy;
 	}
 
 	/**
@@ -33,6 +36,7 @@ public class PlayerKickedFromGame extends GameEvent {
 	 * 
 	 * @return {@link Player}
 	 */
+	@NotNull
 	public Player getTarget() {
 		return target;
 	}

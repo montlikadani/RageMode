@@ -1,11 +1,10 @@
 package hu.montlikadani.ragemode.events;
 
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-public class Listeners_1_8 implements Listener {
+public final class Listeners_1_8 implements org.bukkit.event.Listener {
 
 	@SuppressWarnings("deprecation")
 	@EventHandler

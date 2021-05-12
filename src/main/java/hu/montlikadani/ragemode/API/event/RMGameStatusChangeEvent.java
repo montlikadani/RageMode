@@ -1,5 +1,7 @@
 package hu.montlikadani.ragemode.API.event;
 
+import org.jetbrains.annotations.NotNull;
+
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 
@@ -12,6 +14,7 @@ public class RMGameStatusChangeEvent extends GameEvent {
 
 	public RMGameStatusChangeEvent(Game game, GameStatus status) {
 		super(game);
+
 		this.status = status;
 	}
 
@@ -20,6 +23,7 @@ public class RMGameStatusChangeEvent extends GameEvent {
 	 * 
 	 * @return {@link GameStatus}
 	 */
+	@NotNull
 	public GameStatus getStatus() {
 		return status;
 	}

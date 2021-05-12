@@ -8,10 +8,9 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.area.GameArea;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.gameLogic.Game;
-import hu.montlikadani.ragemode.gameLogic.GameLobby;
-import hu.montlikadani.ragemode.gameLogic.GameSpawn;
-import hu.montlikadani.ragemode.gameLogic.GameZombieSpawn;
-import hu.montlikadani.ragemode.gameLogic.IGameSpawn;
+import hu.montlikadani.ragemode.gameLogic.spawn.GameSpawn;
+import hu.montlikadani.ragemode.gameLogic.spawn.GameZombieSpawn;
+import hu.montlikadani.ragemode.gameLogic.spawn.IGameSpawn;
 import hu.montlikadani.ragemode.utils.Debug;
 
 public class MapChecker {
@@ -82,14 +81,13 @@ public class MapChecker {
 	}
 
 	private void checkLobby() {
-		GameLobby gameLobby = game.getGameLobby();
-		if (gameLobby.location == null) {
+		if (game.getGameLobby().location == null) {
 			message = RageMode.getLang().get("setup.lobby.not-set", "%game%", game.getName());
 			isValid = false;
 			return;
 		}
 
-		if (gameLobby.location.getWorld() == null) {
+		if (game.getGameLobby().location.getWorld() == null) {
 			message = RageMode.getLang().get("setup.lobby.worldname-not-set");
 			isValid = false;
 			return;
@@ -106,20 +104,20 @@ public class MapChecker {
 			return;
 		}
 
-		if (!gameSpawn.isReady() || gameSpawn.getSpawnLocations().size() < game.maxPlayers) {
+		if (!gameSpawn.isReady()) {
 			message = RageMode.getLang().get("game.too-few-spawns");
 			isValid = false;
 			return;
 		}
 
-		if (game.getGameType() == GameType.APOCALYPSE) {
+		if (!game.randomSpawnForZombies && game.getGameType() == GameType.APOCALYPSE) {
 			if ((gameSpawn = game.getSpawn(GameZombieSpawn.class)) == null) {
 				message = RageMode.getLang().get("game.no-spawns-configured", "%game%", game.getName());
 				isValid = false;
 				return;
 			}
 
-			if (!gameSpawn.isReady() || gameSpawn.getSpawnLocations().size() < game.maxPlayers) {
+			if (!gameSpawn.isReady()) {
 				message = RageMode.getLang().get("game.too-few-spawns");
 				isValid = false;
 				return;

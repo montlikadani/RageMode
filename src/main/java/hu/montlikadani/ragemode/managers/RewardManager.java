@@ -1,194 +1,553 @@
 package hu.montlikadani.ragemode.managers;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import java.util.concurrent.ThreadLocalRandom;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.Sound;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.utils.Debug;
+import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.items.ItemHandler;
+import hu.montlikadani.ragemode.items.Items;
 import hu.montlikadani.ragemode.utils.Misc;
+import hu.montlikadani.ragemode.utils.SchedulerUtil;
 import hu.montlikadani.ragemode.utils.Utils;
 
 public class RewardManager {
 
-	private String game;
+	private final RageMode plugin;
 
-	private final FileConfiguration conf = RageMode.getInstance().getConfiguration().getRewardsCfg();
+	// We uses arrayList to allow duplications
+	private final List<RewardCommand> endGameWinnerCommands = new ArrayList<>(),
+			endGamePlayerCommands = new ArrayList<>();
+	private final List<RewardItem> endGameWinnerRewardItems = new ArrayList<>(),
+			endGamePlayerRewardItems = new ArrayList<>();
+	private final List<InGameCommand> inGameCommands = new ArrayList<>();
+	private final List<Bonuses> bonuses = new ArrayList<>();
 
-	public RewardManager(String game) {
-		this.game = game;
+	private boolean enabled;
+
+	public RewardManager(RageMode plugin) {
+		this.plugin = plugin;
+		load();
 	}
 
-	public String getGame() {
-		return game;
+	public final boolean isEnabled() {
+		return enabled;
 	}
 
-	public void rewardForWinner(Player winner) {
-		for (String path : conf.getStringList("rewards.end-game.winner.commands")) {
-			String[] arg = path.split(": ");
+	private void load() {
+		endGameWinnerCommands.clear();
+		endGamePlayerCommands.clear();
+		endGameWinnerRewardItems.clear();
+		endGamePlayerRewardItems.clear();
+		inGameCommands.clear();
+		bonuses.clear();
 
-			String cmd = path;
-			if (arg.length < 2) {
-				arg[0] = "console";
-			} else {
-				cmd = arg[1];
+		org.bukkit.configuration.MemorySection conf = plugin.getConfiguration().getRewardsCfg();
+
+		enabled = conf.getBoolean("enabled");
+
+		for (String one : conf.getStringList("rewards.end-game.winner.commands")) {
+			endGameWinnerCommands.add(new RewardCommand(one));
+		}
+
+		for (String c : conf.getStringList("rewards.end-game.players.commands")) {
+			endGamePlayerCommands.add(new RewardCommand(c));
+		}
+
+		for (String bonus : conf.getStringList("rewards.in-game.bonuses.kill-bonuses.list")) {
+			bonuses.add(new Bonuses(bonus));
+		}
+
+		ConfigurationSection section = conf.getConfigurationSection("rewards.end-game.winner.items");
+		if (section != null) {
+			for (String n : section.getKeys(false)) {
+				endGameWinnerRewardItems.add(new RewardItem(section, n));
+			}
+		}
+
+		if ((section = conf.getConfigurationSection("rewards.end-game.players.items")) != null) {
+			for (String n : section.getKeys(false)) {
+				endGamePlayerRewardItems.add(new RewardItem(section, n));
+			}
+		}
+
+		if ((section = conf.getConfigurationSection("rewards.in-game.run-commands")) != null) {
+			for (String key : section.getKeys(false)) {
+				for (String cmd : section.getStringList(key)) {
+					inGameCommands.add(new InGameCommand(key, cmd));
+				}
+			}
+		}
+	}
+
+	public void rewardForWinner(Player winner, Game game) {
+		SchedulerUtil.submitSync(() -> {
+			for (RewardCommand command : endGameWinnerCommands) {
+				if (command.command.isEmpty()) {
+					continue;
+				}
+
+				String cmd = replacePlaceholders(command.command, winner, game);
+
+				if (command.type == SenderType.PLAYER) {
+					winner.performCommand(cmd);
+				} else if (command.type == SenderType.CONSOLE) {
+					plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), cmd);
+				}
 			}
 
-			cmd = replacePlaceholders(cmd, winner, true);
-
-			if (arg[0].equalsIgnoreCase("console"))
-				Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), cmd);
-			else if (arg[0].equalsIgnoreCase("player"))
-				winner.performCommand(cmd);
-		}
-
-		for (String path : conf.getStringList("rewards.end-game.winner.messages")) {
-			winner.sendMessage(replacePlaceholders(path, winner, true));
-		}
-
-		double cash = conf.getDouble("rewards.end-game.winner.cash");
-		if (cash > 0D && RageMode.getInstance().isVaultEnabled())
-			RageMode.getInstance().getEconomy().depositPlayer(winner, cash);
-
-		addItems("winner", winner);
+			for (RewardItem rewardItem : endGameWinnerRewardItems) {
+				if (rewardItem.slot >= 0) {
+					winner.getInventory().setItem(rewardItem.slot, rewardItem.itemStack);
+				} else {
+					winner.getInventory().addItem(rewardItem.itemStack);
+				}
+			}
+		}, true);
 	}
 
-	public void rewardForPlayers(Player pls) {
-		for (String path : conf.getStringList("rewards.end-game.players.commands")) {
-			String[] arg = path.split(": ");
-			String cmd = path;
-			if (arg.length < 2) {
-				arg[0] = "console";
-			} else {
-				cmd = arg[1];
+	public void rewardForPlayers(Player player, Game game) {
+		SchedulerUtil.submitSync(() -> {
+			for (RewardCommand command : endGamePlayerCommands) {
+				if (command.command.isEmpty()) {
+					continue;
+				}
+
+				String cmd = replacePlaceholders(command.command, player, game);
+
+				if (command.type == SenderType.PLAYER) {
+					player.performCommand(cmd);
+				} else if (command.type == SenderType.CONSOLE) {
+					plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), cmd);
+				}
 			}
 
-			cmd = replacePlaceholders(cmd, pls, false);
-
-			if (arg[0].equalsIgnoreCase("console"))
-				Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), cmd);
-			else if (arg[0].equalsIgnoreCase("player"))
-				pls.performCommand(cmd);
-		}
-
-		List<String> msgs = conf.getStringList("rewards.end-game.players.messages");
-		if (!msgs.isEmpty()) {
-			msgs.forEach(path -> pls.sendMessage(replacePlaceholders(path, pls, false)));
-		}
-
-		double cash = conf.getDouble("rewards.end-game.players.cash", 0D);
-		if (cash > 0D && RageMode.getInstance().isVaultEnabled())
-			RageMode.getInstance().getEconomy().depositPlayer(pls, cash);
-
-		addItems("players", pls);
+			for (RewardItem rewardItem : endGamePlayerRewardItems) {
+				if (rewardItem.slot >= 0) {
+					player.getInventory().setItem(rewardItem.slot, rewardItem.itemStack);
+				} else {
+					player.getInventory().addItem(rewardItem.itemStack);
+				}
+			}
+		}, true);
 	}
 
-	private String replacePlaceholders(String path, Player p, boolean winner) {
-		double cash = conf.getDouble("rewards.end-game." + (winner ? "winner" : "players") + ".cash", 0D);
+	public void performGameCommands(Player player, Game game, InGameCommand.CommandType commandType) {
+		SchedulerUtil.submitSync(() -> {
+			for (InGameCommand command : inGameCommands) {
+				if (command.command.isEmpty()
+						|| (command.chance > -1 && ThreadLocalRandom.current().nextInt(0, 100) > command.chance)) {
+					continue;
+				}
 
-		path = path.replace("%game%", game);
-		path = path.replace("%player%", p.getName());
-		path = path.replace("%reward%", cash > 0D ? Double.toString(cash) : "");
-		path = Utils.setPlaceholders(path, p);
-		return Utils.colors(path);
+				if (command.commandType == commandType) {
+					String cmd = replacePlaceholders(command.command, player, game);
+
+					if (command.type == SenderType.CONSOLE) {
+						plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), cmd);
+					} else if (command.type == SenderType.PLAYER) {
+						player.performCommand(cmd);
+					}
+				}
+			}
+		}, true);
 	}
 
-	private void addItems(String path, Player p) {
-		if (!conf.isConfigurationSection("rewards.end-game." + path + ".items")) {
-			return;
-		}
-
-		for (String num : conf.getConfigurationSection("rewards.end-game." + path + ".items").getKeys(false)) {
-			String rewPath = "rewards.end-game." + path + ".items." + num + ".";
-			String type = conf.getString(rewPath + "type", "");
-			if (type.isEmpty()) {
+	public void giveBonuses(Player player) {
+		for (Bonuses bonus : bonuses) {
+			if (bonus.chance > -1 && ThreadLocalRandom.current().nextInt(0, 100) > bonus.chance) {
 				continue;
 			}
 
-			try {
-				Material mat = Material.valueOf(type.toUpperCase());
-				if (mat == null) {
-					Debug.logConsole(Level.WARNING, "Unknown item name: " + type);
-					Debug.logConsole("Find and double check item names using this page:");
-					Debug.logConsole("https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html");
-					continue;
+			if (bonus.gameItem != null) {
+				if (bonus.gameItem.getSlot() >= 0) {
+					player.getInventory().setItem(bonus.gameItem.getSlot(), bonus.gameItem.get());
+				} else {
+					player.getInventory().addItem(bonus.gameItem.get());
 				}
+			}
 
-				if (mat == Material.AIR) {
-					Debug.logConsole("AIR is not supported.");
-					continue;
-				}
+			if (bonus.sound != null) {
+				player.playSound(player.getLocation(), bonus.sound, bonus.soundVolume, bonus.soundPitch);
+			}
 
-				ItemStack itemStack = new ItemStack(mat);
-				itemStack.setAmount(conf.getInt(rewPath + "amount", 1));
-
-				if (conf.contains(rewPath + "durability"))
-					Misc.setDurability(itemStack, (short) conf.getDouble(rewPath + "durability"));
-
-				ItemMeta itemMeta = itemStack.getItemMeta();
-				if (itemMeta == null) {
-					continue;
-				}
-
-				String name = conf.getString(rewPath + "name", "");
-				if (!name.isEmpty())
-					itemMeta.setDisplayName(name.replaceAll("&", "\u00a7"));
-
-				List<String> loreList = conf.getStringList(rewPath + "lore");
-				if (!loreList.isEmpty())
-					itemMeta.setLore(Utils.colorList(loreList));
-
-				if (type.startsWith("LEATHER_")) {
-					String color = conf.getString(rewPath + "color", "");
-					if (!color.isEmpty() && itemMeta instanceof LeatherArmorMeta) {
-						((LeatherArmorMeta) itemMeta).setColor(getColorFromString(color));
-					}
-				}
-
-				itemStack.setItemMeta(itemMeta);
-
-				List<String> enchantList = conf.getStringList(rewPath + "enchants");
-				for (String enchant : enchantList) {
-					String[] split = enchant.split(":");
-					try {
-						if (itemStack.getItemMeta() instanceof EnchantmentStorageMeta) {
-							EnchantmentStorageMeta enchMeta = (EnchantmentStorageMeta) itemStack.getItemMeta();
-							enchMeta.addStoredEnchant(Misc.getEnchant(split[0]),
-									(split.length > 2 ? Integer.parseInt(split[1]) : 1), true);
-							itemStack.setItemMeta(enchMeta);
-						} else
-							itemStack.addUnsafeEnchantment(Misc.getEnchant(split[0]), Integer.parseInt(split[1]));
-					} catch (IllegalArgumentException b) {
-						Debug.logConsole(Level.WARNING, "Bad enchantment name: " + split[0]);
-						continue;
-					}
-				}
-
-				try {
-					if (conf.getInt(rewPath + "slot", -1) >= 0)
-						p.getInventory().setItem(conf.getInt(rewPath + "slot"), itemStack);
-					else
-						p.getInventory().addItem(itemStack);
-				} catch (IllegalArgumentException i) {
-					Debug.logConsole(Level.WARNING, "Slot is not between 0 and 8 inclusive.");
-				}
-			} catch (Exception e) {
-				Debug.logConsole(Level.WARNING, "Problem occured with your item: " + e.getMessage());
+			if (bonus.potionEffect != null) {
+				player.addPotionEffect(bonus.potionEffect);
 			}
 		}
 	}
 
-	private Color getColorFromString(String paramString) {
-		String[] color = paramString.split(",");
-		return Color.fromRGB(Integer.parseInt(color[0]), Integer.parseInt(color[1]), Integer.parseInt(color[2]));
+	public int getPointBonus() {
+		int points = 0;
+
+		for (Bonuses bonus : bonuses) {
+			if (bonus.chance > -1 && ThreadLocalRandom.current().nextInt(0, 100) > bonus.chance) {
+				continue;
+			}
+
+			points += bonus.points;
+		}
+
+		return points;
+	}
+
+	private String replacePlaceholders(String str, Player player, Game game) {
+		str = str.replace("%game%", game.getName());
+		str = str.replace("%player%", player.getName());
+		str = str.replace("%world%", player.getWorld().getName());
+		str = Utils.setPlaceholders(str, player);
+		return Utils.colors(str);
+	}
+
+	public static final class InGameCommand {
+
+		private String command = "";
+		private double chance = -1;
+
+		private SenderType type = SenderType.CONSOLE;
+		private CommandType commandType;
+
+		public InGameCommand(String key, String one) {
+			try {
+				commandType = CommandType.valueOf(key.toUpperCase());
+			} catch (IllegalArgumentException e) {
+				commandType = CommandType.JOIN;
+			}
+
+			if (one.startsWith("chance:")) {
+				one = one.replace("chance:", "");
+
+				String[] chSplit = one.split("_", 2);
+				if (chSplit.length > 0) {
+					try {
+						chance = Double.parseDouble(chSplit[0].replaceAll("[^0-9]+", ""));
+					} catch (NumberFormatException e) {
+					}
+
+					one = chSplit[1];
+				}
+			}
+
+			String[] split = one.split(":", 2);
+			if (split.length == 0) {
+				return;
+			}
+
+			if (split[0].equalsIgnoreCase("player")) {
+				type = SenderType.PLAYER;
+			}
+
+			if (split.length > 1) {
+				this.command = split[1];
+			}
+		}
+
+		public String getCommand() {
+			return command;
+		}
+
+		public double getChance() {
+			return chance;
+		}
+
+		public SenderType getType() {
+			return type;
+		}
+
+		public CommandType getCommandType() {
+			return commandType;
+		}
+
+		public enum CommandType {
+			JOIN, DEATH, LEAVE, START, STOP
+		}
+	}
+
+	public final class RewardItem {
+
+		private ItemStack itemStack;
+		private int slot = -1;
+
+		public ItemStack getItemStack() {
+			return itemStack;
+		}
+
+		public int getSlot() {
+			return slot;
+		}
+
+		public RewardItem(ConfigurationSection section, String num) {
+			String type = section.getString(num + ".type", "");
+			if (type.isEmpty()) {
+				return;
+			}
+
+			Material mat = Material.matchMaterial(type.toUpperCase());
+			if (mat == null || mat == Material.AIR) {
+				return;
+			}
+
+			ItemStack itemStack = new ItemStack(mat, section.getInt(num + ".amount", 1));
+
+			if (section.isDouble(num + ".durability"))
+				Misc.setDurability(itemStack, (short) section.getDouble(num + ".durability"));
+
+			org.bukkit.inventory.meta.ItemMeta itemMeta = itemStack.getItemMeta();
+			if (itemMeta == null) {
+				return;
+			}
+
+			String name = section.getString(num + ".name", "");
+			if (!name.isEmpty())
+				plugin.getComplement().setDisplayName(itemMeta, name);
+
+			List<String> loreList = section.getStringList(num + ".lore");
+			if (!loreList.isEmpty())
+				plugin.getComplement().setLore(itemMeta, Utils.colorList(loreList));
+
+			if (mat.toString().startsWith("LEATHER_")) {
+				String str = section.getString(num + ".color", "");
+
+				if (!str.isEmpty() && itemMeta instanceof LeatherArmorMeta) {
+					String[] split = str.split(",", 3);
+
+					if (split.length > 0) {
+						int red = Utils.tryParseInt(split[0]).orElse(0);
+						int green = split.length > 1 ? Utils.tryParseInt(split[1]).orElse(0) : 0;
+						int blue = split.length > 2 ? Utils.tryParseInt(split[2]).orElse(0) : 0;
+
+						try {
+							((LeatherArmorMeta) itemMeta).setColor(org.bukkit.Color.fromRGB(red, green, blue));
+						} catch (IllegalArgumentException e) {
+						}
+					}
+				}
+			}
+
+			itemStack.setItemMeta(itemMeta);
+
+			for (String one : section.getStringList(num + ".enchants")) {
+				String[] split = one.split(":", 2);
+
+				if (split.length == 0) {
+					continue;
+				}
+
+				org.bukkit.enchantments.Enchantment enchant = Misc.getEnchant(split[0]);
+				if (enchant == null) {
+					continue;
+				}
+
+				int level = split.length > 1 ? Utils.tryParseInt(split[1]).orElse(1) : 1;
+				if (level <= 0) {
+					level = 1;
+				}
+
+				if (itemMeta instanceof EnchantmentStorageMeta) {
+					EnchantmentStorageMeta enchMeta = (EnchantmentStorageMeta) itemMeta;
+					enchMeta.addStoredEnchant(enchant, level, true);
+					itemStack.setItemMeta(enchMeta);
+				} else
+					itemStack.addUnsafeEnchantment(enchant, level);
+			}
+
+			this.itemStack = itemStack;
+
+			int slot = section.getInt(num + ".slot", -1);
+			if (slot > -1 && slot <= 40) {
+				this.slot = slot;
+			}
+		}
+	}
+
+	public static final class RewardCommand {
+
+		private String command = "";
+		private SenderType type = SenderType.CONSOLE;
+
+		public RewardCommand(String command) {
+			String[] arg = command.contains(": ") ? command.split(": ", 2) : new String[] { "console", command };
+			if (arg.length < 2) {
+				return;
+			}
+
+			String line = arg[1];
+
+			if (line.charAt(0) == '/') {
+				line = line.substring(1, line.length());
+			}
+
+			if (arg[0].equalsIgnoreCase("player")) {
+				type = SenderType.PLAYER;
+			}
+
+			this.command = line;
+		}
+
+		public String getCommand() {
+			return command;
+		}
+
+		public SenderType getType() {
+			return type;
+		}
+	}
+
+	public final class Bonuses {
+
+		private ItemHandler gameItem;
+		private PotionEffect potionEffect;
+		private Sound sound;
+
+		private int chance = -1, points = 0;
+		private float soundPitch = 1f, soundVolume = 0f;
+
+		public Bonuses(String one) {
+			if (one.startsWith("chance:")) {
+				one = one.replace("chance:", "");
+
+				String[] split = one.split("_", 2);
+				if (split.length != 0) {
+					chance = Utils.tryParseInt(split[0]).orElse(-1);
+				}
+
+				one = one.replace(chance + "_", "");
+			}
+
+			if (one.contains("points:")) {
+				one = one.replace("points:", "");
+
+				String[] split = one.split(":", 2);
+
+				if (split.length > 1) {
+					points = Utils.tryParseInt(split[1]).orElse(0);
+				}
+			}
+
+			if (one.contains("effect:")) {
+				one = one.replace("effect:", "");
+
+				String[] split = one.split(":", 3);
+				if (split.length == 0) {
+					return;
+				}
+
+				PotionEffectType effect = PotionEffectType.getByName(split[0]);
+				if (effect == null) {
+					return;
+				}
+
+				int duration = (split.length > 1 ? Utils.tryParseInt(split[1]).orElse(5) : 5) * 20;
+				int amplifier = split.length > 2 ? Utils.tryParseInt(split[2]).orElse(1) : 1;
+
+				potionEffect = new PotionEffect(effect, duration, amplifier);
+			} else if (one.contains("sound:")) {
+				one = one.replace("sound:", "");
+
+				String[] split = one.split(":", 3);
+
+				try {
+					sound = Sound.valueOf(split[0].toUpperCase());
+				} catch (IllegalArgumentException e) {
+					return;
+				}
+
+				soundVolume = split.length > 1 ? Utils.tryParseFloat(split[1]).orElse(1f) : 1f;
+				soundPitch = split.length > 2 ? Utils.tryParseFloat(split[2]).orElse(1f) : 1f;
+			} else if (one.contains("givegameitem:")) {
+				one = one.replace("givegameitem:", "");
+
+				String[] split = one.split(":", 2);
+				if (split.length == 0) {
+					return;
+				}
+
+				String itemName = split[0].toLowerCase();
+
+				switch (itemName) {
+				case "grenade":
+					gameItem = Items.getGameItem(1);
+					break;
+				case "combataxe":
+					gameItem = Items.getGameItem(0);
+					break;
+				case "flash":
+					gameItem = Items.getGameItem(5);
+					break;
+				case "pressuremine":
+				case "mine":
+					gameItem = Items.getGameItem(6);
+					break;
+				default:
+					return;
+				}
+
+				if (gameItem == null) {
+					return;
+				}
+
+				switch (itemName) {
+				case "grenade":
+				case "flash":
+				case "pressuremine":
+				case "mine":
+					// clone the item to make sure we are not modifying anything
+					gameItem = (ItemHandler) gameItem.clone();
+
+					int amount = split.length > 1 ? Utils.tryParseInt(split[1]).orElse(1) : 1;
+					if (amount < 1) {
+						amount = 1;
+					}
+
+					gameItem = gameItem.setAmount(amount);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+
+		public PotionEffect getPotionEffect() {
+			return potionEffect;
+		}
+
+		public Sound getSound() {
+			return sound;
+		}
+
+		public float getSoundPitch() {
+			return soundPitch;
+		}
+
+		public float getSoundVolume() {
+			return soundVolume;
+		}
+
+		public int getChance() {
+			return chance;
+		}
+
+		public ItemHandler getGameItem() {
+			return gameItem;
+		}
+
+		public int getPoints() {
+			return points;
+		}
+	}
+
+	public enum SenderType {
+		CONSOLE, PLAYER
 	}
 }

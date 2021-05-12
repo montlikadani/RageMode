@@ -10,28 +10,36 @@ public class Area {
 	public Area(Location startLoc, Location endLoc) {
 		int highx, highy, highz, lowx, lowy, lowz;
 
-		if (startLoc.getBlockX() > endLoc.getBlockX()) {
-			highx = startLoc.getBlockX();
-			lowx = endLoc.getBlockX();
+		int startLocBlock = startLoc.getBlockX(), endLocBlock = endLoc.getBlockX();
+
+		if (startLocBlock > endLocBlock) {
+			highx = startLocBlock;
+			lowx = endLocBlock;
 		} else {
-			highx = endLoc.getBlockX();
-			lowx = startLoc.getBlockX();
+			highx = endLocBlock;
+			lowx = startLocBlock;
 		}
 
-		if (startLoc.getBlockY() > endLoc.getBlockY()) {
-			highy = startLoc.getBlockY();
-			lowy = endLoc.getBlockY();
+		startLocBlock = startLoc.getBlockY();
+		endLocBlock = endLoc.getBlockY();
+
+		if (startLocBlock > endLocBlock) {
+			highy = startLocBlock;
+			lowy = endLocBlock;
 		} else {
-			highy = endLoc.getBlockY();
-			lowy = startLoc.getBlockY();
+			highy = endLocBlock;
+			lowy = startLocBlock;
 		}
 
-		if (startLoc.getBlockZ() > endLoc.getBlockZ()) {
-			highz = startLoc.getBlockZ();
-			lowz = endLoc.getBlockZ();
+		startLocBlock = startLoc.getBlockZ();
+		endLocBlock = endLoc.getBlockZ();
+
+		if (startLocBlock > endLocBlock) {
+			highz = startLocBlock;
+			lowz = endLocBlock;
 		} else {
-			highz = endLoc.getBlockZ();
-			lowz = startLoc.getBlockZ();
+			highz = endLocBlock;
+			lowz = startLocBlock;
 		}
 
 		highPoints = new Location(startLoc.getWorld(), highx, highy, highz);
@@ -42,6 +50,7 @@ public class Area {
 		int xsize = (Math.abs(highPoints.getBlockX() - lowPoints.getBlockX())) + 1,
 				zsize = (Math.abs(highPoints.getBlockZ() - lowPoints.getBlockZ())) + 1,
 				ysize = (Math.abs(highPoints.getBlockY() - lowPoints.getBlockY())) + 1;
+
 		return xsize * ysize * zsize;
 	}
 

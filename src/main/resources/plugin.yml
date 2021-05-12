@@ -26,20 +26,17 @@ permissions:
   ragemode.admin.*:
     description: Gives access to all game-setup commands.
     children:
-      ragemode.admin.help: true
       ragemode.admin.addgame: true
       ragemode.admin.maxplayers: true
       ragemode.admin.minplayers: true
       ragemode.admin.setlobby: true
-      ragemode.admin.addspawn: true
-      ragemode.admin.removespawn: true
+      ragemode.admin.spawn: true
       ragemode.admin.removegame: true
       ragemode.admin.reload: true
       ragemode.admin.stats.reset: true
       ragemode.admin.stopgame: true
       ragemode.admin.setlobbydelay: true
       ragemode.admin.setgametime: true
-      ragemode.admin.setup: true
       ragemode.admin.kick: true
       ragemode.admin.forcestart: true
       ragemode.admin.holo: true

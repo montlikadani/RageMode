@@ -5,47 +5,58 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.commands.CommandProcessor;
 import hu.montlikadani.ragemode.commands.ICommand;
-import hu.montlikadani.ragemode.holder.ArmorStands;
-import hu.montlikadani.ragemode.holder.IHoloHolder;
+import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
+import hu.montlikadani.ragemode.holder.holograms.ArmorStands;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-@CommandProcessor(name = "holostats", permission = "ragemode.admin.holo", playerOnly = true)
-public class holostats implements ICommand {
+import java.util.Optional;
+
+@CommandProcessor(
+		name = "holostats",
+		permission = "ragemode.admin.holo",
+		desc = "General commands for handling holograms",
+		params = "<add/remove/teleport>",
+		playerOnly = true)
+public final class holostats implements ICommand {
 
 	@Override
 	public boolean run(RageMode plugin, CommandSender sender, String[] args) {
-		Player p = (Player) sender;
-
 		if (args.length < 2) {
-			sendMessage(p,
+			sendMessage(sender,
 					RageMode.getLang().get("missing-arguments", "%usage%", "/rm " + args[0] + " <add/remove/tp>"));
 			return false;
 		}
 
-		IHoloHolder holder = RageMode.getInstance().getHoloHolder();
+		Player player = (Player) sender;
 
 		switch (args[1].toLowerCase()) {
 		case "add":
-			holder.addHolo(p.getLocation());
+			plugin.getHoloHolder().addHolo(player.getLocation());
 			break;
 		case "remove":
-			if (!holder.deleteHologram(getClosest(p, holder, true))) {
-				sendMessage(p, RageMode.getLang().get("commands.holostats.no-holo-found"));
+			if (args.length > 2 && args[2].equalsIgnoreCase("all")) {
+				plugin.getHoloHolder().deleteAllHologram(true);
+				break;
+			}
+
+			if (!plugin.getHoloHolder().deleteHologram(getClosest(player, plugin, true))) {
+				sendMessage(player, RageMode.getLang().get("commands.holostats.no-holo-found"));
 				return false;
 			}
 
 			break;
 		case "tp":
-			Location closest = getClosest(p, holder, false);
+		case "teleport":
+			Location closest = getClosest(player, plugin, false);
+
 			if (closest == null) {
-				sendMessage(p, RageMode.getLang().get("commands.holostats.no-holo-found"));
+				sendMessage(player, RageMode.getLang().get("commands.holostats.no-holo-found"));
 				return false;
 			}
 
-			p.teleport(closest);
+			player.teleport(closest);
 			break;
 		default:
 			break;
@@ -54,16 +65,8 @@ public class holostats implements ICommand {
 		return true;
 	}
 
-	private Location getClosest(Player player, IHoloHolder holder, boolean eye) {
-		if (holder.getClosest(player, eye).isPresent()) {
-			if (RageMode.getInstance().isPluginEnabled("HolographicDisplays")) {
-				return holder.<com.gmail.filoghost.holographicdisplays.api.Hologram>getClosest(player, eye).get()
-						.getLocation();
-			}
-
-			return holder.<ArmorStands>getClosest(player, eye).get().getLocation();
-		}
-
-		return null;
+	private Location getClosest(Player player, RageMode plugin, boolean eye) {
+		Optional<ArmorStands> closest = plugin.getHoloHolder().getClosest(player, eye);
+		return closest.isPresent() ? closest.get().getLocation() : null;
 	}
 }

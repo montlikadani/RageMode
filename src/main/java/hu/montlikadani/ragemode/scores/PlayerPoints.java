@@ -6,22 +6,30 @@ public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 
 	private UUID uuid;
 
+	private String stringId = "";
+
 	private int kills = 0, axeKills = 0, directArrowKills = 0, explosionKills = 0, knifeKills = 0, deaths = 0,
 			axeDeaths = 0, directArrowDeaths = 0, explosionDeaths = 0, knifeDeaths = 0, currentStreak = 0,
-			longestStreak = 0, wins = 0, games = 0, zombieKills = 0;
+			longestStreak = 0, wins = 0, games = 0, zombieKills = 0, points = 0;
 
 	private double kd = 0d;
-
-	private Integer points = Integer.valueOf(0);
 
 	private boolean isWinner = false;
 
 	public PlayerPoints(UUID uuid) {
 		this.uuid = uuid;
+
+		if (uuid != null) {
+			this.stringId = uuid.toString();
+		}
 	}
 
 	public UUID getUUID() {
 		return uuid;
+	}
+
+	public String toStringUUID() {
+		return stringId;
 	}
 
 	public int getKills() {
@@ -128,7 +136,7 @@ public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 		this.longestStreak = longestStreak;
 	}
 
-	public Integer getPoints() {
+	public int getPoints() {
 		return points;
 	}
 
@@ -136,15 +144,15 @@ public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 		return this.points >= points;
 	}
 
-	public void setPoints(Integer points) {
+	public void setPoints(int points) {
 		this.points = points;
 	}
 
-	public void addPoints(Integer points) {
+	public void addPoints(int points) {
 		this.points += points;
 	}
 
-	public void takePoints(Integer points) {
+	public void takePoints(int points) {
 		this.points -= points;
 	}
 
@@ -182,7 +190,7 @@ public class PlayerPoints implements Comparable<PlayerPoints>, Cloneable {
 
 	@Override
 	public int compareTo(PlayerPoints anotherPlayerPoints) {
-		return anotherPlayerPoints.getPoints().compareTo(points);
+		return Integer.valueOf(anotherPlayerPoints.getPoints()).compareTo(points);
 	}
 
 	@Override

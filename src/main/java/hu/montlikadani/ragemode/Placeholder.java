@@ -3,15 +3,15 @@ package hu.montlikadani.ragemode;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.entity.Player;
 
-import hu.montlikadani.ragemode.API.RageModeAPI;
 import hu.montlikadani.ragemode.area.GameAreaManager;
+import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
-public class Placeholder extends PlaceholderExpansion {
+final class Placeholder extends PlaceholderExpansion {
 
 	Placeholder() {
 	}
@@ -20,36 +20,16 @@ public class Placeholder extends PlaceholderExpansion {
 	public static final String PREFIX = IDENTIFIER + '_';
 
 	public enum RMPlaceholders {
-		KILLS,
-		AXE_KILLS,
-		DIRECT_ARROW_KILLS,
-		EXPLOSION_KILLS,
-		KNIFE_KILLS,
-		ZOMBIE_KILLS,
-		DEATHS,
-		AXE_DEATHS,
-		DIRECT_ARROW_DEATHS,
-		EXPLOSION_DEATHS,
-		KNIFE_DEATHS,
-		CURRENT_STREAK,
-		LONGEST_STREAK,
-		POINTS,
-		GAMES,
-		WINS,
-		KD,
+		KILLS, AXE_KILLS, DIRECT_ARROW_KILLS, EXPLOSION_KILLS, KNIFE_KILLS, ZOMBIE_KILLS, DEATHS, AXE_DEATHS,
+		DIRECT_ARROW_DEATHS, EXPLOSION_DEATHS, KNIFE_DEATHS, CURRENT_STREAK, LONGEST_STREAK, POINTS, GAMES, WINS, KD,
 
 		PLAYER_LIVES,
 
-		STATE("game"),
-		PLAYERS("game"),
-		SPECTATOR_PLAYERS("game"),
-		MAXPLAYERS("game"),
-		ZOMBIES_ALIVE("game"),
-		TYPE("game"),
-		;
+		STATE("game"), PLAYERS("game"), SPECTATOR_PLAYERS("game"), MAXPLAYERS("game"), ZOMBIES_ALIVE("game"),
+		TYPE("game"),;
 
 		private String requirements = "";
-		private String gameName = "";
+		private Game game;
 
 		private RMPlaceholders() {
 		}
@@ -70,29 +50,15 @@ public class Placeholder extends PlaceholderExpansion {
 			return PREFIX + name();
 		}
 
-		public String getGameName() {
-			return gameName;
+		public Game getGame() {
+			return game;
 		}
 
-		public void setGameName(String gameName) {
-			this.gameName = gameName;
+		public void setGame(Game game) {
+			this.game = game;
 		}
 
 		public static RMPlaceholders getByIdentifier(final String id) {
-			String original = id;
-			String gameName = id;
-			if (gameName.contains("_")) {
-				for (int i = gameName.length() - 1; i > 0; i--) {
-					if (gameName.charAt(i) == '_') {
-						gameName = gameName.substring(i + 1);
-						original = original.substring(0, i);
-						break;
-					}
-				}
-			}
-
-			boolean gameDefined = GameUtils.isGameExist(gameName);
-
 			for (RMPlaceholders holder : values()) {
 				if (id.equalsIgnoreCase(holder.toString())) {
 					return holder;
@@ -105,10 +71,25 @@ public class Placeholder extends PlaceholderExpansion {
 				}
 			}
 
+			String original = id;
+			String gameName = id;
+
+			if (gameName.contains("_")) {
+				for (int i = gameName.length() - 1; i > 0; i--) {
+					if (gameName.charAt(i) == '_') {
+						gameName = gameName.substring(i + 1);
+						original = original.substring(0, i);
+						break;
+					}
+				}
+			}
+
 			for (RMPlaceholders holder : values()) {
 				if (StringUtils.startsWithIgnoreCase(original, holder.toString()) && holder.isComplexed()) {
-					if (gameDefined) {
-						holder.setGameName(gameName);
+					Game game = GameUtils.getGame(gameName);
+
+					if (game != null) {
+						holder.setGame(game);
 					}
 
 					return holder;
@@ -121,7 +102,8 @@ public class Placeholder extends PlaceholderExpansion {
 
 	@Override
 	public String getAuthor() {
-		return RageModeAPI.getPlugin().getDescription().getAuthors().toString();
+		return String.join(", ",
+				org.bukkit.plugin.java.JavaPlugin.getProvidingPlugin(RageMode.class).getDescription().getAuthors());
 	}
 
 	@Override
@@ -186,38 +168,44 @@ public class Placeholder extends PlaceholderExpansion {
 			}
 		}
 
-		if (placeholder == RMPlaceholders.PLAYER_LIVES && GameUtils.isPlayerPlaying(p)) {
-			PlayerManager pm = GameUtils.getGameByPlayer(p).getPlayerManager(p).orElse(null);
-			if (pm != null) {
-				return Integer.toString(pm.getPlayerLives());
+		if (placeholder == RMPlaceholders.PLAYER_LIVES) {
+			Game gamePlayer = GameUtils.getGameByPlayer(p);
+
+			if (gamePlayer != null) {
+				PlayerManager pm = gamePlayer.getPlayerManager(p).orElse(null);
+
+				if (pm != null) {
+					return Integer.toString(pm.getPlayerLives());
+				}
 			}
 		}
 
-		String gameName = placeholder.getGameName();
-		if (gameName.isEmpty()) {
+		Game game = placeholder.getGame();
+		if (game == null) {
 			return "";
 		}
 
 		switch (placeholder) {
 		case STATE:
-			return GameUtils.getGame(gameName).getStatus().toString().toLowerCase();
+			return game.getStatus().toString().toLowerCase();
 		case PLAYERS:
-			return Integer.toString(GameUtils.getGame(gameName).getPlayers().size());
+			return Integer.toString(game.getPlayers().size());
 		case SPECTATOR_PLAYERS:
-			return Integer.toString(GameUtils.getGame(gameName).getSpectatorPlayers().size());
+			return Integer.toString(game.getSpectatorPlayers().size());
 		case MAXPLAYERS:
-			return Integer.toString(GameUtils.getGame(gameName).maxPlayers);
+			return Integer.toString(game.maxPlayers);
 		case ZOMBIES_ALIVE:
-			hu.montlikadani.ragemode.area.GameArea area = GameAreaManager.getAreaByGame(GameUtils.getGame(gameName));
+			hu.montlikadani.ragemode.area.GameArea area = GameAreaManager.getAreaByGame(game);
+
 			if (area != null) {
 				return Integer.toString(area.getEntities(org.bukkit.entity.EntityType.ZOMBIE).size());
 			}
 
 			break;
 		case TYPE:
-			return GameUtils.getGame(gameName).getGameType().toString().toLowerCase();
+			return game.getGameType().toString().toLowerCase();
 		default:
-			return "";
+			break;
 		}
 
 		return "";

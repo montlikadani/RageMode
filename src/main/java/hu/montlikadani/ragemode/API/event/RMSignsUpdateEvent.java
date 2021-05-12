@@ -3,6 +3,7 @@ package hu.montlikadani.ragemode.API.event;
 import java.util.Set;
 
 import org.bukkit.event.Cancellable;
+import org.jetbrains.annotations.NotNull;
 
 import hu.montlikadani.ragemode.signs.SignData;
 
@@ -23,6 +24,7 @@ public class RMSignsUpdateEvent extends BaseEvent implements Cancellable {
 	 * 
 	 * @return {@link SignData}
 	 */
+	@NotNull
 	public Set<SignData> getSigns() {
 		return signs;
 	}

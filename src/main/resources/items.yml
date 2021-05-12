@@ -4,12 +4,14 @@ gameitems:
     lore:
     - "&7One shot, headshot & explosion"
     slot: 0
+
   rageKnife:
     name: "&6Rage&4 Knife"
     damage: 25
     lore:
     - "&7One hit, dead."
     slot: 1
+
   combatAxe:
     item: iron_axe
     name: "&6CombatAxe"
@@ -17,6 +19,7 @@ gameitems:
     - "&7Right click, throws an axe and dead"
     slot: 3
     velocity: 2.0
+
   flash:
     name: "&fFlash"
     lore:
@@ -24,10 +27,12 @@ gameitems:
     slot: 6
     amount: 2
     velocity: 3.0
+
   rageArrow:
     name: "&7Rage Arrow"
     slot: 9
     damage: 3.35
+
   grenade:
     name: "&7Grenade"
     # The name of the egg hologram appears when the player throws it
@@ -37,6 +42,7 @@ gameitems:
     slot: 5
     velocity: 2.0
     amount: 2
+
   pressuremine:
     name: "&8PressureMine"
     lore:
@@ -51,12 +57,14 @@ lobbyitems:
     lore:
     - "&7&oLeft/right click"
     slot: 5
+
   force-start:
     item: LEVER
     name: "&2Force the game start"
     lore:
     - "&7&oLeft/right click"
     slot: 3
+
   hideMessages:
     item: nether_star
     name: "&cHide kill messages"
@@ -67,6 +75,7 @@ lobbyitems:
       name: "&aShow kill messages"
       lore:
       - "&7Left/right click to show death/kill messages in game."
+
   shopitem:
     enabled: true
     item: emerald
@@ -74,10 +83,12 @@ lobbyitems:
     lore:
     - "&7Right click to open menu"
     slot: 1
+
     gui:
       title: "&6RageMode shop"
       fillEmptyFields: green_stained_glass_pane
       size: 9
+
       items:
         slot-8:
           item: barrier
@@ -85,14 +96,17 @@ lobbyitems:
           lore:
           - "&7This will close the inventory shop."
           command: close
+
         slot-3:
           item: egg
           name: "&aBuy game items"
           category: gameitems
+
           gui:
             title: "&2Buy game items"
             fillEmptyFields: blue_stained_glass_pane
             size: 9
+
             items:
               slot-3:
                 item: egg
@@ -105,6 +119,7 @@ lobbyitems:
                 - "&7When the game started, gives you some grenades."
                 - "&eCost:&7 %cost%"
                 - "&eRequired points:&r %required_points%"
+
               slot-4:
                 item: egg
                 name: "&7Grenade"
@@ -117,6 +132,7 @@ lobbyitems:
                 - "&eAmount:&7 %amount%"
                 - "&eCost:&7 %cost%"
                 - "&eRequired points:&r %required_points%"
+
               slot-5:
                 item: string
                 name: "&8Pressure mine"
@@ -129,35 +145,42 @@ lobbyitems:
                 - "&eAmount:&7 %amount%"
                 - "&eCost:&7 %cost%"
                 - "&eRequired points:&r %required_points%"
+
               slot-9:
                 item: paper
                 name: "&bInfo"
                 lore:
                 - "&7The potion effects will automatically apply when the game started."
+
               slot-1:
                 item: diamond
                 name: "&6Money/Points"
                 lore:
                 - "&6You have&e %money%&6$ in your account."
                 - "&6You have&e %points%&6 points"
+
               slot-7:
                 item: barrier
                 name: "&cClose"
                 lore:
                 - "&7This will close the inventory shop."
                 command: close
+
               slot-8:
                 item: arrow
                 name: "&bMain page"
                 command: main
+
         slot-5:
           item: bow
           name: "&7Buy arrow trails"
           category: itemtrails
+
           gui:
             title: "&6Buy arrow trails"
             fillEmptyFields: red_stained_glass_pane
             size: 27
+
             items:
               slot-0:
                 item: paper
@@ -165,22 +188,26 @@ lobbyitems:
                 lore:
                 - "&7The potion effects will automatically"
                 - "&7apply when the game started."
+
               slot-8:
                 item: diamond
                 name: "&6Money/Points"
                 lore:
                 - "&6You have&e %money%&6$ in your account."
                 - "&6You have&e %points%&6 points"
+
               slot-5:
                 item: barrier
                 name: "&cClose"
                 lore:
                 - "&7This will close the inventory shop."
                 command: close
+
               slot-4:
                 item: arrow
                 name: "&bMain page"
                 command: main
+
               slot-10:
                 item: blaze_rod
                 name: "&cFlame"
@@ -195,6 +222,7 @@ lobbyitems:
                 - "&eRequired points:&r %required_points%"
                 - "%activated%"
                 - "&7&lThis can only be used in one round."
+
               slot-11:
                 item: magma_cream
                 name: "&6Lava"
@@ -209,6 +237,7 @@ lobbyitems:
                 - "&eRequired points:&r %required_points%"
                 - "%activated%"
                 - "&7&lThis can only be used in one round."
+
               slot-12:
                 item: gunpowder
                 name: "&7Smoke normal"
@@ -223,6 +252,7 @@ lobbyitems:
                 - "&eRequired points:&r %required_points%"
                 - "%activated%"
                 - "&7&lThis can only be used in one round."
+
               slot-13:
                 item: ender_pearl
                 name: "&bPortal"
@@ -237,14 +267,17 @@ lobbyitems:
                 - "&eRequired points:&r %required_points%"
                 - "%activated%"
                 - "&7&lThis can only be used in one round."
+
         slot-4:
           item: potion
           name: "&aBuy potion effects"
           category: potioneffects
+
           gui:
             title: "&2Buy potion effects"
             fillEmptyFields: blue_stained_glass_pane
             size: 18
+
             items:
               slot-10:
                 item: nether_star
@@ -260,6 +293,7 @@ lobbyitems:
                 - "&eCost:&r %cost%"
                 - "&eRequired points:&r %required_points%"
                 - "&7&lThis can be used only once."
+
               slot-11:
                 item: magma_cream
                 name: "&dRegeneration"
@@ -272,23 +306,27 @@ lobbyitems:
                 - "&eCost:&r %cost%"
                 - "&eRequired points:&r %required_points%"
                 - "&7&lThis can be used only once."
+
               slot-8:
                 item: paper
                 name: "&bInfo"
                 lore:
                 - "&7The potion effects will automatically apply when the game started."
+
               slot-0:
                 item: diamond
                 name: "&6Money/Points"
                 lore:
                 - "&6You have&e %money%&6$ in your account."
                 - "&6You have&e %points%&6 points"
+
               slot-3:
                 item: barrier
                 name: "&cClose"
                 lore:
                 - "&7This will close the inventory shop."
                 command: close
+
               slot-4:
                 item: arrow
                 name: "&bMain page"

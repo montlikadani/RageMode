@@ -12,13 +12,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import com.google.common.collect.ImmutableList;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.config.CommentedConfig;
-import hu.montlikadani.ragemode.config.ConfigValues;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.database.DB;
 import hu.montlikadani.ragemode.database.DBConnector;
 import hu.montlikadani.ragemode.database.DBType;
@@ -50,14 +50,16 @@ public class YamlDB implements Database {
 
 	@Override
 	public void loadPlayerStatistics() {
-		if (!statsConf.isConfigurationSection("data")) {
+		ConfigurationSection section = statsConf.getConfigurationSection("data");
+		if (section == null) {
 			return;
 		}
 
 		int totalPlayers = 0;
 
-		for (String one : statsConf.getConfigurationSection("data").getKeys(false)) {
-			UUID uuid = null;
+		for (String one : section.getKeys(false)) {
+			UUID uuid;
+
 			try {
 				uuid = UUID.fromString(one);
 			} catch (IllegalArgumentException e) {
@@ -69,25 +71,23 @@ public class YamlDB implements Database {
 				plPo = new PlayerPoints(uuid);
 			}
 
-			String path = "data." + one + ".";
+			plPo.setAxeDeaths(section.getInt(one + ".axe-deaths"));
+			plPo.setAxeKills(section.getInt(one + ".axe-kills"));
+			plPo.setDeaths(section.getInt(one + ".deaths"));
+			plPo.setDirectArrowDeaths(section.getInt(one + ".direct-arrow-deaths"));
+			plPo.setDirectArrowKills(section.getInt(one + ".direct-arrow-kills"));
+			plPo.setExplosionDeaths(section.getInt(one + ".explosion-deaths"));
+			plPo.setExplosionKills(section.getInt(one + ".explosion-kills"));
+			plPo.setKills(section.getInt(one + ".kills"));
+			plPo.setKnifeDeaths(section.getInt(one + ".knife-deaths"));
+			plPo.setKnifeKills(section.getInt(one + ".knife-kills"));
+			plPo.setZombieKills(section.getInt(one + ".zombie-kills"));
 
-			plPo.setAxeDeaths(statsConf.getInt(path + "axe-deaths"));
-			plPo.setAxeKills(statsConf.getInt(path + "axe-kills"));
-			plPo.setDeaths(statsConf.getInt(path + "deaths"));
-			plPo.setDirectArrowDeaths(statsConf.getInt(path + "direct-arrow-deaths"));
-			plPo.setDirectArrowKills(statsConf.getInt(path + "direct-arrow-kills"));
-			plPo.setExplosionDeaths(statsConf.getInt(path + "explosion-deaths"));
-			plPo.setExplosionKills(statsConf.getInt(path + "explosion-kills"));
-			plPo.setKills(statsConf.getInt(path + "kills"));
-			plPo.setKnifeDeaths(statsConf.getInt(path + "knife-deaths"));
-			plPo.setKnifeKills(statsConf.getInt(path + "knife-kills"));
-			plPo.setZombieKills(statsConf.getInt(path + "zombie-kills"));
+			plPo.setKD(section.getDouble(one + ".KD"));
 
-			plPo.setKD(statsConf.getDouble(path + "KD"));
-
-			plPo.setWins(statsConf.getInt(path + "wins"));
-			plPo.setPoints(statsConf.getInt(path + "score"));
-			plPo.setGames(statsConf.getInt(path + "games"));
+			plPo.setWins(section.getInt(one + ".wins"));
+			plPo.setPoints(section.getInt(one + ".score"));
+			plPo.setGames(section.getInt(one + ".games"));
 
 			totalPlayers++;
 		}
@@ -104,45 +104,46 @@ public class YamlDB implements Database {
 
 	@Override
 	public void addPlayerStatistics(PlayerPoints points) {
-		UUID uuid = points.getUUID();
-		String path = "data." + uuid.toString() + ".";
+		String path = "data." + points.toStringUUID() + ".";
 
-		statsConf.set(path + "name", Bukkit.getOfflinePlayer(uuid).getName());
+		statsConf.set(path + "name", Bukkit.getOfflinePlayer(points.getUUID()).getName());
 
-		if (statsConf.isConfigurationSection("data")
-				&& statsConf.getConfigurationSection("data").contains(uuid.toString())) {
-			int kills = statsConf.getInt(path + "kills"), axeKills = statsConf.getInt(path + "axe-kills"),
-					directArrowKills = statsConf.getInt(path + "direct-arrow-kills"),
-					explosionKills = statsConf.getInt(path + "explosion-kills"),
-					knifeKills = statsConf.getInt(path + "knife-kills"),
-					zombieKills = statsConf.getInt(path + "zombie-kills"),
+		ConfigurationSection section = statsConf.getConfigurationSection("data");
+		if (section != null && section.contains(points.toStringUUID())) {
+			path = points.toStringUUID() + ".";
 
-					deaths = statsConf.getInt(path + "deaths"), axeDeaths = statsConf.getInt(path + "axe-deaths"),
-					directArrowDeaths = statsConf.getInt(path + "direct-arrow-deaths"),
-					explosionDeaths = statsConf.getInt(path + "explosion-deaths"),
-					knifeDeaths = statsConf.getInt(path + "knife-deaths"),
+			int kills = section.getInt(path + "kills"), axeKills = section.getInt(path + "axe-kills"),
+					directArrowKills = section.getInt(path + "direct-arrow-kills"),
+					explosionKills = section.getInt(path + "explosion-kills"),
+					knifeKills = section.getInt(path + "knife-kills"),
+					zombieKills = section.getInt(path + "zombie-kills"),
 
-					wins = statsConf.getInt(path + "wins"), games = statsConf.getInt(path + "games"),
-					score = statsConf.getInt(path + "score");
+					deaths = section.getInt(path + "deaths"), axeDeaths = section.getInt(path + "axe-deaths"),
+					directArrowDeaths = section.getInt(path + "direct-arrow-deaths"),
+					explosionDeaths = section.getInt(path + "explosion-deaths"),
+					knifeDeaths = section.getInt(path + "knife-deaths"),
 
-			statsConf.set(path + "kills", (kills + points.getKills()));
-			statsConf.set(path + "axe_kills", (axeKills + points.getAxeKills()));
-			statsConf.set(path + "direct_arrow_kills", (directArrowKills + points.getDirectArrowKills()));
-			statsConf.set(path + "explosion_kills", (explosionKills + points.getExplosionKills()));
-			statsConf.set(path + "knife_kills", (knifeKills + points.getKnifeKills()));
-			statsConf.set(path + "zombie-kills", (zombieKills + points.getZombieKills()));
+					wins = section.getInt(path + "wins"), games = section.getInt(path + "games"),
+					score = section.getInt(path + "score");
 
-			statsConf.set(path + "deaths", (deaths + points.getDeaths()));
-			statsConf.set(path + "axe_deaths", (axeDeaths + points.getAxeDeaths()));
-			statsConf.set(path + "direct_arrow_deaths", (directArrowDeaths + points.getDirectArrowDeaths()));
-			statsConf.set(path + "explosion_deaths", (explosionDeaths + points.getExplosionDeaths()));
-			statsConf.set(path + "knife_deaths", (knifeDeaths + points.getKnifeDeaths()));
+			section.set(path + "kills", (kills + points.getKills()));
+			section.set(path + "axe_kills", (axeKills + points.getAxeKills()));
+			section.set(path + "direct_arrow_kills", (directArrowKills + points.getDirectArrowKills()));
+			section.set(path + "explosion_kills", (explosionKills + points.getExplosionKills()));
+			section.set(path + "knife_kills", (knifeKills + points.getKnifeKills()));
+			section.set(path + "zombie-kills", (zombieKills + points.getZombieKills()));
 
-			statsConf.set(path + "wins", points.isWinner() ? (wins + 1) : wins);
+			section.set(path + "deaths", (deaths + points.getDeaths()));
+			section.set(path + "axe_deaths", (axeDeaths + points.getAxeDeaths()));
+			section.set(path + "direct_arrow_deaths", (directArrowDeaths + points.getDirectArrowDeaths()));
+			section.set(path + "explosion_deaths", (explosionDeaths + points.getExplosionDeaths()));
+			section.set(path + "knife_deaths", (knifeDeaths + points.getKnifeDeaths()));
 
-			statsConf.set(path + "score", (points.getPoints() + score));
-			statsConf.set(path + "games", (games + 1));
-			statsConf.set(path + "KD",
+			section.set(path + "wins", points.isWinner() ? (wins + 1) : wins);
+
+			section.set(path + "score", (points.getPoints() + score));
+			section.set(path + "games", (games + 1));
+			section.set(path + "KD",
 					(deaths + points.getDeaths()) != 0
 							? ((double) ((kills + points.getKills())) / ((double) (deaths + points.getDeaths())))
 							: 1.0d);
@@ -173,13 +174,14 @@ public class YamlDB implements Database {
 
 	@Override
 	public void addPoints(int points, UUID uuid) {
-		if (!statsConf.isConfigurationSection("data")) {
+		ConfigurationSection section = statsConf.getConfigurationSection("data");
+		if (section == null) {
 			return;
 		}
 
-		int currentPoints = getPlayerStatsFromData(uuid).getPoints();
-		if (statsConf.getConfigurationSection("data").contains(uuid.toString())) {
-			statsConf.set("data." + uuid.toString() + ".score", currentPoints + points);
+		String stringId = uuid.toString();
+		if (section.contains(stringId)) {
+			section.set(stringId + ".score", getPlayerStatsFromData(uuid).getPoints() + points);
 		}
 
 		Configuration.saveFile(statsConf, yamlStatsFile);
@@ -189,9 +191,12 @@ public class YamlDB implements Database {
 	public ImmutableList<PlayerPoints> getAllPlayerStatistics() {
 		List<PlayerPoints> allRPPs = new ArrayList<>();
 
-		if (statsConf.isConfigurationSection("data")) {
-			for (String d : statsConf.getConfigurationSection("data").getKeys(false)) {
-				UUID uuid = null;
+		ConfigurationSection section = statsConf.getConfigurationSection("data");
+
+		if (section != null) {
+			for (String d : section.getKeys(false)) {
+				UUID uuid;
+
 				try {
 					uuid = UUID.fromString(d);
 				} catch (IllegalArgumentException e) {
@@ -212,81 +217,71 @@ public class YamlDB implements Database {
 
 	@Override
 	public PlayerPoints getPlayerStatsFromData(UUID uuid) {
-		if (!statsConf.contains("data." + uuid.toString())) {
-			return null;
-		}
-
-		String path = "data." + uuid + ".";
-
-		int kills = statsConf.getInt(path + "kills"), axeKills = statsConf.getInt(path + "axe-kills"),
-				directArrowKills = statsConf.getInt(path + "direct-arrow-kills"),
-				explosionKills = statsConf.getInt(path + "explosion-kills"),
-				knifeKills = statsConf.getInt(path + "knife-kills"),
-				zombieKills = statsConf.getInt(path + "zombie-kills"),
-
-				deaths = statsConf.getInt(path + "deaths"), axeDeaths = statsConf.getInt(path + "axe-deaths"),
-				directArrowDeaths = statsConf.getInt(path + "direct-arrow-deaths"),
-				explosionDeaths = statsConf.getInt(path + "explosion-deaths"),
-				knifeDeaths = statsConf.getInt(path + "knife-deaths"),
-
-				wins = statsConf.getInt(path + "wins"), games = statsConf.getInt(path + "games"),
-				score = statsConf.getInt(path + "score"), KD = statsConf.getInt(path + "KD");
-
 		PlayerPoints pp = RuntimePPManager.getPPForPlayer(uuid);
 		if (pp == null) {
 			return null;
 		}
 
+		String stringId = uuid.toString();
+
+		if (!statsConf.contains("data." + stringId)) {
+			return null;
+		}
+
+		String path = "data." + stringId + ".";
+
 		// Cloning to ignore overwrite
 		pp = (PlayerPoints) pp.clone();
 
-		pp.setKills(kills);
-		pp.setAxeKills(axeKills);
-		pp.setDirectArrowKills(directArrowKills);
-		pp.setExplosionKills(explosionKills);
-		pp.setKnifeKills(knifeKills);
-		pp.setZombieKills(zombieKills);
+		pp.setKills(statsConf.getInt(path + "kills"));
+		pp.setAxeKills(statsConf.getInt(path + "axe-kills"));
+		pp.setDirectArrowKills(statsConf.getInt(path + "direct-arrow-kills"));
+		pp.setExplosionKills(statsConf.getInt(path + "explosion-kills"));
+		pp.setKnifeKills(statsConf.getInt(path + "knife-kills"));
+		pp.setZombieKills(statsConf.getInt(path + "zombie-kills"));
 
-		pp.setDeaths(deaths);
-		pp.setAxeDeaths(axeDeaths);
-		pp.setDirectArrowDeaths(directArrowDeaths);
-		pp.setExplosionDeaths(explosionDeaths);
-		pp.setKnifeDeaths(knifeDeaths);
+		pp.setDeaths(statsConf.getInt(path + "deaths"));
+		pp.setAxeDeaths(statsConf.getInt(path + "axe-deaths"));
+		pp.setDirectArrowDeaths(statsConf.getInt(path + "direct-arrow-deaths"));
+		pp.setExplosionDeaths(statsConf.getInt(path + "explosion-deaths"));
+		pp.setKnifeDeaths(statsConf.getInt(path + "knife-deaths"));
 
-		pp.setWins(wins);
-		pp.setPoints(score);
-		pp.setGames(games);
-		pp.setKD(KD);
+		pp.setWins(statsConf.getInt(path + "wins"));
+		pp.setPoints(statsConf.getInt(path + "score"));
+		pp.setGames(statsConf.getInt(path + "games"));
+		pp.setKD(statsConf.getInt(path + "KD"));
 
 		return pp;
 	}
 
 	@Override
 	public boolean resetPlayerStatistic(UUID uuid) {
-		if (!statsConf.isConfigurationSection("data")) {
+		ConfigurationSection section = statsConf.getConfigurationSection("data");
+		if (section == null) {
 			return false;
 		}
 
-		if (statsConf.getConfigurationSection("data").contains(uuid.toString())) {
-			String path = "data." + uuid + ".";
-			statsConf.set(path + "kills", 0);
-			statsConf.set(path + "axe_kills", 0);
-			statsConf.set(path + "direct_arrow_kills", 0);
-			statsConf.set(path + "explosion_kills", 0);
-			statsConf.set(path + "knife_kills", 0);
-			statsConf.set(path + "zombie-kills", 0);
+		String stringId = uuid.toString();
 
-			statsConf.set(path + "deaths", 0);
-			statsConf.set(path + "axe_deaths", 0);
-			statsConf.set(path + "direct_arrow_deaths", 0);
-			statsConf.set(path + "explosion_deaths", 0);
-			statsConf.set(path + "knife_deaths", 0);
+		if (section.contains(stringId)) {
+			section.set(stringId + ".kills", 0);
+			section.set(stringId + ".axe_kills", 0);
+			section.set(stringId + ".direct_arrow_kills", 0);
+			section.set(stringId + ".explosion_kills", 0);
+			section.set(stringId + ".knife_kills", 0);
+			section.set(stringId + ".zombie-kills", 0);
 
-			statsConf.set(path + "wins", 0);
-			statsConf.set(path + "score", 0);
-			statsConf.set(path + "games", 0);
+			section.set(stringId + ".deaths", 0);
+			section.set(stringId + ".axe_deaths", 0);
+			section.set(stringId + ".direct_arrow_deaths", 0);
+			section.set(stringId + ".explosion_deaths", 0);
+			section.set(stringId + ".knife_deaths", 0);
 
-			statsConf.set(path + "KD", 0d);
+			section.set(stringId + ".wins", 0);
+			section.set(stringId + ".score", 0);
+			section.set(stringId + ".games", 0);
+
+			section.set(stringId + ".KD", 0d);
 		}
 
 		Configuration.saveFile(statsConf, yamlStatsFile);
@@ -307,12 +302,10 @@ public class YamlDB implements Database {
 			return;
 		}
 
-		yamlStatsFile = new File(RageMode.getInstance().getFolder(), "stats.yml");
+		yamlStatsFile = new File(JavaPlugin.getPlugin(RageMode.class).getFolder(), "stats.yml");
 
 		if (!yamlStatsFile.exists()) {
-			if (!yamlStatsFile.getParentFile().exists()) {
-				yamlStatsFile.getParentFile().mkdirs();
-			}
+			yamlStatsFile.getParentFile().mkdirs();
 
 			try {
 				yamlStatsFile.createNewFile();
@@ -349,19 +342,19 @@ public class YamlDB implements Database {
 	@Override
 	public CompletableFuture<Boolean> convertDatabase(final String type) {
 		return CompletableFuture.supplyAsync(() -> {
-			if (type == null || type.trim().isEmpty() || getDatabaseType().toString().equalsIgnoreCase(type.trim())) {
+			if (type == null || type.isEmpty() || getDatabaseType().toString().equalsIgnoreCase(type)) {
 				return false;
 			}
 
 			ConfigValues.databaseType = type;
 
-			final CommentedConfig conf = RageMode.getInstance().getConfig();
-			conf.set("database.type", type);
-			Configuration.saveFile(conf, RageMode.getInstance().getConfiguration().getCfgFile());
+			RageMode plugin = JavaPlugin.getPlugin(RageMode.class);
+			plugin.getConfig().set("database.type", type);
+			Configuration.saveFile(plugin.getConfig(), plugin.getConfiguration().getCfgFile());
 
-			RageMode.getInstance().connectDatabase(true);
+			plugin.connectDatabase(true);
 
-			RuntimePPManager.getRuntimePPList().forEach(RageMode.getInstance().getDatabase()::addPlayerStatistics);
+			RuntimePPManager.getRuntimePPList().forEach(plugin.getDatabase()::addPlayerStatistics);
 			RuntimePPManager.loadPPListFromDatabase();
 			return true;
 		});
@@ -369,14 +362,7 @@ public class YamlDB implements Database {
 
 	@Override
 	public void loadMiscPlayersData() {
-		File folder = RageMode.getInstance().getFolder();
-		File f = new File(folder, "joinDelays.yml");
-		if (f.exists()) {
-			f.renameTo(new File(folder, "players.yml"));
-		}
-
-		f = new File(folder, "players.yml");
-
+		File f = new File(JavaPlugin.getPlugin(RageMode.class).getFolder(), "players.yml");
 		if (!f.exists()) {
 			try {
 				f.createNewFile();
@@ -386,24 +372,31 @@ public class YamlDB implements Database {
 		}
 
 		YamlConfiguration config = YamlConfiguration.loadConfiguration(f);
-		if (!config.isConfigurationSection("players")) {
-			return;
-		}
-
 		ConfigurationSection section = config.getConfigurationSection("players");
-		if (section.getKeys(false).isEmpty()) {
+		if (section == null) {
 			return;
 		}
 
-		for (String uuid : section.getKeys(false)) {
+		java.util.Set<String> keys = section.getKeys(false);
+		if (keys.isEmpty()) {
+			return;
+		}
+
+		for (String id : keys) {
+			UUID uuid;
+
+			try {
+				uuid = UUID.fromString(id);
+			} catch (IllegalArgumentException e) {
+				continue;
+			}
+
 			if (ConfigValues.isRejoinDelayEnabled() && ConfigValues.isRememberRejoinDelay()) {
-				ReJoinDelay.setTime(Bukkit.getOfflinePlayer(UUID.fromString(uuid)),
-						section.getLong(uuid + ".join-delay"));
+				ReJoinDelay.setTime(Bukkit.getOfflinePlayer(uuid), section.getLong(uuid + ".join-delay"));
 			}
 
 			if (section.getBoolean(uuid + ".deathMessagesEnabled")) {
-				PlayerManager.DEATHMESSAGESTOGGLE.put(UUID.fromString(uuid),
-						section.getBoolean(uuid + ".deathMessagesEnabled"));
+				PlayerManager.DEATH_MESSAGES_TOGGLE.put(uuid, true);
 			}
 		}
 
@@ -417,14 +410,7 @@ public class YamlDB implements Database {
 
 	@Override
 	public void saveMiscPlayersData() {
-		File folder = RageMode.getInstance().getFolder();
-		File f = new File(folder, "joinDelays.yml");
-		if (f.exists()) {
-			f.renameTo(new File(folder, "players.yml"));
-		}
-
-		f = new File(folder, "players.yml");
-
+		File f = new File(JavaPlugin.getPlugin(RageMode.class).getFolder(), "players.yml");
 		if (!f.exists()) {
 			try {
 				f.createNewFile();
@@ -441,7 +427,7 @@ public class YamlDB implements Database {
 			config.set("players", null);
 		}
 
-		for (Map.Entry<UUID, Boolean> map : PlayerManager.DEATHMESSAGESTOGGLE.entrySet()) {
+		for (Map.Entry<UUID, Boolean> map : PlayerManager.DEATH_MESSAGES_TOGGLE.entrySet()) {
 			if (map.getValue()) {
 				section.set(map.getKey().toString() + ".deathMessagesEnabled", map.getValue());
 			}

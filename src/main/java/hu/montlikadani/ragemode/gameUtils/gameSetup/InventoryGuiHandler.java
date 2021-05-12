@@ -8,40 +8,44 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.utils.Utils;
 
 public final class InventoryGuiHandler implements InventoryHolder {
 
-	public static InvGuiBuilder ofBuilder(Game game) {
-		return new InvGuiBuilder(game);
+	public static InvGuiBuilder ofBuilder(String gameName) {
+		return new InvGuiBuilder(gameName);
 	}
 
+	private static final RageMode rm = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
+
 	private Inventory inv;
-	private Game game;
+	private String gameName;
 
 	public boolean isUpdating = false;
 
 	private final Set<GuiViewer> viewers = new HashSet<>();
 	private final Set<GuiItem> guiItems = new HashSet<>();
 
-	private InventoryGuiHandler(Game game, String title, Set<GuiItem> guiItems) {
-		this.game = game;
+	private InventoryGuiHandler(String gameName, String title, Set<GuiItem> guiItems) {
+		this.gameName = gameName;
 		this.guiItems.addAll(guiItems);
 
-		inv = Bukkit.createInventory(this, InventoryType.ENDER_CHEST, Utils.colors(title));
+		inv = rm.getComplement().createInventory(this, InventoryType.ENDER_CHEST, Utils.colors(title));
+
 		setItems();
 	}
 
-	public Game getSourceGame() {
-		return game;
+	public String getSourceGameName() {
+		return gameName;
 	}
 
 	public Set<GuiItem> getGuiItems() {
@@ -67,17 +71,12 @@ public final class InventoryGuiHandler implements InventoryHolder {
 
 	public static final class InvGuiBuilder {
 
-		private String title = "";
-		private Game game;
+		private String title = "", gameName;
 
 		private final Set<GuiItem> items = new HashSet<>();
 
-		InvGuiBuilder(Game game) {
-			this.game = game;
-		}
-
-		public Game getGame() {
-			return game;
+		InvGuiBuilder(String gameName) {
+			this.gameName = gameName;
 		}
 
 		public Set<GuiItem> getItems() {
@@ -85,7 +84,10 @@ public final class InventoryGuiHandler implements InventoryHolder {
 		}
 
 		public InvGuiBuilder title(String title) {
-			this.title = title == null ? "" : title;
+			if (title != null) {
+				this.title = title;
+			}
+
 			return this;
 		}
 
@@ -94,41 +96,36 @@ public final class InventoryGuiHandler implements InventoryHolder {
 		}
 
 		public InvGuiBuilder addItem(Consumer<GuiItem> con) {
-			GuiItem guiItem = new GuiItem(this);
+			GuiItem guiItem = new GuiItem();
 			con.accept(guiItem);
 			items.add(guiItem);
 			return this;
 		}
 
 		public InventoryGuiHandler build() {
-			return new InventoryGuiHandler(game, title, items);
+			return new InventoryGuiHandler(gameName, title, items);
 		}
 	}
 
 	public static final class GuiItem {
 
-		private InvGuiBuilder igb;
 		private ItemStack item;
+		private String displayName;
+		private List<String> lore;
 		private int slot;
 
 		private Consumer<InventoryClickEvent> clickEvent;
 
-		private final List<String> extraCommands = new ArrayList<>();
-
-		GuiItem(InvGuiBuilder igb) {
-			this.igb = igb;
+		public GuiItem item(int slot, Material mat, String displayName) {
+			return item(slot, mat, displayName, new ArrayList<>());
 		}
 
-		public GuiItem item(int slot, org.bukkit.Material mat, Consumer<ItemStack> con) {
-			ItemStack is = new ItemStack(mat);
-			con.accept(is);
-			item = is;
+		public GuiItem item(int slot, Material mat, String displayName, List<String> lore) {
+			item = new ItemStack(mat);
+
+			this.displayName = displayName == null ? "" : displayName;
+			this.lore = lore == null ? new ArrayList<>() : lore;
 			this.slot = slot < 0 ? 1 : slot;
-			return this;
-		}
-
-		public GuiItem addExtraCommand(String command) {
-			extraCommands.add(command);
 			return this;
 		}
 
@@ -137,18 +134,23 @@ public final class InventoryGuiHandler implements InventoryHolder {
 			return this;
 		}
 
-		public InvGuiBuilder build() {
-			if (item != null && item.hasItemMeta()) {
-				if (item.hasDisplayName()) {
-					item.setDisplayName(Utils.colors(item.getDisplayName()));
-				}
-
-				if (item.hasLore()) {
-					item.setLore(Utils.colorList(item.getLore()));
-				}
+		public void build() {
+			if (item == null) {
+				return;
 			}
 
-			return igb;
+			org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+
+			if (meta != null) {
+				rm.getComplement().setDisplayName(meta, Utils.colors(displayName));
+				rm.getComplement().setLore(meta, Utils.colorList(lore));
+
+				if (!meta.hasItemFlag(ItemFlag.HIDE_ATTRIBUTES) || !meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS)) {
+					meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS);
+				}
+
+				item.setItemMeta(meta);
+			}
 		}
 
 		public ItemStack getItem() {
@@ -157,10 +159,6 @@ public final class InventoryGuiHandler implements InventoryHolder {
 
 		public int getSlot() {
 			return slot;
-		}
-
-		public List<String> getExtraCommands() {
-			return extraCommands;
 		}
 
 		public Consumer<InventoryClickEvent> getClickEvent() {

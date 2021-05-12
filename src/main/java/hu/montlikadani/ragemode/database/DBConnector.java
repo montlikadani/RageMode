@@ -1,5 +1,6 @@
 package hu.montlikadani.ragemode.database;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
@@ -9,7 +10,7 @@ import hu.montlikadani.ragemode.utils.Debug;
 
 public class DBConnector {
 
-	private RMConnection conn;
+	private Connection connection;
 
 	private String url, username, password, prefix;
 
@@ -19,7 +20,6 @@ public class DBConnector {
 		this.password = password;
 		this.prefix = prefix;
 
-		// Connect to the db
 		getConnection();
 	}
 
@@ -27,11 +27,11 @@ public class DBConnector {
 		return prefix;
 	}
 
-	public RMConnection getConnection() {
-		if (conn == null) {
+	public Connection getConnection() {
+		if (connection == null) {
 			synchronized (this) {
 				try {
-					conn = new RMConnection(DriverManager.getConnection(url, username, password));
+					connection = DriverManager.getConnection(url, username, password);
 				} catch (SQLException e) {
 					Debug.logConsole(java.util.logging.Level.WARNING,
 							"Could not connect to the database: " + e.getMessage());
@@ -39,7 +39,7 @@ public class DBConnector {
 			}
 		}
 
-		return conn;
+		return connection;
 	}
 
 	public boolean isValid() {
@@ -47,11 +47,23 @@ public class DBConnector {
 	}
 
 	public boolean isValid(int timeout) {
-		return conn != null && getConnection().isValid(timeout);
+		try {
+			return connection != null && connection.isValid(timeout);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return false;
 	}
 
 	public boolean isConnected() {
-		return conn != null && getConnection().isConnected();
+		try {
+			return connection != null && !connection.isClosed();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return false;
 	}
 
 	public synchronized <T> CompletableFuture<T> dispatchAsync(Callable<T> task) {

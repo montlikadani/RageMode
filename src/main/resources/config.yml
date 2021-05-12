@@ -2,7 +2,11 @@
 # You can find all supported languages on: https://github.com/montlikadani/RageMode/wiki/Languages
 language: en
 
-# Logging console messages, such as error description
+# This option allows for anyone to force start a game with only
+# 1 player and some other things.
+developerMode: false
+
+# Logging console messages, like useful debug messages
 log-console: true
 
 # Check for updates on plugin startup.
@@ -14,31 +18,29 @@ download-updates: false
 
 # This saves the player data, such as inventory, effects etc. to a file.
 # This can be useful for a random server shutdown.
-# If this false and "require-empty-inventory-to-join" also false then the players 
-# loses his items from inventory.
-# If this is false, we still need some data to save that will not cause any problems 
-# at the end of the game.
-# This will be ignored and the data not saved when the bungee-mode is enabled.
+# If this false and "require-empty-inventory-to-join" also false then the players
+# loses every items from inventory.
+# If this is false, player data will not be stored in the file but some data will still be saved.
 save-player-datas-to-file: false
 
 # Require empty inventory to join to game?
-# If this false and "save-player-datas-to-file" also false then the players 
-# loses his items from inventory.
+# If this false and "save-player-datas-to-file" also false then the players
+# loses every items from inventory.
 require-empty-inventory-to-join: true
 
-# Used to select the game area to be protected zone.
+# Used to select the game area to be a protected area.
 selection-item: golden_shovel
 
 # Hook into bungee
 bungee:
   enable: false
+
   # Bungeecord server name when the game end and teleport players to this server.
-  hub-name: "lobby"
+  hub-name: lobby
 
 # The database where to save plugin data.
 database:
   # Database types: yaml, mysql, sqlite
-  # To database where the player data will be saved.
   type: yaml
 
   # The database table name
@@ -57,10 +59,10 @@ database:
     password: password
     database: database
     host: localhost
-    port: "3306"
+    port: '3306'
     use-unicode: true
     verify-server-certificate: false
-    character-encoding: "UTF-8"
+    character-encoding: UTF-8
 
 # Sign texts
 signs:
@@ -88,40 +90,39 @@ signs:
 
 # Title texts
 titles:
-  # When a player join to the game, and send title for him.
+  # When a player joins to a game it will send a title.
   join-game:
     title: "&e%game%"
     subtitle: "&3by yourname"
 
     # Title time settings (in ticks)
-    # First number (fade-in): The time it takes for the title to fade into the screen.
-    # Second number (stay): The time it takes for the title to stay on the screen.
-    # Third number (fade-out): The time it takes for the title to fade out of the screen.
+    # (fade-in) The time it takes for the title to fade into the screen.
+    # (stay) The time it takes for the title to stay on the screen.
+    # (fade-out) The time it takes for the title to fade out of the screen.
     time: "20, 50, 20"
 
-  # Lobby waiting timer title.
+  # Lobby waiting timer title
   lobby-waiting:
-    enable: true
     title: ""
     subtitle: "&9%time%"
     time: "10, 30, 10"
 
-    # Intervals when the lobby timer reaches e.g. 5 intervals, then send it on the screen.
+    # Intervals when the lobby timer reaches e.g. 5 interval it will send on the screen.
     begin-times: [5, 4, 3, 2, 1]
 
-  # When a player won a game, and send title for all players that in the game currently.
+  # When a player won a game it will send a title for all players that in the game currently.
   player-won:
     title: "&2Congratulations!"
     subtitle: "&e%winner%&6 won this round!"
     time: "20, 80, 20"
 
-  # When you won a game, and send title for him that in the game currently.
+  # When you won a game it will send a title
   you-won:
     title: "&aCongratulations!"
     subtitle: "&2You won this round!"
     time: "20, 80, 20"
 
-# Enables the spectator mode in the already running game, to see what happens in that game.
+# Enables the spectator mode in the already running game, to see what happens specific game.
 spectator:
   enable: true
 
@@ -130,7 +131,7 @@ spectator:
     enabled: true
 
     # Time in seconds between sending notify message.
-    time-between-message-sending: 10
+    time-between-message-sending: 40
 
   # Which spectator commands will be allowed to use in-game?
   allowed-commands:
@@ -140,7 +141,7 @@ spectator:
 # Lobby settings
 lobby:
   # Should be enable chat in lobby?
-  # This ignores with ragemode.bypass.lobby.lockchat permission.
+  # This option will be ignored with "ragemode.bypass.lobby.lockchat" permission
   enable-chat-in-lobby: true
 
   # Does count the player's level with the start time of the game in the lobby?
@@ -153,7 +154,7 @@ lobby:
 players-can-join-random-to-running-games: true
 
 # Enables per join permissions for joining.
-# Use "ragemode.join.gameName" permission.
+# The permission is "ragemode.join.gameName"
 per-join-permissions: false
 
 # Global settings for game.
@@ -193,12 +194,6 @@ game:
     # Defines how many times does the player respawn after dead.
     # If the player dead 3 times, player will not be respawned again.
     player-lives: 3
-
-    # Enabling this will causes for timings to report unnecessary memory things, because it checks all entity move event.
-    # This also has advantages. If you have a pressure mine put down and a zombie or player steps on it,
-    # it explodes immediately. However, without it, it takes more time, memory is more demanding and at
-    # some point the pressure mine does not explode.
-    prevent-zombies-moving-outside-of-game-area: false
 
   # Game freeze settings
   game-freeze:
@@ -277,11 +272,6 @@ game:
   - "/rm leave"
   - "/ragemode leave"
   - "/ragemode stopgame"
-
-  # Execute commands when the player left the game while playing. (Only console commands)
-  # This is related to the "Exit from the game" button on Esc menu.
-  execute-commands-on-player-left-while-playing:
-  - "tell %player% &cWhy you left from the game while playing?"
 
 # Stop the server or restart at the end of the game?
 game-stop:

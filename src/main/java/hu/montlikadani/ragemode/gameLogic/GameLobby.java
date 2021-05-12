@@ -3,11 +3,12 @@ package hu.montlikadani.ragemode.gameLogic;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 
-public class GameLobby {
+public final class GameLobby {
 
 	/**
 	 * Returns or sets the game lobby time in seconds
@@ -22,7 +23,7 @@ public class GameLobby {
 	private Game game;
 	private LobbyTimer lobbyTimer;
 
-	public GameLobby(Game game) {
+	GameLobby(Game game) {
 		Validate.notNull(game, "Game cannot be null");
 
 		this.game = game;
@@ -32,7 +33,8 @@ public class GameLobby {
 	}
 
 	private void loadFromConfig() {
-		org.bukkit.configuration.file.FileConfiguration conf = RageMode.getInstance().getConfiguration().getArenasCfg();
+		org.bukkit.configuration.MemorySection conf = JavaPlugin.getPlugin(RageMode.class).getConfiguration()
+				.getArenasCfg();
 
 		String path = "arenas." + game.getName() + ".lobby";
 		if (!conf.contains(path)) {
@@ -41,12 +43,16 @@ public class GameLobby {
 
 		path += ".";
 
-		if (conf.getInt(path + "lobbydelay") > 5) {
-			lobbyTime = conf.getInt(path + "lobbydelay");
+		int lobbyDelay = conf.getInt(path + "lobbydelay");
+		lobbyTime = lobbyDelay > 5 ? lobbyDelay : 30;
+
+		String worldName = conf.getString(path + "world", "");
+		if (worldName.isEmpty()) {
+			return;
 		}
 
-		String world = conf.getString(path + "world", "");
-		if (world.isEmpty()) {
+		org.bukkit.World world = Bukkit.getWorld(worldName);
+		if (world == null) {
 			return;
 		}
 
@@ -54,11 +60,12 @@ public class GameLobby {
 				lobbyZ = conf.getDouble(path + "z"), lobbyYaw = conf.getDouble(path + "yaw"),
 				lobbyPitch = conf.getDouble(path + "pitch");
 
-		location = new Location(Bukkit.getWorld(world), lobbyX, lobbyY, lobbyZ, (float) lobbyYaw, (float) lobbyPitch);
+		location = new Location(world, lobbyX, lobbyY, lobbyZ, (float) lobbyYaw, (float) lobbyPitch);
 	}
 
 	public void saveToConfig() {
-		org.bukkit.configuration.file.FileConfiguration conf = RageMode.getInstance().getConfiguration().getArenasCfg();
+		final RageMode plugin = JavaPlugin.getPlugin(RageMode.class);
+		org.bukkit.configuration.file.FileConfiguration conf = plugin.getConfiguration().getArenasCfg();
 
 		String path = "arenas." + game.getName() + ".lobby.";
 
@@ -71,7 +78,7 @@ public class GameLobby {
 
 		conf.set(path + "lobbydelay", lobbyTime);
 
-		Configuration.saveFile(conf, RageMode.getInstance().getConfiguration().getArenasFile());
+		Configuration.saveFile(conf, plugin.getConfiguration().getArenasFile());
 	}
 
 	/**

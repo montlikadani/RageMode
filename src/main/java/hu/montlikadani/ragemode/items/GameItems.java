@@ -1,50 +1,49 @@
-package hu.montlikadani.ragemode.scores;
+package hu.montlikadani.ragemode.items;
 
-import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
-import hu.montlikadani.ragemode.items.Items;
-
-public enum KilledWith {
+public enum GameItems {
 
 	RAGEBOW("arrow-kill", 3), COMBATAXE("axe-kill", 0), RAGEKNIFE("knife-kill", 4), EXPLOSION("explosion-kill"),
 	GRENADE("explosion", "grenade-kill", 1), RAGEARROW("explosion", "arrow-kill", 2), PRESSUREMINE("explosion", "", 6),
 	UNKNOWN("unknown-weapon");
 
 	private String metaName, killTextPath = "";
-	private ItemStack item;
+	private ItemHandler item;
 
-	KilledWith() {
-	}
-
-	KilledWith(String killTextPath) {
+	GameItems(String killTextPath) {
 		this(killTextPath, -1);
 	}
 
-	KilledWith(String killTextPath, int itemIndex) {
+	GameItems(String killTextPath, int itemIndex) {
 		this("", killTextPath, itemIndex);
 	}
 
-	KilledWith(String metaName, String killTextPath, int itemIndex) {
+	GameItems(String metaName, String killTextPath, int itemIndex) {
 		this.metaName = metaName;
 		this.killTextPath = killTextPath;
-		this.item = Items.getGameItem(itemIndex) == null ? new ItemStack(org.bukkit.Material.STONE)
-				: Items.getGameItem(itemIndex).get();
+
+		item = Items.getGameItem(itemIndex);
 	}
 
+	@NotNull
 	public String getMetaName() {
 		return metaName;
 	}
 
+	@NotNull
 	public String getKillTextPath() {
 		return killTextPath;
 	}
 
-	public ItemStack asItemStack() {
+	@NotNull
+	public ItemHandler getItem() {
 		return item;
 	}
 
-	public static KilledWith getByName(String name) {
-		for (KilledWith kw : values()) {
+	@NotNull
+	public static GameItems getByName(String name) {
+		for (GameItems kw : values()) {
 			if (kw.toString().equalsIgnoreCase(name)) {
 				return kw;
 			}

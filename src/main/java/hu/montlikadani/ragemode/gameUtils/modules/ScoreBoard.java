@@ -12,15 +12,19 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
+import org.jetbrains.annotations.NotNull;
 
+import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.holder.ScoreBoardHolder;
-import hu.montlikadani.ragemode.utils.ServerVersion.Version;
+import hu.montlikadani.ragemode.utils.ServerVersion;
 
 public class ScoreBoard {
 
 	private final Map<UUID, ScoreBoardHolder> scoreboards = new HashMap<>();
 
 	private final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+
+	private final RageMode plugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 
 	@SuppressWarnings("deprecation")
 	public ScoreBoard(Player player) {
@@ -35,16 +39,19 @@ public class ScoreBoard {
 
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
+		final ChatColor[] values = ChatColor.values();
+
 		for (int i = 1; i <= 15; i++) {
 			Team team = scoreboard.getTeam("SLOT_" + i);
+
 			if (team == null) {
 				team = scoreboard.registerNewTeam("SLOT_" + i);
 			}
 
-			team.addEntry(ChatColor.values()[i].toString());
+			team.addEntry(values[i].toString());
 		}
 
-		scoreboards.put(player.getUniqueId(), new ScoreBoardHolder(player, scoreboard, objective));
+		scoreboards.put(player.getUniqueId(), new ScoreBoardHolder(scoreboard, objective));
 	}
 
 	/**
@@ -57,13 +64,13 @@ public class ScoreBoard {
 		getScoreboard(player).ifPresent(board -> {
 			String newTitle = title;
 
-			if (Version.isCurrentLower(Version.v1_13_R1) && newTitle.length() > 32) {
+			if (ServerVersion.isCurrentLower(ServerVersion.v1_13_R1) && newTitle.length() > 32) {
 				newTitle = newTitle.substring(0, 32);
-			} else if (Version.isCurrentEqualOrHigher(Version.v1_13_R1) && newTitle.length() > 128) {
+			} else if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_13_R1) && newTitle.length() > 128) {
 				newTitle = newTitle.substring(0, 128);
 			}
 
-			board.getObjective().setDisplayName(newTitle);
+			plugin.getComplement().setDisplayName(board.getObjective(), newTitle);
 		});
 	}
 
@@ -77,21 +84,28 @@ public class ScoreBoard {
 	 * @param dummyScore The integer, the score should be set to.
 	 */
 	public void setLine(Player player, String line, int dummyScore) {
+		final ChatColor[] values = ChatColor.values();
+
+		if (dummyScore >= values.length) {
+			return;
+		}
+
 		getScoreboard(player).ifPresent(board -> {
 			Team team = board.getScoreboard().getTeam("SLOT_" + dummyScore);
-			if (team == null || dummyScore >= ChatColor.values().length) {
+			if (team == null) {
 				return;
 			}
 
-			board.getObjective().getScore(ChatColor.values()[dummyScore].toString()).setScore(dummyScore);
+			board.getObjective().getScore(values[dummyScore].toString()).setScore(dummyScore);
 
 			String prefix = line;
-			if (Version.isCurrentLower(Version.v1_9_R1) && prefix.length() > 16) {
+
+			if (ServerVersion.isCurrentLower(ServerVersion.v1_9_R1) && prefix.length() > 16) {
 				prefix = prefix.substring(0, 16);
 			}
 
-			team.setPrefix(prefix);
-			team.setSuffix(ChatColor.getLastColors(prefix));
+			plugin.getComplement().setPrefix(team, prefix);
+			plugin.getComplement().setSuffix(team, ChatColor.getLastColors(prefix));
 		});
 	}
 
@@ -102,8 +116,11 @@ public class ScoreBoard {
 	 * @param score  where the line should reset
 	 */
 	public void resetScores(Player player, int score) {
-		getScoreboard(player).filter(b -> score >= ChatColor.values().length)
-				.ifPresent(board -> board.getScoreboard().resetScores(ChatColor.values()[score].toString()));
+		final ChatColor[] values = ChatColor.values();
+
+		if (score < values.length) {
+			getScoreboard(player).ifPresent(board -> board.getScoreboard().resetScores(values[score].toString()));
+		}
 	}
 
 	/**
@@ -116,23 +133,33 @@ public class ScoreBoard {
 	}
 
 	/**
-	 * Removes this ScoreBoard if present.
+	 * Removes the ScoreBoard from the given player if present.
 	 * 
-	 * @param pl The Player instance for which the ScoreBoard should be removed.
+	 * @param pl The {@link Player} instance for which the ScoreBoard should be
+	 *           removed.
 	 */
-	public void remove(Player pl) {
-		getScoreboard(pl).ifPresent(board -> {
-			board.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+	public void remove(Player player) {
+		ScoreBoardHolder board = scoreboards.remove(player.getUniqueId());
 
-			Objective obj = board.getScoreboard().getObjective("ragescores");
-			if (obj != null) {
-				obj.unregister();
+		if (board == null) {
+			return;
+		}
+
+		Objective obj = board.getScoreboard().getObjective("ragescores");
+		if (obj != null) {
+			obj.unregister();
+		}
+
+		for (int i = 1; i <= 15; i++) {
+			Team team = board.getScoreboard().getTeam("SLOT_" + i);
+
+			if (team != null) {
+				team.unregister();
 			}
+		}
 
-			pl.setScoreboard(board.getScoreboard());
-		});
-
-		scoreboards.remove(pl.getUniqueId());
+		board.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+		player.setScoreboard(player.getScoreboard());
 	}
 
 	/**
@@ -141,6 +168,7 @@ public class ScoreBoard {
 	 * 
 	 * @return {@link Map}
 	 */
+	@NotNull
 	public Map<UUID, ScoreBoardHolder> getScoreboards() {
 		return scoreboards;
 	}
@@ -149,8 +177,10 @@ public class ScoreBoard {
 	 * Returns the given player scoreboard if present.
 	 * 
 	 * @param player {@link Player}
-	 * @return {@link Optional}
+	 * @return {@link ScoreBoardHolder} if present, otherwise
+	 *         {@link Optional#empty()}
 	 */
+	@NotNull
 	public Optional<ScoreBoardHolder> getScoreboard(Player player) {
 		return Optional.ofNullable(scoreboards.get(player.getUniqueId()));
 	}

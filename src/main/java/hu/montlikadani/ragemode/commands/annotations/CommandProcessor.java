@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.commands;
+package hu.montlikadani.ragemode.commands.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
@@ -15,14 +15,23 @@ public @interface CommandProcessor {
 	String name() default "";
 
 	/**
-	 * @return the permission of this command
+	 * @return command parameters/arguments
 	 */
-	String permission() default "";
+	String params() default "";
 
 	/**
-	 * whenever this command should only be performed with player
-	 * 
-	 * @return <code>false</code> by default
+	 * @return the description of this command
+	 */
+	String desc() default "";
+
+	/**
+	 * @return the permission of this command
+	 */
+	String[] permission() default "";
+
+	/**
+	 * @return Whenever this command should only be performed by player or not
 	 */
 	boolean playerOnly() default false;
+
 }

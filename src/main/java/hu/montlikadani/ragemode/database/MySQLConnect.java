@@ -2,6 +2,7 @@ package hu.montlikadani.ragemode.database;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.apache.commons.lang.Validate;
 
@@ -42,8 +43,8 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 
 		return dispatchAsync(() -> {
 			if (isConnected()) {
-				try {
-					getConnection().executeUpdate(query);
+				try (Statement statement = getConnection().createStatement()) {
+					statement.executeUpdate(query);
 					return true;
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -68,8 +69,8 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 		}
 
 		return dispatchAsync(() -> {
-			try {
-				getConnection().executeUpdate("DELETE FROM " + table + ";");
+			try (Statement statement = getConnection().createStatement()) {
+				statement.executeUpdate("DELETE FROM " + table + ";");
 				return true;
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -85,8 +86,8 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 
 		return dispatchAsync(() -> {
 			if (isConnected()) {
-				try {
-					getConnection().executeUpdate("DROP TABLE IF EXISTS `" + table + "`;");
+				try (Statement statement = getConnection().createStatement()) {
+					statement.executeUpdate("DROP TABLE IF EXISTS `" + table + "`;");
 					return true;
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -103,14 +104,10 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 
 		return dispatchAsync(() -> {
 			if (isConnected()) {
-				try {
-					ResultSet tables = getConnection().getConnection().getMetaData().getTables(null, null, name, null);
+				try (ResultSet tables = getConnection().getMetaData().getTables(null, null, name, null)) {
 					if (tables.next()) {
-						tables.close();
 						return true;
 					}
-
-					tables.close();
 				} catch (SQLException e) {
 					Debug.logConsole("Table with name {0} does not exists or not a table!", name);
 				}
@@ -127,9 +124,8 @@ public class MySQLConnect extends DBConnector implements DBMethods {
 
 		return dispatchAsync(() -> {
 			if (isConnected()) {
-				try {
-					getConnection().executeQuery(getConnection().createStatement(),
-							"SELECT `" + collumn + "` FROM `" + table + "`;");
+				try (Statement statement = getConnection().createStatement()) {
+					statement.executeQuery("SELECT `" + collumn + "` FROM `" + table + "`;");
 					return true;
 				} catch (SQLException e) {
 					Debug.logConsole("Column {0} with table {1} not a collumn or does not exists.", collumn, table);

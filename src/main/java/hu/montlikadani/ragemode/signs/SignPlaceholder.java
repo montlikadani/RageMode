@@ -3,10 +3,9 @@ package hu.montlikadani.ragemode.signs;
 import java.util.ArrayList;
 import java.util.List;
 
-import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
-import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.Utils;
 
 public class SignPlaceholder {
@@ -21,14 +20,12 @@ public class SignPlaceholder {
 		return lines;
 	}
 
-	protected List<String> parsePlaceholder(String gameName) {
+	protected List<String> parsePlaceholder(Game game) {
 		List<String> variables = new ArrayList<>();
 
 		if (lines == null) {
 			return variables;
 		}
-
-		Game game = GameUtils.getGame(gameName);
 
 		for (int i = 0; i < 4; i++) {
 			if (i >= lines.size()) {
@@ -38,7 +35,7 @@ public class SignPlaceholder {
 			String line = lines.get(i);
 
 			if (line.contains("%game%"))
-				line = line.replace("%game%", gameName);
+				line = line.replace("%game%", game.getName());
 
 			if (line.contains("%current-players%")) {
 				line = line.replace("%current-players%",
@@ -54,11 +51,11 @@ public class SignPlaceholder {
 				switch (game.getStatus()) {
 				case WAITING:
 					line = line.replace("%running%",
-							(game.getPlayers().size() == game.maxPlayers) ? ConfigValues.getSignGameFull()
+							(game.getPlayers().size() >= game.maxPlayers) ? ConfigValues.getSignGameFull()
 									: ConfigValues.getSignGameWaiting());
 					break;
 				case RUNNING:
-					if (game.isGameRunning()) {
+					if (game.isRunning()) {
 						line = line.replace("%running%", ConfigValues.getSignGameRunning());
 					}
 

@@ -4,11 +4,11 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
-import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.events.GameListener;
 import hu.montlikadani.ragemode.gameUtils.CacheableHitTarget;
-import hu.montlikadani.ragemode.scores.KilledWith;
+import hu.montlikadani.ragemode.items.GameItems;
 
 public class CombatAxeThread {
 
@@ -25,6 +25,8 @@ public class CombatAxeThread {
 	public void start() {
 		running = true;
 
+		final JavaPlugin plugin = JavaPlugin.getProvidingPlugin(hu.montlikadani.ragemode.RageMode.class);
+
 		new Thread(() -> {
 			while (running) {
 				if (item.isDead()) {
@@ -33,7 +35,7 @@ public class CombatAxeThread {
 				}
 
 				// To prevent async catch
-				RageMode.getInstance().getServer().getScheduler().runTask(RageMode.getInstance(), () -> {
+				plugin.getServer().getScheduler().runTask(plugin, () -> {
 					for (Entity entity : item.getNearbyEntities(0.4D, 0.5D, 0.4D)) {
 						if (!running) {
 							break;
@@ -41,13 +43,14 @@ public class CombatAxeThread {
 
 						if (entity instanceof Player) {
 							final Player victim = (Player) entity;
+
 							if (victim == player) {
 								continue;
 							}
 
 							victim.damage(25D, player);
 
-							CacheableHitTarget cht = new CacheableHitTarget(victim, KilledWith.COMBATAXE);
+							CacheableHitTarget cht = new CacheableHitTarget(victim, GameItems.COMBATAXE);
 							cht.add(0);
 							GameListener.HIT_TARGETS.put(victim.getUniqueId(), cht);
 						} else if (entity instanceof LivingEntity) {

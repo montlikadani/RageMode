@@ -1,16 +1,11 @@
 package hu.montlikadani.ragemode.utils;
 
-import java.text.NumberFormat;
-import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -23,31 +18,37 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
-import hu.montlikadani.ragemode.utils.ServerVersion.Version;
 
 public class Utils {
 
+	private static final RageMode RM = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
+
 	public static String getFormattedTime(long time) {
-		String sMark = RageMode.getLang().get("time-formats.second");
-		String mMark = RageMode.getLang().get("time-formats.minute");
+		String second = RageMode.getLang().get("time-formats.second");
+
 		if (time < 60)
-			return time + sMark;
+			return time + second;
+
+		String minute = RageMode.getLang().get("time-formats.minute");
 
 		long mins = time / 60;
 		long remainderSecs = time - (mins * 60);
-		if (mins < 60)
-			return (mins < 10 ? "0" : "") + mins + mMark + " " + (remainderSecs < 10 ? "0" : "") + remainderSecs
-					+ sMark;
+
+		if (mins < 60) {
+			return (mins < 10 ? "0" : "") + mins + minute + " " + (remainderSecs < 10 ? "0" : "") + remainderSecs
+					+ second;
+		}
 
 		long hours = mins / 60;
 		long remainderMins = mins - (hours * 60);
+
 		return (hours < 10 ? "0" : "") + hours + RageMode.getLang().get("time-formats.hour") + " "
-				+ (remainderMins < 10 ? "0" : "") + remainderMins + mMark + " " + (remainderSecs < 10 ? "0" : "")
-				+ remainderSecs + sMark;
+				+ (remainderMins < 10 ? "0" : "") + remainderMins + minute + " " + (remainderSecs < 10 ? "0" : "")
+				+ remainderSecs + second;
 	}
 
 	/**
-	 * Calls an event.
+	 * Calls an event depending on the current thread.
 	 * <p>
 	 * If the event is not Asynchronous, it performs on the main thread, preventing
 	 * async catch.
@@ -55,15 +56,12 @@ public class Utils {
 	 * @param event {@link org.bukkit.event.Event}
 	 */
 	public static void callEvent(org.bukkit.event.Event event) {
-		if (!hu.montlikadani.ragemode.API.RageModeAPI.getPlugin().isEnabled()) {
+		if (!RM.isEnabled()) {
 			return;
 		}
 
 		if (!event.isAsynchronous() && !Bukkit.isPrimaryThread()) {
-			Bukkit.getScheduler().callSyncMethod(RageMode.getInstance(), () -> {
-				Bukkit.getPluginManager().callEvent(event);
-				return true;
-			});
+			SchedulerUtil.submitSync(() -> Bukkit.getPluginManager().callEvent(event), true);
 		} else {
 			Bukkit.getPluginManager().callEvent(event);
 		}
@@ -71,71 +69,71 @@ public class Utils {
 
 	public static CompletableFuture<Boolean> teleport(Entity entity, Location loc) {
 		final CompletableFuture<Boolean> comp = new CompletableFuture<>();
-		final ServerSoftwareType softwareType = RageMode.getSoftwareType();
 
-		if (softwareType != ServerSoftwareType.UNKNOWN && softwareType != ServerSoftwareType.SPIGOT) {
+		if (RM.isPaper()) {
 			if (!Bukkit.isPrimaryThread()) { // Perform on main thread to prevent async catchop
-				Bukkit.getScheduler().runTaskLater(RageMode.getInstance(),
-						() -> entity.teleportAsync(loc).thenAccept(done -> {
-							if (!done) {
-								entity.teleport(loc);
-							}
-						}), 1L);
-			} else {
-				entity.teleportAsync(loc).thenAccept(done -> {
-					if (!done) {
+				// Call synchronously without delay
+				SchedulerUtil.submitSync(() -> entity.teleportAsync(loc).thenAccept(done -> {
+					if (!done.booleanValue()) {
 						entity.teleport(loc);
 					}
+
+					comp.complete(true);
+				}), true);
+			} else {
+				entity.teleportAsync(loc).whenComplete((done, throwable) -> {
+					if (!done.booleanValue()) {
+						entity.teleport(loc);
+					}
+
+					comp.complete(true);
 				});
 			}
 		} else if (!Bukkit.isPrimaryThread()) { // Check if current thread is async
-			Bukkit.getScheduler().scheduleSyncDelayedTask(RageMode.getInstance(), () -> entity.teleport(loc));
+			// Call synchronously without delay
+			SchedulerUtil.submitSync(() -> entity.teleport(loc), comp.complete(true));
 		} else {
 			entity.teleport(loc);
+			comp.complete(true);
 		}
 
-		comp.complete(true);
 		return comp;
 	}
 
-	public static Collection<Entity> getNearbyEntities(org.bukkit.World w, Location loc, int radius) {
-		return Version.isCurrentHigher(Version.v1_8_R1) ? w.getNearbyEntities(loc, radius, radius, radius)
+	public static java.util.Collection<Entity> getNearbyEntities(org.bukkit.World w, Location loc, int radius) {
+		return ServerVersion.isCurrentHigher(ServerVersion.v1_8_R1) ? w.getNearbyEntities(loc, radius, radius, radius)
 				: getNearbyList(loc, radius);
 	}
 
 	public static List<Entity> getNearbyEntities(Entity e, int radius) {
-		return Version.isCurrentHigher(Version.v1_8_R1) ? e.getNearbyEntities(radius, radius, radius)
+		return ServerVersion.isCurrentHigher(ServerVersion.v1_8_R1) ? e.getNearbyEntities(radius, radius, radius)
 				: getNearbyList(e.getLocation(), radius);
 	}
 
 	private static List<Entity> getNearbyList(Location loc, int radius) {
-		List<Entity> radiusEntities = new java.util.ArrayList<>();
-		if (loc.getWorld() == null) {
-			return radiusEntities;
+		final List<Entity> nearbyEntities = new java.util.ArrayList<>();
+		final org.bukkit.World world = loc.getWorld();
+
+		if (world == null) {
+			return nearbyEntities;
 		}
 
 		int chunkRadius = radius < 16 ? 1 : radius / 16;
-		for (int chunkX = 0 - chunkRadius; chunkX <= chunkRadius; chunkX++) {
-			for (int chunkZ = 0 - chunkRadius; chunkZ <= chunkRadius; chunkZ++) {
+		for (int chunkX = -chunkRadius; chunkX <= chunkRadius; chunkX++) {
+			for (int chunkZ = -chunkRadius; chunkZ <= chunkRadius; chunkZ++) {
 				int x = (int) loc.getX(), y = (int) loc.getY(), z = (int) loc.getZ();
 
-				for (Entity e : new Location(loc.getWorld(), x + chunkX * 16, y, z + chunkZ * 16).getChunk()
-						.getEntities()) {
-					if (loc.getWorld().getName().equalsIgnoreCase(e.getWorld().getName())
+				for (Entity e : new Location(world, x + chunkX * 16, y, z + chunkZ * 16).getChunk().getEntities()) {
+					if (world.getName().equalsIgnoreCase(e.getWorld().getName())
 							&& e.getLocation().distanceSquared(loc) <= radius * radius
 							&& e.getLocation().getBlock() != loc.getBlock()) {
-						radiusEntities.add(e);
+						nearbyEntities.add(e);
 					}
 				}
 			}
 		}
 
-		return radiusEntities;
-	}
-
-	public static void clearPlayerInventory(Player pl) {
-		pl.getInventory().clear();
-		pl.updateInventory();
+		return nearbyEntities;
 	}
 
 	public static String setPlaceholders(String s, Player player) {
@@ -205,7 +203,7 @@ public class Utils {
 
 		if (s.contains("%kd%")) {
 			double kd = pp == null ? 0d : pp.getKD();
-			s = s.replace("%kd%", NumberFormat.getInstance(Locale.ENGLISH).format(kd));
+			s = s.replace("%kd%", java.text.NumberFormat.getInstance(java.util.Locale.ENGLISH).format(kd));
 		}
 
 		if (s.contains("%current-streak%"))
@@ -229,7 +227,11 @@ public class Utils {
 	}
 
 	public static List<String> colorList(List<String> list) {
-		return list.stream().map(Utils::colors).collect(Collectors.toList());
+		for (int i = 0; i < list.size(); i++) {
+			list.set(i, colors(list.get(i)));
+		}
+
+		return list;
 	}
 
 	public static String colors(String s) {
@@ -237,24 +239,22 @@ public class Utils {
 			return "";
 		}
 
-		if (Version.isCurrentEqualOrHigher(Version.v1_16_R1) && s.contains("#")) {
+		if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_16_R1) && s.contains("#")) {
 			s = matchColorRegex(s);
 		}
 
-		return ChatColor.translateAlternateColorCodes('&', s);
+		return org.bukkit.ChatColor.translateAlternateColorCodes('&', s);
 	}
 
-	private static String matchColorRegex(String s) {
-		String regex = "&?#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})";
-		Matcher matcher = Pattern.compile(regex).matcher(s);
-		while (matcher.find()) {
-			String group = matcher.group(0);
-			String group2 = matcher.group(1);
+	private static final Pattern HEX_PATTERN = Pattern.compile("&?#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})");
 
+	private static String matchColorRegex(String s) {
+		java.util.regex.Matcher matcher = HEX_PATTERN.matcher(s);
+
+		while (matcher.find()) {
 			try {
-				s = s.replace(group, net.md_5.bungee.api.ChatColor.of("#" + group2) + "");
+				s = s.replace(matcher.group(0), net.md_5.bungee.api.ChatColor.of("#" + matcher.group(1)) + "");
 			} catch (Exception e) {
-				Debug.logConsole(java.util.logging.Level.WARNING, "Bad hex color: " + group);
 			}
 		}
 
@@ -264,88 +264,43 @@ public class Utils {
 	public static void connectToHub(Player player) {
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
 		out.writeUTF("Connect");
-		out.writeUTF(hu.montlikadani.ragemode.config.ConfigValues.getHubName());
-		player.sendPluginMessage(RageMode.getInstance(), "BungeeCord", out.toByteArray());
+		out.writeUTF(hu.montlikadani.ragemode.config.configconstants.ConfigValues.getHubName());
+		player.sendPluginMessage(RM, "BungeeCord", out.toByteArray());
 	}
 
-	public static boolean isDouble(String str) {
-		if (str == null) {
-			return false;
+	public static Optional<Double> tryParse(String str) {
+		if (str == null || str.isEmpty()) {
+			return Optional.empty();
 		}
 
 		try {
-			Double.parseDouble(str);
+			return Optional.of(Double.parseDouble(str));
 		} catch (NumberFormatException e) {
-			return false;
+			return Optional.empty();
 		}
-
-		return true;
 	}
 
-	public static boolean isInt(String str) {
-		if (str == null) {
-			return false;
+	public static Optional<Integer> tryParseInt(String str) {
+		if (str == null || str.isEmpty()) {
+			return Optional.empty();
 		}
 
 		try {
-			Integer.parseInt(str);
+			return Optional.of(Integer.parseInt(str));
 		} catch (NumberFormatException e) {
-			return false;
+			return Optional.empty();
 		}
-
-		return true;
 	}
 
-	public abstract static class Reflections {
-
-		private static int jVersion = -1;
-
-		public static void sendPacket(Player player, Object packet) throws Exception {
-			Object handle = player.getClass().getMethod("getHandle").invoke(player);
-			Object playerConnection = handle.getClass().getField("playerConnection").get(handle);
-			playerConnection.getClass().getMethod("sendPacket", getNMSClass("Packet")).invoke(playerConnection, packet);
+	public static Optional<Float> tryParseFloat(String str) {
+		if (str == null || str.isEmpty()) {
+			return Optional.empty();
 		}
 
-		public static Class<?> getNMSClass(String name) throws ClassNotFoundException {
-			return Class.forName("net.minecraft.server." + getClassVersion() + "." + name);
-		}
-
-		public static Object getAsIChatBaseComponent(String name) throws Exception {
-			Class<?> iChatBaseComponent = getNMSClass("IChatBaseComponent");
-
-			if (Version.isCurrentEqualOrLower(Version.v1_8_R2)) {
-				Class<?> chatSerializer = getNMSClass("ChatSerializer");
-				return iChatBaseComponent.cast(chatSerializer.getMethod("a", String.class).invoke(chatSerializer,
-						"{\"text\":\"" + name + "\"}"));
-			}
-
-			return iChatBaseComponent.getDeclaredClasses()[0].getMethod("a", String.class).invoke(iChatBaseComponent,
-					"{\"text\":\"" + name + "\"}");
-		}
-
-		public static String getClassVersion() {
-			return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-		}
-
-		public static int getCurrentJavaVersion() {
-			if (jVersion != -1) {
-				return jVersion;
-			}
-
-			String currentVersion = System.getProperty("java.version");
-			if (currentVersion.contains("_")) {
-				currentVersion = currentVersion.split("_")[0];
-			}
-
-			currentVersion = currentVersion.replaceAll("[^\\d]|_", "");
-
-			for (int i = 8; i <= 18; i++) {
-				if (currentVersion.contains(Integer.toString(i))) {
-					return jVersion = i;
-				}
-			}
-
-			return 0;
+		try {
+			return Optional.of(Float.parseFloat(str));
+		} catch (NumberFormatException e) {
+			return Optional.empty();
 		}
 	}
 }

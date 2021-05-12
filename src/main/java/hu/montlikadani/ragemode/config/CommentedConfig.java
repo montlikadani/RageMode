@@ -7,26 +7,22 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import com.google.common.io.Files;
-
 public class CommentedConfig extends YamlConfiguration {
 
-	private final Map<String, String> comments = new HashMap<>();
+	private final Map<String, String> comments = new java.util.HashMap<>();
 
 	private YamlConfiguration config;
 	private File file;
 
 	public CommentedConfig(File file) {
 		this.file = file;
-		this.config = getYml();
+		config = getYml();
 	}
 
 	public YamlConfiguration getConfig() {
@@ -40,8 +36,8 @@ public class CommentedConfig extends YamlConfiguration {
 	public void load() {
 		try {
 			load(file);
-		} catch (IOException | InvalidConfigurationException e) {
-			e.printStackTrace();
+		} catch (InvalidConfigurationException | IOException e) {
+			org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, e.getLocalizedMessage());
 		}
 	}
 
@@ -55,16 +51,12 @@ public class CommentedConfig extends YamlConfiguration {
 
 	@Override
 	public void save(String file) throws IOException {
-		Validate.notEmpty(file, "File cannot be null/empty");
-
 		save(new File(file));
 	}
 
 	@Override
 	public void save(File file) throws IOException {
-		Validate.notNull(file, "File cannot be null");
-
-		Files.createParentDirs(file);
+		com.google.common.io.Files.createParentDirs(file);
 
 		String saveToString = saveToString();
 		if (saveToString.trim().isEmpty()) {
@@ -87,26 +79,31 @@ public class CommentedConfig extends YamlConfiguration {
 			return yaml;
 		}
 
-		String[] yamlContents = yaml.split("[" + System.getProperty("line.separator") + "]");
 		StringBuilder newContents = new StringBuilder(), currentPath = new StringBuilder();
-		boolean commentedPath = false;
-		boolean node = false;
+		boolean commentedPath = false, node = false;
 		int depth = 0;
 
-		for (final String line : yamlContents) {
+		String[] split = yaml.split("[" + System.lineSeparator() + "]");
+
+		for (int s = 0; s < split.length; s++) {
+			final String line = split[s];
+
 			if (line.startsWith("#")) {
 				continue; // Ignore comments
 			}
 
+			int length = line.length();
 			boolean keyOk = true;
+
 			if (line.contains(": ")) {
 				int index = line.indexOf(": ");
+
 				if (index < 0) {
-					index = line.length() - 1;
+					index = length - 1;
 				}
 
 				int whiteSpace = 0;
-				for (int n = 0; n < line.length(); n++) {
+				for (int n = 0; n < length; n++) {
 					if (line.charAt(n) == ' ') {
 						whiteSpace++;
 					} else {
@@ -115,26 +112,28 @@ public class CommentedConfig extends YamlConfiguration {
 				}
 
 				String key = line.substring(whiteSpace, index);
+
 				if (key.contains(" ") || key.contains("&") || key.contains(".") || key.contains("'")
 						|| key.contains("\"")) {
 					keyOk = false;
 				}
 			}
 
-			if (line.contains(": ") && keyOk || (line.length() > 1 && line.charAt(line.length() - 1) == ':')) {
+			if ((line.contains(": ") && keyOk) || (length > 1 && line.charAt(length - 1) == ':')) {
 				commentedPath = false;
 				node = true;
 
 				int index = line.indexOf(": ");
 				if (index < 0) {
-					index = line.length() - 1;
+					index = length - 1;
 				}
 
-				if (currentPath.toString().isEmpty()) {
+				if (currentPath.length() == 0) {
 					currentPath = new StringBuilder(line.substring(0, index));
 				} else {
 					int whiteSpace = 0;
-					for (int n = 0; n < line.length(); n++) {
+
+					for (int n = 0; n < length; n++) {
 						if (line.charAt(n) == ' ') {
 							whiteSpace++;
 						} else {
@@ -147,6 +146,7 @@ public class CommentedConfig extends YamlConfiguration {
 						depth++;
 					} else if (whiteSpace / 2 < depth) {
 						int newDepth = whiteSpace / 2;
+
 						for (int i = 0; i < depth - newDepth; i++) {
 							currentPath.replace(currentPath.lastIndexOf("."), currentPath.length(), "");
 						}
@@ -155,17 +155,18 @@ public class CommentedConfig extends YamlConfiguration {
 						if (lastIndex < 0) {
 							currentPath = new StringBuilder();
 						} else {
-							currentPath.replace(currentPath.lastIndexOf("."), currentPath.length(), "").append('.');
+							currentPath.replace(lastIndex, currentPath.length(), "").append('.');
 						}
 
 						currentPath.append(line.substring(whiteSpace, index));
 						depth = newDepth;
 					} else {
 						int lastIndex = currentPath.lastIndexOf(".");
+
 						if (lastIndex < 0) {
 							currentPath = new StringBuilder();
 						} else {
-							currentPath.replace(currentPath.lastIndexOf("."), currentPath.length(), "").append('.');
+							currentPath.replace(lastIndex, currentPath.length(), "").append('.');
 						}
 
 						currentPath.append(line.substring(whiteSpace, index));
@@ -176,20 +177,17 @@ public class CommentedConfig extends YamlConfiguration {
 			}
 
 			StringBuilder newLine = new StringBuilder(line);
+
 			if (node) {
-				String comment = "";
-				if (!commentedPath) {
-					comment = comments.getOrDefault(currentPath.toString(), "");
-				}
+				String comment = !commentedPath ? comments.getOrDefault(currentPath.toString(), "") : "";
 
 				if (!comment.isEmpty()) {
-					newLine.insert(0, System.getProperty("line.separator")).insert(0, comment);
-					comment = "";
+					newLine.insert(0, System.lineSeparator()).insert(0, comment);
 					commentedPath = true;
 				}
 			}
 
-			newLine.append(System.getProperty("line.separator"));
+			newLine.append(System.lineSeparator());
 			newContents.append(newLine.toString());
 		}
 
@@ -210,17 +208,18 @@ public class CommentedConfig extends YamlConfiguration {
 
 		boolean newLine = false;
 		StringBuilder comment = new StringBuilder();
+
 		for (String line : commentLines) {
 			if (!line.isEmpty()) {
 				line = leadingSpaces + "# " + line;
 			}
 
 			if (comment.length() > 0) {
-				comment.append(System.getProperty("line.separator"));
+				comment.append(System.lineSeparator());
 			}
 
 			if (!newLine) {
-				line = "\n" + line;
+				line = System.lineSeparator() + line;
 				newLine = true;
 			}
 
@@ -232,50 +231,25 @@ public class CommentedConfig extends YamlConfiguration {
 
 	public void cleanUp() {
 		// Get rid of removed options by cleaning the file content
-		PrintWriter writer = null;
-		try {
-			writer = new PrintWriter(file);
+		try (PrintWriter writer = new PrintWriter(file)) {
 			writer.write("");
-		} catch (Exception e) {
+		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		} finally {
-			if (writer != null) {
-				writer.close();
-			}
 		}
 	}
 
 	public YamlConfiguration getYml() {
 		YamlConfiguration config = new YamlConfiguration();
+
 		if (file == null || !file.exists()) {
 			return config;
 		}
 
-		FileInputStream inputStream = null;
-		InputStreamReader reader = null;
-
-		try {
-			reader = new InputStreamReader(inputStream = new FileInputStream(file), StandardCharsets.UTF_8);
+		try (InputStreamReader reader = new InputStreamReader(new FileInputStream(file))) {
 			config.load(reader);
 		} catch (FileNotFoundException e) {
 		} catch (InvalidConfigurationException | IOException e) {
-			System.out.println(e.getLocalizedMessage());
-		} finally {
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-
-			if (reader != null) {
-				try {
-					reader.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+			org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, e.getLocalizedMessage());
 		}
 
 		return config;
@@ -291,7 +265,7 @@ public class CommentedConfig extends YamlConfiguration {
 		return path;
 	}
 
-	public Boolean get(String path, boolean def) {
+	public boolean get(String path, boolean def) {
 		path = process(path, def);
 		return config.getBoolean(path);
 	}
@@ -308,13 +282,7 @@ public class CommentedConfig extends YamlConfiguration {
 
 	public List<String> get(String path, List<String> def) {
 		path = process(path, def);
-
-		List<String> value = config.getStringList(path);
-		for (int p = 0; p < value.size(); p++) {
-			value.set(p, value.get(p));
-		}
-
-		return value;
+		return config.getStringList(path);
 	}
 
 	public String get(String path, String def) {
@@ -322,7 +290,7 @@ public class CommentedConfig extends YamlConfiguration {
 		return config.getString(path);
 	}
 
-	public Double get(String path, Double def) {
+	public double get(String path, Double def) {
 		path = process(path, def);
 		return config.getDouble(path);
 	}

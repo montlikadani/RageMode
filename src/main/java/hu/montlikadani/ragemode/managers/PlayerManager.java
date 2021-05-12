@@ -3,53 +3,104 @@ package hu.montlikadani.ragemode.managers;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Preconditions;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.config.ConfigValues;
+import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
+import hu.montlikadani.ragemode.events.GameListener;
+import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.GameStatus;
+import hu.montlikadani.ragemode.gameLogic.spawn.GameSpawn;
+import hu.montlikadani.ragemode.gameLogic.spawn.IGameSpawn;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.StorePlayerStuffs;
 import hu.montlikadani.ragemode.utils.Utils;
+import hu.montlikadani.ragemode.utils.stuff.MovementTicker;
 
-public class PlayerManager {
+public class PlayerManager implements MovementTicker {
 
 	/**
 	 * Cached map to store the "toggleable" death messages
 	 */
-	public static final Map<UUID, Boolean> DEATHMESSAGESTOGGLE = new HashMap<>();
+	public static final Map<UUID, Boolean> DEATH_MESSAGES_TOGGLE = new HashMap<>();
 
 	private UUID playerUUID;
-	private String game;
+	private String gameName;
 
 	private int lives = 0;
 
-	private final StorePlayerStuffs sps = new StorePlayerStuffs();
+	private boolean spectator = false;
 
-	public PlayerManager(UUID playerUUID, String game) {
+	private final StorePlayerStuffs sps = new StorePlayerStuffs();
+	private final RageMode plugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
+
+	public PlayerManager(UUID playerUUID, String gameName) {
 		this.playerUUID = playerUUID;
-		this.game = game;
+		this.gameName = gameName;
 	}
 
 	/**
-	 * Gets the cached player from this object.
+	 * Returns the player object retrieved from uuid.
 	 * 
 	 * @return {@link Player}
 	 */
+	@Nullable
 	public Player getPlayer() {
 		return Bukkit.getPlayer(playerUUID);
+	}
+
+	@Nullable // Not always, usually when a object created with null uuid parameter
+	public UUID getUniqueId() {
+		return playerUUID;
 	}
 
 	/**
 	 * Gets the game name where the player is in currently.
 	 * 
-	 * @return game name
+	 * @return the name of the game where the player is in
 	 */
+	@Nullable // Not always, usually when a object created with null parameter
 	public String getGameName() {
-		return game;
+		return gameName;
+	}
+
+	/**
+	 * Gets the game instance where the player is in currently.
+	 * 
+	 * @return the {@link Game} where the player is playing currently.
+	 */
+	@Nullable
+	public Game getPlayerGame() {
+		return GameUtils.getGame(gameName);
+	}
+
+	/**
+	 * @return true if this player is spectator
+	 */
+	public boolean isSpectator() {
+		return spectator;
+	}
+
+	/**
+	 * Sets this player to spectator.
+	 * <p>
+	 * This will not changes anything player related components.
+	 * 
+	 * @param spectator true if this player should be spectator or not
+	 */
+	public void setSpectator(boolean spectator) {
+		this.spectator = spectator;
 	}
 
 	/**
@@ -75,6 +126,7 @@ public class PlayerManager {
 	 * 
 	 * @return the cached stuffs that are in {@link StorePlayerStuffs}
 	 */
+	@NotNull
 	public StorePlayerStuffs getStorePlayer() {
 		return sps;
 	}
@@ -88,8 +140,64 @@ public class PlayerManager {
 		return lives <= ConfigValues.getPlayerLives();
 	}
 
+	@Override
+	public void tickMovement() {
+		Game game = getPlayerGame();
+
+		if (game == null) {
+			return;
+		}
+
+		Player player = getPlayer();
+		Location loc = player.getLocation();
+
+		if (loc.getY() < 0) {
+			CompletableFuture<Boolean> comp = null;
+			IGameSpawn gameSpawn = game.getSpawn(GameSpawn.class);
+
+			if (gameSpawn != null && gameSpawn.haveAnySpawn()) {
+				comp = Utils.teleport(player, gameSpawn.getRandomSpawn());
+			} else { // For safety
+				for (PlayerManager pm : game.getPlayers()) {
+					Player pl = pm.getPlayer();
+
+					if (pl != player && pl.getLocation().getY() > 0) {
+						comp = Utils.teleport(player, pl.getLocation());
+						break;
+					}
+				}
+			}
+
+			if (comp != null) {
+				comp.whenComplete((b, t) -> {
+					// Prevent damaging player when respawned
+					player.setFallDistance(0);
+
+					GameUtils.broadcastToGame(game,
+							RageMode.getLang().get("game.void-fall", "%player%", player.getName()));
+				});
+			}
+
+			return;
+		}
+
+		if (game.getStatus() == GameStatus.RUNNING) {
+			// prevent player moving outside of game area
+
+			if (!GameAreaManager.inArea(loc)) {
+				Utils.teleport(player, loc.subtract(loc.getDirection().multiply(1)));
+				return;
+			}
+
+			if (!spectator) {
+				// pressure mine exploding
+				GameListener.explodeMine(player, loc);
+			}
+		}
+	}
+
 	/**
-	 * Moves another stored player things to the new one.
+	 * Sets the given object properties to this one and caches.
 	 * 
 	 * @param s {@link StorePlayerStuffs}
 	 */
@@ -134,24 +242,20 @@ public class PlayerManager {
 		} else {
 			sps.oldHealth = player.getHealth();
 			sps.oldHunger = player.getFoodLevel();
+			sps.oldEffects = player.getActivePotionEffects();
 
-			if (!player.getActivePotionEffects().isEmpty())
-				sps.oldEffects = player.getActivePotionEffects();
+			String dName = plugin.getComplement().getDisplayName(player);
+			if (!dName.equals(player.getName()))
+				sps.oldDisplayName = dName;
 
-			if (!player.getDisplayName().equals(player.getName()))
-				sps.oldDisplayName = player.getDisplayName();
-
-			if (!player.getPlayerListName().equals(player.getName()))
-				sps.oldListName = player.getPlayerListName();
+			sps.oldListName = plugin.getComplement().getPlayerListName(player);
 
 			if (player.getFireTicks() > 0)
 				sps.oldFire = player.getFireTicks();
 
 			sps.oldExp = player.getExp();
 			sps.oldExpLevel = player.getLevel();
-
-			if (player.isInsideVehicle())
-				sps.oldVehicle = player.getVehicle();
+			sps.oldVehicle = player.getVehicle();
 		}
 
 		sps.currentBoard = player.getScoreboard();
@@ -163,25 +267,17 @@ public class PlayerManager {
 	}
 
 	/**
-	 * Adds back the tools to the player if have stored.
+	 * Gives back the tools to the player if it was stored.
 	 */
-	public void addBackTools() {
-		addBackTools(false);
-	}
-
-	/**
-	 * Adds back the tools to the player if have stored.
-	 * 
-	 * @param spectator the player is spectator or not
-	 */
-	public void addBackTools(boolean spectator) {
+	public void giveBackTools() {
 		Player player = getPlayer();
+
 		if (player == null) {
 			return;
 		}
 
-		if (!player.getActivePotionEffects().isEmpty()) {
-			player.getActivePotionEffects().forEach(e -> player.removePotionEffect(e.getType()));
+		for (PotionEffect effect : player.getActivePotionEffects()) {
+			player.removePotionEffect(effect.getType());
 		}
 
 		if (ConfigValues.isBungee()) {
@@ -190,8 +286,7 @@ public class PlayerManager {
 		}
 
 		if (sps.oldLocation != null) { // Teleport back to the location
-			Utils.teleport(player, sps.oldLocation);
-			sps.oldLocation = null;
+			Utils.teleport(player, sps.oldLocation).whenComplete((done, throwable) -> sps.oldLocation = null);
 		}
 
 		if (spectator || ConfigValues.isSavePlayerData()) {
@@ -237,12 +332,12 @@ public class PlayerManager {
 				}
 
 				if (sps.oldListName != null) { // Give him his list name back.
-					player.setPlayerListName(sps.oldListName);
+					plugin.getComplement().setPlayerListName(player, sps.oldListName);
 					sps.oldListName = null;
 				}
 
 				if (sps.oldDisplayName != null) { // Give him his display name back.
-					player.setDisplayName(sps.oldDisplayName);
+					plugin.getComplement().setDisplayName(player, sps.oldDisplayName);
 					sps.oldDisplayName = null;
 				}
 
@@ -260,9 +355,9 @@ public class PlayerManager {
 					sps.oldVehicle = null;
 				}
 
-				Configuration conf = RageMode.getInstance().getConfiguration();
-				conf.getDatasCfg().set("datas." + player.getName(), null);
-				Configuration.saveFile(conf.getDatasCfg(), conf.getDatasFile());
+				plugin.getConfiguration().getDatasCfg().set("datas." + player.getName(), null);
+				Configuration.saveFile(plugin.getConfiguration().getDatasCfg(),
+						plugin.getConfiguration().getDatasFile());
 			}
 		}
 	}

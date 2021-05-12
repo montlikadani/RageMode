@@ -1,7 +1,6 @@
 package hu.montlikadani.ragemode.items;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -11,13 +10,13 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import hu.montlikadani.ragemode.RageMode;
+
 public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 
 	private ItemStack builtItem;
 	private Material item;
-
-	private String displayName;
-	private String customName;
+	private String displayName = "", customName = "";
 
 	private List<String> lore;
 
@@ -25,7 +24,7 @@ public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 
 	private int amount = 1, enchantLevel = 1, slot = -1;
 
-	private double damage = 0;
+	private double damage = 0, velocity = 0;
 
 	private final List<Extra> extras = new ArrayList<>();
 
@@ -72,20 +71,26 @@ public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 		return damage;
 	}
 
+	public double getVelocity() {
+		return velocity;
+	}
+
 	public List<Extra> getExtras() {
 		return extras;
 	}
 
 	public ItemHandler addExtra(Extra... extra) {
-		if (extra != null && extra.length != 0) {
-			Arrays.asList(extra).forEach(extras::add);
+		if (extra != null) {
+			for (Extra ext : extra) {
+				extras.add(ext);
+			}
 		}
 
 		return this;
 	}
 
 	public ItemHandler setSlot(int slot) {
-		this.slot = slot < 0 ? 1 : slot;
+		this.slot = (slot < 0 || slot > 40) ? 1 : slot;
 		return this;
 	}
 
@@ -95,11 +100,14 @@ public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 	}
 
 	public ItemHandler setItem(String name) {
-		return (name == null || name.isEmpty()) ? null : setItem(Material.valueOf(name.toUpperCase()));
+		return (name == null || name.isEmpty()) ? this : setItem(Material.matchMaterial(name.toUpperCase()));
 	}
 
 	public ItemHandler setItem(Material item) {
-		this.item = item;
+		if (item != null) {
+			this.item = item;
+		}
+
 		return this;
 	}
 
@@ -109,12 +117,18 @@ public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 	}
 
 	public ItemHandler setDisplayName(String displayName) {
-		this.displayName = displayName == null ? "" : displayName;
+		if (displayName != null) {
+			this.displayName =  displayName;
+		}
+
 		return this;
 	}
 
 	public ItemHandler setCustomName(String customName) {
-		this.customName = customName == null ? "" : customName;
+		if (customName != null) {
+			this.customName = customName;
+		}
+
 		return this;
 	}
 
@@ -133,6 +147,11 @@ public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 		return this;
 	}
 
+	public ItemHandler setVelocity(double velocity) {
+		this.velocity = velocity;
+		return this;
+	}
+
 	@Override
 	public ItemStack get() {
 		if (builtItem != null || item == null) {
@@ -141,14 +160,18 @@ public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 
 		ItemStack item = new ItemStack(this.item, amount);
 		ItemMeta meta = item.getItemMeta();
-		assert meta != null;
+		if (meta == null) {
+			return builtItem = item;
+		}
 
-		if (!displayName.trim().isEmpty()) {
-			meta.setDisplayName(displayName);
+		final RageMode plugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
+
+		if (!displayName.isEmpty()) {
+			plugin.getComplement().setDisplayName(meta, displayName);
 		}
 
 		if (lore != null) {
-			meta.setLore(lore);
+			plugin.getComplement().setLore(meta, lore);
 		}
 
 		if (enchant != null) {
@@ -156,12 +179,12 @@ public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 		}
 
 		item.setItemMeta(meta);
-		return item;
+		return builtItem = item;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		return obj == builtItem || obj == item || super.equals(obj);
+		return obj == builtItem || obj == item || this == obj;
 	}
 
 	@Override
@@ -187,7 +210,7 @@ public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 				'}';
 	}
 
-	public static class Extra {
+	public static final class Extra {
 
 		public Extra() {
 		}

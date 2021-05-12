@@ -8,8 +8,6 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -25,6 +23,7 @@ public class Language {
 	private String lang;
 
 	private File localeFolder, langFile;
+	private FileConfiguration langConfig;
 
 	public Language(RageMode plugin) {
 		this.plugin = plugin;
@@ -41,45 +40,40 @@ public class Language {
 	public void loadLanguage(String lang) {
 		if (lang == null || lang.isEmpty()) {
 			lang = "en";
+		} else {
+			lang = lang.toLowerCase();
 		}
 
-		lang = lang.toLowerCase();
 		this.lang = lang;
 
 		if (localeFolder == null) {
 			localeFolder = new File(plugin.getFolder(), "locale");
 		}
 
-		if (!localeFolder.exists()) {
-			localeFolder.mkdirs();
-		}
+		localeFolder.mkdirs();
 
 		langFile = new File(localeFolder, "locale_" + lang + ".yml");
 
 		if (!langFile.exists()) {
-			if (plugin.getResource("locale/locale_" + lang + ".yml") == null) {
+			try {
+				plugin.saveResource("locale/locale_" + lang + ".yml", false);
+			} catch (IllegalArgumentException e) {
 				try {
 					langFile.createNewFile();
-				} catch (IOException e) {
-					e.printStackTrace();
+				} catch (IOException ex) {
+					ex.printStackTrace();
 				}
-			} else {
-				plugin.saveResource("locale/locale_" + lang + ".yml", false);
 			}
 		}
 
 		if (lang.equals("en")) {
-			FileConfiguration lf = YamlConfiguration.loadConfiguration(langFile);
-			loadMessages(langFile, new FileConfig(lf));
+			loadMessages(langFile, new FileConfig(langConfig = YamlConfiguration.loadConfiguration(langFile)));
 		} else {
-			try {
-				BufferedReader reader = new BufferedReader(
-						new InputStreamReader(new FileInputStream(langFile), java.nio.charset.StandardCharsets.UTF_8));
-				FileConfiguration lf = YamlConfiguration.loadConfiguration(reader);
-				lf.load(langFile);
-				reader.close();
+			try (BufferedReader reader = new BufferedReader(
+					new InputStreamReader(new FileInputStream(langFile), java.nio.charset.StandardCharsets.UTF_8))) {
+				(langConfig = YamlConfiguration.loadConfiguration(reader)).load(langFile);
 			} catch (InvalidConfigurationException e) {
-				Debug.logConsole("Bad/invalid string found in your language file: " + e.getLocalizedMessage());
+				Debug.logConsole(e.getLocalizedMessage());
 			} catch (IOException e2) {
 				e2.printStackTrace();
 			}
@@ -88,6 +82,8 @@ public class Language {
 
 	private void loadMessages(File f, FileConfig l) {
 		l.getFC().options().copyDefaults(true);
+
+		// TODO Move all of these to an enum to retrieve these strings more fastest
 
 		l.get("in-game-only", "&cThis command can only be in-game.");
 		l.get("not-a-player", "&cThis is not a player.");
@@ -148,15 +144,9 @@ public class Language {
 		l.get("commands.removespawn.remove-success",
 				"&cSpawn&e %number%&c for the game&3 %game%&c was removed successfully!");
 		l.get("commands.removespawn.no-more-spawn", "&cNo more spawn to delete, because you removed all spawns...");
-		l.get("commands.removezombiespawn.not-valid-spawn-id",
-				"&cGame spawn with id&e %id%&c is not a valid zombie spawn.");
-		l.get("commands.removezombiespawn.remove-success",
-				"&cZombie spawn&e %number%&c for the game&3 %game%&c was removed successfully!");
-		l.get("commands.removezombiespawn.no-more-spawn",
-				"&cNo more spawn to delete, because you removed all spawns...");
+		l.get("commands.removespawn.all-spawn-removed", "&cAll spawn was removed from&3 %game%.");
 		l.get("commands.givesaveditems.not-enabled", "&cThis option is not enabled in the configuration file.");
-		l.get("commands.givesaveditems.player-not-found-in-data-file",
-				"&cThis player&7 %player%&c not found in the data file.");
+		l.get("commands.givesaveditems.not-saved", "&cNo one was saved.");
 		l.get("commands.givesaveditems.player-is-in-game", "&cThis player&7 %player%&c is in game.");
 		l.get("commands.latestart.player-not-in-lobby", "&cYou are not in the lobby to increase the time.");
 		l.get("commands.latestart.time-can-not-less", "&cTime should not be less than 1.");
@@ -190,7 +180,8 @@ public class Language {
 		l.get("setup.lobby.not-set",
 				"&cThe lobby was not set yet for&3 %game%&c. Set it with&e /rm setlobby <gameName>&c command.");
 		l.get("setup.lobby.worldname-not-set", "&cThe world key can't be empty! Ask an Admin to check the config.yml.");
-		l.get("setup.addgame.success-added", "&2The game &3%game%&2 was added successfully!&e Opening GUI... /rm setup");
+		l.get("setup.addgame.success-added",
+				"&2The game &3%game%&2 was added successfully!&e Opening GUI... /rm setup");
 		l.get("setup.addgame.already-exists", "&cThis &e%game%&c game already exists.");
 		l.get("setup.addgame.special-chars", "&cThe name of the ragemode map contains special characters.");
 		l.get("setup.addgame.name-greater", "&cThe name of the ragemode map is too long&7 (< 20).");
@@ -243,8 +234,6 @@ public class Language {
 		l.get("game.game-freeze.chat-is-disabled", "&cThe chat currently is disabled!");
 		l.get("game.worldname-not-set", "&4The world key can't be empty! Ask an Admin to check the config.yml.");
 		l.get("game.does-not-exist", "&cThe game you wish to join wasn't found.");
-		// l.get("game.no-enough-points", "&cThere are not enough points to pay for
-		// your suicide.");
 		l.get("game.command-disabled-in-end-game", "&cAll commands are disabled at the end of the game. Endure!!");
 		l.get("game.this-command-is-disabled-in-game", "&cThis command is currently disabled.");
 		l.get("game.full", "&cThis Game is already full.");
@@ -285,52 +274,47 @@ public class Language {
 	}
 
 	public String get(String key, Object... variables) {
-		FileConfiguration yc = YamlConfiguration.loadConfiguration(langFile);
-		String msg = "";
-		String missing = "BADF " + key;
-
 		if (key == null || key.isEmpty())
-			return msg;
+			return "";
 
-		if (!yc.contains(key) || !yc.isString(key)) {
-			msg = missing;
-			Debug.sendMessage("[RageMode]&c Can't read language file for:&7 " + key);
-			return msg;
+		String str = langConfig.getString(key);
+		if (str == null) {
+			Debug.logConsole("Can't read language file for string: " + key);
+			return "";
 		}
 
-		if (yc.getString(key).isEmpty())
-			return msg;
+		if (str.isEmpty())
+			return "";
 
-		msg = Utils.colors(yc.getString(key));
+		String text = Utils.colors(str);
 
 		if (variables != null) {
 			for (int i = 0; i < variables.length; i++) {
 				if (variables.length >= i + 2) {
-					msg = msg.replace(String.valueOf(variables[i]), String.valueOf(variables[i + 1]));
+					text = text.replace(String.valueOf(variables[i]), String.valueOf(variables[i + 1]));
 				}
 
 				i++;
 			}
 		}
 
-		return msg;
+		return text;
 	}
 
 	public List<String> getList(String key, Object... variables) {
-		FileConfiguration yc = YamlConfiguration.loadConfiguration(langFile);
-		String missing = "BADF " + key + " ";
-
 		if (key == null || key.isEmpty())
 			return Collections.emptyList();
 
-		if (!yc.contains(key) || !yc.isList(key)) {
-			Debug.sendMessage("[RageMode]&c Can't read language file for:&7 " + key);
-			return Arrays.asList(missing);
+		if (!langConfig.isList(key)) {
+			Debug.logConsole("Can't read language file for string: " + key);
+			return Arrays.asList();
 		}
 
-		List<String> ls = Utils.colorList(yc.getStringList(key));
+		List<String> ls = langConfig.getStringList(key);
 
 		if (variables != null && variables.length > 0) {
+			ls = Utils.colorList(ls);
+
 			for (int i = 0; i < ls.size(); i++) {
 				String msg = ls.get(i);
 
@@ -338,22 +322,11 @@ public class Language {
 					msg = msg.replace(String.valueOf(variables[y]), String.valueOf(variables[y + 1]));
 				}
 
-				msg = filterNewLine(msg);
 				ls.set(i, Utils.colors(msg));
 			}
 		}
 
 		return ls;
-	}
-
-	private String filterNewLine(String msg) {
-		Pattern patern = Pattern.compile("([ ]?[\\/][n][$|\\s])");
-		Matcher match = patern.matcher(msg);
-		while (match.find()) {
-			msg = msg.replace(match.group(0), "\n");
-		}
-
-		return msg;
 	}
 
 	private class FileConfig {

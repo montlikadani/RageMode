@@ -2,13 +2,13 @@ package hu.montlikadani.ragemode.config;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 
 public class Configuration {
 
@@ -19,42 +19,19 @@ public class Configuration {
 
 	public Configuration(RageMode plugin) {
 		this.plugin = plugin;
-	}
 
-	private void loadFiles() {
 		File folder = plugin.getFolder();
-		if (config_file == null) {
-			config_file = new File(folder, "config.yml");
-		}
 
-		if (arenas_file == null) {
-			arenas_file = new File(folder, "arenas.yml");
-		}
-
-		if (rewards_file == null) {
-			rewards_file = new File(folder, "rewards.yml");
-		}
-
-		if (datas_file == null) {
-			datas_file = new File(folder, "datas.yml");
-		}
-
-		if (items_file == null) {
-			items_file = new File(folder, "items.yml");
-		}
-
-		if (areas_File == null) {
-			areas_File = new File(folder, "gameareas.yml");
-		}
-
-		if (holosFile == null) {
-			holosFile = new File(folder, "holos.yml");
-		}
+		config_file = new File(folder, "config.yml");
+		arenas_file = new File(folder, "arenas.yml");
+		rewards_file = new File(folder, "rewards.yml");
+		datas_file = new File(folder, "datas.yml");
+		items_file = new File(folder, "items.yml");
+		areas_File = new File(folder, "gameareas.yml");
+		holosFile = new File(folder, "holos.yml");
 	}
 
 	public void loadConfig() {
-		loadFiles();
-
 		if (!config_file.exists()) {
 			plugin.saveResource("config.yml", false);
 		}
@@ -122,8 +99,15 @@ public class Configuration {
 			plugin.saveResource(name, false);
 		}
 
-		plugin.getLogger().log(Level.INFO, "{0} file created!", name);
 		return YamlConfiguration.loadConfiguration(file);
+	}
+
+	public void deleteEmptyFiles() {
+		for (File file : new File[] { holosFile, areas_File, arenas_file, rewards_file, items_file, datas_file }) {
+			if (file != null && file.exists() && file.length() == 0L) {
+				file.delete();
+			}
+		}
 	}
 
 	public CommentedConfig getCfg() {
@@ -150,6 +134,10 @@ public class Configuration {
 		return gameAreas;
 	}
 
+	public FileConfiguration getHolosConfig() {
+		return holosConfig;
+	}
+
 	public File getCfgFile() {
 		return config_file;
 	}
@@ -172,10 +160,6 @@ public class Configuration {
 
 	public File getAreasFile() {
 		return areas_File;
-	}
-
-	public FileConfiguration getHolosConfig() {
-		return holosConfig;
 	}
 
 	public File getHolosFile() {
