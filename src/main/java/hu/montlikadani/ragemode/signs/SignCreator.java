@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -142,11 +141,11 @@ public class SignCreator {
 	 * @return {@link SignData} if the game is equal
 	 */
 	public static SignData getSignData(String game) {
-		Validate.notEmpty(game, "Game name can't be empty/null");
-
-		for (SignData data : SIGNDATA) {
-			if (game.equalsIgnoreCase(data.getGameName())) {
-				return data;
+		if (game != null && !game.isEmpty()) {
+			for (SignData data : SIGNDATA) {
+				if (game.equalsIgnoreCase(data.getGameName())) {
+					return data;
+				}
 			}
 		}
 
@@ -161,7 +160,7 @@ public class SignCreator {
 	 *         game.
 	 */
 	public static boolean updateAllSigns(String gameName) {
-		Validate.notEmpty(gameName, "Game name can't be empty/null");
+		org.apache.commons.lang.Validate.notEmpty(gameName, "Game name can't be empty/null");
 
 		if (!ConfigValues.isSignsEnable()) {
 			return false;

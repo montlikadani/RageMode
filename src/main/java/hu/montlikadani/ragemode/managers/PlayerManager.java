@@ -12,8 +12,6 @@ import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.google.common.base.Preconditions;
-
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.config.Configuration;
@@ -116,7 +114,7 @@ public class PlayerManager implements MovementTicker {
 	 * @param lives the new lives (lives > -1)
 	 */
 	public void setPlayerLives(int lives) {
-		Preconditions.checkArgument(lives > -1, "Player lives should be highest than -1.");
+		com.google.common.base.Preconditions.checkArgument(lives > -1, "Player lives should be highest than -1.");
 
 		this.lives = lives;
 	}

@@ -11,7 +11,6 @@ import hu.montlikadani.ragemode.utils.reflection.Reflections;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashSet;
@@ -43,7 +42,7 @@ public class RmCommand implements CommandExecutor {
 								}
 							}
 						}
-					} catch (java.io.IOException | URISyntaxException e) {
+					} catch (java.io.IOException | java.net.URISyntaxException e) {
 						e.printStackTrace();
 					}
 				}
@@ -73,7 +72,7 @@ public class RmCommand implements CommandExecutor {
 		boolean isPlayer = sender instanceof Player;
 
 		for (ICommand command : cmds) {
-			CommandProcessor proc = command.getCommandProcessor();
+			CommandProcessor proc = ICommand.PROC;
 
 			if (proc == null) {
 				continue;

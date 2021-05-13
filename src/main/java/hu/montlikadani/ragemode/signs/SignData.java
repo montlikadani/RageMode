@@ -77,12 +77,12 @@ public class SignData {
 			return;
 		}
 
-		Block b = location.getBlock();
-		if (!(b.getState() instanceof Sign)) {
+		BlockState state = location.getBlock().getState();
+		if (!(state instanceof Sign)) {
 			return;
 		}
 
-		Sign sign = (Sign) b.getState();
+		Sign sign = (Sign) state;
 		Game game = GameUtils.getGame(gameName);
 
 		if (game != null) {
@@ -117,11 +117,14 @@ public class SignData {
 		Location loc = getLocation();
 		BlockState s = loc.getBlock().getState();
 		BlockFace bf = null;
+
 		try {
 			bf = ((Directional) s.getData()).getFacing();
 		} catch (ClassCastException e) {
-			if (s.getBlockData() instanceof WallSign) {
-				bf = ((WallSign) s.getBlockData()).getFacing();
+			org.bukkit.block.data.BlockData blockData = s.getBlockData();
+
+			if (blockData instanceof WallSign) {
+				bf = ((WallSign) blockData).getFacing();
 			}
 		}
 

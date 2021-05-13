@@ -1108,7 +1108,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 		Location to = event.getTo();
 		if (to == null) {
-			return; // On Spigot softwares
+			return;
 		}
 
 		Game game = GameUtils.getGameByPlayer(event.getPlayer());

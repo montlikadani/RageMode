@@ -33,9 +33,7 @@ public class SignPlaceholder {
 			}
 
 			String line = lines.get(i);
-
-			if (line.contains("%game%"))
-				line = line.replace("%game%", game.getName());
+			line = line.replace("%game%", game.getName());
 
 			if (line.contains("%current-players%")) {
 				line = line.replace("%current-players%",

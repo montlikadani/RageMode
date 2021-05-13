@@ -4,17 +4,17 @@ about: Create a bug report to help us improve the project
 
 ---
 
-<!-- These comments will not show just read it and you don't need to delete them. -->
+<!-- These comments will not be displayed -->
 
-### Describe your problem to what is
+### Describe your problem
 <!-- Understand what the problem is with the plugin. -->
 
 ### Details
 Plugin version: 
 
-Software <!--(Spigot/Bukkit etc.. `/version`)-->version: 
+Software <!--`/version`-->version: 
 
-Relevant plugins<!-- (optional)-->:
+Relevant plugins<!--(optional)-->:
 
 ### Console error
 ```
@@ -22,7 +22,7 @@ Send the console error if you have it.
 ```
 
 ### Configuration file(s)
-<!-- Send the configuration file(s) to [pastebin.com](pastebin.com) or to other sites. -->
+<!-- Send the configuration file(s) to [pastebin.com](pastebin.com) or to other paste servers. -->
 
 ### Screenshots (optional)
 <!-- Send a few pictures about the problem for proof -->

@@ -7,9 +7,8 @@ import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 
 public interface ICommand {
 
+	static final CommandProcessor PROC = ICommand.class.getAnnotation(CommandProcessor.class);
+
 	boolean run(RageMode plugin, CommandSender sender, String[] args);
 
-	default CommandProcessor getCommandProcessor() {
-		return getClass().getAnnotation(CommandProcessor.class);
-	}
 }

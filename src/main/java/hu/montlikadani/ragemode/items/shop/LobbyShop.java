@@ -102,8 +102,6 @@ public final class LobbyShop implements Listener {
 	public void onGameLeave(RMGameLeaveAttemptEvent e) {
 		Player player = e.getPlayer();
 
-		removeShop(player);
-
 		BOUGHT_ITEMS.remove(player.getUniqueId());
 		player.closeInventory();
 	}
@@ -114,7 +112,6 @@ public final class LobbyShop implements Listener {
 			Player player = pm.getPlayer();
 
 			if (player != null) {
-				removeShop(player);
 				player.closeInventory();
 			}
 		}
@@ -180,6 +177,7 @@ public final class LobbyShop implements Listener {
 							if (cmd.getType() == CommandSetting.SenderType.CONSOLE) {
 								String command = Utils.setPlaceholders(cmd.getCommand(), player);
 								command = command.replace("%player%", player.getName());
+
 								RM.getServer().dispatchCommand(RM.getServer().getConsoleSender(), command);
 							}
 						}
@@ -303,7 +301,6 @@ public final class LobbyShop implements Listener {
 			}
 		}
 
-		// update inventory components
 		openNextPage(player, shopCategory);
 		return true;
 	}

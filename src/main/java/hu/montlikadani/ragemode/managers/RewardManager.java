@@ -165,27 +165,29 @@ public class RewardManager {
 	}
 
 	public void giveBonuses(Player player) {
-		for (Bonuses bonus : bonuses) {
-			if (bonus.chance > -1 && ThreadLocalRandom.current().nextInt(0, 100) > bonus.chance) {
-				continue;
-			}
+		SchedulerUtil.submitSync(() -> {
+			for (Bonuses bonus : bonuses) {
+				if (bonus.chance > -1 && ThreadLocalRandom.current().nextInt(0, 100) > bonus.chance) {
+					continue;
+				}
 
-			if (bonus.gameItem != null) {
-				if (bonus.gameItem.getSlot() >= 0) {
-					player.getInventory().setItem(bonus.gameItem.getSlot(), bonus.gameItem.get());
-				} else {
-					player.getInventory().addItem(bonus.gameItem.get());
+				if (bonus.gameItem != null) {
+					if (bonus.gameItem.getSlot() >= 0) {
+						player.getInventory().setItem(bonus.gameItem.getSlot(), bonus.gameItem.get());
+					} else {
+						player.getInventory().addItem(bonus.gameItem.get());
+					}
+				}
+
+				if (bonus.sound != null) {
+					player.playSound(player.getLocation(), bonus.sound, bonus.soundVolume, bonus.soundPitch);
+				}
+
+				if (bonus.potionEffect != null) {
+					player.addPotionEffect(bonus.potionEffect);
 				}
 			}
-
-			if (bonus.sound != null) {
-				player.playSound(player.getLocation(), bonus.sound, bonus.soundVolume, bonus.soundPitch);
-			}
-
-			if (bonus.potionEffect != null) {
-				player.addPotionEffect(bonus.potionEffect);
-			}
-		}
+		}, true);
 	}
 
 	public int getPointBonus() {

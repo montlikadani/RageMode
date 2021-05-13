@@ -8,7 +8,6 @@ about: Suggest an idea for this project
 
 ### Description
 <!-- Describe your suggestion with appropriate informations -->
-<!-- Write it purely and intelligently. -->
 
 
 <!-- (Optional) Configuration option example(s) -->
