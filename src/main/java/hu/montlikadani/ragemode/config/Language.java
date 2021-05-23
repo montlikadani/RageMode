@@ -84,6 +84,7 @@ public class Language {
 		l.getFC().options().copyDefaults(true);
 
 		// TODO Move all of these to an enum to retrieve these strings more fastest
+		// Or maybe just cache these depending on the language
 
 		l.get("in-game-only", "&cThis command can only be in-game.");
 		l.get("not-a-player", "&cThis is not a player.");
@@ -307,7 +308,7 @@ public class Language {
 
 		if (!langConfig.isList(key)) {
 			Debug.logConsole("Can't read language file for string: " + key);
-			return Arrays.asList();
+			return Collections.emptyList();
 		}
 
 		List<String> ls = langConfig.getStringList(key);
@@ -343,14 +344,18 @@ public class Language {
 
 		public String get(String path, String def) {
 			c.addDefault(path, def);
-			c.set(path, c.get(path));
-			return c.getString(path);
+
+			String obj = c.getString(path);
+			c.set(path, obj);
+			return obj;
 		}
 
 		public List<String> get(String path, List<String> def) {
 			c.addDefault(path, def);
-			c.set(path, c.get(path));
-			return c.getStringList(path);
+
+			List<String> obj = c.getStringList(path);
+			c.set(path, obj);
+			return obj;
 		}
 	}
 }

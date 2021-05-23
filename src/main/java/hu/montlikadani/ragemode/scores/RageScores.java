@@ -7,13 +7,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.PlayerWinEvent;
-import hu.montlikadani.ragemode.area.GameArea;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.Game;
@@ -33,25 +31,24 @@ public class RageScores {
 	private static final RageMode PLUGIN = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 
 	public static void addPointsToPlayer(Player killer, LivingEntity entity) {
-		getPlayerPoints(killer.getUniqueId()).ifPresent(killerPoints -> {
-			killerPoints.setZombieKills(killerPoints.getZombieKills() + 1);
+		PlayerPoints killerPoints = addPoints(killer, 1, true);
 
-			int totalPoints = addPoints(killer, 1, true);
+		killerPoints.setZombieKills(killerPoints.getZombieKills() + 1);
 
-			if (!PlayerManager.DEATH_MESSAGES_TOGGLE.getOrDefault(killer.getUniqueId(), false)
-					&& java.util.concurrent.ThreadLocalRandom.current().nextInt(0, 100) < 25) {
-				Optional<GameArea> area = GameAreaManager.getAreaByLocation(killer.getLocation());
+		if (java.util.concurrent.ThreadLocalRandom.current().nextInt(0, 100) > 25
+				|| PlayerManager.DEATH_MESSAGES_TOGGLE.getOrDefault(killer.getUniqueId(), false)) {
+			return;
+		}
 
-				GameUtils.broadcastToGame(GameUtils.getGameByPlayer(killer),
+		GameAreaManager.getAreaByLocation(killer.getLocation())
+				.ifPresent(area -> GameUtils.broadcastToGame(area.getGame(),
 						RageMode.getLang().get("game.broadcast.zombie-kill", "%entity%", entity.getName(), "%killer%",
-								killer.getName(), "%remainEntities%",
-								area.isPresent() ? area.get().getEntities().size() : 0));
+								killer.getName(), "%remainEntities%", area.getEntities().size())));
 
-				sendMessage(killer, RageMode.getLang().get("game.message.zombie-kill", "%entity%", entity.getName(),
-						"%points%", "+1"));
-				sendMessage(killer, RageMode.getLang().get("game.message.current-points", "%points%", totalPoints));
-			}
-		});
+		sendMessage(killer,
+				RageMode.getLang().get("game.message.zombie-kill", "%entity%", entity.getName(), "%points%", "+1"));
+		sendMessage(killer,
+				RageMode.getLang().get("game.message.current-points", "%points%", killerPoints.getPoints()));
 	}
 
 	public static void addPointsToPlayer(Player killer, Player victim, GameItems killCause) {
@@ -79,23 +76,15 @@ public class RageScores {
 
 		String killerMessage = "", victimMsg = "", killerMsg2 = "";
 
-		int totalPoints = 0;
-
 		switch (killCause) {
 		case RAGEBOW:
 			int bowPoints = ConfigValues.getBowKill();
-			totalPoints = addPoints(killer, bowPoints, true);
-			addPoints(victim, 0, false);
 
-			killerPoints = PLAYERPOINTS.get(killerUUID);
-			int oldDirectArrowKills = killerPoints.getDirectArrowKills();
-			int newDirectArrowKills = oldDirectArrowKills + 1;
-			killerPoints.setDirectArrowKills(newDirectArrowKills);
+			killerPoints = addPoints(killer, bowPoints, true);
+			victimPoints = addPoints(victim, 0, false);
 
-			victimPoints = PLAYERPOINTS.get(victimUUID);
-			int oldDirectArrowDeaths = victimPoints.getDirectArrowDeaths();
-			int newDirectArrowDeaths = oldDirectArrowDeaths + 1;
-			victimPoints.setDirectArrowDeaths(newDirectArrowDeaths);
+			killerPoints.setDirectArrowKills(killerPoints.getDirectArrowKills() + 1);
+			victimPoints.setDirectArrowDeaths(victimPoints.getDirectArrowDeaths() + 1);
 
 			killerMessage = RageMode.getLang().get("game.message.arrow-kill", "%victim%", victim.getName(), "%points%",
 					"+" + bowPoints);
@@ -103,46 +92,34 @@ public class RageScores {
 			victimMsg = RageMode.getLang().get("game.message.arrow-death", "%killer%", killer.getName(), "%points%",
 					"");
 
-			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", totalPoints);
+			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", killerPoints.getPoints());
 			break;
 		case COMBATAXE:
 			int axePoints = ConfigValues.getAxeKill();
-			int axeMinusPoints = ConfigValues.getAxeDeath();
-			totalPoints = addPoints(killer, axePoints, true);
-			addPoints(victim, axeMinusPoints, false);
+			int axeNegativePoints = ConfigValues.getAxeDeath();
 
-			killerPoints = PLAYERPOINTS.get(killerUUID);
-			int oldAxeKills = killerPoints.getAxeKills();
-			int newAxeKills = oldAxeKills + 1;
-			killerPoints.setAxeKills(newAxeKills);
+			killerPoints = addPoints(killer, axePoints, true);
+			victimPoints = addPoints(victim, axeNegativePoints, false);
 
-			victimPoints = PLAYERPOINTS.get(victimUUID);
-			int oldAxeDeaths = victimPoints.getAxeDeaths();
-			int newAxeDeaths = oldAxeDeaths + 1;
-			victimPoints.setAxeDeaths(newAxeDeaths);
+			killerPoints.setAxeKills(killerPoints.getAxeKills() + 1);
+			victimPoints.setAxeDeaths(victimPoints.getAxeDeaths() + 1);
 
 			killerMessage = RageMode.getLang().get("game.message.axe-kill", "%victim%", victim.getName(), "%points%",
 					"+" + axePoints);
 
 			victimMsg = RageMode.getLang().get("game.message.axe-death", "%killer%", killer.getName(), "%points%",
-					axeMinusPoints);
+					axeNegativePoints);
 
-			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", totalPoints);
+			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", killerPoints.getPoints());
 			break;
 		case RAGEKNIFE:
 			int knifePoints = ConfigValues.getKnifeKill();
-			totalPoints = addPoints(killer, knifePoints, true);
-			addPoints(victim, 0, false);
 
-			killerPoints = PLAYERPOINTS.get(killerUUID);
-			int oldKnifeKills = killerPoints.getKnifeKills();
-			int newKnifeKills = oldKnifeKills + 1;
-			killerPoints.setKnifeKills(newKnifeKills);
+			killerPoints = addPoints(killer, knifePoints, true);
+			victimPoints = addPoints(victim, 0, false);
 
-			victimPoints = PLAYERPOINTS.get(victimUUID);
-			int oldKnifeDeaths = victimPoints.getKnifeDeaths();
-			int newKnifeDeaths = oldKnifeDeaths + 1;
-			victimPoints.setKnifeDeaths(newKnifeDeaths);
+			killerPoints.setKnifeKills(killerPoints.getKnifeKills() + 1);
+			victimPoints.setKnifeDeaths(victimPoints.getKnifeDeaths() + 1);
 
 			killerMessage = RageMode.getLang().get("game.message.knife-kill", "%victim%", victim.getName(), "%points%",
 					"+" + knifePoints);
@@ -150,22 +127,16 @@ public class RageScores {
 			victimMsg = RageMode.getLang().get("game.message.knife-death", "%killer%", killer.getName(), "%points%",
 					"");
 
-			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", totalPoints);
+			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", killerPoints.getPoints());
 			break;
 		case EXPLOSION:
 			int explosionPoints = ConfigValues.getExplosionKill();
-			totalPoints = addPoints(killer, explosionPoints, true);
-			addPoints(victim, 0, false);
 
-			killerPoints = PLAYERPOINTS.get(killerUUID);
-			int oldExplosionKills = killerPoints.getExplosionKills();
-			int newExplosionKills = oldExplosionKills + 1;
-			killerPoints.setExplosionKills(newExplosionKills);
+			killerPoints = addPoints(killer, explosionPoints, true);
+			victimPoints = addPoints(victim, 0, false);
 
-			victimPoints = PLAYERPOINTS.get(victimUUID);
-			int oldExplosionDeaths = victimPoints.getExplosionDeaths();
-			int newExplosionDeaths = oldExplosionDeaths + 1;
-			victimPoints.setExplosionDeaths(newExplosionDeaths);
+			killerPoints.setExplosionKills(killerPoints.getExplosionKills() + 1);
+			victimPoints.setExplosionDeaths(victimPoints.getExplosionDeaths() + 1);
 
 			killerMessage = RageMode.getLang().get("game.message.explosion-kill", "%victim%", victim.getName(),
 					"%points%", "+" + explosionPoints);
@@ -173,14 +144,14 @@ public class RageScores {
 			victimMsg = RageMode.getLang().get("game.message.explosion-death", "%killer%", killer.getName(), "%points%",
 					"");
 
-			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", totalPoints);
+			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", killerPoints.getPoints());
 			break;
 		case GRENADE:
 			int grenadePoints = ConfigValues.getGrenadeKill();
-			totalPoints = addPoints(killer, grenadePoints, true);
-			addPoints(victim, 0, false);
 
-			killerPoints = PLAYERPOINTS.get(killerUUID);
+			killerPoints = addPoints(killer, grenadePoints, true);
+
+			addPoints(victim, 0, false);
 
 			killerMessage = RageMode.getLang().get("game.message.grenade-kill", "%victim%", victim.getName(),
 					"%points%", "+" + grenadePoints);
@@ -188,7 +159,7 @@ public class RageScores {
 			victimMsg = RageMode.getLang().get("game.message.grenade-death", "%killer%", killer.getName(), "%points%",
 					"");
 
-			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", totalPoints);
+			killerMsg2 = RageMode.getLang().get("game.message.current-points", "%points%", killerPoints.getPoints());
 			break;
 		default:
 			break;
@@ -231,18 +202,15 @@ public class RageScores {
 		return PLAYERPOINTS;
 	}
 
-	private static int addPoints(Player player, int points, boolean killer) {
+	private static PlayerPoints addPoints(Player player, int points, boolean killer) {
 		UUID playerUUID = player.getUniqueId();
 		int totalKills = 0, totalDeaths = 0, currentStreak = 0, longestStreak = 0;
 
 		PlayerPoints pointsHolder = PLAYERPOINTS.get(playerUUID);
 
 		if (pointsHolder != null) {
-			int oldKills = pointsHolder.getKills();
-			int oldDeaths = pointsHolder.getDeaths();
-
-			totalKills = oldKills;
-			totalDeaths = oldDeaths;
+			totalKills = pointsHolder.getKills();
+			totalDeaths = pointsHolder.getDeaths();
 
 			if (killer) {
 				totalKills++;
@@ -261,13 +229,11 @@ public class RageScores {
 			pointsHolder.setLongestStreak(longestStreak);
 			pointsHolder.addPoints(killer ? points + PLUGIN.getRewardManager().getPointBonus() : points);
 
-			return pointsHolder.getPoints();
+			return pointsHolder;
 		}
 
 		if (killer) {
-			totalKills = 1;
-			currentStreak = 1;
-			longestStreak = 1;
+			totalKills = currentStreak = longestStreak = 1;
 		} else {
 			totalDeaths = 1;
 			currentStreak = 0;
@@ -281,7 +247,7 @@ public class RageScores {
 		pointsHolder.setLongestStreak(longestStreak);
 
 		PLAYERPOINTS.put(playerUUID, pointsHolder);
-		return pointsHolder.getPoints();
+		return pointsHolder;
 	}
 
 	public static UUID calculateWinner(Game game, Set<PlayerManager> players) {
@@ -294,9 +260,8 @@ public class RageScores {
 			PlayerPoints pp = PLAYERPOINTS.get(pm.getUniqueId());
 
 			if (pp != null && pp.getPoints() > highestPoints) {
-				highest = pm.getUniqueId();
+				resultPlayer = highest = pm.getUniqueId();
 				highestPoints = pp.getPoints();
-				resultPlayer = pm.getUniqueId();
 			}
 		}
 
@@ -307,19 +272,20 @@ public class RageScores {
 		}
 
 		if (goy.equals(highest)) {
-			sendMessage(Bukkit.getPlayer(resultPlayer), RageMode.getLang().get("game.message.player-won", "%player%",
-					"Herobrine", "%game%", game.getName()));
+			sendMessage(PLUGIN.getServer().getPlayer(resultPlayer), RageMode.getLang().get("game.message.player-won",
+					"%player%", "Herobrine", "%game%", game.getName()));
 			return null;
 		}
 
 		getPlayerPoints(highest).ifPresent(p -> p.setWinner(true));
 
-		Player winner = Bukkit.getPlayer(highest);
+		Player winner = PLUGIN.getServer().getPlayer(highest);
+
 		if (resultPlayer.equals(highest)) {
 			sendMessage(winner, RageMode.getLang().get("game.message.you-won", "%game%", game.getName()));
 		} else {
-			sendMessage(Bukkit.getPlayer(resultPlayer), RageMode.getLang().get("game.message.player-won", "%player%",
-					winner.getName(), "%game%", game.getName()));
+			sendMessage(PLUGIN.getServer().getPlayer(resultPlayer), RageMode.getLang().get("game.message.player-won",
+					"%player%", winner.getName(), "%game%", game.getName()));
 		}
 
 		Utils.callEvent(new PlayerWinEvent(game, winner));

@@ -8,6 +8,7 @@ import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.managers.gui.BaseGui;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
@@ -37,7 +38,7 @@ public final class setup implements ICommand {
 			return false;
 		}
 
-		plugin.getSetupGui().openGui((Player) sender, game);
+		BaseGui.getSetupGui().openGui((Player) sender, game);
 		return true;
 	}
 }

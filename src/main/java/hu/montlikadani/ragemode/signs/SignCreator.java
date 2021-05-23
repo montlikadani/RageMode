@@ -14,21 +14,20 @@ import org.bukkit.configuration.file.FileConfiguration;
 import hu.montlikadani.ragemode.API.event.RMSignsUpdateEvent;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
-import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.Debug;
 import hu.montlikadani.ragemode.utils.SchedulerUtil;
 import hu.montlikadani.ragemode.utils.Utils;
 
-public class SignCreator {
+public final class SignCreator {
 
 	private static final Set<SignData> SIGNDATA = new HashSet<>();
 
-	public static boolean loadSigns() {
+	public static void loadSigns() {
 		SIGNDATA.clear();
 
 		List<String> list = SignConfiguration.getSignConfig().getStringList("signs");
 		if (list.isEmpty())
-			return false;
+			return;
 
 		for (String one : list) {
 			String[] splitted = one.split(",", 5);
@@ -54,7 +53,7 @@ public class SignCreator {
 			Debug.logConsole("Loaded {0} sign{1}.", totalSigns, (totalSigns > 1 ? "s" : ""));
 		}
 
-		return true;
+		return;
 	}
 
 	public static boolean createNewSign(Sign sign, String game) {
@@ -71,39 +70,27 @@ public class SignCreator {
 		return true;
 	}
 
-	public static boolean removeSign(Sign sign) {
-		if (SIGNDATA.isEmpty()) {
+	public static boolean removeSign(SignData signData) {
+		if (signData == null) {
 			return false;
 		}
 
-		Location loc = sign.getLocation();
+		FileConfiguration fileConf = SignConfiguration.getSignConfig();
+		List<String> signs = fileConf.getStringList("signs");
 
-		SignData data = null;
-		for (SignData signData : SIGNDATA) {
-			Location signLoc = signData.getLocation();
+		signs.remove(locationSignToString(signData.getLocation(), signData.getGameName()));
+		fileConf.set("signs", signs);
 
-			if (signLoc.equals(loc)) {
-				FileConfiguration fileConf = SignConfiguration.getSignConfig();
-				List<String> signs = fileConf.getStringList("signs");
+		Configuration.saveFile(fileConf, SignConfiguration.getSignFile());
 
-				signs.remove(locationSignToString(signLoc, signData.getGameName()));
-				fileConf.set("signs", signs);
-
-				Configuration.saveFile(fileConf, SignConfiguration.getSignFile());
-
-				data = signData;
-				break;
-			}
-		}
-
-		return data != null && SIGNDATA.remove(data);
+		return SIGNDATA.remove(signData);
 	}
 
 	/**
-	 * Updates a JoinSigns for the given game which are properly configured.
+	 * Updates the given sign content from the location.
 	 * 
-	 * @param loc the sign location
-	 * @return True if a sign is found on the set location.
+	 * @param loc the sign {@link Location}
+	 * @return True if the sign is found at the given location, otherwise false
 	 */
 	public static boolean updateSign(Location loc) {
 		SignData data = getSignData(loc);
@@ -120,7 +107,7 @@ public class SignCreator {
 	 * Gets the sign data by location.
 	 * 
 	 * @param loc sign the location
-	 * @return {@link SignData} if the location is equal
+	 * @return {@link SignData} if the given location is same, or null if not
 	 */
 	public static SignData getSignData(Location loc) {
 		if (loc != null) {
@@ -135,10 +122,10 @@ public class SignCreator {
 	}
 
 	/**
-	 * Gets the sign data by game.
+	 * Gets the sign data by game name.
 	 * 
 	 * @param game the game name
-	 * @return {@link SignData} if the game is equal
+	 * @return {@link SignData} if the given game name is same, or null if not
 	 */
 	public static SignData getSignData(String game) {
 		if (game != null && !game.isEmpty()) {
@@ -157,7 +144,7 @@ public class SignCreator {
 	 * 
 	 * @param gameName The name of the game for which the signs should be updated.
 	 * @return true if at least one sign was updated successfully for the given
-	 *         game.
+	 *         game, otherwise false.
 	 */
 	public static boolean updateAllSigns(String gameName) {
 		org.apache.commons.lang.Validate.notEmpty(gameName, "Game name can't be empty/null");
@@ -173,6 +160,7 @@ public class SignCreator {
 
 		RMSignsUpdateEvent event = new RMSignsUpdateEvent(SIGNDATA);
 		Utils.callEvent(event);
+
 		if (event.isCancelled()) {
 			return false;
 		}
@@ -201,27 +189,7 @@ public class SignCreator {
 	}
 
 	/**
-	 * Checks whether the given sign is properly configured to be a RageMode Sign.
-	 * 
-	 * @param loc The sign location
-	 * @return true if the block found in the specified location.
-	 */
-	public static boolean isSign(Location loc) {
-		for (String signString : SignConfiguration.getSignConfig().getStringList("signs")) {
-			if (GameUtils.isGameExist(getGameFromString(signString))) {
-				Location signLocation = stringToLocationSign(signString);
-				if (signLocation != null && signLocation.getBlock().getState() instanceof Sign
-						&& signLocation.equals(loc)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Returns the set of SignData
+	 * Returns the cached set of SignData.
 	 * 
 	 * @return Set of {@link SignData}
 	 */

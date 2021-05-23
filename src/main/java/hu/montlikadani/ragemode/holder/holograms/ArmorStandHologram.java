@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -43,7 +42,7 @@ public final class ArmorStandHologram extends IHoloHolder {
 
 		armorStands.add(armorStand);
 
-		for (Player player : Bukkit.getOnlinePlayers()) {
+		for (Player player : plugin.getServer().getOnlinePlayers()) {
 			updateHologramsName(player);
 		}
 
@@ -64,21 +63,20 @@ public final class ArmorStandHologram extends IHoloHolder {
 			return;
 		}
 
+		ArmorStands.TextBuilder textBuilder = ArmorStands.holoTextBuilder();
+
+		for (String one : RageMode.getLang().getList("hologram-list")) {
+			textBuilder = textBuilder.addLine(one);
+		}
+
 		for (Location loc : holos) {
-			ArmorStands.TextBuilder textBuilder = ArmorStands.holoTextBuilder();
-
-			for (String one : RageMode.getLang().getList("hologram-list")) {
-				textBuilder = textBuilder.addLine(one);
-			}
-
 			ArmorStands armorStand = textBuilder.build();
-			armorStand.setLocation(loc);
-			armorStand.append();
 
+			armorStand.setLocation(loc);
 			armorStands.add(armorStand);
 		}
 
-		for (Player player : Bukkit.getOnlinePlayers()) {
+		for (Player player : plugin.getServer().getOnlinePlayers()) {
 			updateHologramsName(player);
 		}
 	}
@@ -89,9 +87,19 @@ public final class ArmorStandHologram extends IHoloHolder {
 			return;
 		}
 
-		for (ArmorStands as : armorStands) {
-			for (int i = 0; i <= as.getTextLines().length - 1; i++) {
-				as.getArmorStands().get(i).setCustomName(Utils.setPlaceholders(as.getTextLines()[i], player));
+		for (ArmorStands stand : armorStands) {
+			if (stand.getHolograms() == null) {
+				continue;
+			}
+
+			stand.append();
+
+			for (int i = 0; i < stand.getHolograms().length; i++) {
+				ArmorStands.StandHologram hologram = stand.getHolograms()[i];
+
+				if (hologram.getArmorStand() != null) {
+					hologram.getArmorStand().setCustomName(Utils.setPlaceholders(hologram.getTextLine(), player));
+				}
 			}
 		}
 	}
@@ -131,27 +139,27 @@ public final class ArmorStandHologram extends IHoloHolder {
 	}
 
 	@Override
-	public Optional<ArmorStands> getClosest(Player player, boolean eyeLoc) {
-		if (player == null)
+	public Optional<ArmorStands> getClosest(Location location) {
+		if (location == null)
 			return Optional.empty();
 
 		double lowestDist = Double.MAX_VALUE;
-		Location currentLoc = eyeLoc ? player.getEyeLocation() : player.getLocation();
+		ArmorStands closest = null;
 
 		for (ArmorStands holo : armorStands) {
 			if (holo.getLocation() == null) {
 				continue;
 			}
 
-			double dist = holo.getLocation().distance(currentLoc);
+			double dist = holo.getLocation().distance(location);
 
 			if (dist < lowestDist) {
 				lowestDist = dist;
-				return Optional.of(holo);
+				closest = holo;
 			}
 		}
 
-		return Optional.empty();
+		return Optional.ofNullable(closest);
 	}
 
 	private List<Location> asLocations() {

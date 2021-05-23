@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.utils.Utils;
 
 public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 
@@ -167,11 +168,11 @@ public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 		final RageMode plugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 
 		if (!displayName.isEmpty()) {
-			plugin.getComplement().setDisplayName(meta, displayName);
+			plugin.getComplement().setDisplayName(meta, Utils.colors(displayName));
 		}
 
 		if (lore != null) {
-			plugin.getComplement().setLore(meta, lore);
+			plugin.getComplement().setLore(meta, Utils.colorList(lore));
 		}
 
 		if (enchant != null) {

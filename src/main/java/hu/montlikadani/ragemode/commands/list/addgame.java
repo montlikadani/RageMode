@@ -12,6 +12,7 @@ import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
+import hu.montlikadani.ragemode.managers.gui.BaseGui;
 import hu.montlikadani.ragemode.utils.Utils;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
@@ -95,7 +96,7 @@ public final class addgame implements ICommand {
 
 		sendMessage(player, RageMode.getLang().get("setup.addgame.success-added", "%game%", name));
 
-		if (plugin.getSetupGui().openGui(player, game).isOpened()) {
+		if (BaseGui.getSetupGui().openGui(player, game).isOpened()) {
 			sendMessage(player, "&2Opening setup gui... /rm setup");
 		}
 

@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -60,10 +59,10 @@ public class Utils {
 			return;
 		}
 
-		if (!event.isAsynchronous() && !Bukkit.isPrimaryThread()) {
-			SchedulerUtil.submitSync(() -> Bukkit.getPluginManager().callEvent(event), true);
+		if (!event.isAsynchronous() && !RM.getServer().isPrimaryThread()) {
+			SchedulerUtil.submitSync(() -> RM.getServer().getPluginManager().callEvent(event), true);
 		} else {
-			Bukkit.getPluginManager().callEvent(event);
+			RM.getServer().getPluginManager().callEvent(event);
 		}
 	}
 
@@ -71,7 +70,7 @@ public class Utils {
 		final CompletableFuture<Boolean> comp = new CompletableFuture<>();
 
 		if (RM.isPaper()) {
-			if (!Bukkit.isPrimaryThread()) { // Perform on main thread to prevent async catchop
+			if (!RM.getServer().isPrimaryThread()) { // Perform on main thread to prevent async catchop
 				// Call synchronously without delay
 				SchedulerUtil.submitSync(() -> entity.teleportAsync(loc).thenAccept(done -> {
 					if (!done.booleanValue()) {
@@ -89,7 +88,7 @@ public class Utils {
 					comp.complete(true);
 				});
 			}
-		} else if (!Bukkit.isPrimaryThread()) { // Check if current thread is async
+		} else if (!RM.getServer().isPrimaryThread()) { // Check if current thread is async
 			// Call synchronously without delay
 			SchedulerUtil.submitSync(() -> entity.teleport(loc), comp.complete(true));
 		} else {
@@ -118,7 +117,10 @@ public class Utils {
 			return nearbyEntities;
 		}
 
+		final org.bukkit.block.Block block = loc.getBlock();
+
 		int chunkRadius = radius < 16 ? 1 : radius / 16;
+
 		for (int chunkX = -chunkRadius; chunkX <= chunkRadius; chunkX++) {
 			for (int chunkZ = -chunkRadius; chunkZ <= chunkRadius; chunkZ++) {
 				int x = (int) loc.getX(), y = (int) loc.getY(), z = (int) loc.getZ();
@@ -126,7 +128,7 @@ public class Utils {
 				for (Entity e : new Location(world, x + chunkX * 16, y, z + chunkZ * 16).getChunk().getEntities()) {
 					if (world.getName().equalsIgnoreCase(e.getWorld().getName())
 							&& e.getLocation().distanceSquared(loc) <= radius * radius
-							&& e.getLocation().getBlock() != loc.getBlock()) {
+							&& e.getLocation().getBlock() != block) {
 						nearbyEntities.add(e);
 					}
 				}
@@ -142,7 +144,8 @@ public class Utils {
 		}
 
 		PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
-		if (GameUtils.isPlayerPlaying(Bukkit.getPlayer(player.getUniqueId()))) {
+
+		if (GameUtils.getGameByPlayer(player.getUniqueId()) != null) {
 			pp = RageScores.getPlayerPoints(player.getUniqueId()).orElse(pp);
 		}
 
@@ -216,19 +219,23 @@ public class Utils {
 			s = s.replace("%points%", pp == null ? "0" : Integer.toString(pp.getPoints()));
 
 		if (s.contains("%games%")) {
-			s = s.replace("%games%", Integer.toString(pp == null ? 0 : pp.getGames()));
+			s = s.replace("%games%", pp == null ? "0" : Integer.toString(pp.getGames()));
 		}
 
 		if (s.contains("%wins%")) {
-			s = s.replace("%wins%", Integer.toString(pp == null ? 0 : pp.getWins()));
+			s = s.replace("%wins%", pp == null ? "0" : Integer.toString(pp.getWins()));
 		}
 
 		return colors(s);
 	}
 
 	public static List<String> colorList(List<String> list) {
-		for (int i = 0; i < list.size(); i++) {
-			list.set(i, colors(list.get(i)));
+		int size = list.size();
+
+		if (size > 0) {
+			for (int i = 0; i < size; i++) {
+				list.set(i, colors(list.get(i)));
+			}
 		}
 
 		return list;
@@ -262,6 +269,10 @@ public class Utils {
 	}
 
 	public static void connectToHub(Player player) {
+		if (!RM.isEnabled()) {
+			return;
+		}
+
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
 		out.writeUTF("Connect");
 		out.writeUTF(hu.montlikadani.ragemode.config.configconstants.ConfigValues.getHubName());

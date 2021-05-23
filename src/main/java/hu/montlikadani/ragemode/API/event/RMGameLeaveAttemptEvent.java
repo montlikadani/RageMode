@@ -1,33 +1,33 @@
 package hu.montlikadani.ragemode.API.event;
 
-import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.managers.PlayerManager;
 
 /**
  * Called when a player attempted to leave a game.
  */
 public class RMGameLeaveAttemptEvent extends GameEvent implements Cancellable {
 
-	private Player player;
+	private PlayerManager playerManager;
 	private boolean cancelled = false;
 
-	public RMGameLeaveAttemptEvent(Game game, Player player) {
+	public RMGameLeaveAttemptEvent(Game game, PlayerManager playerManager) {
 		super(game);
 
-		this.player = player;
+		this.playerManager = playerManager;
 	}
 
 	/**
 	 * Gets the player who left the game.
 	 * 
-	 * @return {@link Player}
+	 * @return {@link PlayerManager}
 	 */
 	@NotNull
-	public Player getPlayer() {
-		return player;
+	public PlayerManager getPlayerManager() {
+		return playerManager;
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -12,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.API.event.RMGameJoinAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStatusChangeEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorJoinToGameEvent;
 import hu.montlikadani.ragemode.API.event.SpectatorLeaveGameEvent;
@@ -38,7 +38,7 @@ public final class Game extends GameSettings {
 	// Thread-safety implementation to allow modifying without CME
 	private final Set<PlayerManager> players = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-	private final Set<IGameSpawn> spawns = new HashSet<>(2);
+	private final IGameSpawn[] spawns = new IGameSpawn[2];
 
 	private boolean running = false;
 
@@ -66,14 +66,14 @@ public final class Game extends GameSettings {
 
 	private void loadSpawns() {
 		if (gameType == GameType.APOCALYPSE) {
-			spawns.add(new GameZombieSpawn(this));
+			spawns[0] = new GameZombieSpawn(this);
 		}
 
-		spawns.add(new GameSpawn(this));
+		spawns[1] = new GameSpawn(this);
 	}
 
 	/**
-	 * @return the game name that can't be null.
+	 * @return the name of this game
 	 */
 	@NotNull
 	public String getName() {
@@ -197,12 +197,25 @@ public final class Game extends GameSettings {
 	 * 
 	 * @param player {@link Player}
 	 * @return {@link PlayerManager}
+	 * @see #getPlayerManager(UUID)
 	 */
 	@NotNull
 	public Optional<PlayerManager> getPlayerManager(@Nullable Player player) {
-		if (player != null) {
+		return getPlayerManager(player.getUniqueId());
+	}
+
+	/**
+	 * Returns a player who's playing in a game if present. Otherwise
+	 * {@link Optional#empty()}
+	 * 
+	 * @param uuid {@link UUID}
+	 * @return {@link PlayerManager}
+	 */
+	@NotNull
+	public Optional<PlayerManager> getPlayerManager(@Nullable UUID uuid) {
+		if (uuid != null) {
 			for (PlayerManager pm : players) {
-				if (player.getUniqueId().equals(pm.getUniqueId())) {
+				if (uuid.equals(pm.getUniqueId())) {
 					return Optional.of(pm);
 				}
 			}
@@ -235,16 +248,6 @@ public final class Game extends GameSettings {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Returns a set of spawns from this game including zombie and player spawns.
-	 * 
-	 * @return set of {@link IGameSpawn}
-	 */
-	@NotNull
-	public Set<IGameSpawn> getSpawns() {
-		return spawns;
 	}
 
 	/**
@@ -283,11 +286,6 @@ public final class Game extends GameSettings {
 			player.sendMessage(RageMode.getLang().get("game.player-already-in-game", "%usage%", "/rm leave"));
 			return false;
 		}
-
-		RMGameJoinAttemptEvent event = new RMGameJoinAttemptEvent(this, player);
-		Utils.callEvent(event);
-		if (event.isCancelled())
-			return false;
 
 		acList.add(new ActionMessengers(player.getUniqueId()));
 
@@ -354,10 +352,18 @@ public final class Game extends GameSettings {
 			return false;
 		}
 
+		return removePlayer(opt.get(), switchToSpec);
+	}
+
+	public boolean removePlayer(PlayerManager pm) {
+		return removePlayer(pm, false);
+	}
+
+	public boolean removePlayer(PlayerManager pm, boolean switchToSpec) {
+		Player player = pm.getPlayer();
+
 		player.getInventory().clear();
 		player.updateInventory();
-
-		PlayerManager pm = opt.get();
 
 		if (pm.isSpectator()) {
 			pm.giveBackTools();

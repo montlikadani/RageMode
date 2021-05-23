@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -55,7 +54,7 @@ public class PlayerManager implements MovementTicker {
 	 */
 	@Nullable
 	public Player getPlayer() {
-		return Bukkit.getPlayer(playerUUID);
+		return plugin.getServer().getPlayer(playerUUID);
 	}
 
 	@Nullable // Not always, usually when a object created with null uuid parameter

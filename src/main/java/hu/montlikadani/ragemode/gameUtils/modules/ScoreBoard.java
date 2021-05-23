@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
@@ -22,7 +21,7 @@ public class ScoreBoard {
 
 	private final Map<UUID, ScoreBoardHolder> scoreboards = new HashMap<>();
 
-	private final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+	private final Scoreboard scoreboard = org.bukkit.Bukkit.getScoreboardManager().getNewScoreboard();
 
 	private final RageMode plugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 

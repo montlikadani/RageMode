@@ -41,7 +41,7 @@ public final class leave implements ICommand {
 
 		Game game = pm.getPlayerGame();
 
-		RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, player);
+		RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, pm);
 		Utils.callEvent(gameLeaveEvent);
 
 		if (!gameLeaveEvent.isCancelled()) {

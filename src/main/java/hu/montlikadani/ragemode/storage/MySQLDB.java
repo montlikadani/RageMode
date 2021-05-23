@@ -140,77 +140,34 @@ public class MySqlDB implements Database {
 		}
 
 		connect.dispatchAsync(() -> {
-			int oldKills = 0, oldAxeKills = 0, oldDirectArrowKills = 0, oldExplosionKills = 0, oldKnifeKills = 0,
-					oldZombieKills = 0, oldDeaths = 0, oldAxeDeaths = 0, oldDirectArrowDeaths = 0,
-					oldExplosionDeaths = 0, oldKnifeDeaths = 0, oldWins = 0, oldScore = 0, oldGames = 0;
+			try (Connection conn = connect.getConnection();
+					PreparedStatement prestt = conn.prepareStatement("REPLACE INTO `" + connect.getPrefix()
+							+ "stats_players` (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills,"
+							+ " knife_kills, zombie_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
+							+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
+				prestt.setString(1, Bukkit.getOfflinePlayer(playerPoints.getUUID()).getName());
+				prestt.setString(2, playerPoints.toStringUUID());
 
-			try (Connection conn = connect.getConnection()) {
-				try (Statement statement = conn.createStatement();
-						ResultSet rs = statement.executeQuery("SELECT * FROM `" + connect.getPrefix()
-								+ "stats_players` WHERE `uuid` LIKE '" + playerPoints.toStringUUID() + "';")) {
-					if (rs.next()) {
-						oldKills = rs.getInt("kills");
-						oldAxeKills = rs.getInt("axe_kills");
-						oldDirectArrowKills = rs.getInt("direct_arrow_kills");
-						oldExplosionKills = rs.getInt("explosion_kills");
-						oldKnifeKills = rs.getInt("knife_kills");
-						oldZombieKills = rs.getInt("zombie_kills");
+				int deaths = playerPoints.getDeaths();
+				double newKD = deaths > 0 ? (((double) playerPoints.getKills()) / ((double) deaths)) : 1;
 
-						oldDeaths = rs.getInt("deaths");
-						oldAxeDeaths = rs.getInt("axe_deaths");
-						oldDirectArrowDeaths = rs.getInt("direct_arrow_deaths");
-						oldExplosionDeaths = rs.getInt("explosion_deaths");
-						oldKnifeDeaths = rs.getInt("knife_deaths");
+				prestt.setInt(3, playerPoints.getKills());
+				prestt.setInt(4, playerPoints.getAxeKills());
+				prestt.setInt(5, playerPoints.getDirectArrowKills());
+				prestt.setInt(6, playerPoints.getExplosionKills());
+				prestt.setInt(7, playerPoints.getKnifeKills());
+				prestt.setInt(8, playerPoints.getZombieKills());
+				prestt.setInt(9, deaths);
+				prestt.setInt(10, playerPoints.getAxeDeaths());
+				prestt.setInt(11, playerPoints.getDirectArrowDeaths());
+				prestt.setInt(12, playerPoints.getExplosionDeaths());
+				prestt.setInt(13, playerPoints.getKnifeDeaths());
+				prestt.setInt(14, playerPoints.getWins());
+				prestt.setInt(15, playerPoints.getPoints());
+				prestt.setInt(16, playerPoints.getGames());
+				prestt.setDouble(17, newKD);
 
-						oldWins = rs.getInt("wins");
-						oldScore = rs.getInt("score");
-						oldGames = rs.getInt("games");
-					}
-				}
-
-				int newKills = oldKills + playerPoints.getKills(),
-						newAxeKills = oldAxeKills + playerPoints.getAxeKills(),
-						newDirectArrowKills = oldDirectArrowKills + playerPoints.getDirectArrowKills(),
-						newExplosionKills = oldExplosionKills + playerPoints.getExplosionKills(),
-						newKnifeKills = oldKnifeKills + playerPoints.getKnifeKills(),
-						newZombieKills = oldZombieKills + playerPoints.getZombieKills(),
-
-						newDeaths = oldDeaths + playerPoints.getDeaths(),
-						newAxeDeaths = oldAxeDeaths + playerPoints.getAxeDeaths(),
-						newDirectArrowDeaths = oldDirectArrowDeaths + playerPoints.getDirectArrowDeaths(),
-						newExplosionDeaths = oldExplosionDeaths + playerPoints.getExplosionDeaths(),
-						newKnifeDeaths = oldKnifeDeaths + playerPoints.getKnifeDeaths(),
-
-						newWins = (playerPoints.isWinner()) ? oldWins + 1 : oldWins,
-						newScore = oldScore + playerPoints.getPoints(), newGames = oldGames + 1;
-
-				double newKD = (newDeaths != 0) ? (((double) newKills) / ((double) newDeaths)) : 1;
-
-				try (PreparedStatement prestt = conn.prepareStatement("REPLACE INTO `" + connect.getPrefix()
-						+ "stats_players` (name, uuid, kills, axe_kills, direct_arrow_kills, explosion_kills,"
-						+ " knife_kills, zombie_kills, deaths, axe_deaths, direct_arrow_deaths, explosion_deaths,"
-						+ " knife_deaths, wins, score, games, kd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
-					prestt.setString(1, Bukkit.getOfflinePlayer(playerPoints.getUUID()).getName());
-					prestt.setString(2, playerPoints.toStringUUID());
-
-					prestt.setInt(3, newKills);
-					prestt.setInt(4, newAxeKills);
-					prestt.setInt(5, newDirectArrowKills);
-					prestt.setInt(6, newExplosionKills);
-					prestt.setInt(7, newKnifeKills);
-					prestt.setInt(8, newZombieKills);
-					prestt.setInt(9, newDeaths);
-					prestt.setInt(10, newAxeDeaths);
-					prestt.setInt(11, newDirectArrowDeaths);
-					prestt.setInt(12, newExplosionDeaths);
-					prestt.setInt(13, newKnifeDeaths);
-					prestt.setInt(14, newWins);
-					prestt.setInt(15, newScore);
-					prestt.setInt(16, newGames);
-					prestt.setDouble(17, newKD);
-
-					prestt.executeUpdate();
-				}
+				prestt.executeUpdate();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -455,7 +412,7 @@ public class MySqlDB implements Database {
 	@Override
 	public CompletableFuture<Boolean> convertDatabase(final String type) {
 		return CompletableFuture.supplyAsync(() -> {
-			if (type == null || type.isEmpty() || getDatabaseType().toString().equalsIgnoreCase(type)) {
+			if (getDatabaseType().toString().equalsIgnoreCase(type)) {
 				return false;
 			}
 

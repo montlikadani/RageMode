@@ -2,7 +2,6 @@ package hu.montlikadani.ragemode.events;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -54,36 +53,35 @@ public final class EventListener implements org.bukkit.event.Listener {
 		GameUtils.kickPlayer(ev.getPlayer());
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onSignBreak(BlockBreakEvent event) {
-		if (event.isCancelled() || !ConfigValues.isSignsEnable()) {
+		if (!ConfigValues.isSignsEnable() || !(event.getBlock().getState() instanceof Sign)) {
 			return;
 		}
 
-		if (SignCreator.isSign(event.getBlock().getLocation())) {
-			if (!event.getPlayer().hasPermission("ragemode.admin.signs")) {
-				sendMessage(event.getPlayer(), RageMode.getLang().get("no-permission-to-interact-sign"));
-				event.setCancelled(true);
-				return;
-			}
-
-			SignCreator.removeSign((Sign) event.getBlock().getState());
+		SignData signData = SignCreator.getSignData(event.getBlock().getLocation());
+		if (signData == null) {
+			return;
 		}
+
+		if (!event.getPlayer().hasPermission("ragemode.admin.signs")) {
+			sendMessage(event.getPlayer(), RageMode.getLang().get("no-permission-to-interact-sign"));
+			event.setCancelled(true);
+			return;
+		}
+
+		SignCreator.removeSign(signData);
 	}
 
 	@EventHandler
 	public void onInteract(PlayerInteractEvent event) {
-		if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_9_R1) && event.getHand() != EquipmentSlot.HAND) {
-			return;
-		}
-
-		final Block block = event.getClickedBlock();
-		if (block == null) {
+		if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_9_R1) && event.getHand() != EquipmentSlot.HAND
+				|| event.getClickedBlock() == null) {
 			return;
 		}
 
 		final Player player = event.getPlayer();
-		final org.bukkit.Location loc = block.getLocation();
+		final org.bukkit.Location loc = event.getClickedBlock().getLocation();
 
 		if (player.hasPermission("ragemode.admin.area")
 				&& Misc.getItemInHand(player).getType() == ConfigValues.getSelectionItem()) {
@@ -104,18 +102,19 @@ public final class EventListener implements org.bukkit.event.Listener {
 		}
 
 		if (ConfigValues.isSignsEnable() && event.getAction() == Action.RIGHT_CLICK_BLOCK
-				&& block.getState() instanceof Sign) {
+				&& event.getClickedBlock().getState() instanceof Sign) {
+			SignData data = SignCreator.getSignData(loc);
+
+			if (data == null) {
+				return;
+			}
+
 			if (!player.hasPermission("ragemode.join.sign")) {
 				sendMessage(player, RageMode.getLang().get("no-permission"));
 				return;
 			}
 
-			if (!SignCreator.isSign(loc)) {
-				return;
-			}
-
-			SignData data = SignCreator.getSignData(loc);
-			Game game = data == null ? null : GameUtils.getGame(data.getGameName());
+			Game game = GameUtils.getGame(data.getGameName());
 			if (game == null) {
 				sendMessage(player, RageMode.getLang().get("game.does-not-exist"));
 				return;
@@ -125,9 +124,9 @@ public final class EventListener implements org.bukkit.event.Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onSignChange(SignChangeEvent event) {
-		if (event.isCancelled() || !ConfigValues.isSignsEnable()) {
+		if (!ConfigValues.isSignsEnable()) {
 			return;
 		}
 
@@ -135,27 +134,30 @@ public final class EventListener implements org.bukkit.event.Listener {
 			return; // Probably never
 		}
 
-		Player player = event.getPlayer();
 		String line0 = plugin.getComplement().getLine(event, 0).toLowerCase();
 
-		if (line0.contains("[rm]") || line0.contains("[ragemode]")) {
-			if (!player.hasPermission("ragemode.admin.signs")) {
-				sendMessage(player, RageMode.getLang().get("no-permission-to-interact-sign"));
-				event.setCancelled(true);
-				return;
-			}
-
-			String line1 = plugin.getComplement().getLine(event, 1);
-			Game game = GameUtils.getGame(line1);
-			if (game == null) {
-				sendMessage(player, RageMode.getLang().get("invalid-game", "%game%", line1));
-				return;
-			}
-
-			Sign sign = (Sign) event.getBlock().getState();
-
-			SignCreator.createNewSign(sign, game.getName());
-			SignCreator.updateSign(sign.getLocation());
+		if (!line0.contains("[rm]") && !line0.contains("[ragemode]")) {
+			return;
 		}
+
+		Player player = event.getPlayer();
+
+		if (!player.hasPermission("ragemode.admin.signs")) {
+			sendMessage(player, RageMode.getLang().get("no-permission-to-interact-sign"));
+			event.setCancelled(true);
+			return;
+		}
+
+		String line1 = plugin.getComplement().getLine(event, 1);
+		Game game = GameUtils.getGame(line1);
+		if (game == null) {
+			sendMessage(player, RageMode.getLang().get("invalid-game", "%game%", line1));
+			return;
+		}
+
+		Sign sign = (Sign) event.getBlock().getState();
+
+		SignCreator.createNewSign(sign, game.getName());
+		SignCreator.updateSign(sign.getLocation());
 	}
 }

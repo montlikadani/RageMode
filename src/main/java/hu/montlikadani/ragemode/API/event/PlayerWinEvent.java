@@ -21,8 +21,8 @@ public class PlayerWinEvent extends GameEvent {
 	/**
 	 * The winner player who won the involved game.
 	 * <p>
-	 * This may not necessarily return as a {@code null} value, it may occur in
-	 * cases where a sudden kick has occurred to the player.
+	 * This may not necessarily return as {@code null}, it may occur in cases where
+	 * a sudden kick has occurred to the player.
 	 * 
 	 * @return {@link Player}
 	 */

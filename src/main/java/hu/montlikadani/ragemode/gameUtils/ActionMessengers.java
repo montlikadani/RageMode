@@ -2,7 +2,6 @@ package hu.montlikadani.ragemode.gameUtils;
 
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,7 +27,7 @@ public class ActionMessengers {
 
 	@Nullable
 	public Player getPlayer() {
-		return Bukkit.getPlayer(playerUUID);
+		return rm.getServer().getPlayer(playerUUID);
 	}
 
 	@NotNull

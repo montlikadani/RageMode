@@ -29,7 +29,6 @@ import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
-import hu.montlikadani.ragemode.gameUtils.gameSetup.SetupGui;
 import hu.montlikadani.ragemode.holder.holograms.ArmorStandHologram;
 import hu.montlikadani.ragemode.holder.holograms.IHoloHolder;
 import hu.montlikadani.ragemode.items.ItemHandler;
@@ -42,7 +41,6 @@ import hu.montlikadani.ragemode.storage.YamlDB;
 import hu.montlikadani.ragemode.utils.Debug;
 import hu.montlikadani.ragemode.utils.ServerVersion;
 import hu.montlikadani.ragemode.utils.UpdateDownloader;
-import hu.montlikadani.ragemode.utils.Utils;
 import hu.montlikadani.ragemode.utils.exception.GameRunningException;
 import hu.montlikadani.ragemode.utils.stuff.Complement;
 import hu.montlikadani.ragemode.utils.stuff.Complement1;
@@ -54,7 +52,6 @@ public final class RageMode extends JavaPlugin {
 	private Configuration conf;
 	private BossbarManager bossManager;
 	private Selection selection;
-	private SetupGui setupGui;
 	private RewardManager rewardManager;
 
 	private IHoloHolder holoHolder;
@@ -238,8 +235,11 @@ public final class RageMode extends JavaPlugin {
 		}
 
 		registerListeners();
+
 		if (database == null) { // We don't need to save database on reload, due to duplications
 			connectDatabase(false);
+		} else {
+			database.loadDatabase(false);
 		}
 
 		holoHolder.loadHolos();
@@ -254,7 +254,7 @@ public final class RageMode extends JavaPlugin {
 	}
 
 	private void registerListeners() {
-		Arrays.asList(new EventListener(this), new GameListener(this), (setupGui = new SetupGui(this)))
+		Arrays.asList(new EventListener(this), new GameListener(this))
 				.forEach(l -> getServer().getPluginManager().registerEvents(l, this));
 
 		if (isPaper) {
@@ -310,84 +310,79 @@ public final class RageMode extends JavaPlugin {
 
 		if (c.contains(path)) {
 			gameItems[0] = new ItemHandler().setItem(c.getString(path + ".item", "iron_axe"))
-					.setDisplayName(Utils.colors(c.getString(path + ".name", "&6CombatAxe")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 3))
-					.setVelocity(c.getDouble(path + ".velocity", 2D));
+					.setDisplayName(c.getString(path + ".name", "&6CombatAxe")).setLore(c.getStringList(path + ".lore"))
+					.setSlot(c.getInt(path + ".slot", 3)).setVelocity(c.getDouble(path + ".velocity", 2D));
 		}
 
 		if (c.contains(path = "gameitems.grenade")) {
 			gameItems[1] = new ItemHandler().setItem(Material.EGG)
-					.setDisplayName(Utils.colors(c.getString(path + ".name", "&8Grenade")))
-					.setCustomName(Utils.colors(c.getString(path + ".custom-name", "")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 5))
-					.setAmount(c.getInt(path + ".amount", 2)).setDamage(2.20)
+					.setDisplayName(c.getString(path + ".name", "&8Grenade"))
+					.setCustomName(c.getString(path + ".custom-name", "")).setLore(c.getStringList(path + ".lore"))
+					.setSlot(c.getInt(path + ".slot", 5)).setAmount(c.getInt(path + ".amount", 2)).setDamage(2.20)
 					.setVelocity(c.getDouble(path + ".velocity", 2D));
 		}
 
 		if (c.contains(path = "gameitems.rageArrow")) {
 			gameItems[2] = new ItemHandler().setItem(Material.ARROW)
-					.setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageArrow")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 9))
-					.setDamage(c.getDouble(path + ".damage", 3.35));
+					.setDisplayName(c.getString(path + ".name", "&6RageArrow")).setLore(c.getStringList(path + ".lore"))
+					.setSlot(c.getInt(path + ".slot", 9)).setDamage(c.getDouble(path + ".damage", 3.35));
 		}
 
 		if (c.contains(path = "gameitems.rageBow")) {
 			gameItems[3] = new ItemHandler().setItem(Material.BOW)
-					.setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageBow")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 0))
+					.setDisplayName(c.getString(path + ".name", "&6RageBow")).setLore(c.getStringList(path + ".lore"))
+					.setSlot(c.getInt(path + ".slot"))
 					.setEnchant(org.bukkit.enchantments.Enchantment.ARROW_INFINITE);
 		}
 
 		if (c.contains(path = "gameitems.rageKnife")) {
 			gameItems[4] = new ItemHandler().setItem(Material.SHEARS)
-					.setDisplayName(Utils.colors(c.getString(path + ".name", "&6RageKnife")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 1))
-					.setDamage(c.getDouble(path + ".damage", 25));
+					.setDisplayName(c.getString(path + ".name", "&6RageKnife")).setLore(c.getStringList(path + ".lore"))
+					.setSlot(c.getInt(path + ".slot", 1)).setDamage(c.getDouble(path + ".damage", 25));
 		}
 
 		if (c.contains(path = "gameitems.flash")) {
 			gameItems[5] = new ItemHandler()
 					.setItem(ServerVersion.isCurrentLower(ServerVersion.v1_9_R1) ? Material.getMaterial("SNOW_BALL")
 							: Material.SNOWBALL)
-					.setDisplayName(Utils.colors(c.getString(path + ".name", "&fFlash")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 6))
-					.setAmount(c.getInt(path + ".amount", 2));
+					.setDisplayName(c.getString(path + ".name", "&fFlash")).setLore(c.getStringList(path + ".lore"))
+					.setSlot(c.getInt(path + ".slot", 6)).setAmount(c.getInt(path + ".amount", 2));
 		}
 
 		if (c.contains(path = "gameitems.pressuremine")) {
 			gameItems[6] = new ItemHandler().setItem(Material.STRING)
-					.setDisplayName(Utils.colors(c.getString(path + ".name", "&8PressureMine")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 7))
+					.setDisplayName(c.getString(path + ".name", "&8PressureMine"))
+					.setLore(c.getStringList(path + ".lore")).setSlot(c.getInt(path + ".slot", 7))
 					.setAmount(c.getInt(path + ".amount", 1));
 		}
 
 		// Lobby items
 		if (c.contains(path = "lobbyitems.force-start")) {
 			lobbyItems[0] = new ItemHandler().setItem(c.getString(path + ".item", "lever"))
-					.setDisplayName(Utils.colors(c.getString(path + ".name", "&2Force the game start")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 3));
+					.setDisplayName(c.getString(path + ".name", "&2Force the game start"))
+					.setLore(c.getStringList(path + ".lore")).setSlot(c.getInt(path + ".slot", 3));
 		}
 
 		if (c.contains(path = "lobbyitems.leavegameitem")) {
 			lobbyItems[1] = new ItemHandler().setItem(c.getString(path + ".item", "barrier"))
-					.setDisplayName(Utils.colors(c.getString(path + ".name", "&cExit")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 5));
+					.setDisplayName(c.getString(path + ".name", "&cExit")).setLore(c.getStringList(path + ".lore"))
+					.setSlot(c.getInt(path + ".slot", 5));
 		}
 
 		path = "lobbyitems.shopitem";
 		if (c.contains(path) && c.getBoolean(path + ".enabled")) {
 			lobbyItems[2] = new ItemHandler().setItem(c.getString(path + ".item", "emerald"))
-					.setDisplayName(Utils.colors(c.getString(path + ".name", "&2Shop")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 1));
+					.setDisplayName(c.getString(path + ".name", "&2Shop")).setLore(c.getStringList(path + ".lore"))
+					.setSlot(c.getInt(path + ".slot", 1));
 		}
 
 		if (c.contains(path = "lobbyitems.hideMessages")) {
 			lobbyItems[3] = new ItemHandler().setItem(c.getString(path + ".item", "nether_star"))
-					.setDisplayName(Utils.colors(c.getString(path + ".name", "&cHide kill messages")))
-					.setLore(Utils.colorList(c.getStringList(path + ".lore"))).setSlot(c.getInt(path + ".slot", 8))
+					.setDisplayName(c.getString(path + ".name", "&cHide kill messages"))
+					.setLore(c.getStringList(path + ".lore")).setSlot(c.getInt(path + ".slot", 8))
 					.addExtra(new ItemHandler.Extra()
-							.setExtraName(Utils.colors(c.getString(path + ".status-off.name", "&aShow kill messages")))
-							.setExtraLore(Utils.colorList(c.getStringList(path + ".status-off.lore"))));
+							.setExtraName(c.getString(path + ".status-off.name", "&aShow kill messages"))
+							.setExtraLore(c.getStringList(path + ".status-off.lore")));
 		}
 	}
 
@@ -494,10 +489,6 @@ public final class RageMode extends JavaPlugin {
 
 	public Selection getSelection() {
 		return selection;
-	}
-
-	public SetupGui getSetupGui() {
-		return setupGui;
 	}
 
 	/**

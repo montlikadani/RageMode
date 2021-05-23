@@ -14,11 +14,11 @@ import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 import java.util.Optional;
 
 @CommandProcessor(
-		name = "holostats",
-		permission = "ragemode.admin.holo",
-		desc = "General commands for handling holograms",
-		params = "<add/remove/teleport>",
-		playerOnly = true)
+	name = "holostats",
+	permission = "ragemode.admin.holo",
+	desc = "General commands for handling holograms",
+	params = "<add/remove/teleport>",
+	playerOnly = true)
 public final class holostats implements ICommand {
 
 	@Override
@@ -66,7 +66,9 @@ public final class holostats implements ICommand {
 	}
 
 	private Location getClosest(Player player, RageMode plugin, boolean eye) {
-		Optional<ArmorStands> closest = plugin.getHoloHolder().getClosest(player, eye);
+		Optional<ArmorStands> closest = plugin.getHoloHolder()
+				.getClosest(eye ? player.getEyeLocation() : player.getLocation());
+
 		return closest.isPresent() ? closest.get().getLocation() : null;
 	}
 }

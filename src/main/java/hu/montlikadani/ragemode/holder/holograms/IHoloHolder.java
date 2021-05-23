@@ -45,13 +45,11 @@ public abstract class IHoloHolder {
 	public abstract void deleteAllHologram(boolean removeFromFile);
 
 	/**
-	 * Gets the closest hologram around the player.
+	 * Gets the closest hologram around the given location.
 	 * 
-	 * @param player {@link Player}
-	 * @param eyeLoc to determine if we need the player eye location or the current
-	 *               location where to get from
+	 * @param location {@link Location}
 	 * @return {@link ArmorStands} if present, otherwise {@link Optional#empty()}
 	 */
-	public abstract Optional<ArmorStands> getClosest(Player player, boolean eyeLoc);
+	public abstract Optional<ArmorStands> getClosest(Location location);
 
 }

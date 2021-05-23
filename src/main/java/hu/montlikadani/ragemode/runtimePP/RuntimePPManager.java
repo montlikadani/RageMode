@@ -25,7 +25,7 @@ public final class RuntimePPManager {
 	 * Returns the player points instance of a specific uuid.
 	 * 
 	 * @param uuid a valid uuid
-	 * @return the instance of {@link PlayerPoints}, otherwise <code>false</code>
+	 * @return the instance of {@link PlayerPoints}, otherwise <code>null</code>
 	 */
 	public static PlayerPoints getPPForPlayer(UUID uuid) {
 		if (uuid != null) {

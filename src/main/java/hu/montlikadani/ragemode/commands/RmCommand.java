@@ -18,7 +18,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public class RmCommand implements CommandExecutor {
+public final class RmCommand implements CommandExecutor {
 
 	private final Set<ICommand> cmds = new HashSet<>();
 
@@ -72,7 +72,7 @@ public class RmCommand implements CommandExecutor {
 		boolean isPlayer = sender instanceof Player;
 
 		for (ICommand command : cmds) {
-			CommandProcessor proc = ICommand.PROC;
+			CommandProcessor proc = command.getClass().getAnnotation(CommandProcessor.class);
 
 			if (proc == null) {
 				continue;

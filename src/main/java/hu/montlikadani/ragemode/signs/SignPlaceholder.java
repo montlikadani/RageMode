@@ -27,8 +27,15 @@ public class SignPlaceholder {
 			return variables;
 		}
 
+		int size = lines.size();
+		if (size == 0) {
+			return variables;
+		}
+
+		int gamePlayersSize = game.getPlayers().size();
+
 		for (int i = 0; i < 4; i++) {
-			if (i >= lines.size()) {
+			if (i >= size) {
 				break;
 			}
 
@@ -38,7 +45,7 @@ public class SignPlaceholder {
 			if (line.contains("%current-players%")) {
 				line = line.replace("%current-players%",
 						(game.getStatus() == GameStatus.RUNNING || game.getStatus() == GameStatus.WAITING)
-								? Integer.toString(game.getPlayers().size())
+								? Integer.toString(gamePlayersSize)
 								: "0");
 			}
 
@@ -49,7 +56,7 @@ public class SignPlaceholder {
 				switch (game.getStatus()) {
 				case WAITING:
 					line = line.replace("%running%",
-							(game.getPlayers().size() >= game.maxPlayers) ? ConfigValues.getSignGameFull()
+							(gamePlayersSize >= game.maxPlayers) ? ConfigValues.getSignGameFull()
 									: ConfigValues.getSignGameWaiting());
 					break;
 				case RUNNING:

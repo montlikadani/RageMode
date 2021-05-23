@@ -99,11 +99,13 @@ public final class LobbyTimer {
 				if (lobbyTitleSettings != null) {
 					String title = lobbyTitleSettings.getTitle(), subTitle = lobbyTitleSettings.getSubTitle();
 
-					title = title.replace("%time%", Integer.toString(time));
-					title = Utils.colors(title.replace("%game%", game.getName()));
+					String stringTime = Integer.toString(time);
 
+					title = title.replace("%time%", stringTime);
 					subTitle = subTitle.replace("%game%", game.getName());
-					subTitle = Utils.colors(subTitle.replace("%time%", Integer.toString(time)));
+
+					title = Utils.colors(title.replace("%game%", game.getName()));
+					subTitle = Utils.colors(subTitle.replace("%time%", stringTime));
 
 					int[] times = lobbyTitleSettings.getTimes();
 

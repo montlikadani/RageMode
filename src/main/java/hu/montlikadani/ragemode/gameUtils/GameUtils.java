@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import hu.montlikadani.ragemode.area.GameArea;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.API.event.RMGameJoinAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.config.Configuration;
@@ -51,7 +52,7 @@ import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
 /**
  * Class used for retrieving and performing some miscellaneous utilities for
- * specific game.
+ * specific game(s). Can't be extended.
  */
 public final class GameUtils {
 
@@ -95,7 +96,7 @@ public final class GameUtils {
 	 * 
 	 * @param player the {@link Player} where to send the error message if the name
 	 *               does not match the acceptable name
-	 * @param name   {@link Game}
+	 * @param name   game name
 	 * @return {@code false} if one of the characters in the specified string
 	 *         parameter is incorrect or the length is too long
 	 */
@@ -141,7 +142,17 @@ public final class GameUtils {
 	 */
 	@Nullable
 	public static Game getGameByPlayer(@Nullable UUID uuid) {
-		return uuid == null ? null : getGameByPlayer(RM.getServer().getPlayer(uuid));
+		if (uuid == null) {
+			return null;
+		}
+
+		for (Game game : RM.getGames()) {
+			if (game.getPlayerManager(uuid).isPresent()) {
+				return game;
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -244,7 +255,7 @@ public final class GameUtils {
 		}
 
 		for (GameArea ga : GameAreaManager.getAreasByLocation(loc)) {
-			if (isGameExist(ga.getGame().getName())) {
+			if (isGameExist(ga.getGameName())) {
 				return ga.getGame();
 			}
 		}
@@ -400,6 +411,13 @@ public final class GameUtils {
 			return;
 		}
 
+		RMGameJoinAttemptEvent event = new RMGameJoinAttemptEvent(game, player);
+		Utils.callEvent(event);
+
+		if (event.isCancelled()) {
+			return;
+		}
+
 		if (ConfigValues.isRequireEmptyInv()) {
 			for (ItemStack armor : player.getInventory().getArmorContents()) {
 				if (armor != null && armor.getType() != Material.AIR) {
@@ -503,10 +521,11 @@ public final class GameUtils {
 	}
 
 	/**
-	 * Attempts to leave the player from the given game.
+	 * Attempts to leave the player from the game.
 	 * 
 	 * @param pm   {@link PlayerManager}
-	 * @param game {@link Game}
+	 * @param game {@link Game}, or null if the game should be retrieved from player
+	 *             directly
 	 */
 	public static void leavePlayer(@NotNull PlayerManager pm, @Nullable Game game) {
 		if (pm == null) {
@@ -521,16 +540,14 @@ public final class GameUtils {
 			return;
 		}
 
-		Player player = pm.getPlayer();
-
 		if (pm.isSpectator()) {
-			game.removePlayer(player);
+			game.removePlayer(pm);
 		} else {
-			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, player);
+			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, pm);
 			Utils.callEvent(gameLeaveEvent);
 
 			if (!gameLeaveEvent.isCancelled()) {
-				game.removePlayer(player);
+				game.removePlayer(pm);
 			}
 		}
 
@@ -598,7 +615,7 @@ public final class GameUtils {
 			return;
 		}
 
-		if (game.removePlayer(player) && !pm.isSpectator()) {
+		if (game.removePlayer(pm) && !pm.isSpectator()) {
 			if (game.getStatus() == GameStatus.RUNNING) {
 				sendActionMessage(player, game, ConfigValues.MessageAction.ActionMessageType.KICK,
 						ConfigValues.MessageAction.ActionMessageType.MessageTypes.COMMAND);
@@ -848,7 +865,7 @@ public final class GameUtils {
 		SchedulerUtil.submitSync(() -> {
 			for (PlayerManager pm : new HashSet<>(game.getPlayers())) {
 				RageScores.getPlayerPointsMap().remove(pm.getUniqueId());
-				game.removePlayer(pm.getPlayer());
+				game.removePlayer(pm);
 			}
 		}, true);
 
@@ -994,7 +1011,7 @@ public final class GameUtils {
 			});
 
 			if (!pm.isSpectator()) {
-				RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, player);
+				RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, pm);
 				Utils.callEvent(gameLeaveEvent);
 
 				if (gameLeaveEvent.isCancelled()) {
@@ -1010,7 +1027,7 @@ public final class GameUtils {
 
 			RageScores.getPlayerPointsMap().remove(pm.getUniqueId());
 
-			if (game.removePlayer(player)) {
+			if (game.removePlayer(pm)) {
 				sendMessage(player, RageMode.getLang().get("game.stopped", "%game%", game.getName()));
 
 				if (RM.getRewardManager().isEnabled()) {
@@ -1042,7 +1059,7 @@ public final class GameUtils {
 	}
 
 	/**
-	 * Stops all currently running games and saves all the settings of games.
+	 * Stops all currently running games and saves all the settings.
 	 */
 	public static void stopAllGames() {
 		Debug.logConsole("Searching games to stop...");
@@ -1052,11 +1069,10 @@ public final class GameUtils {
 				Debug.logConsole("Stopping " + game.getName() + " ...");
 
 				GameAreaManager.removeEntitiesFromGame(game);
-				RageScores.calculateWinner(game, game.getPlayers());
 
-				for (PlayerManager players : new HashSet<>(game.getPlayers())) {
-					game.removePlayer(players.getPlayer());
-					RageScores.getPlayerPointsMap().remove(players.getUniqueId());
+				for (PlayerManager player : new HashSet<>(game.getPlayers())) {
+					game.removePlayer(player);
+					RageScores.getPlayerPointsMap().remove(player.getUniqueId());
 				}
 
 				game.setRunning(false);
@@ -1064,7 +1080,7 @@ public final class GameUtils {
 				Debug.logConsole(game + " has been stopped.");
 			} else if (game.getStatus() == GameStatus.WAITING) {
 				for (PlayerManager player : new HashSet<>(game.getPlayers())) {
-					game.removePlayer(player.getPlayer());
+					game.removePlayer(player);
 				}
 			}
 

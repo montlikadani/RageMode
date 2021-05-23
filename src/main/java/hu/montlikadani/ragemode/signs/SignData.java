@@ -3,7 +3,6 @@ package hu.montlikadani.ragemode.signs;
 import java.util.List;
 
 import org.apache.commons.lang.Validate;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -21,7 +20,7 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.MaterialUtil;
 import hu.montlikadani.ragemode.utils.ServerVersion;
 
-public class SignData {
+public final class SignData {
 
 	private final String world, gameName;
 	private final SignPlaceholder placeholder;
@@ -59,7 +58,7 @@ public class SignData {
 	}
 
 	public Location getLocation() {
-		return new Location(Bukkit.getWorld(world), x, y, z);
+		return new Location(plugin.getServer().getWorld(world), x, y, z);
 	}
 
 	public String getGameName() {

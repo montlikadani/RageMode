@@ -120,10 +120,10 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 	@EventHandler
 	public void onGameLeave(RMGameLeaveAttemptEvent e) {
-		LobbyShop.USER_PARTICLES.remove(e.getPlayer().getUniqueId());
+		LobbyShop.USER_PARTICLES.remove(e.getPlayerManager().getUniqueId());
 
 		PRESSUREMINES.removeIf(mine -> {
-			if (mine.getOwner().equals(e.getPlayer().getUniqueId())) {
+			if (mine.getOwner().equals(e.getPlayerManager().getUniqueId())) {
 				mine.removeMines();
 				return true;
 			}
@@ -555,7 +555,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onEntityExplode(EntityExplodeEvent ev) {
 		if (GameAreaManager.inArea(ev.getLocation())) {
 			ev.setCancelled(true);
@@ -681,25 +681,25 @@ public final class GameListener implements org.bukkit.event.Listener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onItemDrop(PlayerDropItemEvent event) {
 		if (GameUtils.isPlayerPlaying(event.getPlayer()))
 			event.setCancelled(true);
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onPortalTeleport(PlayerPortalEvent event) {
 		if (GameUtils.isPlayerPlaying(event.getPlayer()))
 			event.setCancelled(true);
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onEntityPortalTeleport(EntityPortalEvent event) {
 		if (GameUtils.getGame(event.getEntity().getLocation()) != null)
 			event.setCancelled(true);
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void disableCommand(PlayerCommandPreprocessEvent event) {
 		Player player = event.getPlayer();
 		PlayerManager pm = GameUtils.getPlayerManager(player);
@@ -964,7 +964,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onEntityInteract(PlayerInteractEntityEvent e) {
 		if (GameUtils.isPlayerPlaying(e.getPlayer())) {
 			e.setCancelled(true);
@@ -972,7 +972,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 	}
 
 	// To prevent removing paintings
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onHanging(HangingBreakByEntityEvent ev) {
 		if (ev.getRemover() instanceof Player && GameUtils.isPlayerPlaying((Player) ev.getRemover())) {
 			ev.setCancelled(true);
@@ -1027,7 +1027,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onVehicleEnter(VehicleEnterEvent e) {
 		if (e.getEntered() instanceof Player && GameUtils.isPlayerPlaying((Player) e.getEntered()))
 			e.setCancelled(true);
@@ -1068,19 +1068,19 @@ public final class GameListener implements org.bukkit.event.Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onFly(PlayerToggleFlightEvent event) {
 		if (GameUtils.isPlayerPlaying(event.getPlayer()))
 			event.setCancelled(true);
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void playerBedEnter(PlayerBedEnterEvent event) {
 		if (GameUtils.isPlayerPlaying(event.getPlayer()))
 			event.setCancelled(true);
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onBlockGrow(BlockGrowEvent e) {
 		GameAreaManager.getAreaByLocation(e.getBlock().getLocation()).filter(area -> area.getGame().isRunning())
 				.ifPresent(area -> e.setCancelled(true));

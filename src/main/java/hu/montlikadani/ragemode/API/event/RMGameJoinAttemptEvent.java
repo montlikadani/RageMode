@@ -35,6 +35,10 @@ public class RMGameJoinAttemptEvent extends GameEvent implements Cancellable {
 		return cancelled;
 	}
 
+	/**
+	 * Sets the cancellation state of this event. Cancelling this event will makes
+	 * the player to not join to the specified game.
+	 */
 	@Override
 	public void setCancelled(boolean cancelled) {
 		this.cancelled = cancelled;

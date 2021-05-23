@@ -100,10 +100,13 @@ public final class LobbyShop implements Listener {
 
 	@EventHandler
 	public void onGameLeave(RMGameLeaveAttemptEvent e) {
-		Player player = e.getPlayer();
+		BOUGHT_ITEMS.remove(e.getPlayerManager().getUniqueId());
 
-		BOUGHT_ITEMS.remove(player.getUniqueId());
-		player.closeInventory();
+		Player player = e.getPlayerManager().getPlayer();
+
+		if (player != null) {
+			player.closeInventory();
+		}
 	}
 
 	@EventHandler

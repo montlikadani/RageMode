@@ -101,6 +101,10 @@ public class GameSpawn implements IGameSpawn {
 
 	@Override
 	public Location getRandomSpawn() {
-		return haveAnySpawn() ? spawnLocations.get(ThreadLocalRandom.current().nextInt(spawnLocations.size())) : null;
+		if (!haveAnySpawn())
+			return null;
+
+		int size = spawnLocations.size();
+		return spawnLocations.get(size == 1 ? 0 : ThreadLocalRandom.current().nextInt(size));
 	}
 }

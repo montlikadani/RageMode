@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import hu.montlikadani.ragemode.signs.SignData;
 
 /**
- * Called when one of the ragemode signs is updated.
+ * Called when some ragemode sign(s) is updated for a specific game.
  */
 public class RMSignsUpdateEvent extends BaseEvent implements Cancellable {
 
@@ -20,9 +20,7 @@ public class RMSignsUpdateEvent extends BaseEvent implements Cancellable {
 	}
 
 	/**
-	 * Gets the set of added signs.
-	 * 
-	 * @return {@link SignData}
+	 * @return the set of {@link SignData}
 	 */
 	@NotNull
 	public Set<SignData> getSigns() {

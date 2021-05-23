@@ -10,15 +10,15 @@ import hu.montlikadani.ragemode.gameUtils.GameUtils;
 public final class Listeners_1_9 implements org.bukkit.event.Listener {
 
 	// Prevent swap items from main hand to off hand
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onSwapHandItem(PlayerSwapHandItemsEvent e) {
 		if (GameUtils.isPlayerPlaying(e.getPlayer()))
 			e.setCancelled(true);
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onItemPickUpEvent(EntityPickupItemEvent e) {
-		if (!e.isCancelled() && e.getEntity() instanceof Player && GameUtils.isPlayerPlaying((Player) e.getEntity()))
+		if (e.getEntity() instanceof Player && GameUtils.isPlayerPlaying((Player) e.getEntity()))
 			e.setCancelled(true);
 	}
 }

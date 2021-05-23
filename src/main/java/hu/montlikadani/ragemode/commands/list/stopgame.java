@@ -60,7 +60,7 @@ public final class stopgame implements ICommand {
 
 			Player player = pm.getPlayer();
 
-			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, player);
+			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, pm);
 			Utils.callEvent(gameLeaveEvent);
 
 			if (!gameLeaveEvent.isCancelled()) {

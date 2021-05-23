@@ -17,7 +17,6 @@ import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
-import hu.montlikadani.ragemode.gameLogic.Game;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 @CommandProcessor(
@@ -43,8 +42,7 @@ public final class area implements ICommand {
 				return false;
 			}
 
-			Game game = GameUtils.getGame(args[2]);
-			if (game == null) {
+			if (!GameUtils.isGameExist(args[2])) {
 				sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", args[2]));
 				return false;
 			}
@@ -89,7 +87,7 @@ public final class area implements ICommand {
 			aFile.set(path + "z", area.getHighLoc().getZ());
 			Configuration.saveFile(aFile, plugin.getConfiguration().getAreasFile());
 
-			GameAreaManager.getGameAreas().put(areaName, new GameArea(game, area, areaName));
+			GameAreaManager.getGameAreas().put(areaName, new GameArea(args[2], area, areaName));
 			sendMessage(player, RageMode.getLang().get("commands.area.set", "%name%", areaName));
 		} else if (args.length <= 3 && args[1].equalsIgnoreCase("remove")) {
 			if (args.length < 3) {

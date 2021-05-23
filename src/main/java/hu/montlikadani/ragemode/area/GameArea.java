@@ -16,13 +16,14 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.ImmutableList;
 
 import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 /**
  * Represents the game area
  */
 public class GameArea {
 
-	private final Game game;
+	private final String gameName;
 	private final Area area;
 	private final String name;
 
@@ -30,8 +31,8 @@ public class GameArea {
 
 	private Location center;
 
-	public GameArea(Game game, Area area, String name) {
-		this.game = game;
+	public GameArea(String gameName, Area area, String name) {
+		this.gameName = gameName;
 		this.area = area;
 		this.name = name;
 
@@ -57,11 +58,19 @@ public class GameArea {
 	}
 
 	/**
+	 * @return the name of the game of this area
+	 */
+	@Nullable
+	public String getGameName() {
+		return gameName;
+	}
+
+	/**
 	 * @return the {@link Game} instance of this area
 	 */
 	@Nullable
 	public Game getGame() {
-		return game;
+		return GameUtils.getGame(gameName);
 	}
 
 	/**

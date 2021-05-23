@@ -1,18 +1,19 @@
-package hu.montlikadani.ragemode.gameUtils.gameSetup;
+package hu.montlikadani.ragemode.managers.gui;
 
-import org.bukkit.entity.Player;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.inventory.InventoryView;
 
 public class GuiViewer {
 
-	private Player source;
+	private HumanEntity source;
 	private InventoryGuiHandler current;
 
-	public GuiViewer(Player source, InventoryGuiHandler current) {
+	public GuiViewer(HumanEntity source, InventoryGuiHandler current) {
 		this.source = source;
 		this.current = current;
 	}
 
-	public Player getSource() {
+	public HumanEntity getSource() {
 		return source;
 	}
 
@@ -20,8 +21,12 @@ public class GuiViewer {
 		return current;
 	}
 
+	public InventoryView getOpenInventory() {
+		return source.getOpenInventory();
+	}
+
 	public boolean isOpened() {
-		return source.getOpenInventory().getTopInventory().getHolder() instanceof InventoryGuiHandler;
+		return getOpenInventory().getTopInventory().getHolder() instanceof InventoryGuiHandler;
 	}
 
 	public void refreshInventory() {

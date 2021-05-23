@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -40,13 +39,13 @@ public final class GameAreaManager {
 		}
 
 		for (String name : section.getKeys(false)) {
-			Game game = GameUtils.getGame(section.getString(name + ".game", ""));
+			String gameName = section.getString(name + ".game", "");
 
-			if (game == null) {
+			if (!GameUtils.isGameExist(gameName)) {
 				continue;
 			}
 
-			World world = Bukkit.getWorld(section.getString(name + ".world", ""));
+			World world = plugin.getServer().getWorld(section.getString(name + ".world", ""));
 			if (world == null) {
 				continue;
 			}
@@ -56,7 +55,7 @@ public final class GameAreaManager {
 			Location loc2 = new Location(world, section.getDouble(name + ".loc2.x"),
 					section.getDouble(name + ".loc2.y"), section.getDouble(name + ".loc2.z"));
 
-			GAMEAREAS.put(name, new GameArea(game, new Area(loc1, loc2), name));
+			GAMEAREAS.put(name, new GameArea(gameName, new Area(loc1, loc2), name));
 		}
 	}
 
@@ -82,7 +81,7 @@ public final class GameAreaManager {
 		}
 
 		for (GameArea area : GAMEAREAS.values()) {
-			if (area.getGame().getName().equals(game.getName())) {
+			if (area.getGameName().equalsIgnoreCase(game.getName())) {
 				area.getEntities().forEach(Entity::remove);
 			}
 		}
@@ -147,7 +146,7 @@ public final class GameAreaManager {
 		}
 
 		for (GameArea area : GAMEAREAS.values()) {
-			if (area.getGame().getName().equals(game.getName())) {
+			if (area.getGameName().equalsIgnoreCase(game.getName())) {
 				return area;
 			}
 		}
@@ -166,7 +165,7 @@ public final class GameAreaManager {
 		}
 
 		for (GameArea area : GAMEAREAS.values()) {
-			if (area.getGame().getName().equals(game.getName())) {
+			if (game.getName().equalsIgnoreCase(area.getGameName())) {
 				GAMEAREAS.remove(area.getName());
 			}
 		}

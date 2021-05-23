@@ -2,7 +2,6 @@ package hu.montlikadani.ragemode.gameLogic;
 
 import java.util.TimerTask;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 
@@ -142,8 +141,10 @@ public final class GameTimer extends TimerTask {
 									for (Location mineLoc : mines.getMines()) {
 										if (mineLoc.getBlock().getType() == f.getLocation().getBlock().getType()) {
 											// Good news! Async catchop throwable error, lmao
-											Bukkit.getScheduler().runTaskLater(rm, () -> GameListener
-													.explodeMine(Bukkit.getPlayer(mines.getOwner()), f.getLocation()),
+											rm.getServer().getScheduler().runTaskLater(rm,
+													() -> GameListener.explodeMine(
+															rm.getServer().getPlayer(mines.getOwner()),
+															f.getLocation()),
 													1L);
 											break e;
 										}

@@ -10,24 +10,18 @@ import org.bukkit.entity.EntityType;
 
 public class ArmorStands {
 
-	private String[] textLines;
-	private Location location;
-
-	private final List<ArmorStand> armorStands = new ArrayList<>();
-
-	protected ArmorStands() {
-	}
-
 	public static TextBuilder holoTextBuilder() {
 		return new TextBuilder();
 	}
 
-	public String[] getTextLines() {
-		return textLines;
+	private Location location;
+	private StandHologram[] holograms;
+
+	protected ArmorStands() {
 	}
 
-	public List<ArmorStand> getArmorStands() {
-		return armorStands;
+	public StandHologram[] getHolograms() {
+		return holograms;
 	}
 
 	public void setLocation(Location location) {
@@ -39,39 +33,61 @@ public class ArmorStands {
 	}
 
 	public void delete() {
-		for (ArmorStand armor : armorStands) {
-			armor.remove();
+		if (holograms != null) {
+			for (StandHologram hologram : holograms) {
+				if (hologram.getArmorStand() != null) {
+					hologram.getArmorStand().remove();
+				}
+			}
 		}
-
-		armorStands.clear();
 	}
 
 	public void append() {
 		delete();
 
-		if (location == null || textLines == null) {
+		if (location == null || holograms == null) {
 			return;
 		}
 
-		double y = location.getY();
+		Location cloned = location.clone();
+		double y = cloned.getY();
 
-		for (int i = 0; i <= textLines.length - 1; i++) {
-			y += -0.27;
-
-			ArmorStand eas = getNewEntityArmorStand(location, y);
-			eas.setCustomName(textLines[i]);
-			armorStands.add(eas);
+		for (int i = 0; i < holograms.length; i++) {
+			holograms[i].armorStand = getNewEntityArmorStand(cloned, y += -0.27);
 		}
 	}
 
-	private ArmorStand getNewEntityArmorStand(Location loc, double y) {
+	protected ArmorStand getNewEntityArmorStand(Location loc, double y) {
 		loc.setY(y);
 
 		ArmorStand stand = (ArmorStand) loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND);
+
 		stand.setVisible(false);
 		stand.setGravity(false);
 		stand.setCustomNameVisible(true);
 		return stand;
+	}
+
+	public static final class StandHologram {
+
+		private String textLine = "";
+		private ArmorStand armorStand;
+
+		public StandHologram(String textLine) {
+			this.textLine = textLine;
+		}
+
+		public void setArmorStand(ArmorStand armorStand) {
+			this.armorStand = armorStand;
+		}
+
+		public ArmorStand getArmorStand() {
+			return armorStand;
+		}
+
+		public String getTextLine() {
+			return textLine;
+		}
 	}
 
 	public static final class TextBuilder {
@@ -108,8 +124,8 @@ public class ArmorStands {
 		}
 
 		/**
-		 * Set the text to the given index line. If the text is empty or null, from the
-		 * given index the text should be removed.
+		 * Sets the text at the given index. If the text is empty or null, it will be
+		 * removed from the given index.
 		 * 
 		 * @param index the line of text (index >= 0 && index < size)
 		 * @param text  the text that should be added
@@ -130,9 +146,15 @@ public class ArmorStands {
 		}
 
 		public ArmorStands build() {
-			ArmorStands builtText = new ArmorStands();
-			builtText.textLines = texts.toArray(new String[texts.size()]);
-			return builtText;
+			ArmorStands built = new ArmorStands();
+
+			built.holograms = new StandHologram[texts.size()];
+
+			for (int a = 0; a < built.holograms.length; a++) {
+				built.holograms[a] = new StandHologram(texts.get(a));
+			}
+
+			return built;
 		}
 	}
 }

@@ -131,7 +131,7 @@ public class MapChecker {
 		isValid = false;
 
 		for (GameArea map : GameAreaManager.getGameAreas().values()) {
-			if (map.getGame().getName().equalsIgnoreCase(game.getName())) {
+			if (map.getGameName().equalsIgnoreCase(game.getName())) {
 				isValid = true;
 				break;
 			}
