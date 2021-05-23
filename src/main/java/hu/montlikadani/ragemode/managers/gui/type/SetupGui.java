@@ -235,6 +235,21 @@ public class SetupGui extends BaseGui {
 				}
 			});
 		}).addItem(item -> {
+			item.setItem(9, SetupItems.HOLOGRAM.getMaterial(), SetupItems.HOLOGRAM.getDisplayName(),
+					SetupItems.HOLOGRAM.getLore());
+
+			item.setClickEvent(event -> {
+				if (event.isLeftClick()) {
+					rm.getHoloHolder().addHolo(event.getWhoClicked().getLocation());
+				} else if (event.isRightClick()) {
+					List<org.bukkit.entity.Entity> nears = Utils.getNearbyEntities(event.getWhoClicked(), 10);
+
+					if (!nears.isEmpty()) {
+						rm.getHoloHolder().deleteHologram(nears.get(0).getLocation());
+					}
+				}
+			});
+		}).addItem(item -> {
 			item.setItem(17, SetupItems.SET_LOBBY.getMaterial(), SetupItems.SET_LOBBY.getDisplayName(),
 					SetupItems.SET_LOBBY.getLore());
 
@@ -445,6 +460,25 @@ public class SetupGui extends BaseGui {
 			public List<String> getLore() {
 				return Arrays.asList(game.getGameLobby().location != null ? "&a\u2714 Lobby set" : "", " ",
 						"&6Left click to set lobby to your current position");
+			}
+		},
+
+		HOLOGRAM(game -> {
+		}) {
+			@Override
+			public Material getMaterial() {
+				return Material.ARMOR_STAND;
+			}
+
+			@Override
+			public String getDisplayName() {
+				return "&bAdds/removes a hologram";
+			}
+
+			@Override
+			public List<String> getLore() {
+				return Arrays.asList("&6Left click to add a hologram to your current position",
+						"&6Right click to remove a hologram near you within 10 radius");
 			}
 		};
 

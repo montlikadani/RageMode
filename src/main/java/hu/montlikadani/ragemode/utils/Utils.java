@@ -121,14 +121,15 @@ public class Utils {
 
 		int chunkRadius = radius < 16 ? 1 : radius / 16;
 
+		radius *= radius;
+
 		for (int chunkX = -chunkRadius; chunkX <= chunkRadius; chunkX++) {
 			for (int chunkZ = -chunkRadius; chunkZ <= chunkRadius; chunkZ++) {
 				int x = (int) loc.getX(), y = (int) loc.getY(), z = (int) loc.getZ();
 
 				for (Entity e : new Location(world, x + chunkX * 16, y, z + chunkZ * 16).getChunk().getEntities()) {
 					if (world.getName().equalsIgnoreCase(e.getWorld().getName())
-							&& e.getLocation().distanceSquared(loc) <= radius * radius
-							&& e.getLocation().getBlock() != block) {
+							&& e.getLocation().distanceSquared(loc) <= radius && e.getLocation().getBlock() != block) {
 						nearbyEntities.add(e);
 					}
 				}
