@@ -33,7 +33,7 @@ public abstract class BaseGui implements org.bukkit.event.Listener {
 	}
 
 	public final GuiViewer openGui(HumanEntity source, Game sourceGame) {
-		InventoryGuiHandler igh = load(sourceGame);
+		InventoryGuiHandler igh = sourceGame == null ? load(source) : load(sourceGame);
 
 		GuiViewer guiViewer = igh.getViewers().stream().filter(gv -> gv.getSource() == source).findFirst()
 				.orElseGet(() -> {

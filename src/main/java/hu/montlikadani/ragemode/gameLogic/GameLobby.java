@@ -64,12 +64,18 @@ public final class GameLobby {
 	}
 
 	public void saveToConfig() {
+		org.bukkit.World world = location.getWorld();
+
+		if (world == null) {
+			return;
+		}
+
 		final RageMode plugin = JavaPlugin.getPlugin(RageMode.class);
 		org.bukkit.configuration.file.FileConfiguration conf = plugin.getConfiguration().getArenasCfg();
 
 		String path = "arenas." + game.getName() + ".lobby.";
 
-		conf.set(path + "world", location.getWorld().getName());
+		conf.set(path + "world", world.getName());
 		conf.set(path + "x", location.getX());
 		conf.set(path + "y", location.getY());
 		conf.set(path + "z", location.getZ());

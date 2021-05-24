@@ -47,7 +47,7 @@ public final class addgame implements ICommand {
 		}
 
 		int x = 4;
-		if (args.length == 3) {
+		if (args.length >= 3) {
 			try {
 				x = Integer.parseInt(args[2]);
 			} catch (NumberFormatException e) {
@@ -62,7 +62,7 @@ public final class addgame implements ICommand {
 		}
 
 		int m = 2;
-		if (args.length == 4) {
+		if (args.length >= 4) {
 			try {
 				m = Integer.parseInt(args[3]);
 			} catch (NumberFormatException e) {
@@ -78,7 +78,7 @@ public final class addgame implements ICommand {
 
 		GameType type = GameType.NORMAL;
 
-		if (args.length == 5 && (type = GameType.getByName(args[4])) == null) {
+		if (args.length >= 5 && (type = GameType.getByName(args[4])) == null) {
 			type = GameType.NORMAL;
 		}
 
@@ -87,10 +87,14 @@ public final class addgame implements ICommand {
 
 		Utils.callEvent(new RMGameCreateEvent(game, x, m));
 
+		game.maxPlayers = x;
+		game.minPlayers = m;
+		game.worldName = player.getWorld().getName();
+
 		FileConfiguration c = plugin.getConfiguration().getArenasCfg();
 		c.set("arenas." + name + ".maxplayers", x);
 		c.set("arenas." + name + ".minplayers", m);
-		c.set("arenas." + name + ".world", player.getWorld().getName());
+		c.set("arenas." + name + ".world", game.worldName);
 		c.set("arenas." + name + ".gametype", type.toString().toLowerCase());
 		Configuration.saveFile(c, plugin.getConfiguration().getArenasFile());
 

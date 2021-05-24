@@ -109,10 +109,17 @@ public final class ArmorStandHologram extends IHoloHolder {
 		if (loc == null)
 			return false;
 
+		boolean removedAtLeastOne = false;
+
 		for (ArmorStands holo : armorStands) {
 			if (loc.equals(holo.getLocation())) {
 				holo.delete();
+				removedAtLeastOne = true;
 			}
+		}
+
+		if (!removedAtLeastOne) {
+			return false;
 		}
 
 		FileConfiguration c = plugin.getConfiguration().getHolosConfig();

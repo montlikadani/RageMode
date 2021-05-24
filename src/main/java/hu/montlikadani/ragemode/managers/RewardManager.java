@@ -93,16 +93,16 @@ public class RewardManager {
 
 	public void rewardForWinner(Player winner, Game game) {
 		SchedulerUtil.submitSync(() -> {
-			for (RewardCommand command : endGameWinnerCommands) {
-				if (command.command.isEmpty()) {
+			for (RewardCommand reward : endGameWinnerCommands) {
+				if (reward.command.isEmpty()) {
 					continue;
 				}
 
-				String cmd = replacePlaceholders(command.command, winner, game);
+				String cmd = replacePlaceholders(reward.command, winner, game);
 
-				if (command.type == SenderType.PLAYER) {
+				if (reward.type == SenderType.PLAYER) {
 					winner.performCommand(cmd);
-				} else if (command.type == SenderType.CONSOLE) {
+				} else if (reward.type == SenderType.CONSOLE) {
 					plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), cmd);
 				}
 			}
@@ -114,21 +114,23 @@ public class RewardManager {
 					winner.getInventory().addItem(rewardItem.itemStack);
 				}
 			}
-		}, true);
+
+			return true;
+		});
 	}
 
 	public void rewardForPlayers(Player player, Game game) {
 		SchedulerUtil.submitSync(() -> {
-			for (RewardCommand command : endGamePlayerCommands) {
-				if (command.command.isEmpty()) {
+			for (RewardCommand reward : endGamePlayerCommands) {
+				if (reward.command.isEmpty()) {
 					continue;
 				}
 
-				String cmd = replacePlaceholders(command.command, player, game);
+				String cmd = replacePlaceholders(reward.command, player, game);
 
-				if (command.type == SenderType.PLAYER) {
+				if (reward.type == SenderType.PLAYER) {
 					player.performCommand(cmd);
-				} else if (command.type == SenderType.CONSOLE) {
+				} else if (reward.type == SenderType.CONSOLE) {
 					plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), cmd);
 				}
 			}
@@ -140,7 +142,9 @@ public class RewardManager {
 					player.getInventory().addItem(rewardItem.itemStack);
 				}
 			}
-		}, true);
+
+			return true;
+		});
 	}
 
 	public void performGameCommands(Player player, Game game, InGameCommand.CommandType commandType) {
@@ -161,7 +165,9 @@ public class RewardManager {
 					}
 				}
 			}
-		}, true);
+			
+			return true;
+		});
 	}
 
 	public void giveBonuses(Player player) {
@@ -187,7 +193,9 @@ public class RewardManager {
 					player.addPotionEffect(bonus.potionEffect);
 				}
 			}
-		}, true);
+
+				return true;
+			});
 	}
 
 	public int getPointBonus() {

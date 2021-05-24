@@ -19,12 +19,7 @@ import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
-@CommandProcessor(
-	name = "area",
-	permission = "ragemode.admin.area",
-	params = "add/remove/info/list",
-	desc = "Setup area for specific game",
-	playerOnly = true)
+@CommandProcessor(name = "area", permission = "ragemode.admin.area", params = "add/remove/info/list", desc = "Setup area for specific game", playerOnly = true)
 public final class area implements ICommand {
 
 	@Override
@@ -109,10 +104,10 @@ public final class area implements ICommand {
 		} else if (args.length >= 1) {
 			if (args[1].equalsIgnoreCase("info")) {
 				String t = "";
-				Player player = (Player) sender;
+				org.bukkit.Location playerLoc = ((Player) sender).getLocation();
 
 				for (Map.Entry<String, GameArea> map : GameAreaManager.getGameAreas().entrySet()) {
-					if (map.getValue().inArea(player.getLocation())) {
+					if (map.getValue().inArea(playerLoc)) {
 						if (!t.isEmpty()) {
 							t += ", ";
 						}
@@ -121,10 +116,9 @@ public final class area implements ICommand {
 					}
 				}
 
-				sendMessage(player,
+				sendMessage(sender,
 						!t.isEmpty()
-								? RageMode.getLang().get("commands.area.info", "%area%", t, "%location%",
-										player.getLocation())
+								? RageMode.getLang().get("commands.area.info", "%area%", t, "%location%", playerLoc)
 								: RageMode.getLang().get("commands.area.not-exists"));
 			} else if (args[1].equalsIgnoreCase("list")) {
 				if (GameAreaManager.getGameAreas().isEmpty()) {

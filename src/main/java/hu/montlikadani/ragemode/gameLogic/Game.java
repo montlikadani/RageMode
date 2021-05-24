@@ -241,7 +241,7 @@ public final class Game extends GameSettings {
 	public IGameSpawn getSpawn(@NotNull Class<? extends IGameSpawn> spawnType) {
 		if (spawnType != null) {
 			for (IGameSpawn s : spawns) {
-				if (s.getGame().getName().equalsIgnoreCase(name) && spawnType.isAssignableFrom(s.getClass())) {
+				if (s != null && s.getGame().getName().equalsIgnoreCase(name) && spawnType.isAssignableFrom(s.getClass())) {
 					return s;
 				}
 			}

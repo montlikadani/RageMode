@@ -95,6 +95,7 @@ import hu.montlikadani.ragemode.managers.RewardManager;
 import hu.montlikadani.ragemode.scores.RageScores;
 import hu.montlikadani.ragemode.utils.MaterialUtil;
 import hu.montlikadani.ragemode.utils.Misc;
+import hu.montlikadani.ragemode.utils.SchedulerUtil;
 import hu.montlikadani.ragemode.utils.Utils;
 import hu.montlikadani.ragemode.utils.ServerVersion;
 
@@ -304,11 +305,9 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 			if (damagerIsPlayer) {
 				if (damagerGame != null) {
-					ItemMeta meta = Misc.getItemInHand((Player) event.getDamager()).getItemMeta();
 					ItemHandler knife = Items.getGameItem(4);
 
-					if (knife != null && meta != null && meta.hasDisplayName()
-							&& plugin.getComplement().getDisplayName(meta).equals(knife.getDisplayName())) {
+					if (knife != null && Misc.getItemInHand((Player) event.getDamager()).getType() == knife.getItem()) {
 						finalDamage = knife.getDamage();
 					}
 				}
@@ -371,11 +370,9 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 			if (damagerIsPlayer) {
 				if (damagerGame != null) {
-					ItemMeta meta = Misc.getItemInHand((Player) event.getDamager()).getItemMeta();
 					ItemHandler knife = Items.getGameItem(4);
 
-					if (knife != null && meta != null
-							&& plugin.getComplement().getDisplayName(meta).equals(knife.getDisplayName())) {
+					if (knife != null && Misc.getItemInHand((Player) event.getDamager()).getType() == knife.getItem()) {
 						finalDamage = knife.getDamage();
 						tool = GameItems.RAGEKNIFE;
 					}
@@ -406,7 +403,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onHitPlayer(EntityDamageEvent event) {
 		if (!(event.getEntity() instanceof Player)) {
 			return;
@@ -424,7 +421,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onBowShoot(EntityShootBowEvent e) {
 		if (e.getEntity() instanceof Player && GameUtils.isPlayerInFreezeRoom((Player) e.getEntity())) {
 			e.setCancelled(true);
@@ -444,59 +441,68 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 		if (!killerExists || GameUtils.isPlayerPlaying(deceased.getKiller())) {
 			if (deceasedGame.getGameType() != GameType.APOCALYPSE) {
-				if (!PlayerManager.DEATH_MESSAGES_TOGGLE.getOrDefault(deceased.getKiller().getUniqueId(), false)) {
-					CacheableHitTarget cht = HIT_TARGETS.remove(deceased.getUniqueId());
+				boolean canSeeDeathMessages = killerExists
+						&& !PlayerManager.DEATH_MESSAGES_TOGGLE.getOrDefault(deceased.getKiller().getUniqueId(), false);
+				CacheableHitTarget cht = HIT_TARGETS.remove(deceased.getUniqueId());
 
-					if (cht != null) {
-						switch (cht.getTool()) {
-						case RAGEARROW:
-						case RAGEBOW:
-						case COMBATAXE:
-						case GRENADE:
-						case RAGEKNIFE:
+				if (cht != null) {
+					switch (cht.getTool()) {
+					case RAGEARROW:
+					case RAGEBOW:
+					case COMBATAXE:
+					case GRENADE:
+					case RAGEKNIFE:
+						if (canSeeDeathMessages) {
 							GameUtils.broadcastToGame(deceasedGame,
 									RageMode.getLang().get("game.broadcast." + cht.getTool().getKillTextPath(),
 											"%victim%", deceased.getName(), "%killer%", deceased.getName()));
-							RageScores.addPointsToPlayer(killerExists ? deceased.getKiller() : deceased, deceased,
-									cht.getTool());
-							break;
-						case EXPLOSION:
-							boolean hasNearPlayer = false;
+						}
 
-							for (UUID near : cht.getNearTargets()) {
-								if (!deceased.getUniqueId().equals(near)) {
-									continue;
-								}
+						RageScores.addPointsToPlayer(killerExists ? deceased.getKiller() : deceased, deceased,
+								cht.getTool());
+						break;
+					case EXPLOSION:
+						boolean hasNearPlayer = false;
 
-								Player nearPlayer = plugin.getServer().getPlayer(near);
+						for (UUID near : cht.getNearTargets()) {
+							if (!deceased.getUniqueId().equals(near)) {
+								continue;
+							}
 
-								if (nearPlayer != null) {
+							Player nearPlayer = plugin.getServer().getPlayer(near);
+
+							if (nearPlayer != null) {
+								if (canSeeDeathMessages) {
 									GameUtils.broadcastToGame(deceasedGame,
 											RageMode.getLang().get("game.broadcast." + cht.getTool().getKillTextPath(),
 													"%victim%", deceased.getName(), "%killer%", nearPlayer.getName()));
-									RageScores.addPointsToPlayer(nearPlayer, deceased, cht.getTool());
-									hasNearPlayer = true;
-									break;
 								}
-							}
 
-							if (!hasNearPlayer) {
+								RageScores.addPointsToPlayer(nearPlayer, deceased, cht.getTool());
+								hasNearPlayer = true;
+								break;
+							}
+						}
+
+						if (!hasNearPlayer) {
+							if (canSeeDeathMessages) {
 								GameUtils.broadcastToGame(deceasedGame,
 										RageMode.getLang().get("game.broadcast.error-kill"));
-								sendMessage(deceased, RageMode.getLang().get("game.unknown-killer"));
 							}
 
-							break;
-						default:
-							GameUtils.broadcastToGame(deceasedGame,
-									RageMode.getLang().get("game.unknown-weapon", "%victim%", deceased.getName()));
-							break;
+							sendMessage(deceased, RageMode.getLang().get("game.unknown-killer"));
 						}
 
-						if (cht.getTool() != GameItems.UNKNOWN) {
-							Utils.callEvent(new RMPlayerKilledEvent(deceasedGame, deceased, deceased.getKiller(),
-									cht.getTool()));
-						}
+						break;
+					default:
+						GameUtils.broadcastToGame(deceasedGame,
+								RageMode.getLang().get("game.unknown-weapon", "%victim%", deceased.getName()));
+						break;
+					}
+
+					if (cht.getTool() != GameItems.UNKNOWN) {
+						Utils.callEvent(
+								new RMPlayerKilledEvent(deceasedGame, deceased, deceased.getKiller(), cht.getTool()));
 					}
 				}
 			} else {
@@ -562,7 +568,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onEntitySpawn(CreatureSpawnEvent e) {
 		if (e.getSpawnReason() != CreatureSpawnEvent.SpawnReason.CUSTOM && GameAreaManager.inArea(e.getLocation())) {
 			e.setCancelled(true);
@@ -637,7 +643,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 		Utils.callEvent(new RMPlayerRespawnedEvent(game, player, gsg));
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onHungerGain(FoodLevelChangeEvent event) {
 		if (event.getEntity() instanceof Player && GameUtils.isPlayerPlaying((Player) event.getEntity()))
 			event.setCancelled(true);
@@ -785,7 +791,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 		// make custom name
 		ItemHandler grenadeItem = Items.getGameItem(1);
 		if (grenadeItem != null && !grenadeItem.getCustomName().isEmpty()) {
-			grenade.setCustomName(grenadeItem.getCustomName());
+			grenade.setCustomName(Utils.colors(grenadeItem.getCustomName()));
 			grenade.setCustomNameVisible(true);
 		}
 
@@ -901,10 +907,9 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 			if (meta != null && meta.hasDisplayName()) {
 				ItemHandler forceStarter = Items.getLobbyItem(0);
-				String displayName = plugin.getComplement().getDisplayName(meta);
 
 				if (forceStarter != null && player.hasPermission("ragemode.admin.item.forcestart")
-						&& forceStarter.getDisplayName().equals(displayName)) {
+						&& forceStarter.getItem() == hand.getType()) {
 					if (GameUtils.forceStart(playerGame)) {
 						sendMessage(player, RageMode.getLang().get("commands.forcestart.game-start", "%game%",
 								playerGame.getName()));
@@ -914,12 +919,12 @@ public final class GameListener implements org.bukkit.event.Listener {
 				}
 
 				ItemHandler leaveItem = Items.getLobbyItem(1);
-				if (leaveItem != null && leaveItem.getDisplayName().equals(displayName)) {
+				if (leaveItem != null && leaveItem.getItem() == hand.getType()) {
 					GameUtils.leavePlayer(pm, playerGame);
 				}
 
 				ItemHandler shopItem = Items.getLobbyItem(2);
-				if (shopItem != null && shopItem.getDisplayName().equals(displayName)) {
+				if (shopItem != null && shopItem.getItem() == hand.getType()) {
 					lobbyShop.openMainPage(player);
 				}
 
@@ -927,8 +932,8 @@ public final class GameListener implements org.bukkit.event.Listener {
 				if (hideItem != null) {
 					ItemHandler.Extra extraItem = hideItem.getExtras().isEmpty() ? null : hideItem.getExtras().get(0);
 
-					if (hideItem.getDisplayName().equals(displayName)
-							|| (extraItem != null && extraItem.getExtraName().equals(displayName))) {
+					if (hideItem.getItem() == hand.getType() || (extraItem != null
+							&& extraItem.getExtraName().equals(plugin.getComplement().getDisplayName(meta)))) {
 						if (PlayerManager.DEATH_MESSAGES_TOGGLE.remove(pm.getUniqueId()) != null) {
 							plugin.getComplement().setDisplayName(meta, hideItem.getDisplayName());
 							plugin.getComplement().setLore(meta, hideItem.getLore());
@@ -1152,56 +1157,60 @@ public final class GameListener implements org.bukkit.event.Listener {
 			return false;
 		}
 
-		Collection<Entity> nears = Utils.getNearbyEntities(world, currentLoc, 10);
+		SchedulerUtil.submitSync(() -> {
+			Collection<Entity> nears = Utils.getNearbyEntities(world, currentLoc, 10);
 
-		world.createExplosion(currentLoc.getX(), currentLoc.getY() + 1, currentLoc.getZ(), 4f, false, false);
-		block.setType(Material.AIR);
+			world.createExplosion(currentLoc.getX(), currentLoc.getY() + 1, currentLoc.getZ(), 4f, false, false);
+			block.setType(Material.AIR);
 
-		for (final Entity near : nears) {
-			final UUID uuid = near.getUniqueId();
+			for (final Entity near : nears) {
+				final UUID uuid = near.getUniqueId();
 
-			for (CacheableHitTarget cht : HIT_TARGETS.values()) {
-				cht.getNearTargets().remove(uuid);
-			}
+				for (CacheableHitTarget cht : HIT_TARGETS.values()) {
+					cht.getNearTargets().remove(uuid);
+				}
 
-			if (game.getGameType() == GameType.APOCALYPSE) {
-				for (PressureMine mines : PRESSUREMINES) {
-					if (mines.getMines().contains(currentLoc)) {
-						CacheableHitTarget hitTarget = HIT_TARGETS.get(mines.getOwner());
+				if (game.getGameType() == GameType.APOCALYPSE) {
+					for (PressureMine mines : PRESSUREMINES) {
+						if (mines.getMines().contains(currentLoc)) {
+							CacheableHitTarget hitTarget = HIT_TARGETS.get(mines.getOwner());
 
-						if (hitTarget != null) {
-							hitTarget.getNearTargets().add(uuid);
+							if (hitTarget != null) {
+								hitTarget.getNearTargets().add(uuid);
+							}
+
+							break;
 						}
+					}
 
-						break;
+					continue;
+				}
+
+				if (player != null) {
+					CacheableHitTarget hitTarget = HIT_TARGETS.get(player.getUniqueId());
+
+					if (hitTarget != null) {
+						hitTarget.getNearTargets().add(uuid);
+					}
+				} else if (near instanceof Player) {
+					CacheableHitTarget hitTarget = HIT_TARGETS.get(uuid);
+
+					if (hitTarget != null) {
+						hitTarget.getNearTargets().add(uuid);
 					}
 				}
 
-				continue;
+				CacheableHitTarget cht = new CacheableHitTarget(near, GameItems.PRESSUREMINE);
+				cht.add(0);
+				HIT_TARGETS.put(uuid, cht);
 			}
 
-			if (player != null) {
-				CacheableHitTarget hitTarget = HIT_TARGETS.get(player.getUniqueId());
-
-				if (hitTarget != null) {
-					hitTarget.getNearTargets().add(uuid);
-				}
-			} else if (near instanceof Player) {
-				CacheableHitTarget hitTarget = HIT_TARGETS.get(uuid);
-
-				if (hitTarget != null) {
-					hitTarget.getNearTargets().add(uuid);
-				}
+			for (PressureMine mines : PRESSUREMINES) {
+				mines.removeMine(currentLoc);
 			}
 
-			CacheableHitTarget cht = new CacheableHitTarget(near, GameItems.PRESSUREMINE);
-			cht.add(0);
-			HIT_TARGETS.put(uuid, cht);
-		}
-
-		for (PressureMine mines : PRESSUREMINES) {
-			mines.removeMine(currentLoc);
-		}
+			return 1;
+		});
 
 		return true;
 	}

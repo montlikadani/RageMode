@@ -88,7 +88,7 @@ public class MapChecker {
 		}
 
 		if (game.getGameLobby().location.getWorld() == null) {
-			message = RageMode.getLang().get("setup.lobby.worldname-not-set");
+			message = RageMode.getLang().get("game.worldname-not-set");
 			isValid = false;
 			return;
 		}

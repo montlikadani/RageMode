@@ -94,7 +94,7 @@ commands:
     set: "&aA terület beállítva&e %name%&a névvel."
     removed: "&cA terület eltávolítva."
     info: "&6Terület infók:\n&6Nevek:&e %area%\n&6Hely:&e %location%"
-    list: "&6Területek:\n&a%num%. %area%\n  &eAlacsonyabb:&c x:%lowx%, y:%lowy%, z:%lowz%\n  &eMagasabb:&c x:%highx%, y:%highy%, z:%highz%"
+    list: "&6Területek:\n&a%num%. Név: %area%\n  &eAlacsonyabb:&c x:%lowx%, y:%lowy%, z:%lowz%\n  &eMagasabb:&c x:%highx%, y:%highy%, z:%highz%"
     empty: "&cNincs egy terület sem beállítva."
   setgametype:
     set: "&aA játék típus beállítva a(z)&e %game%&a játékra."
@@ -112,7 +112,6 @@ setup:
   lobby:
     set-success: "&2A lobby a(z)&3 %game%&2 játékhoz sikeresen beállítva!"
     not-set: "&cA lobby még nincs beállítva a(z)&3 %game%&c játékhoz. Állítsd be a&e /rm setlobby <játékNév>&c paranccsal."
-    worldname-not-set: "&cA világ kulcs nem lehet üres! Kérdezz meg egy Admin-t, hogy nézze meg a config-ot."
   addgame:
     success-added: "&2A játék &3%game%&2 sikeresen hozzáadva!&e GUI megnyitása... /rm setup"
     already-exists: "&cEz a játék &e%game%&c már létezik."
@@ -171,7 +170,7 @@ game:
   chat-is-disabled: "&cA chat jelenleg letiltva!"
   game-freeze:
     chat-is-disabled: "&cA chat jelenleg letiltva!"
-  worldname-not-set: "&4A világ kulcs nem lehet üres! Kérdezz meg egy Admin-t, hogy nézze meg a config-ot."
+  worldname-not-set: "&4A világ a játékhoz nincs hozzáadva vagy nem létezik."
   does-not-exist: "&cA csatlakozni kívánt játék nem található."
   command-disabled-in-end-game: "&cMinden parancs letiltva a játék végénél. Tarts ki!!"
   this-command-is-disabled-in-game: "&cEz a parancs jelenleg letiltva."

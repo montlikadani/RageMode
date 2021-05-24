@@ -31,7 +31,7 @@ public class GameSpawn implements IGameSpawn {
 
 	@Override
 	public boolean isReady() {
-		return spawnLocations.size() <= game.maxPlayers;
+		return spawnLocations.size() >= game.maxPlayers;
 	}
 
 	@Override

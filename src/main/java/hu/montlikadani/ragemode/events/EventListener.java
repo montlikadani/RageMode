@@ -53,7 +53,7 @@ public final class EventListener implements org.bukkit.event.Listener {
 		GameUtils.kickPlayer(ev.getPlayer());
 	}
 
-	@EventHandler(ignoreCancelled = true)
+	@EventHandler
 	public void onSignBreak(BlockBreakEvent event) {
 		if (!ConfigValues.isSignsEnable() || !(event.getBlock().getState() instanceof Sign)) {
 			return;

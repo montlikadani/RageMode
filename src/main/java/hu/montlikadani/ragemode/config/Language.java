@@ -167,7 +167,7 @@ public class Language {
 		l.get("commands.area.not-exists", "&cArea not found by this name.");
 		l.get("commands.area.set", "&aArea set with&e %name%&a name.");
 		l.get("commands.area.removed", "&cArea has been removed.");
-		l.get("commands.area.info", "&6Area info:\n&6Names:&e %area%\n&6Location:&e %location%");
+		l.get("commands.area.info", "&6Area info:\n&6Name:&e %area%\n&6Location:&e %location%");
 		l.get("commands.area.empty", "&cThere is no any area set.");
 		l.get("commands.area.list",
 				"&6Area list:\n&a%num%. %area%\n  &eLow:&c x:%lowx%, y:%lowy%, z:%lowz%\n  &eHigh:&c x:%highx%, y:%highy%, z:%highz%");
@@ -180,7 +180,6 @@ public class Language {
 		l.get("setup.lobby.set-success", "&2The lobby for the game&3 %game%&2 was set successfully!");
 		l.get("setup.lobby.not-set",
 				"&cThe lobby was not set yet for&3 %game%&c. Set it with&e /rm setlobby <gameName>&c command.");
-		l.get("setup.lobby.worldname-not-set", "&cThe world key can't be empty! Ask an Admin to check the config.yml.");
 		l.get("setup.addgame.success-added",
 				"&2The game &3%game%&2 was added successfully!&e Opening GUI... /rm setup");
 		l.get("setup.addgame.already-exists", "&cThis &e%game%&c game already exists.");
@@ -233,7 +232,7 @@ public class Language {
 		l.get("game.cant-bought-elements", "&cYou don't have enough money/points to buy these elements.");
 		l.get("game.chat-is-disabled", "&cThe chat currently is disabled!");
 		l.get("game.game-freeze.chat-is-disabled", "&cThe chat currently is disabled!");
-		l.get("game.worldname-not-set", "&4The world key can't be empty! Ask an Admin to check the config.yml.");
+		l.get("game.worldname-not-set", "&4The world for the game is not set or not exist.");
 		l.get("game.does-not-exist", "&cThe game you wish to join wasn't found.");
 		l.get("game.command-disabled-in-end-game", "&cAll commands are disabled at the end of the game. Endure!!");
 		l.get("game.this-command-is-disabled-in-game", "&cThis command is currently disabled.");

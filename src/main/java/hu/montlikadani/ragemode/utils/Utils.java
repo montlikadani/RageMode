@@ -59,8 +59,11 @@ public class Utils {
 			return;
 		}
 
-		if (!event.isAsynchronous() && !RM.getServer().isPrimaryThread()) {
-			SchedulerUtil.submitSync(() -> RM.getServer().getPluginManager().callEvent(event), true);
+		if (!event.isAsynchronous()) {
+			SchedulerUtil.submitSync(() -> {
+				RM.getServer().getPluginManager().callEvent(event);
+				return 1;
+			});
 		} else {
 			RM.getServer().getPluginManager().callEvent(event);
 		}
@@ -70,73 +73,69 @@ public class Utils {
 		final CompletableFuture<Boolean> comp = new CompletableFuture<>();
 
 		if (RM.isPaper()) {
-			if (!RM.getServer().isPrimaryThread()) { // Perform on main thread to prevent async catchop
-				// Call synchronously without delay
-				SchedulerUtil.submitSync(() -> entity.teleportAsync(loc).thenAccept(done -> {
-					if (!done.booleanValue()) {
-						entity.teleport(loc);
-					}
-
-					comp.complete(true);
-				}), true);
-			} else {
-				entity.teleportAsync(loc).whenComplete((done, throwable) -> {
-					if (!done.booleanValue()) {
-						entity.teleport(loc);
-					}
-
-					comp.complete(true);
-				});
-			}
-		} else if (!RM.getServer().isPrimaryThread()) { // Check if current thread is async
 			// Call synchronously without delay
-			SchedulerUtil.submitSync(() -> entity.teleport(loc), comp.complete(true));
+			SchedulerUtil.submitSync(() -> entity.teleportAsync(loc).thenAccept(done -> {
+				if (!done.booleanValue()) {
+					entity.teleport(loc);
+				}
+
+				comp.complete(true);
+			}));
 		} else {
-			entity.teleport(loc);
-			comp.complete(true);
+			SchedulerUtil.submitSync(() -> {
+				entity.teleport(loc);
+				return comp.complete(true);
+			});
 		}
 
 		return comp;
 	}
 
 	public static java.util.Collection<Entity> getNearbyEntities(org.bukkit.World w, Location loc, int radius) {
-		return ServerVersion.isCurrentHigher(ServerVersion.v1_8_R1) ? w.getNearbyEntities(loc, radius, radius, radius)
-				: getNearbyList(loc, radius);
+		if (ServerVersion.isCurrentHigher(ServerVersion.v1_8_R1)) {
+			return SchedulerUtil.submitSync(() -> w.getNearbyEntities(loc, radius, radius, radius));
+		}
+
+		return SchedulerUtil.submitSync(() -> getNearbyList(loc, radius));
 	}
 
 	public static List<Entity> getNearbyEntities(Entity e, int radius) {
-		return ServerVersion.isCurrentHigher(ServerVersion.v1_8_R1) ? e.getNearbyEntities(radius, radius, radius)
-				: getNearbyList(e.getLocation(), radius);
+		if (ServerVersion.isCurrentHigher(ServerVersion.v1_8_R1)) {
+			return SchedulerUtil.submitSync(() -> e.getNearbyEntities(radius, radius, radius));
+		}
+
+		return SchedulerUtil.submitSync(() -> getNearbyList(e.getLocation(), radius));
 	}
 
 	private static List<Entity> getNearbyList(Location loc, int radius) {
-		final List<Entity> nearbyEntities = new java.util.ArrayList<>();
-		final org.bukkit.World world = loc.getWorld();
+		return SchedulerUtil.submitSync(() -> {
+			final List<Entity> nearbyEntities = new java.util.ArrayList<>();
+			final org.bukkit.World world = loc.getWorld();
 
-		if (world == null) {
-			return nearbyEntities;
-		}
+			if (world == null) {
+				return nearbyEntities;
+			}
 
-		final org.bukkit.block.Block block = loc.getBlock();
+			final org.bukkit.block.Block block = loc.getBlock();
 
-		int chunkRadius = radius < 16 ? 1 : radius / 16;
+			int chunkRadius = radius < 16 ? 1 : radius / 16;
 
-		radius *= radius;
+			for (int chunkX = -chunkRadius; chunkX <= chunkRadius; chunkX++) {
+				for (int chunkZ = -chunkRadius; chunkZ <= chunkRadius; chunkZ++) {
+					int x = (int) loc.getX(), y = (int) loc.getY(), z = (int) loc.getZ();
 
-		for (int chunkX = -chunkRadius; chunkX <= chunkRadius; chunkX++) {
-			for (int chunkZ = -chunkRadius; chunkZ <= chunkRadius; chunkZ++) {
-				int x = (int) loc.getX(), y = (int) loc.getY(), z = (int) loc.getZ();
-
-				for (Entity e : new Location(world, x + chunkX * 16, y, z + chunkZ * 16).getChunk().getEntities()) {
-					if (world.getName().equalsIgnoreCase(e.getWorld().getName())
-							&& e.getLocation().distanceSquared(loc) <= radius && e.getLocation().getBlock() != block) {
-						nearbyEntities.add(e);
+					for (Entity e : new Location(world, x + chunkX * 16, y, z + chunkZ * 16).getChunk().getEntities()) {
+						if (world.getName().equalsIgnoreCase(e.getWorld().getName())
+								&& e.getLocation().distanceSquared(loc) <= radius * radius
+								&& e.getLocation().getBlock() != block) {
+							nearbyEntities.add(e);
+						}
 					}
 				}
 			}
-		}
 
-		return nearbyEntities;
+			return nearbyEntities;
+		});
 	}
 
 	public static String setPlaceholders(String s, Player player) {

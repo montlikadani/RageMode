@@ -51,6 +51,7 @@ public class SetupGui extends BaseGui {
 
 	@Override
 	public void updateTitle(GuiViewer guiViewer) {
+		// Incomplete - not needed
 		InventoryGuiHandler igh = guiViewer.getCurrent();
 
 		igh.isUpdating = true;

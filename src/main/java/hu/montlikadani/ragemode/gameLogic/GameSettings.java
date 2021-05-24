@@ -12,7 +12,13 @@ import hu.montlikadani.ragemode.gameUtils.GameType;
 
 public class GameSettings {
 
-	private String worldName, gameName = "";
+	private String gameName = "";
+
+	/**
+	 * The property for defining or retrieving the world name where this game was
+	 * saved or will be saved.
+	 */
+	public String worldName = "";
 
 	/**
 	 * The field for defining or retrieving the max players size.

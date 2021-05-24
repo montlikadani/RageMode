@@ -32,6 +32,7 @@ import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.utils.Misc;
+import hu.montlikadani.ragemode.utils.SchedulerUtil;
 import hu.montlikadani.ragemode.utils.ServerVersion;
 import hu.montlikadani.ragemode.utils.Utils;
 
@@ -318,11 +319,10 @@ public final class LobbyShop implements Listener {
 		boolean enough = false;
 
 		if (RM.isVaultEnabled()) {
-			net.milkbowl.vault.economy.Economy economy = RM.getEconomy();
 			double cost = bought.getCost();
 
-			if (cost > 0d && economy.has(player, cost)) {
-				economy.withdrawPlayer(player, cost);
+			if (cost > 0d && RM.getEconomy().has(player, cost)) {
+				RM.getEconomy().withdrawPlayer(player, cost);
 				enough = true;
 			}
 		}
@@ -344,7 +344,7 @@ public final class LobbyShop implements Listener {
 		}
 
 		// This also should be on main thread, spigot async catchop
-		RM.getServer().getScheduler().runTaskLater(RM, () -> {
+		SchedulerUtil.submitSync(() -> {
 			if (bought.getBought() instanceof PotionEffect) {
 				player.addPotionEffect(bought.<PotionEffect>getBought());
 			}
@@ -352,7 +352,9 @@ public final class LobbyShop implements Listener {
 			if (bought.getBought() instanceof ItemStack) {
 				player.getInventory().addItem(bought.<ItemStack>getBought());
 			}
-		}, 1L);
+
+			return 1;
+		});
 
 		if (bought.getBought() instanceof Effect || bought.getBought() instanceof Particle) {
 			USER_PARTICLES.put(player.getUniqueId(), bought.getBought());

@@ -206,7 +206,7 @@ public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 				", lore='" + lore + '\'' +
 				", item='" + item + '\'' +
 				", amount='" + amount + '\'' +
-				", enchant=''" + enchant + '\'' +
+				", enchant='" + enchant + '\'' +
 				", slot='" + slot + '\'' +
 				'}';
 	}

@@ -179,7 +179,9 @@ public final class SignCreator {
 					if (signLocation.getBlock().getState() instanceof Sign) {
 						SIGNDATA.forEach(SignData::updateSign);
 					}
-				}, true);
+
+					return true;
+				});
 
 				updated = true;
 			}

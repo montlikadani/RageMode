@@ -724,7 +724,9 @@ public final class GameUtils {
 						zombie.setBaby(false);
 					}
 				}
-			}, true);
+
+				return 1;
+			});
 		});
 	}
 
@@ -867,7 +869,9 @@ public final class GameUtils {
 				RageScores.getPlayerPointsMap().remove(pm.getUniqueId());
 				game.removePlayer(pm);
 			}
-		}, true);
+
+			return 1;
+		});
 
 		game.getActionMessengers().clear();
 		game.setRunning(false);
@@ -883,7 +887,10 @@ public final class GameUtils {
 	 */
 	public static void stopGame(@Nullable Game game) {
 		if (game != null) {
-			SchedulerUtil.submitSync(() -> stopGame(game, true), true);
+			SchedulerUtil.submitSync(() -> {
+				stopGame(game, true);
+				return 1;
+			});
 		}
 	}
 
