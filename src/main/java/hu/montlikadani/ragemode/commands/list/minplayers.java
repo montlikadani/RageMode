@@ -51,6 +51,8 @@ public final class minplayers implements ICommand {
 			return false;
 		}
 
+		game.minPlayers = x;
+
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game.getName() + ".minplayers", x);
 		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 

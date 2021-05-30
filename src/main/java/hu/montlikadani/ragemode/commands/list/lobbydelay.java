@@ -56,6 +56,8 @@ public final class lobbydelay implements ICommand {
 			return false;
 		}
 
+		game.getGameLobby().lobbyTime = opt.get();
+
 		plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".lobbydelay", opt.get());
 		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 		sendMessage(sender, RageMode.getLang().get("setup.success"));

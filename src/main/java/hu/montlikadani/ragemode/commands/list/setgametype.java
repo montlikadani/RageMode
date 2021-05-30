@@ -39,15 +39,13 @@ public final class setgametype implements ICommand {
 		}
 
 		GameType type = GameType.getByName(args[2]);
-		if (type == null) {
-			type = GameType.NORMAL;
-		}
+		game.setGameType(type);
+		type = game.getGameType();
 
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game.getName() + ".gametype",
 				type.toString().toLowerCase());
 		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 
-		game.setGameType(type);
 		sendMessage(sender, RageMode.getLang().get("commands.setgametype.set", "%game%", game.getName()));
 		return true;
 	}

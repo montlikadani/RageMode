@@ -441,11 +441,12 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 		if (!killerExists || GameUtils.isPlayerPlaying(deceased.getKiller())) {
 			if (deceasedGame.getGameType() != GameType.APOCALYPSE) {
-				boolean canSeeDeathMessages = killerExists
-						&& !PlayerManager.DEATH_MESSAGES_TOGGLE.getOrDefault(deceased.getKiller().getUniqueId(), false);
 				CacheableHitTarget cht = HIT_TARGETS.remove(deceased.getUniqueId());
 
 				if (cht != null) {
+					boolean canSeeDeathMessages = killerExists && !PlayerManager.DEATH_MESSAGES_TOGGLE
+							.getOrDefault(deceased.getKiller().getUniqueId(), false);
+
 					switch (cht.getTool()) {
 					case RAGEARROW:
 					case RAGEBOW:
@@ -485,10 +486,8 @@ public final class GameListener implements org.bukkit.event.Listener {
 						}
 
 						if (!hasNearPlayer) {
-							if (canSeeDeathMessages) {
-								GameUtils.broadcastToGame(deceasedGame,
-										RageMode.getLang().get("game.broadcast.error-kill"));
-							}
+							GameUtils.broadcastToGame(deceasedGame,
+									RageMode.getLang().get("game.broadcast.error-kill"));
 
 							sendMessage(deceased, RageMode.getLang().get("game.unknown-killer"));
 						}
@@ -1140,19 +1139,19 @@ public final class GameListener implements org.bukkit.event.Listener {
 	}
 
 	public static boolean explodeMine(Player player, Location currentLoc) {
-		org.bukkit.World world = currentLoc.getWorld();
+		final org.bukkit.World world = currentLoc.getWorld();
 		if (world == null) {
 			return false;
 		}
 
-		Block block = currentLoc.getBlock();
+		final Block block = world.getBlockAt(currentLoc);
 
 		if (block.getType() != Material.TRIPWIRE
 				&& block.getRelative(org.bukkit.block.BlockFace.DOWN).getType() != Material.TRIPWIRE) {
 			return false;
 		}
 
-		Game game = GameUtils.getGame(currentLoc);
+		final Game game = GameUtils.getGame(currentLoc);
 		if (game == null) {
 			return false;
 		}

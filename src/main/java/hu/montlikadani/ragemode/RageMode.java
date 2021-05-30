@@ -298,7 +298,6 @@ public final class RageMode extends JavaPlugin {
 			}
 		}
 
-		Configuration.saveFile(conf.getArenasCfg(), conf.getArenasFile());
 		rewardManager = new RewardManager(this);
 		GameAreaManager.load();
 		loadItems();
@@ -331,8 +330,7 @@ public final class RageMode extends JavaPlugin {
 		if (c.contains(path = "gameitems.rageBow")) {
 			gameItems[3] = new ItemHandler().setItem(Material.BOW)
 					.setDisplayName(c.getString(path + ".name", "&6RageBow")).setLore(c.getStringList(path + ".lore"))
-					.setSlot(c.getInt(path + ".slot"))
-					.setEnchant(org.bukkit.enchantments.Enchantment.ARROW_INFINITE);
+					.setSlot(c.getInt(path + ".slot")).setEnchant(org.bukkit.enchantments.Enchantment.ARROW_INFINITE);
 		}
 
 		if (c.contains(path = "gameitems.rageKnife")) {

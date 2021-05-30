@@ -51,7 +51,9 @@ public final class gametime implements ICommand {
 			return false;
 		}
 
-		plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".gametime", opt.get());
+		game.gameTime = opt.get();
+
+		plugin.getConfiguration().getArenasCfg().set("arenas." + args[1] + ".gametime", game.gameTime);
 		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 		sendMessage(sender,
 				RageMode.getLang().get("setup.set-game-time-success", "%game%", args[1], "%time%", args[2]));

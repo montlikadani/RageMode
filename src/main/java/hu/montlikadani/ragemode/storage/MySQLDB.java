@@ -36,6 +36,11 @@ public class MySqlDB implements Database {
 	private MySQLConnect connect;
 
 	@Override
+	public DBType getDatabaseType() {
+		return DBType.MYSQL;
+	}
+
+	@Override
 	public MySQLConnect getDatabase() {
 		return connect;
 	}

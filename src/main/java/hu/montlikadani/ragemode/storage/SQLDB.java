@@ -37,6 +37,11 @@ public class SqlDB implements Database {
 	private SQLConnect connect;
 
 	@Override
+	public DBType getDatabaseType() {
+		return DBType.SQLITE;
+	}
+
+	@Override
 	public SQLConnect getDatabase() {
 		return connect;
 	}

@@ -165,7 +165,7 @@ public class RewardManager {
 					}
 				}
 			}
-			
+
 			return true;
 		});
 	}
@@ -194,8 +194,8 @@ public class RewardManager {
 				}
 			}
 
-				return true;
-			});
+			return true;
+		});
 	}
 
 	public int getPointBonus() {
@@ -387,18 +387,23 @@ public class RewardManager {
 		private SenderType type = SenderType.CONSOLE;
 
 		public RewardCommand(String command) {
-			String[] arg = command.contains(": ") ? command.split(": ", 2) : new String[] { "console", command };
-			if (arg.length < 2) {
+			String[] split = command.split(": ", 2);
+
+			if (split.length == 0) {
+				split = new String[] { "console", command };
+			}
+
+			if (split.length < 2) {
 				return;
 			}
 
-			String line = arg[1];
+			String line = split[1];
 
 			if (line.charAt(0) == '/') {
 				line = line.substring(1, line.length());
 			}
 
-			if (arg[0].equalsIgnoreCase("player")) {
+			if (split[0].equalsIgnoreCase("player")) {
 				type = SenderType.PLAYER;
 			}
 

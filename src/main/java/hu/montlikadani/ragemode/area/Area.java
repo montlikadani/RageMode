@@ -42,28 +42,10 @@ public class Area {
 			lowz = startLocBlock;
 		}
 
-		highPoints = new Location(startLoc.getWorld(), highx, highy, highz);
-		lowPoints = new Location(startLoc.getWorld(), lowx, lowy, lowz);
-	}
+		org.bukkit.World world = startLoc.getWorld();
 
-	public long getSize() {
-		int xsize = (Math.abs(highPoints.getBlockX() - lowPoints.getBlockX())) + 1,
-				zsize = (Math.abs(highPoints.getBlockZ() - lowPoints.getBlockZ())) + 1,
-				ysize = (Math.abs(highPoints.getBlockY() - lowPoints.getBlockY())) + 1;
-
-		return xsize * ysize * zsize;
-	}
-
-	public int getXSize() {
-		return (highPoints.getBlockX() - lowPoints.getBlockX()) + 1;
-	}
-
-	public int getYSize() {
-		return (highPoints.getBlockY() - lowPoints.getBlockY()) + 1;
-	}
-
-	public int getZSize() {
-		return (highPoints.getBlockZ() - lowPoints.getBlockZ()) + 1;
+		highPoints = new Location(world, highx, highy, highz);
+		lowPoints = new Location(world, lowx, lowy, lowz);
 	}
 
 	public Location getHighLoc() {

@@ -8,35 +8,33 @@ import org.bukkit.Location;
 
 public class Selection {
 
-	protected final Map<String, Location> loc1 = new HashMap<>(), loc2 = new HashMap<>();
+	protected final Map<UUID, Location> loc1 = new HashMap<>(), loc2 = new HashMap<>();
 
 	public void updateLocations(UUID uuid, Location loc1, Location loc2) {
 		if (loc1 != null && loc2 != null) {
-			String stringId = uuid.toString();
-
-			this.loc1.put(stringId, loc1);
-			this.loc2.put(stringId, loc2);
+			this.loc1.put(uuid, loc1);
+			this.loc2.put(uuid, loc2);
 		}
 	}
 
 	public void placeLoc1(UUID uuid, Location loc) {
 		if (loc != null) {
-			loc1.put(uuid.toString(), loc);
+			loc1.put(uuid, loc);
 		}
 	}
 
 	public void placeLoc2(UUID uuid, Location loc) {
 		if (loc != null) {
-			loc2.put(uuid.toString(), loc);
+			loc2.put(uuid, loc);
 		}
 	}
 
 	public Location getLoc1(UUID uuid) {
-		return loc1.get(uuid.toString());
+		return loc1.get(uuid);
 	}
 
 	public Location getLoc2(UUID uuid) {
-		return loc2.get(uuid.toString());
+		return loc2.get(uuid);
 	}
 
 	public Area getArea(UUID uuid) {
@@ -44,15 +42,11 @@ public class Selection {
 	}
 
 	public boolean hasSetBoth(UUID uuid) {
-		String stringId = uuid.toString();
-
-		return loc1.containsKey(stringId) && loc2.containsKey(stringId);
+		return loc1.containsKey(uuid) && loc2.containsKey(uuid);
 	}
 
 	public void clearSelection(UUID uuid) {
-		String stringId = uuid.toString();
-
-		loc1.remove(stringId);
-		loc2.remove(stringId);
+		loc1.remove(uuid);
+		loc2.remove(uuid);
 	}
 }

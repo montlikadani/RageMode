@@ -141,7 +141,7 @@ public final class Game extends GameSettings {
 	 * @param player {@link Player}
 	 * @return true if cached
 	 */
-	public boolean isPlayerInList(@Nullable Player player) {
+	public boolean isPlayerInList(@NotNull Player player) {
 		return getPlayerManager(player).isPresent();
 	}
 
@@ -200,7 +200,7 @@ public final class Game extends GameSettings {
 	 * @see #getPlayerManager(UUID)
 	 */
 	@NotNull
-	public Optional<PlayerManager> getPlayerManager(@Nullable Player player) {
+	public Optional<PlayerManager> getPlayerManager(@NotNull Player player) {
 		return getPlayerManager(player.getUniqueId());
 	}
 
@@ -212,7 +212,7 @@ public final class Game extends GameSettings {
 	 * @return {@link PlayerManager}
 	 */
 	@NotNull
-	public Optional<PlayerManager> getPlayerManager(@Nullable UUID uuid) {
+	public Optional<PlayerManager> getPlayerManager(@NotNull UUID uuid) {
 		if (uuid != null) {
 			for (PlayerManager pm : players) {
 				if (uuid.equals(pm.getUniqueId())) {

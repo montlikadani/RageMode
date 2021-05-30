@@ -99,8 +99,11 @@ public final class RmTabCompleter implements TabCompleter {
 	private List<String> getDefaultCmds(CommandSender sender) {
 		List<String> c = new ArrayList<>();
 
+		boolean havePlayerCmdsPerm = !(sender instanceof Player)
+				|| sender.hasPermission("ragemode.help.playercommands");
+
 		for (String cmds : new String[] { "join", "leave", "listgames", "stats", "spectate", "listplayers" }) {
-			if (hasPerm(sender, "ragemode.help.playercommands") || hasPerm(sender, "ragemode." + cmds)) {
+			if (havePlayerCmdsPerm || sender.hasPermission("ragemode." + cmds)) {
 				c.add(cmds);
 			}
 		}
@@ -111,11 +114,13 @@ public final class RmTabCompleter implements TabCompleter {
 	private List<String> getAdminCmds(CommandSender sender) {
 		List<String> cmds = new ArrayList<>();
 
+		boolean isPlayer = sender instanceof Player;
+
 		for (String cmd : new String[] { "addgame", "spawn", "setlobby", "reload", "holostats", "removegame",
 				"resetplayerstats", "forcestart", "kick", "stopgame", "signupdate", "togglegame", "points",
 				"givesaveditems", "latestart", "maxplayers", "minplayers", "convertdatabase", "area", "setgametype",
 				"setup" }) {
-			if (hasPerm(sender, "ragemode.admin." + cmd)) {
+			if (!isPlayer || sender.hasPermission("ragemode.admin." + cmd)) {
 				cmds.add(cmd);
 			}
 		}

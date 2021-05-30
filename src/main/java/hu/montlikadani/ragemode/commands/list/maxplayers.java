@@ -51,6 +51,8 @@ public final class maxplayers implements ICommand {
 			return false;
 		}
 
+		game.maxPlayers = x;
+
 		plugin.getConfiguration().getArenasCfg().set("arenas." + game.getName() + ".maxplayers", x);
 		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
 

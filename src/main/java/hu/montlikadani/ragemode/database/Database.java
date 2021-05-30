@@ -13,14 +13,12 @@ import hu.montlikadani.ragemode.scores.PlayerPoints;
  */
 public interface Database {
 
-	static final DB DB_ANNOTATION = Database.class.getAnnotation(DB.class);
-
 	/**
 	 * @return the current database type of this inherited class. If annotation is
-	 *         not present returns YAML as default
+	 *         not present returns {@link DBType#YAML} as default
 	 */
 	default DBType getDatabaseType() {
-		return DB_ANNOTATION != null ? DB_ANNOTATION.type() : DBType.YAML;
+		return DBType.YAML;
 	}
 
 	/**

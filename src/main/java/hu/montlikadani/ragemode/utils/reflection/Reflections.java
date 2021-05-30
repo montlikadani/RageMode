@@ -30,13 +30,15 @@ public final class Reflections {
 	}
 
 	public static int getCurrentJavaVersion() {
-		if (jVersion != -1) {
+		if (jVersion != 0) {
 			return jVersion;
 		}
 
 		String currentVersion = System.getProperty("java.version");
-		if (currentVersion.contains("_")) {
-			currentVersion = currentVersion.split("_", 2)[0];
+		String[] split = currentVersion.split("_", 2);
+
+		if (split.length > 0) {
+			currentVersion = split[0];
 		}
 
 		currentVersion = currentVersion.replaceAll("[^\\d]|_", "");

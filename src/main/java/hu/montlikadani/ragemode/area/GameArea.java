@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -53,8 +54,9 @@ public class GameArea {
 		double x = (lowX + highX) / 2;
 		double z = (lowZ + highZ) / 2;
 
-		center = new Location(area.getLowLoc().getWorld(), x,
-				area.getLowLoc().getWorld().getHighestBlockYAt((int) x, (int) z), z).clone();
+		World lowLocWorld = area.getLowLoc().getWorld();
+
+		center = new Location(lowLocWorld, x, lowLocWorld.getHighestBlockYAt((int) x, (int) z), z).clone();
 	}
 
 	/**
@@ -130,9 +132,10 @@ public class GameArea {
 		}
 
 		List<Entity> entities = new ArrayList<>();
+		List<Entity> worldEntities = area.getLowLoc().getWorld().getEntities();
 
 		for (EntityType filtered : filter) {
-			for (Entity e : area.getLowLoc().getWorld().getEntities()) {
+			for (Entity e : worldEntities) {
 				if (filtered == e.getType() && inArea(e.getLocation())) {
 					entities.add(e);
 				}
@@ -157,9 +160,10 @@ public class GameArea {
 		}
 
 		List<Entity> entities = new ArrayList<>();
+		List<Entity> worldEntities = area.getLowLoc().getWorld().getEntities();
 
 		for (EntityType filtered : filter) {
-			for (Entity e : area.getLowLoc().getWorld().getEntities()) {
+			for (Entity e : worldEntities) {
 				if (filtered == e.getType() && inArea(e.getLocation()) && predicate.test(e)) {
 					entities.add(e);
 				}

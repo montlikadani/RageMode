@@ -74,7 +74,7 @@ public final class GameUtils {
 	 * @param game    {@link Game}
 	 * @param message The message
 	 */
-	public static void broadcastToGame(@Nullable Game game, @Nullable String message) {
+	public static void broadcastToGame(@NotNull Game game, @NotNull String message) {
 		if (game == null || message == null || message.trim().isEmpty()) {
 			return;
 		}
@@ -141,7 +141,7 @@ public final class GameUtils {
 	 * @return {@link Game} if player is in game, otherwise null
 	 */
 	@Nullable
-	public static Game getGameByPlayer(@Nullable UUID uuid) {
+	public static Game getGameByPlayer(@NotNull UUID uuid) {
 		if (uuid == null) {
 			return null;
 		}
@@ -162,7 +162,7 @@ public final class GameUtils {
 	 * @return {@link Game} if player is in game, otherwise null
 	 */
 	@Nullable
-	public static Game getGameByPlayer(@Nullable Player player) {
+	public static Game getGameByPlayer(@NotNull Player player) {
 		if (player == null) {
 			return null;
 		}
@@ -183,7 +183,7 @@ public final class GameUtils {
 	 * @param player {@link Player}
 	 * @return true if playing
 	 */
-	public static boolean isPlayerPlaying(@Nullable Player player) {
+	public static boolean isPlayerPlaying(@NotNull Player player) {
 		return getGameByPlayer(player) != null;
 	}
 
@@ -194,7 +194,7 @@ public final class GameUtils {
 	 * @return {@link PlayerManager} or null if not exist.
 	 */
 	@Nullable
-	public static PlayerManager getPlayerManager(@Nullable Player player) {
+	public static PlayerManager getPlayerManager(@NotNull Player player) {
 		if (player == null) {
 			return null;
 		}
@@ -217,7 +217,7 @@ public final class GameUtils {
 	 * @param name game name
 	 * @return true if exist, otherwise false
 	 */
-	public static boolean isGameExist(@Nullable String name) {
+	public static boolean isGameExist(@NotNull String name) {
 		return getGame(name) != null;
 	}
 
@@ -228,7 +228,7 @@ public final class GameUtils {
 	 * @return {@link Game} if the given game name is exists.
 	 */
 	@Nullable
-	public static Game getGame(@Nullable String name) {
+	public static Game getGame(@NotNull String name) {
 		if (name == null || name.isEmpty()) {
 			return null;
 		}
@@ -249,7 +249,7 @@ public final class GameUtils {
 	 * @return {@link Game}
 	 */
 	@Nullable
-	public static Game getGame(@Nullable Location loc) {
+	public static Game getGame(@NotNull Location loc) {
 		if (loc == null) {
 			return null;
 		}
@@ -360,7 +360,7 @@ public final class GameUtils {
 	 * @param player {@link Player}
 	 * @param game   {@link Game}
 	 */
-	public static void joinPlayer(@NotNull Player player, @Nullable Game game) {
+	public static void joinPlayer(@NotNull Player player, @NotNull Game game) {
 		if (game == null) {
 			return;
 		}
@@ -562,7 +562,7 @@ public final class GameUtils {
 	 * @return true if enough players are in the game or the game type is in
 	 *         {@link GameType#APOCALYPSE}, otherwise false
 	 */
-	public static boolean forceStart(@Nullable Game game) {
+	public static boolean forceStart(@NotNull Game game) {
 		if (game == null || game.getPlayers().isEmpty() || (game.getGameType() != GameType.APOCALYPSE
 				&& !ConfigValues.isDeveloperMode() && game.getPlayers().size() == 1)) {
 			return false;
@@ -577,7 +577,7 @@ public final class GameUtils {
 	 * 
 	 * @param game {@link Game}
 	 */
-	public static void kickAllPlayers(@Nullable Game game) {
+	public static void kickAllPlayers(@NotNull Game game) {
 		if (game != null) {
 			game.getPlayers().forEach(pm -> kickPlayer(pm.getPlayer(), game));
 		}
@@ -599,8 +599,6 @@ public final class GameUtils {
 	 * @param game   {@link Game}
 	 */
 	public static void kickPlayer(@NotNull Player player, @Nullable Game game) {
-		Validate.notNull(player, "Player can't be null");
-
 		PlayerManager pm = getPlayerManager(player);
 
 		if (pm == null) {
@@ -775,7 +773,7 @@ public final class GameUtils {
 	public static void sendActionMessage(@NotNull Player player, @NotNull Game game,
 			@NotNull ConfigValues.MessageAction.ActionMessageType type,
 			ConfigValues.MessageAction.ActionMessageType.MessageTypes messageType) {
-		if (!game.isRunning())
+		if (player == null || !game.isRunning())
 			return;
 
 		if (messageType == ConfigValues.MessageAction.ActionMessageType.MessageTypes.BOSSBAR
@@ -828,7 +826,7 @@ public final class GameUtils {
 	 * @see #teleportPlayerToGameSpawn(Player, IGameSpawn)
 	 * @param gameSpawn {@link IGameSpawn}
 	 */
-	public static void teleportPlayersToGameSpawns(@Nullable IGameSpawn gameSpawn) {
+	public static void teleportPlayersToGameSpawns(@NotNull IGameSpawn gameSpawn) {
 		if (gameSpawn != null && gameSpawn.haveAnySpawn()) {
 			for (PlayerManager pm : gameSpawn.getGame().getPlayers()) {
 				Utils.teleport(pm.getPlayer(), gameSpawn.getRandomSpawn());
@@ -842,7 +840,7 @@ public final class GameUtils {
 	 * @param player    {@link Player}
 	 * @param gameSpawn {@link IGameSpawn}
 	 */
-	public static void teleportPlayerToGameSpawn(@NotNull Player player, @Nullable IGameSpawn gameSpawn) {
+	public static void teleportPlayerToGameSpawn(@NotNull Player player, @NotNull IGameSpawn gameSpawn) {
 		if (gameSpawn != null && gameSpawn.haveAnySpawn()) {
 			Utils.teleport(player, gameSpawn.getRandomSpawn());
 		}
@@ -885,7 +883,7 @@ public final class GameUtils {
 	 * @see #stopGame(Game, boolean)
 	 * @param game {@link Game}
 	 */
-	public static void stopGame(@Nullable Game game) {
+	public static void stopGame(@NotNull Game game) {
 		if (game != null) {
 			SchedulerUtil.submitSync(() -> {
 				stopGame(game, true);
@@ -902,7 +900,7 @@ public final class GameUtils {
 	 * @param game      {@link Game}
 	 * @param useFreeze if true using game freeze
 	 */
-	public static void stopGame(@Nullable final Game game, boolean useFreeze) {
+	public static void stopGame(@NotNull final Game game, boolean useFreeze) {
 		if (game == null || !game.isRunning()) {
 			return;
 		}
@@ -1131,7 +1129,7 @@ public final class GameUtils {
 	 * @param item {@link ItemStack}
 	 * @return true if similar
 	 */
-	private static boolean isGameItem(@Nullable ItemStack item) {
+	private static boolean isGameItem(@NotNull ItemStack item) {
 		if (item != null) {
 			for (ItemHandler ih : RM.getGameItems()) {
 				if (ih != null && ih.get().isSimilar(item)) {
@@ -1149,7 +1147,7 @@ public final class GameUtils {
 	 * @param player {@link Player}
 	 * @return true if player is in
 	 */
-	public static boolean isPlayerInFreezeRoom(@Nullable Player player) {
+	public static boolean isPlayerInFreezeRoom(@NotNull Player player) {
 		Game gamePlayer = getGameByPlayer(player);
 		return gamePlayer != null && isGameInFreezeRoom(gamePlayer);
 	}

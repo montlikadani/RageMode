@@ -106,13 +106,13 @@ public abstract class TitleSender {
 		if (player == null)
 			return;
 
+		if (title == null)
+			title = "";
+
+		if (subTitle == null)
+			subTitle = "";
+
 		try {
-			if (title == null)
-				title = "";
-
-			if (subTitle == null)
-				subTitle = "";
-
 			Object chatTitle = Reflections.getAsIChatBaseComponent(title);
 			Object titlePacket = playOutTitleTimesConstructor.newInstance(TIMES, chatTitle, fadeIn, stay, fadeOut);
 			Reflections.sendPacket(player, titlePacket);
