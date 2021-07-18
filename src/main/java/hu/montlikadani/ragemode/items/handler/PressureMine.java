@@ -6,11 +6,10 @@ import java.util.UUID;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 
-public class PressureMine {
+public final class PressureMine {
 
-	private UUID playerUUID;
+	private final UUID playerUUID;
 
 	private final Set<Location> mines = new HashSet<>();
 
@@ -26,12 +25,8 @@ public class PressureMine {
 		return mines;
 	}
 
-	public boolean addMine(Location loc) {
-		return addMine(loc.getBlock(), loc);
-	}
-
-	public boolean addMine(Block block, Location loc) {
-		return block != null && block.getType() == Material.TRIPWIRE && mines.add(loc);
+	public boolean addMine(org.bukkit.block.Block block) {
+		return block != null && block.getType() == Material.TRIPWIRE && mines.add(block.getLocation());
 	}
 
 	public void removeMines() {
@@ -42,9 +37,12 @@ public class PressureMine {
 		mines.clear();
 	}
 
-	public void removeMine(Location loc) {
+	public boolean removeMine(Location loc) {
 		if (mines.remove(loc)) {
 			loc.getBlock().setType(Material.AIR);
+			return true;
 		}
+
+		return false;
 	}
 }

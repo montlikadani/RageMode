@@ -2,23 +2,23 @@ package hu.montlikadani.ragemode.API.event;
 
 import org.jetbrains.annotations.Nullable;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 
 public class GameEvent extends BaseEvent {
 
-	protected Game game;
+	protected BaseGame game;
 
-	public GameEvent(Game game) {
+	public GameEvent(BaseGame game) {
 		this.game = game;
 	}
 
 	/**
-	 * Gets the current game.
+	 * Returns the game of this event.
 	 * 
-	 * @return {@link Game}
+	 * @return {@link BaseGame}
 	 */
 	@Nullable
-	public Game getGame() {
+	public BaseGame getGame() {
 		return game;
 	}
 }

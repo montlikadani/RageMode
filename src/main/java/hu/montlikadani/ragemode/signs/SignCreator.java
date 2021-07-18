@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -22,6 +23,8 @@ public final class SignCreator {
 
 	private static final Set<SignData> SIGNDATA = new HashSet<>();
 
+	private static final Pattern signDataPattern = Pattern.compile(",");
+
 	public static void loadSigns() {
 		SIGNDATA.clear();
 
@@ -30,7 +33,7 @@ public final class SignCreator {
 			return;
 
 		for (String one : list) {
-			String[] splitted = one.split(",", 5);
+			String[] splitted = signDataPattern.split(one, 5);
 
 			if (splitted.length < 5) {
 				continue;
@@ -56,7 +59,7 @@ public final class SignCreator {
 		return;
 	}
 
-	public static boolean createNewSign(Sign sign, String game) {
+	public static SignData createNewSign(Sign sign, String game) {
 		FileConfiguration fileConf = SignConfiguration.getSignConfig();
 		List<String> signs = fileConf.getStringList("signs");
 		Location loc = sign.getLocation();
@@ -64,10 +67,11 @@ public final class SignCreator {
 		signs.add(locationSignToString(loc, game));
 		fileConf.set("signs", signs);
 
-		SIGNDATA.add(new SignData(loc, game));
-
 		Configuration.saveFile(fileConf, SignConfiguration.getSignFile());
-		return true;
+
+		SignData signData = new SignData(loc, game);
+		SIGNDATA.add(signData);
+		return signData;
 	}
 
 	public static boolean removeSign(SignData signData) {
@@ -200,7 +204,7 @@ public final class SignCreator {
 	}
 
 	private static String getGameFromString(String raw) {
-		return raw.split(",", 5)[4];
+		return signDataPattern.split(raw, 5)[4];
 	}
 
 	private static String locationSignToString(Location loc, String game) {
@@ -208,7 +212,7 @@ public final class SignCreator {
 	}
 
 	private static Location stringToLocationSign(String raw) {
-		String[] splitted = raw.split(",", 4);
+		String[] splitted = signDataPattern.split(raw, 4);
 
 		if (splitted.length < 4) {
 			return null;

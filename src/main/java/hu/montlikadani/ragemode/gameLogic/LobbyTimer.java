@@ -5,6 +5,7 @@ import java.util.TimerTask;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.gameUtils.modules.TitleSender;
 import hu.montlikadani.ragemode.managers.PlayerManager;
@@ -12,16 +13,16 @@ import hu.montlikadani.ragemode.utils.Utils;
 
 public final class LobbyTimer {
 
-	private Game game;
+	private BaseGame game;
 
 	private int time = 200;
 	private TimerTask timerTask;
 
-	public LobbyTimer(Game game) {
+	public LobbyTimer(BaseGame game) {
 		this.game = game;
 	}
 
-	public Game getGame() {
+	public BaseGame getGame() {
 		return game;
 	}
 
@@ -37,13 +38,17 @@ public final class LobbyTimer {
 		return time;
 	}
 
-	public void beginScheduling(Game game) {
+	public void beginScheduling(BaseGame game) {
 		if (game != null) {
 			this.game = game;
 		}
 
 		if (timerTask != null) {
 			timerTask.cancel();
+		}
+
+		if (this.game == null) {
+			throw new IllegalArgumentException("Game cannot be null for lobby timer.");
 		}
 
 		setLobbyTime(this.game.getGameLobby().lobbyTime);
@@ -59,7 +64,11 @@ public final class LobbyTimer {
 	private void setPlayerLevel(int level) {
 		if (ConfigValues.isPlayerLevelAsTimeCounter()) {
 			for (PlayerManager pm : game.getPlayers()) {
-				pm.getPlayer().setLevel(level);
+				org.bukkit.entity.Player player = pm.getPlayer();
+
+				if (player != null) {
+					player.setLevel(level);
+				}
 			}
 		}
 	}
@@ -97,9 +106,8 @@ public final class LobbyTimer {
 						.get(ConfigValues.TitleSettings.TitleType.LOBBY_WAITING);
 
 				if (lobbyTitleSettings != null) {
-					String title = lobbyTitleSettings.getTitle(), subTitle = lobbyTitleSettings.getSubTitle();
-
-					String stringTime = Integer.toString(time);
+					String title = lobbyTitleSettings.getTitle(), subTitle = lobbyTitleSettings.getSubTitle(),
+							stringTime = Integer.toString(time);
 
 					title = title.replace("%time%", stringTime);
 					subTitle = subTitle.replace("%game%", game.getName());

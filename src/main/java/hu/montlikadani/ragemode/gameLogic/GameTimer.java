@@ -11,29 +11,30 @@ import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.events.GameListener;
 import hu.montlikadani.ragemode.gameLogic.spawn.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.spawn.IGameSpawn;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
+import hu.montlikadani.ragemode.gameLogic.base.ZombieGame;
+import hu.montlikadani.ragemode.gameLogic.base.zombieSpawn.IZombieSpawner;
 import hu.montlikadani.ragemode.gameUtils.ActionMessengers;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.handler.PressureMine;
 import hu.montlikadani.ragemode.managers.PlayerManager;
+import hu.montlikadani.ragemode.utils.Misc;
 import hu.montlikadani.ragemode.utils.Utils;
 
 public final class GameTimer extends TimerTask {
 
-	private final Game game;
+	private final BaseGame game;
 	private final RageMode rm = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 
-	private int timer, nextNotifyTime = 0, nextZombieSpawnTime = 0;
+	private int timer, nextNotifyTime = 0;
 
-	private int zombieSpawnAmount = 10;
-	private boolean firstZombieSpawned = false;
-
-	public GameTimer(Game game) {
+	public GameTimer(BaseGame game) {
 		this.game = game;
 		timer = game.gameTime;
 	}
 
-	public Game getGame() {
+	public BaseGame getGame() {
 		return game;
 	}
 
@@ -76,55 +77,18 @@ public final class GameTimer extends TimerTask {
 			if (ConfigValues.isNotifySpectatorsToLeave() && ConfigValues.getSpecTimeBetweenMessageSending() > 0
 					&& (nextNotifyTime == 0 || nextNotifyTime >= timer)) {
 				for (PlayerManager spec : game.getSpectatorPlayers()) {
-					spec.getPlayer().sendMessage(RageMode.getLang().get("game.spec-player-leave-notify"));
+					Misc.sendMessage(spec.getPlayer(), RageMode.getLang().get("game.spec-player-leave-notify"));
 				}
 
 				nextNotifyTime = timer - ConfigValues.getSpecTimeBetweenMessageSending();
 			}
 
 			if (game.getGameType() == GameType.APOCALYPSE) {
-				if (nextZombieSpawnTime == 0 || timer <= nextZombieSpawnTime) { // wait for the next time
-					if (!firstZombieSpawned) {
-						if (ConfigValues.getDelayBeforeFirstZombiesSpawn() > 0) {
-							if (timer <= nextZombieSpawnTime) {
-								GameUtils.spawnZombies(game, zombieSpawnAmount);
-								firstZombieSpawned = true;
-							}
+				IZombieSpawner zombieSpawner = ((ZombieGame) game).getZombieSpawnerManager();
 
-							nextZombieSpawnTime = timer - ConfigValues.getDelayBeforeFirstZombiesSpawn();
-						} else {
-							GameUtils.spawnZombies(game, zombieSpawnAmount);
-						}
-					} else {
-						IGameSpawn spawn = game.getSpawn(GameSpawn.class);
-
-						if (spawn != null && spawn.haveAnySpawn()) {
-							GameAreaManager.getAreaByLocation(spawn.getSpawnLocations().get(0)).ifPresent(area -> {
-								java.util.List<Entity> entities = area.getEntities(e -> !e.isDead(),
-										org.bukkit.entity.EntityType.ZOMBIE);
-
-								if (entities.size() <= 150
-										&& ((ConfigValues.isWaitForNextSpawnAfterZombiesAreDead() && entities.isEmpty())
-												|| !ConfigValues.isWaitForNextSpawnAfterZombiesAreDead())) {
-									if (ConfigValues.getDelayAfterNextZombiesSpawning() > 0) {
-										if (timer <= nextZombieSpawnTime) {
-											GameUtils.spawnZombies(game, zombieSpawnAmount);
-											nextZombieSpawnTime = timer
-													- ConfigValues.getDelayAfterNextZombiesSpawning();
-										}
-									} else {
-										GameUtils.spawnZombies(game, zombieSpawnAmount);
-									}
-
-									if (ConfigValues.isWaitForNextSpawnAfterZombiesAreDead()) {
-										zombieSpawnAmount += 20;
-									} else { // Preventing too much zombie spawning
-										zombieSpawnAmount += 1;
-									}
-								}
-							});
-						}
-					}
+				if (zombieSpawner.canSpawn(timer)
+						&& (zombieSpawner.isFirstZombieSpawned() || zombieSpawner.canSpawnFirstZombie(timer))) {
+					zombieSpawner.spawnZombies(timer);
 				}
 
 				// Trash-made solution for entity move ticking
@@ -140,12 +104,11 @@ public final class GameTimer extends TimerTask {
 								for (PressureMine mines : GameListener.PRESSUREMINES) {
 									for (Location mineLoc : mines.getMines()) {
 										if (mineLoc.getBlock().getType() == f.getLocation().getBlock().getType()) {
-											// Good news! Async catchop throwable error, lmao
-											rm.getServer().getScheduler().runTaskLater(rm,
-													() -> GameListener.explodeMine(
-															rm.getServer().getPlayer(mines.getOwner()),
-															f.getLocation()),
-													1L);
+											hu.montlikadani.ragemode.utils.SchedulerUtil.submitSync(() -> {
+												GameListener.explodeMine(f.getLocation());
+												return 1;
+											});
+
 											break e;
 										}
 									}

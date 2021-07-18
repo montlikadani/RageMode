@@ -95,7 +95,7 @@ public class Language {
 		l.get("missing-dependencies", "&e%depend%&c must be installed to use this!");
 		l.get("not-a-number", "&e%number%&c is not a number.");
 		l.get("not-a-boolean", "&e%value%&c is not a boolean.");
-		l.get("invalid-game", "&e%game%&4 is not a valid RageMode Map.");
+		l.get("invalid-game", "&e%game%&4 is not a valid RageMode game.");
 		l.get("player-non-existent", "&cThat player doesn't even exist.");
 		l.get("not-played-yet", "&cThat player&7 %player%&c hasn't played on this server yet.");
 		l.get("bad-ragemode-name",
@@ -235,7 +235,7 @@ public class Language {
 		l.get("game.worldname-not-set", "&4The world for the game is not set or not exist.");
 		l.get("game.does-not-exist", "&cThe game you wish to join wasn't found.");
 		l.get("game.command-disabled-in-end-game", "&cAll commands are disabled at the end of the game. Endure!!");
-		l.get("game.this-command-is-disabled-in-game", "&cThis command is currently disabled.");
+		l.get("game.command-disabled-in-game", "&cThis command is currently disabled.");
 		l.get("game.full", "&cThis Game is already full.");
 		l.get("game.player-joined", "&2%player%&9 joined the game.");
 		l.get("game.you-joined-the-game", "&aYou joined to&3 %game%&a game.");
@@ -274,12 +274,10 @@ public class Language {
 	}
 
 	public String get(String key, Object... variables) {
-		if (key == null || key.isEmpty())
-			return "";
-
 		String str = langConfig.getString(key);
+
 		if (str == null) {
-			Debug.logConsole("Can't read language file for string: " + key);
+			Debug.logConsole("Can't read language file for key: " + key);
 			return "";
 		}
 
@@ -302,19 +300,14 @@ public class Language {
 	}
 
 	public List<String> getList(String key, Object... variables) {
-		if (key == null || key.isEmpty())
-			return Collections.emptyList();
-
 		if (!langConfig.isList(key)) {
-			Debug.logConsole("Can't read language file for string: " + key);
+			Debug.logConsole("Can't read language file for key: " + key);
 			return Collections.emptyList();
 		}
 
 		List<String> ls = langConfig.getStringList(key);
 
 		if (variables != null && variables.length > 0) {
-			ls = Utils.colorList(ls);
-
 			for (int i = 0; i < ls.size(); i++) {
 				String msg = ls.get(i);
 

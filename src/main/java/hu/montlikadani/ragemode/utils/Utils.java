@@ -10,17 +10,18 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 import hu.montlikadani.ragemode.scores.RageScores;
 
-public class Utils {
+public final class Utils {
 
 	private static final RageMode RM = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
+
+	private Utils() {
+	}
 
 	public static String getFormattedTime(long time) {
 		String second = RageMode.getLang().get("time-formats.second");
@@ -72,10 +73,14 @@ public class Utils {
 	public static CompletableFuture<Boolean> teleport(Entity entity, Location loc) {
 		final CompletableFuture<Boolean> comp = new CompletableFuture<>();
 
+		if (entity == null) {
+			return comp;
+		}
+
 		if (RM.isPaper()) {
 			// Call synchronously without delay
-			SchedulerUtil.submitSync(() -> entity.teleportAsync(loc).thenAccept(done -> {
-				if (!done.booleanValue()) {
+			SchedulerUtil.submitSync(() -> entity.teleportAsync(loc).whenComplete((done, t) -> {
+				if (t == null || !done.booleanValue()) {
 					entity.teleport(loc);
 				}
 
@@ -99,7 +104,7 @@ public class Utils {
 		return SchedulerUtil.submitSync(() -> getNearbyList(loc, radius));
 	}
 
-	public static List<Entity> getNearbyEntities(Entity e, int radius) {
+	public static List<Entity> getNearbyEntities(Entity e, double radius) {
 		if (ServerVersion.isCurrentHigher(ServerVersion.v1_8_R1)) {
 			return SchedulerUtil.submitSync(() -> e.getNearbyEntities(radius, radius, radius));
 		}
@@ -107,7 +112,7 @@ public class Utils {
 		return SchedulerUtil.submitSync(() -> getNearbyList(e.getLocation(), radius));
 	}
 
-	private static List<Entity> getNearbyList(Location loc, int radius) {
+	private static List<Entity> getNearbyList(Location loc, double radius) {
 		return SchedulerUtil.submitSync(() -> {
 			final List<Entity> nearbyEntities = new java.util.ArrayList<>();
 			final org.bukkit.World world = loc.getWorld();
@@ -116,14 +121,13 @@ public class Utils {
 				return nearbyEntities;
 			}
 
-			final org.bukkit.block.Block block = loc.getBlock();
+			final org.bukkit.block.Block block = world.getBlockAt(loc);
 
-			int chunkRadius = radius < 16 ? 1 : radius / 16;
+			double chunkRadius = radius < 16 ? 1 : radius / 16;
+			int x = (int) loc.getX(), y = (int) loc.getY(), z = (int) loc.getZ();
 
-			for (int chunkX = -chunkRadius; chunkX <= chunkRadius; chunkX++) {
-				for (int chunkZ = -chunkRadius; chunkZ <= chunkRadius; chunkZ++) {
-					int x = (int) loc.getX(), y = (int) loc.getY(), z = (int) loc.getZ();
-
+			for (double chunkX = -chunkRadius; chunkX <= chunkRadius; chunkX++) {
+				for (double chunkZ = -chunkRadius; chunkZ <= chunkRadius; chunkZ++) {
 					for (Entity e : new Location(world, x + chunkX * 16, y, z + chunkZ * 16).getChunk().getEntities()) {
 						if (world.getName().equalsIgnoreCase(e.getWorld().getName())
 								&& e.getLocation().distanceSquared(loc) <= radius * radius
@@ -143,11 +147,8 @@ public class Utils {
 			return colors(s);
 		}
 
-		PlayerPoints pp = RuntimePPManager.getPPForPlayer(player.getUniqueId());
-
-		if (GameUtils.getGameByPlayer(player.getUniqueId()) != null) {
-			pp = RageScores.getPlayerPoints(player.getUniqueId()).orElse(pp);
-		}
+		java.util.UUID playerId = player.getUniqueId();
+		PlayerPoints pp = RageScores.getPlayerPoints(playerId).orElse(RuntimePPManager.getPPForPlayer(playerId));
 
 		if (s.contains("%kills%")) {
 			int kills = pp == null ? 0 : pp.getKills();
@@ -246,7 +247,7 @@ public class Utils {
 			return "";
 		}
 
-		if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_16_R1) && s.contains("#")) {
+		if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_16_R1) && s.indexOf("#") >= 0) {
 			s = matchColorRegex(s);
 		}
 
@@ -273,7 +274,7 @@ public class Utils {
 			return;
 		}
 
-		ByteArrayDataOutput out = ByteStreams.newDataOutput();
+		ByteArrayDataOutput out = com.google.common.io.ByteStreams.newDataOutput();
 		out.writeUTF("Connect");
 		out.writeUTF(hu.montlikadani.ragemode.config.configconstants.ConfigValues.getHubName());
 		player.sendPluginMessage(RM, "BungeeCord", out.toByteArray());

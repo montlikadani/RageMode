@@ -11,7 +11,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
@@ -31,7 +31,7 @@ public final class joinrandom implements ICommand {
 			return false;
 		}
 
-		java.util.List<Game> games = plugin.getGames();
+		java.util.List<BaseGame> games = plugin.getGames();
 		if (games.isEmpty()) {
 			sendMessage(player, RageMode.getLang().get("no-games"));
 			return false;
@@ -41,7 +41,7 @@ public final class joinrandom implements ICommand {
 			return false;
 		}
 
-		Game game = games.get(ThreadLocalRandom.current().nextInt(games.size()));
+		BaseGame game = games.get(ThreadLocalRandom.current().nextInt(games.size()));
 		if (game != null) {
 			if (!ConfigValues.isPlayersCanJoinRandomToRunningGames() && game.isRunning()) {
 				sendMessage(player, RageMode.getLang().get("commands.joinrandom.cantjoin"));

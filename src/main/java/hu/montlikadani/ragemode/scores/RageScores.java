@@ -14,7 +14,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.PlayerWinEvent;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.items.GameItems;
@@ -250,7 +250,7 @@ public class RageScores {
 		return pointsHolder;
 	}
 
-	public static UUID calculateWinner(Game game, Set<PlayerManager> players) {
+	public static UUID calculateWinner(BaseGame game, Set<PlayerManager> players) {
 		game.setStatus(GameStatus.WINNER_CALCULATING);
 
 		UUID highest = UUID.randomUUID(), resultPlayer = null, goy = highest;
@@ -283,7 +283,7 @@ public class RageScores {
 
 		if (resultPlayer.equals(highest)) {
 			sendMessage(winner, RageMode.getLang().get("game.message.you-won", "%game%", game.getName()));
-		} else {
+		} else if (winner != null) {
 			sendMessage(PLUGIN.getServer().getPlayer(resultPlayer), RageMode.getLang().get("game.message.player-won",
 					"%player%", winner.getName(), "%game%", game.getName()));
 		}

@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
@@ -26,7 +26,7 @@ public final class setlobby implements ICommand {
 			return false;
 		}
 
-		Game game = GameUtils.getGame(args[1]);
+		BaseGame game = GameUtils.getGame(args[1]);
 		if (game == null) {
 			sendMessage(sender, RageMode.getLang().get("invalid-game"));
 			return false;

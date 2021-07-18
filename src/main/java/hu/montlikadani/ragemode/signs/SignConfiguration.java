@@ -7,7 +7,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.config.Configuration;
 
 public class SignConfiguration {
 
@@ -24,8 +23,6 @@ public class SignConfiguration {
 		}
 
 		File file = new File(org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class).getFolder(), "signs.yml");
-		FileConfiguration config;
-		signsFile = file;
 
 		if (!file.exists()) {
 			file.getParentFile().mkdirs();
@@ -35,17 +32,10 @@ public class SignConfiguration {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
 
-			config = new YamlConfiguration();
-			config.createSection("signs");
-
-			Configuration.saveFile(config, file);
-		} else
-			config = YamlConfiguration.loadConfiguration(file);
-
-		signConfig = config;
-		Configuration.saveFile(config, file);
-
+		signConfig = YamlConfiguration.loadConfiguration(file);
+		signsFile = file;
 		return signConfig;
 	}
 }

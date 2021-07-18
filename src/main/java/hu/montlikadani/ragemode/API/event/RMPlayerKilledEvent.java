@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.items.GameItems;
 
 /**
@@ -18,11 +18,11 @@ public class RMPlayerKilledEvent extends GameEvent {
 
 	private GameItems tool;
 
-	public RMPlayerKilledEvent(Game game, LivingEntity entity, Player killer) {
+	public RMPlayerKilledEvent(BaseGame game, LivingEntity entity, Player killer) {
 		this(game, entity, killer, null);
 	}
 
-	public RMPlayerKilledEvent(Game game, LivingEntity entity, Player killer, GameItems tool) {
+	public RMPlayerKilledEvent(BaseGame game, LivingEntity entity, Player killer, GameItems tool) {
 		super(game);
 
 		this.entity = entity;

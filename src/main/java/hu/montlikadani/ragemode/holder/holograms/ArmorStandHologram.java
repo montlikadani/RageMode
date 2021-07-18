@@ -111,10 +111,11 @@ public final class ArmorStandHologram extends IHoloHolder {
 
 		boolean removedAtLeastOne = false;
 
-		for (ArmorStands holo : armorStands) {
+		for (ArmorStands holo : new HashSet<>(armorStands)) {
 			if (loc.equals(holo.getLocation())) {
 				holo.delete();
 				removedAtLeastOne = true;
+				armorStands.remove(holo);
 			}
 		}
 

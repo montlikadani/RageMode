@@ -13,18 +13,34 @@ import hu.montlikadani.ragemode.utils.Utils;
 
 public final class CacheableHitTarget {
 
-	private Entity target;
-	private GameItems tool;
-
+	private final GameItems tool;
 	private final Set<UUID> nearTargets = new HashSet<>();
 
-	public CacheableHitTarget(Entity target, GameItems tool) {
-		this.target = target;
+	public CacheableHitTarget(GameItems tool, Entity target, int radius) {
 		this.tool = tool;
-	}
 
-	public Entity getTarget() {
-		return target;
+		if (tool.getMetaName().isEmpty()) {
+			return;
+		}
+
+		if (tool == GameItems.PRESSUREMINE) {
+			nearTargets.add(target.getUniqueId());
+			return;
+		}
+
+		if (target instanceof Arrow) {
+			Arrow arrowTarget = (Arrow) target;
+
+			if (arrowTarget.getShooter() instanceof Player) {
+				nearTargets.add(((Player) arrowTarget.getShooter()).getUniqueId());
+			}
+		}
+
+		if (radius > 0) {
+			for (Entity near : Utils.getNearbyEntities(target, radius)) {
+				nearTargets.add(near.getUniqueId());
+			}
+		}
 	}
 
 	public GameItems getTool() {
@@ -33,28 +49,5 @@ public final class CacheableHitTarget {
 
 	public Set<UUID> getNearTargets() {
 		return nearTargets;
-	}
-
-	public void add(int radius) {
-		if (tool.getMetaName().isEmpty()) {
-			return;
-		}
-
-		if (tool == GameItems.PRESSUREMINE && target instanceof Player) {
-			nearTargets.add(target.getUniqueId());
-			return;
-		}
-
-		if (target instanceof Arrow && ((Arrow) target).getShooter() instanceof Player) {
-			nearTargets.add(((Player) ((Arrow) target).getShooter()).getUniqueId());
-		}
-
-		for (Entity near : Utils.getNearbyEntities(target, radius)) {
-			if (near instanceof Player) {
-				nearTargets.add(near.getUniqueId());
-			} else {
-				nearTargets.remove(near.getUniqueId());
-			}
-		}
 	}
 }

@@ -6,7 +6,7 @@ import org.bukkit.Bukkit;
 
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 
-public class Debug {
+public final class Debug {
 
 	public static void logConsole(String msg) {
 		logConsole(Level.INFO, msg);
@@ -17,11 +17,11 @@ public class Debug {
 	}
 
 	public static void logConsole(Level lvl, String msg, Object... p) {
-		if (ConfigValues.isLogConsole() && msg != null && !msg.isEmpty())
-			Bukkit.getLogger().log(lvl == null ? Level.INFO : lvl, "[RageMode] " + msg, p);
+		if (ConfigValues.isLogConsole())
+			Bukkit.getServer().getLogger().log(lvl, "[RageMode] " + msg, p);
 	}
 
 	public static void sendMessage(String msg) {
-		Bukkit.getConsoleSender().sendMessage(Utils.colors(msg));
+		Bukkit.getServer().getConsoleSender().sendMessage(Utils.colors(msg));
 	}
 }

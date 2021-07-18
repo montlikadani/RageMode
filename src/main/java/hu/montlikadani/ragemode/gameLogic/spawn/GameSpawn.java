@@ -10,22 +10,22 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 
 public class GameSpawn implements IGameSpawn {
 
-	private Game game;
+	private BaseGame game;
 
 	private final List<Location> spawnLocations = new ArrayList<>();
 
-	public GameSpawn(Game game) {
+	public GameSpawn(BaseGame game) {
 		this.game = game;
 
 		loadSpawns();
 	}
 
 	@Override
-	public Game getGame() {
+	public BaseGame getGame() {
 		return game;
 	}
 
@@ -101,10 +101,7 @@ public class GameSpawn implements IGameSpawn {
 
 	@Override
 	public Location getRandomSpawn() {
-		if (!haveAnySpawn())
-			return null;
-
 		int size = spawnLocations.size();
-		return spawnLocations.get(size == 1 ? 0 : ThreadLocalRandom.current().nextInt(size));
+		return size == 0 ? null : spawnLocations.get(size == 1 ? 0 : ThreadLocalRandom.current().nextInt(size));
 	}
 }

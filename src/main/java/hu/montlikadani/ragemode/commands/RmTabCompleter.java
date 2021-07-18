@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.database.DBType;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 
 public final class RmTabCompleter implements TabCompleter {
@@ -51,7 +51,7 @@ public final class RmTabCompleter implements TabCompleter {
 					cmds.add(c);
 				}
 			} else if (args[0].equalsIgnoreCase("signupdate")) {
-				for (Game game : plugin.getGames()) {
+				for (BaseGame game : plugin.getGames()) {
 					cmds.add(game.getName());
 				}
 
@@ -69,7 +69,7 @@ public final class RmTabCompleter implements TabCompleter {
 						"spawn", "join", "stop", "stopgame", "togglegame", "spectate", "listplayers", "maxplayers",
 						"minplayers", "setgametype", "setup" }) {
 					if (args[0].equalsIgnoreCase(name)) {
-						for (Game game : plugin.getGames()) {
+						for (BaseGame game : plugin.getGames()) {
 							cmds.add(game.getName());
 						}
 
@@ -80,7 +80,7 @@ public final class RmTabCompleter implements TabCompleter {
 		} else if (args.length < 4) {
 			if (args[0].equalsIgnoreCase("area")) {
 				if (args[1].equalsIgnoreCase("add")) {
-					for (Game game : plugin.getGames()) {
+					for (BaseGame game : plugin.getGames()) {
 						cmds.add(game.getName());
 					}
 				} else if (args[1].equalsIgnoreCase("remove")) {

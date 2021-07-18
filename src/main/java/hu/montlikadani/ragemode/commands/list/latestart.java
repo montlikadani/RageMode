@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.Utils;
@@ -29,7 +29,7 @@ public final class latestart implements ICommand {
 			return false;
 		}
 
-		Game playerGame = GameUtils.getGameByPlayer((Player) sender);
+		BaseGame playerGame = GameUtils.getGameByPlayer((Player) sender);
 		if (playerGame == null) {
 			sendMessage(sender, RageMode.getLang().get("commands.latestart.player-not-in-lobby"));
 			return false;

@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -31,7 +30,7 @@ public final class stats implements ICommand {
 
 		Player target = isPlayer ? (Player) sender : null;
 
-		if ((!isPlayer || args.length >= 2) && (target = Bukkit.getPlayer(args[1])) == null) {
+		if ((!isPlayer || args.length >= 2) && (target = plugin.getServer().getPlayer(args[1])) == null) {
 			sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-found"));
 			return false;
 		}

@@ -1,6 +1,6 @@
 package hu.montlikadani.ragemode.gameUtils.modules;
 
-import static hu.montlikadani.ragemode.utils.reflection.NMSContainer.getNMSClass;
+import static hu.montlikadani.ragemode.utils.reflection.ClazzContainer.classByName;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -10,46 +10,64 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.utils.ServerVersion;
-import hu.montlikadani.ragemode.utils.reflection.NMSContainer;
+import hu.montlikadani.ragemode.utils.reflection.ClazzContainer;
 import hu.montlikadani.ragemode.utils.reflection.Reflections;
 
 public abstract class TitleSender {
 
-	private static Class<?> packetPlayOutTitle, enumTitleAction, packetPlayOutChatClass, chatMessageTypeClass,
-			playerListHeaderFooter;
+	private static Class<?> chatMessageTypeClass;
 	private static Object TIMES, TITLE, SUBTITLE, chatMessageType;
 	private static Constructor<?> playerListHeaderFooterConstructor, chatComponentTextConstructor,
-			packetPlayOutChatConstructor, playOutTitleTimesConstructor, titleConstructor;
+			packetPlayOutChatConstructor, playOutTitleTimesConstructor, titleConstructor,
+			clientboundSetTitleTextConstructor, clientboundSetSubTitleTextConstructor,
+			clientboundSetTitlesAnimationConstructor;
 
 	static {
 		try {
-			packetPlayOutTitle = getNMSClass("PacketPlayOutTitle");
-			packetPlayOutChatClass = getNMSClass("PacketPlayOutChat");
-			playerListHeaderFooter = getNMSClass("PacketPlayOutPlayerListHeaderFooter");
-			enumTitleAction = getNMSClass("PacketPlayOutTitle$EnumTitleAction");
+			if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_17_R1)) {
+				clientboundSetTitleTextConstructor = classByName("net.minecraft.network.protocol.game",
+						"ClientboundSetTitleTextPacket").getConstructor(ClazzContainer.getIChatBaseComponent());
+				clientboundSetSubTitleTextConstructor = classByName("net.minecraft.network.protocol.game",
+						"ClientboundSetSubtitleTextPacket").getConstructor(ClazzContainer.getIChatBaseComponent());
+				clientboundSetTitlesAnimationConstructor = classByName("net.minecraft.network.protocol.game",
+						"ClientboundSetTitlesAnimationPacket").getConstructor(int.class, int.class, int.class);
+			} else {
+				Class<?> packetPlayOutTitle = classByName("net.minecraft.network.protocol.game", "PacketPlayOutTitle");
+				Class<?>[] declaredClasses = packetPlayOutTitle.getDeclaredClasses();
 
-			TIMES = getField(enumTitleAction, "TIMES").get(null);
-			TITLE = getField(enumTitleAction, "TITLE").get(null);
-			SUBTITLE = getField(enumTitleAction, "SUBTITLE").get(null);
+				if (declaredClasses.length > 0) {
+					Class<?> enumTitleAction = declaredClasses[0];
 
-			chatComponentTextConstructor = getNMSClass("ChatComponentText").getConstructor(String.class);
+					TIMES = enumTitleAction.getField("TIMES").get(null);
+					TITLE = enumTitleAction.getField("TITLE").get(null);
+					SUBTITLE = enumTitleAction.getField("SUBTITLE").get(null);
 
-			try {
-				playerListHeaderFooterConstructor = playerListHeaderFooter.getConstructor();
-			} catch (NoSuchMethodException e) {
-				try {
-					playerListHeaderFooterConstructor = playerListHeaderFooter
-							.getConstructor(NMSContainer.getIChatBaseComponent());
-				} catch (NoSuchMethodException ex) {
+					playOutTitleTimesConstructor = packetPlayOutTitle.getConstructor(enumTitleAction,
+							ClazzContainer.getIChatBaseComponent(), int.class, int.class, int.class);
+					titleConstructor = packetPlayOutTitle.getConstructor(enumTitleAction,
+							ClazzContainer.getIChatBaseComponent());
 				}
 			}
 
-			playOutTitleTimesConstructor = packetPlayOutTitle.getConstructor(enumTitleAction,
-					NMSContainer.getIChatBaseComponent(), Integer.TYPE, Integer.TYPE, Integer.TYPE);
-			titleConstructor = packetPlayOutTitle.getConstructor(enumTitleAction, NMSContainer.getIChatBaseComponent());
+			chatComponentTextConstructor = classByName("net.minecraft.network.chat", "ChatComponentText")
+					.getConstructor(String.class);
+
+			if (ServerVersion.isCurrentLower(ServerVersion.v1_16_R1)) {
+				Class<?> playerListHeaderFooter = classByName(null, "PacketPlayOutPlayerListHeaderFooter");
+
+				try {
+					playerListHeaderFooterConstructor = playerListHeaderFooter.getConstructor();
+				} catch (NoSuchMethodException e) {
+					try {
+						playerListHeaderFooterConstructor = playerListHeaderFooter
+								.getConstructor(ClazzContainer.getIChatBaseComponent());
+					} catch (NoSuchMethodException ex) {
+					}
+				}
+			}
 
 			try {
-				chatMessageTypeClass = getNMSClass("ChatMessageType");
+				chatMessageTypeClass = classByName("net.minecraft.network.chat", "ChatMessageType");
 
 				for (Object obj : chatMessageTypeClass.getEnumConstants()) {
 					if (obj.toString().equalsIgnoreCase("GAME_INFO") || obj.toString().equalsIgnoreCase("ACTION_BAR")) {
@@ -60,16 +78,18 @@ public abstract class TitleSender {
 			} catch (ClassNotFoundException e) {
 			}
 
+			Class<?> packetPlayOutChatClass = classByName("net.minecraft.network.protocol.game", "PacketPlayOutChat");
+
 			if (chatMessageTypeClass == null) {
 				packetPlayOutChatConstructor = packetPlayOutChatClass
-						.getConstructor(NMSContainer.getIChatBaseComponent(), byte.class);
+						.getConstructor(ClazzContainer.getIChatBaseComponent(), byte.class);
 			} else if (chatMessageType != null) {
 				try {
 					packetPlayOutChatConstructor = packetPlayOutChatClass
-							.getConstructor(NMSContainer.getIChatBaseComponent(), chatMessageTypeClass);
+							.getConstructor(ClazzContainer.getIChatBaseComponent(), chatMessageTypeClass);
 				} catch (NoSuchMethodException e) {
 					packetPlayOutChatConstructor = packetPlayOutChatClass
-							.getConstructor(NMSContainer.getIChatBaseComponent(), chatMessageTypeClass, UUID.class);
+							.getConstructor(ClazzContainer.getIChatBaseComponent(), chatMessageTypeClass, UUID.class);
 				}
 			}
 		} catch (Exception e) {
@@ -112,6 +132,21 @@ public abstract class TitleSender {
 		if (subTitle == null)
 			subTitle = "";
 
+		if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_17_R1)) {
+			try {
+				Reflections.sendPacket(player,
+						clientboundSetTitlesAnimationConstructor.newInstance(fadeIn, stay, fadeOut));
+				Reflections.sendPacket(player,
+						clientboundSetTitleTextConstructor.newInstance(Reflections.getAsIChatBaseComponent(title)));
+				Reflections.sendPacket(player, clientboundSetSubTitleTextConstructor
+						.newInstance(Reflections.getAsIChatBaseComponent(subTitle)));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			return;
+		}
+
 		try {
 			Object chatTitle = Reflections.getAsIChatBaseComponent(title);
 			Object titlePacket = playOutTitleTimesConstructor.newInstance(TIMES, chatTitle, fadeIn, stay, fadeOut);
@@ -135,6 +170,8 @@ public abstract class TitleSender {
 
 	private static final RageMode PLUGIN = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 
+	private static Field headerField, footerField;
+
 	public static void sendTabTitle(Player player, String header, String footer) {
 		if (player == null)
 			return;
@@ -156,14 +193,26 @@ public abstract class TitleSender {
 						tabHeader = Reflections.getAsIChatBaseComponent(header),
 						tabFooter = Reflections.getAsIChatBaseComponent(footer);
 
-				Class<?> packetClass = packet.getClass();
 				if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_13_R2)) {
-					getField(packetClass, "header").set(packet, tabHeader);
-					getField(packetClass, "footer").set(packet, tabFooter);
+					if (headerField == null) {
+						headerField = getField(packet.getClass(), "header");
+					}
+
+					if (footerField == null) {
+						footerField = getField(packet.getClass(), "footer");
+					}
 				} else {
-					getField(packetClass, "a").set(packet, tabHeader);
-					getField(packetClass, "b").set(packet, tabFooter);
+					if (headerField == null) {
+						headerField = getField(packet.getClass(), "a");
+					}
+
+					if (footerField == null) {
+						footerField = getField(packet.getClass(), "b");
+					}
 				}
+
+				headerField.set(packet, tabHeader);
+				footerField.set(packet, tabFooter);
 
 				Reflections.sendPacket(player, packet);
 			} catch (Exception f) {
@@ -182,7 +231,11 @@ public abstract class TitleSender {
 				}
 
 				if (packet != null) {
-					getField(packet.getClass(), "b").set(packet, Reflections.getAsIChatBaseComponent(footer));
+					if (footerField == null) {
+						footerField = getField(packet.getClass(), "b");
+					}
+
+					footerField.set(packet, Reflections.getAsIChatBaseComponent(footer));
 					Reflections.sendPacket(player, packet);
 				}
 			}

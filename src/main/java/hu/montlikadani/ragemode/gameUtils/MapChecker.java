@@ -7,7 +7,7 @@ import org.apache.commons.lang.Validate;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.area.GameArea;
 import hu.montlikadani.ragemode.area.GameAreaManager;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameLogic.spawn.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.spawn.GameZombieSpawn;
 import hu.montlikadani.ragemode.gameLogic.spawn.IGameSpawn;
@@ -15,11 +15,11 @@ import hu.montlikadani.ragemode.utils.Debug;
 
 public class MapChecker {
 
-	private Game game;
+	private BaseGame game;
 	private boolean isValid = false;
 	private String message = "";
 
-	public MapChecker(Game game) {
+	public MapChecker(BaseGame game) {
 		Validate.notNull(game, "Game can't be null");
 
 		this.game = game;
@@ -110,18 +110,11 @@ public class MapChecker {
 			return;
 		}
 
-		if (!game.randomSpawnForZombies && game.getGameType() == GameType.APOCALYPSE) {
-			if ((gameSpawn = game.getSpawn(GameZombieSpawn.class)) == null) {
-				message = RageMode.getLang().get("game.no-spawns-configured", "%game%", game.getName());
-				isValid = false;
-				return;
-			}
-
-			if (!gameSpawn.isReady()) {
-				message = RageMode.getLang().get("game.too-few-spawns");
-				isValid = false;
-				return;
-			}
+		if (!game.randomSpawnForZombies && game.getGameType() == GameType.APOCALYPSE
+				&& ((gameSpawn = game.getSpawn(GameZombieSpawn.class)) == null || !gameSpawn.isReady())) {
+			message = RageMode.getLang().get("game.no-spawns-configured", "%game%", game.getName());
+			isValid = false;
+			return;
 		}
 
 		isValid = true;

@@ -4,9 +4,12 @@ import org.jetbrains.annotations.Nullable;
 
 import hu.montlikadani.ragemode.RageMode;
 
-public class Items {
+public final class Items {
 
-	private static final RageMode PLUGIN = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
+	private Items() {
+	}
+
+	private static final RageMode RM = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 
 	/**
 	 * Returns the game item by its index.
@@ -29,7 +32,7 @@ public class Items {
 	 */
 	@Nullable
 	public static ItemHandler getGameItem(int index) {
-		return (index >= 0 && index < PLUGIN.getGameItems().length) ? PLUGIN.getGameItems()[index] : null;
+		return (index >= 0 && index < RM.getGameItems().length) ? RM.getGameItems()[index] : null;
 	}
 
 	/**
@@ -50,6 +53,6 @@ public class Items {
 	 */
 	@Nullable
 	public static ItemHandler getLobbyItem(int index) {
-		return (index >= 0 && index < PLUGIN.getLobbyItems().length) ? PLUGIN.getLobbyItems()[index] : null;
+		return (index >= 0 && index < RM.getLobbyItems().length) ? RM.getLobbyItems()[index] : null;
 	}
 }

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import hu.montlikadani.ragemode.RageMode;
+import hu.montlikadani.ragemode.database.Database;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 
 public final class RuntimePPManager {
@@ -15,10 +15,9 @@ public final class RuntimePPManager {
 		return RUNTIMEPPLIST;
 	}
 
-	public static void loadPPListFromDatabase() {
+	public static void loadPPListFromDatabase(Database database) {
 		RUNTIMEPPLIST.clear();
-		RUNTIMEPPLIST.addAll(
-				org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class).getDatabase().getAllPlayerStatistics());
+		RUNTIMEPPLIST.addAll(database.getAllPlayerStatistics());
 	}
 
 	/**

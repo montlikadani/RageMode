@@ -4,7 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.area.GameAreaManager;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
@@ -23,23 +23,26 @@ final class Placeholder extends PlaceholderExpansion {
 		KILLS, AXE_KILLS, DIRECT_ARROW_KILLS, EXPLOSION_KILLS, KNIFE_KILLS, ZOMBIE_KILLS, DEATHS, AXE_DEATHS,
 		DIRECT_ARROW_DEATHS, EXPLOSION_DEATHS, KNIFE_DEATHS, CURRENT_STREAK, LONGEST_STREAK, POINTS, GAMES, WINS, KD,
 
-		PLAYER_LIVES,
+		PLAYER_LIVES, IS_SPECTATOR,
 
 		STATE("game"), PLAYERS("game"), SPECTATOR_PLAYERS("game"), MAXPLAYERS("game"), ZOMBIES_ALIVE("game"),
 		TYPE("game"),;
 
 		private String requirements = "";
-		private Game game;
+		private BaseGame game;
+
+		private boolean complexed = false;
 
 		private RMPlaceholders() {
 		}
 
 		private RMPlaceholders(String requirements) {
 			this.requirements = requirements;
+			complexed = !requirements.isEmpty();
 		}
 
 		public boolean isComplexed() {
-			return !requirements.isEmpty();
+			return complexed;
 		}
 
 		public String getRequirements() {
@@ -50,33 +53,29 @@ final class Placeholder extends PlaceholderExpansion {
 			return PREFIX + name();
 		}
 
-		public Game getGame() {
+		public BaseGame getGame() {
 			return game;
 		}
 
-		public void setGame(Game game) {
-			this.game = game;
-		}
-
 		public static RMPlaceholders getByIdentifier(final String id) {
-			for (RMPlaceholders holder : values()) {
-				if (id.equalsIgnoreCase(holder.toString())) {
-					return holder;
-				}
-			}
-
 			for (RMPlaceholders holder : values()) {
 				if (id.equalsIgnoreCase(holder.getFullName())) {
 					return holder;
 				}
 			}
 
-			String original = id;
-			String gameName = id;
+			for (RMPlaceholders holder : values()) {
+				if (id.equalsIgnoreCase(holder.toString())) {
+					return holder;
+				}
+			}
 
-			for (int i = gameName.length() - 1; i > 0; i--) {
-				if (gameName.charAt(i) == '_') {
-					gameName = gameName.substring(i + 1);
+			String original = id;
+			String contextName = id;
+
+			for (int i = contextName.length() - 1; i > 0; i--) {
+				if (contextName.charAt(i) == '_') {
+					contextName = contextName.substring(i + 1);
 					original = original.substring(0, i);
 					break;
 				}
@@ -84,12 +83,7 @@ final class Placeholder extends PlaceholderExpansion {
 
 			for (RMPlaceholders holder : values()) {
 				if (holder.isComplexed() && StringUtils.startsWithIgnoreCase(original, holder.toString())) {
-					Game game = GameUtils.getGame(gameName);
-
-					if (game != null) {
-						holder.setGame(game);
-					}
-
+					holder.game = GameUtils.getGame(contextName);
 					return holder;
 				}
 			}
@@ -98,10 +92,11 @@ final class Placeholder extends PlaceholderExpansion {
 		}
 	}
 
+	private final org.bukkit.plugin.Plugin rm = org.bukkit.plugin.java.JavaPlugin.getProvidingPlugin(RageMode.class);
+
 	@Override
 	public String getAuthor() {
-		return String.join(", ",
-				org.bukkit.plugin.java.JavaPlugin.getProvidingPlugin(RageMode.class).getDescription().getAuthors());
+		return String.join(", ", rm.getDescription().getAuthors());
 	}
 
 	@Override
@@ -111,7 +106,7 @@ final class Placeholder extends PlaceholderExpansion {
 
 	@Override
 	public String getVersion() {
-		return "1.0";
+		return rm.getDescription().getVersion();
 	}
 
 	@Override
@@ -122,6 +117,40 @@ final class Placeholder extends PlaceholderExpansion {
 		RMPlaceholders placeholder = RMPlaceholders.getByIdentifier(v);
 		if (placeholder == null) {
 			return "";
+		}
+
+		if (placeholder == RMPlaceholders.IS_SPECTATOR) {
+			PlayerManager pm = GameUtils.getPlayerManager(p);
+
+			return String.valueOf(pm != null && pm.isSpectator());
+		}
+
+		if (placeholder == RMPlaceholders.PLAYER_LIVES) {
+			PlayerManager pm = GameUtils.getPlayerManager(p);
+
+			return pm == null ? "0" : Integer.toString(pm.getPlayerLives());
+		}
+
+		if (placeholder.game != null) {
+			switch (placeholder) {
+			case STATE:
+				return placeholder.game.getStatus().toString().toLowerCase();
+			case PLAYERS:
+				return Integer.toString(placeholder.game.getPlayers().size());
+			case SPECTATOR_PLAYERS:
+				return Integer.toString(placeholder.game.getSpectatorPlayers().size());
+			case MAXPLAYERS:
+				return Integer.toString(placeholder.game.maxPlayers);
+			case ZOMBIES_ALIVE:
+				hu.montlikadani.ragemode.area.GameArea area = GameAreaManager.getAreaByGame(placeholder.game);
+
+				return area == null ? "0"
+						: Integer.toString(area.getEntities(org.bukkit.entity.EntityType.ZOMBIE).size());
+			case TYPE:
+				return placeholder.game.getGameType().toString().toLowerCase();
+			default:
+				break;
+			}
 		}
 
 		PlayerPoints rpp = RuntimePPManager.getPPForPlayer(p.getUniqueId());
@@ -164,46 +193,6 @@ final class Placeholder extends PlaceholderExpansion {
 			default:
 				break;
 			}
-		}
-
-		if (placeholder == RMPlaceholders.PLAYER_LIVES) {
-			Game gamePlayer = GameUtils.getGameByPlayer(p);
-
-			if (gamePlayer != null) {
-				PlayerManager pm = gamePlayer.getPlayerManager(p).orElse(null);
-
-				if (pm != null) {
-					return Integer.toString(pm.getPlayerLives());
-				}
-			}
-		}
-
-		Game game = placeholder.getGame();
-		if (game == null) {
-			return "";
-		}
-
-		switch (placeholder) {
-		case STATE:
-			return game.getStatus().toString().toLowerCase();
-		case PLAYERS:
-			return Integer.toString(game.getPlayers().size());
-		case SPECTATOR_PLAYERS:
-			return Integer.toString(game.getSpectatorPlayers().size());
-		case MAXPLAYERS:
-			return Integer.toString(game.maxPlayers);
-		case ZOMBIES_ALIVE:
-			hu.montlikadani.ragemode.area.GameArea area = GameAreaManager.getAreaByGame(game);
-
-			if (area != null) {
-				return Integer.toString(area.getEntities(org.bukkit.entity.EntityType.ZOMBIE).size());
-			}
-
-			break;
-		case TYPE:
-			return game.getGameType().toString().toLowerCase();
-		default:
-			break;
 		}
 
 		return "";

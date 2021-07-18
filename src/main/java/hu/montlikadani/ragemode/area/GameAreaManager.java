@@ -8,10 +8,11 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import com.google.common.collect.ImmutableList;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
@@ -21,6 +22,9 @@ public final class GameAreaManager {
 
 	public static Map<String, GameArea> getGameAreas() {
 		return GAMEAREAS;
+	}
+
+	private GameAreaManager() {
 	}
 
 	public static void load() {
@@ -65,7 +69,7 @@ public final class GameAreaManager {
 	 * @param name area name
 	 * @return true if the map contains the key
 	 */
-	public static boolean isAreaExist(@Nullable String name) {
+	public static boolean isAreaExist(@NotNull String name) {
 		return GAMEAREAS.containsKey(name);
 	}
 
@@ -73,9 +77,9 @@ public final class GameAreaManager {
 	 * Remove all entities from the given game. The game type should be set to
 	 * {@link GameType#APOCALYPSE}.
 	 * 
-	 * @param game {@link Game}
+	 * @param game {@link BaseGame}
 	 */
-	public static void removeEntitiesFromGame(@Nullable Game game) {
+	public static void removeEntitiesFromGame(@NotNull BaseGame game) {
 		if (game == null || game.getGameType() != GameType.APOCALYPSE) {
 			return;
 		}
@@ -94,12 +98,16 @@ public final class GameAreaManager {
 	 * @return {@link GameArea}
 	 */
 	@NotNull
-	public static Optional<GameArea> getAreaByLocation(@Nullable Location loc) {
-		if (loc == null) {
-			return Optional.empty();
+	public static Optional<GameArea> getAreaByLocation(@NotNull Location loc) {
+		if (loc != null) {
+			for (GameArea area : GAMEAREAS.values()) {
+				if (area.inArea(loc)) {
+					return Optional.of(area);
+				}
+			}
 		}
 
-		return GAMEAREAS.values().stream().filter(area -> area.inArea(loc)).findFirst();
+		return Optional.empty();
 	}
 
 	/**
@@ -108,18 +116,18 @@ public final class GameAreaManager {
 	 * @param loc {@link Location}
 	 * @return true if yes
 	 */
-	public static boolean inArea(@Nullable Location loc) {
+	public static boolean inArea(@NotNull Location loc) {
 		return getAreaByLocation(loc).isPresent();
 	}
 
 	/**
-	 * Gets all cached area by given location.
+	 * Retrieves all the game area from the given location.
 	 * 
 	 * @param loc {@link Location}
-	 * @return the list of {@link GameArea}
+	 * @return an immutable list of {@link GameArea}
 	 */
 	@NotNull
-	public static List<GameArea> getAreasByLocation(@Nullable Location loc) {
+	public static ImmutableList<GameArea> getAreasByLocation(@NotNull Location loc) {
 		List<GameArea> list = new java.util.ArrayList<>();
 
 		if (loc != null) {
@@ -130,17 +138,17 @@ public final class GameAreaManager {
 			}
 		}
 
-		return list;
+		return ImmutableList.copyOf(list);
 	}
 
 	/**
 	 * Gets the area instance by game.
 	 * 
-	 * @param game {@link Game}
+	 * @param game {@link BaseGame}
 	 * @return {@link GameArea}
 	 */
-	@Nullable
-	public static GameArea getAreaByGame(@Nullable Game game) {
+	@org.jetbrains.annotations.Nullable
+	public static GameArea getAreaByGame(@NotNull BaseGame game) {
 		if (game == null) {
 			return null;
 		}
@@ -157,9 +165,9 @@ public final class GameAreaManager {
 	/**
 	 * Removes all the areas by game object if exist.
 	 * 
-	 * @param game the {@link Game} from where to remove
+	 * @param game the {@link BaseGame} from where to remove
 	 */
-	public static void removeAreaByGame(@Nullable Game game) {
+	public static void removeAreaByGame(@NotNull BaseGame game) {
 		if (game == null) {
 			return;
 		}

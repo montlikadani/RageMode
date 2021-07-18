@@ -30,10 +30,10 @@ public abstract class IHoloHolder {
 	public abstract void updateHologramsName(Player player);
 
 	/**
-	 * Deletes the hologram at the given location.
+	 * Deletes hologram(s) at the given location.
 	 * 
 	 * @param loc {@link Location}
-	 * @return true if the hologram exist with the given location
+	 * @return true if at least one hologram at the given location was removed
 	 */
 	public abstract boolean deleteHologram(Location loc);
 

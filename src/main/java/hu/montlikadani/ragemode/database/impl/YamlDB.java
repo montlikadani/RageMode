@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.storage;
+package hu.montlikadani.ragemode.database.impl;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +12,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import com.google.common.collect.ImmutableList;
 
@@ -20,9 +19,9 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.database.DB;
-import hu.montlikadani.ragemode.database.DBConnector;
 import hu.montlikadani.ragemode.database.DBType;
 import hu.montlikadani.ragemode.database.Database;
+import hu.montlikadani.ragemode.database.connector.DBConnector;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
@@ -31,6 +30,8 @@ import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
 @DB(type = DBType.YAML)
 public class YamlDB implements Database {
+
+	private final RageMode rm = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 
 	private File yamlStatsFile;
 	private YamlConfiguration statsConf;
@@ -268,7 +269,7 @@ public class YamlDB implements Database {
 			return;
 		}
 
-		yamlStatsFile = new File(JavaPlugin.getPlugin(RageMode.class).getFolder(), "stats.yml");
+		yamlStatsFile = new File(rm.getFolder(), "stats.yml");
 
 		if (!yamlStatsFile.exists()) {
 			yamlStatsFile.getParentFile().mkdirs();
@@ -291,7 +292,7 @@ public class YamlDB implements Database {
 	@Override
 	public void loadDatabase(boolean startup) {
 		connectDatabase();
-		RuntimePPManager.loadPPListFromDatabase();
+		RuntimePPManager.loadPPListFromDatabase(rm.getDatabase());
 		loadPlayerStatistics();
 
 		if (startup) {
@@ -314,21 +315,20 @@ public class YamlDB implements Database {
 
 			ConfigValues.databaseType = type;
 
-			RageMode plugin = JavaPlugin.getPlugin(RageMode.class);
-			plugin.getConfig().set("database.type", type);
-			Configuration.saveFile(plugin.getConfig(), plugin.getConfiguration().getCfgFile());
+			rm.getConfig().set("database.type", type);
+			Configuration.saveFile(rm.getConfig(), rm.getConfiguration().getCfgFile());
 
-			plugin.connectDatabase(true);
+			rm.connectDatabase(true);
 
-			RuntimePPManager.getRuntimePPList().forEach(plugin.getDatabase()::addPlayerStatistics);
-			RuntimePPManager.loadPPListFromDatabase();
+			RuntimePPManager.getRuntimePPList().forEach(rm.getDatabase()::addPlayerStatistics);
+			RuntimePPManager.loadPPListFromDatabase(rm.getDatabase());
 			return true;
 		});
 	}
 
 	@Override
 	public void loadMiscPlayersData() {
-		File f = new File(JavaPlugin.getPlugin(RageMode.class).getFolder(), "players.yml");
+		File f = new File(rm.getFolder(), "players.yml");
 		if (!f.exists()) {
 			try {
 				f.createNewFile();
@@ -376,7 +376,7 @@ public class YamlDB implements Database {
 
 	@Override
 	public void saveMiscPlayersData() {
-		File f = new File(JavaPlugin.getPlugin(RageMode.class).getFolder(), "players.yml");
+		File f = new File(rm.getFolder(), "players.yml");
 		if (!f.exists()) {
 			try {
 				f.createNewFile();

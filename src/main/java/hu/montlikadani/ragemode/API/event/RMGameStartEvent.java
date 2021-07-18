@@ -1,13 +1,13 @@
 package hu.montlikadani.ragemode.API.event;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 
 /**
  * Called when a game has started.
  */
 public class RMGameStartEvent extends GameEvent {
 
-	public RMGameStartEvent(Game game) {
+	public RMGameStartEvent(BaseGame game) {
 		super(game);
 	}
 }

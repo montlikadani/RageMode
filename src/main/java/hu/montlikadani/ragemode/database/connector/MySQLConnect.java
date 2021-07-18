@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.database;
+package hu.montlikadani.ragemode.database.connector;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -6,16 +6,13 @@ import java.sql.Statement;
 
 import org.apache.commons.lang.Validate;
 
+import hu.montlikadani.ragemode.database.DBMethods;
 import hu.montlikadani.ragemode.utils.Debug;
 
 public class MySQLConnect extends DBConnector implements DBMethods {
 
-	public MySQLConnect(String host, String port, String database, String userName, String password,
-			boolean serverCertificate, boolean useUnicode, String charEncode, boolean autoReconnect, boolean useSSL,
-			String prefix) {
-		super("jdbc:mysql://" + host + ":" + port + "/" + database + "?verifyServerCertificate=" + serverCertificate
-				+ "&maxReconnects=1&useUnicode=" + useUnicode + "&characterEncoding=" + charEncode + "&autoReconnect="
-				+ autoReconnect + "&useSSL=" + useSSL, userName, password, prefix);
+	public MySQLConnect(String connectionPath, String userName, String password, String prefix) {
+		super(connectionPath, userName, password, prefix);
 
 		if (isConnected()) {
 			createStatsTable();

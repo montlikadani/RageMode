@@ -9,7 +9,9 @@ import hu.montlikadani.ragemode.API.event.RMGameCreateEvent;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
+import hu.montlikadani.ragemode.gameLogic.base.PlayerGame;
+import hu.montlikadani.ragemode.gameLogic.base.ZombieGame;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.managers.gui.BaseGui;
@@ -82,7 +84,19 @@ public final class addgame implements ICommand {
 			type = GameType.NORMAL;
 		}
 
-		Game game = new Game(name, type);
+		BaseGame game;
+
+		switch (type) {
+		case NORMAL:
+			game = new PlayerGame(name);
+			break;
+		case APOCALYPSE:
+			game = new ZombieGame(name);
+			break;
+		default:
+			return false;
+		}
+
 		plugin.getGames().add(game);
 
 		Utils.callEvent(new RMGameCreateEvent(game, x, m));

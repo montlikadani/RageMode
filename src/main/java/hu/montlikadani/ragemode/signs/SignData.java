@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -14,7 +15,7 @@ import org.bukkit.material.Directional;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.MaterialUtil;
@@ -71,18 +72,19 @@ public final class SignData {
 
 	public void updateSign() {
 		Location location = getLocation();
+		World world = location.getWorld();
 
-		if (!location.getWorld().getChunkAt(location).isLoaded()) {
+		if (world == null || !world.getChunkAt(location).isLoaded()) {
 			return;
 		}
 
-		BlockState state = location.getBlock().getState();
+		BlockState state = world.getBlockAt(location).getState();
 		if (!(state instanceof Sign)) {
 			return;
 		}
 
 		Sign sign = (Sign) state;
-		Game game = GameUtils.getGame(gameName);
+		BaseGame game = GameUtils.getGame(gameName);
 
 		if (game != null) {
 			List<String> lines = placeholder.parsePlaceholder(game);
@@ -91,7 +93,7 @@ public final class SignData {
 				plugin.getComplement().setLine(sign, i, lines.get(i));
 			}
 
-			if (ConfigValues.getSignBackground() != SignBackgrounds.NONE && MaterialUtil.isWallSign(sign.getType())) {
+			if (ConfigValues.getSignBackground() != SignBackgrounds.NONE && MaterialUtil.isWallSign(state.getType())) {
 				changeBlockBackground(game);
 			}
 		} else {
@@ -101,7 +103,7 @@ public final class SignData {
 			}
 		}
 
-		sign.update();
+		state.update();
 	}
 
 	private void updateBackground(Material mat) {
@@ -114,7 +116,8 @@ public final class SignData {
 		}
 
 		Location loc = getLocation();
-		BlockState s = loc.getBlock().getState();
+		World world = loc.getWorld();
+		BlockState s = world.getBlockAt(loc).getState();
 		BlockFace bf = null;
 
 		try {
@@ -131,10 +134,10 @@ public final class SignData {
 			return;
 		}
 
-		Location loc2 = new Location(loc.getWorld(), loc.getBlockX() - bf.getModX(), loc.getBlockY() - bf.getModY(),
+		Location loc2 = new Location(world, loc.getBlockX() - bf.getModX(), loc.getBlockY() - bf.getModY(),
 				loc.getBlockZ() - bf.getModZ());
-		Block wall = loc2.getBlock();
 
+		Block wall = loc2.getBlock();
 		wall.setType(mat);
 
 		if (ServerVersion.isCurrentLower(ServerVersion.v1_13_R1)) {
@@ -147,7 +150,7 @@ public final class SignData {
 	}
 
 	// TODO Disgusting
-	private void changeBlockBackground(Game game) {
+	private void changeBlockBackground(BaseGame game) {
 		GameStatus status = game.getStatus();
 
 		if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_13_R1)) {

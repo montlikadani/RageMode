@@ -137,7 +137,7 @@ public final class LobbyShop implements Listener {
 			return;
 		}
 
-		hu.montlikadani.ragemode.gameLogic.Game game = GameUtils.getGameByPlayer(who);
+		hu.montlikadani.ragemode.gameLogic.base.BaseGame game = GameUtils.getGameByPlayer(who);
 		if (game == null || game.getStatus() != GameStatus.WAITING) {
 			removeShop(who);
 			return;
@@ -248,7 +248,7 @@ public final class LobbyShop implements Listener {
 		} else if (shopCategory == ShopCategory.GAMEITEMS && itemSetting.getGiveGameItem() != null) {
 			ItemHandler item = itemSetting.getGiveGameItem().getItem();
 
-			if (item == null) {
+			if (item == null || item.getAmount() < 1) {
 				return false;
 			}
 

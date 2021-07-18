@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.storage;
+package hu.montlikadani.ragemode.database.impl;
 
 import java.io.File;
 import java.sql.Connection;
@@ -24,7 +24,7 @@ import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.database.DB;
 import hu.montlikadani.ragemode.database.DBType;
 import hu.montlikadani.ragemode.database.Database;
-import hu.montlikadani.ragemode.database.SQLConnect;
+import hu.montlikadani.ragemode.database.connector.SQLConnect;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
@@ -33,6 +33,8 @@ import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
 @DB(type = DBType.SQLITE)
 public class SqlDB implements Database {
+
+	private final RageMode rm = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 
 	private SQLConnect connect;
 
@@ -64,10 +66,16 @@ public class SqlDB implements Database {
 					ResultSet rs = statement
 							.executeQuery("SELECT * FROM `" + connect.getPrefix() + "stats_players`;")) {
 				while (rs.next()) {
+					String stringId = rs.getString("uuid");
+
+					if (stringId == null) {
+						continue;
+					}
+
 					UUID uuid;
 
 					try {
-						uuid = UUID.fromString(rs.getString("uuid"));
+						uuid = UUID.fromString(stringId);
 					} catch (IllegalArgumentException e) {
 						continue;
 					}
@@ -358,13 +366,7 @@ public class SqlDB implements Database {
 
 		Debug.logConsole("Attempting to connect to sql...");
 
-		String prefix = ConfigValues.getDatabaseTablePrefix();
-		if (prefix.isEmpty()) {
-			prefix = "rm_";
-		}
-
-		File sqlFile = new File(org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class).getFolder(),
-				ConfigValues.getSqlFileName() + ".db");
+		File sqlFile = new File(rm.getFolder(), ConfigValues.getSqlFileName() + ".db");
 		if (!sqlFile.exists()) {
 			try {
 				sqlFile.createNewFile();
@@ -373,7 +375,7 @@ public class SqlDB implements Database {
 			}
 		}
 
-		if ((connect = new SQLConnect(sqlFile, prefix)).isConnected()) {
+		if ((connect = new SQLConnect(sqlFile, ConfigValues.getDatabaseTablePrefix())).isConnected()) {
 			Debug.logConsole("Connected to SQL!");
 		}
 	}
@@ -384,7 +386,7 @@ public class SqlDB implements Database {
 			connectDatabase();
 		}
 
-		RuntimePPManager.loadPPListFromDatabase();
+		RuntimePPManager.loadPPListFromDatabase(rm.getDatabase());
 		loadPlayerStatistics();
 
 		if (startup) {
@@ -415,15 +417,13 @@ public class SqlDB implements Database {
 
 			ConfigValues.databaseType = type;
 
-			RageMode plugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
+			rm.getConfig().set("database.type", type);
+			Configuration.saveFile(rm.getConfig(), rm.getConfiguration().getCfgFile());
 
-			plugin.getConfig().set("database.type", type);
-			Configuration.saveFile(plugin.getConfig(), plugin.getConfiguration().getCfgFile());
+			rm.connectDatabase(true);
 
-			plugin.connectDatabase(true);
-
-			RuntimePPManager.getRuntimePPList().forEach(plugin.getDatabase()::addPlayerStatistics);
-			RuntimePPManager.loadPPListFromDatabase();
+			RuntimePPManager.getRuntimePPList().forEach(rm.getDatabase()::addPlayerStatistics);
+			RuntimePPManager.loadPPListFromDatabase(rm.getDatabase());
 			return true;
 		});
 	}

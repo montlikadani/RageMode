@@ -2,7 +2,6 @@ package hu.montlikadani.ragemode.commands.list;
 
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -47,19 +46,19 @@ public final class givesaveditems implements ICommand {
 
 		if (args[1].equalsIgnoreCase("all")) {
 			for (String one : section.getKeys(false)) {
-				for (Player target : Bukkit.getOnlinePlayers()) {
+				for (Player target : plugin.getServer().getOnlinePlayers()) {
 					if (!GameUtils.isPlayerPlaying(target) && one.equalsIgnoreCase(target.getName())) {
 						giveBack(target, one, section);
+						Configuration.saveFile(datas, plugin.getConfiguration().getDatasFile());
 						break;
 					}
 				}
 			}
 
-			Configuration.saveFile(datas, plugin.getConfiguration().getDatasFile());
 			return true;
 		}
 
-		Player target = Bukkit.getPlayer(args[1]);
+		Player target = plugin.getServer().getPlayer(args[1]);
 		if (target == null) {
 			sendMessage(sender, RageMode.getLang().get("player-non-existent"));
 			return false;
@@ -74,23 +73,23 @@ public final class givesaveditems implements ICommand {
 		for (String one : section.getKeys(false)) {
 			if (one.equalsIgnoreCase(args[1])) {
 				giveBack(target, one, section);
+				Configuration.saveFile(datas, plugin.getConfiguration().getDatasFile());
 				break;
 			}
 		}
 
-		Configuration.saveFile(datas, plugin.getConfiguration().getDatasFile());
 		return true;
 	}
 
 	private void giveBack(Player target, String one, ConfigurationSection section) {
 		List<?> contentList = section.getList(one + ".contents");
 		if (contentList != null) {
-			target.getInventory().setContents(contentList.toArray(new ItemStack[contentList.size()]));
+			target.getInventory().setContents(contentList.toArray(new ItemStack[0]));
 		}
 
 		List<?> armorList = section.getList(one + ".armor-contents");
 		if (armorList != null) {
-			target.getInventory().setArmorContents(armorList.toArray(new ItemStack[armorList.size()]));
+			target.getInventory().setArmorContents(armorList.toArray(new ItemStack[0]));
 		}
 
 		target.setExp(section.getInt(one + ".exp"));

@@ -51,18 +51,13 @@ database:
   SQL:
     file-name: rm.sqlite
 
-  # MySQL database settings
+  # MySQL database connection
+  # Connection variables and documentation: https://dev.mysql.com/doc/refman/5.7/en/connecting.html
   MySQL:
-    auto-reconnect: true
-    use-SSL: false
     username: accountname
     password: password
-    database: database
-    host: localhost
-    port: '3306'
-    use-unicode: true
-    verify-server-certificate: false
-    character-encoding: UTF-8
+    server-connection-command: "jdbc:mysql:/localhost:3306/database?verifyServerCertificate=false
+      &maxReconnects=1&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false"
 
 # Sign texts
 signs:
@@ -135,8 +130,7 @@ spectator:
 
   # Which spectator commands will be allowed to use in-game?
   allowed-commands:
-  - "/rm leave"
-  - "/ragemode leave"
+  - "/rm;ragemode leave"
 
 # Lobby settings
 lobby:
@@ -269,9 +263,13 @@ game:
 
   # The in game allowed commands, which the player can use in the game.
   allowed-commands:
-  - "/rm leave"
-  - "/ragemode leave"
-  - "/ragemode stopgame"
+  - "/rm;ragemode leave"
+  - "/ragemode;rm stopgame"
+  - "/rm;ragemode listplayers"
+  - "/rm;ragemode listgames"
+  - "/rm;ragemode kick"
+  - stop
+  - "/rm;ragemode stats"
 
 # Stop the server or restart at the end of the game?
 game-stop:

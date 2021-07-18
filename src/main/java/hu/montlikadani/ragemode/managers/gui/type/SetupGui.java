@@ -10,7 +10,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameLogic.spawn.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.spawn.GameZombieSpawn;
 import hu.montlikadani.ragemode.gameLogic.spawn.IGameSpawn;
@@ -68,7 +68,7 @@ public class SetupGui extends BaseGui {
 	}
 
 	@Override
-	public final InventoryGuiHandler load(Game game) {
+	public final InventoryGuiHandler load(BaseGame game) {
 		if (game == null) {
 			return InventoryGuiHandler.ofBuilder().build();
 		}
@@ -267,7 +267,7 @@ public class SetupGui extends BaseGui {
 		return value;
 	}
 
-	public enum SetupItems implements Consumer<Game> {
+	public enum SetupItems implements Consumer<BaseGame> {
 		BOSSBAR(game -> {
 		}) {
 			@Override
@@ -483,10 +483,10 @@ public class SetupGui extends BaseGui {
 			}
 		};
 
-		private Consumer<Game> cons;
-		protected Game game;
+		private Consumer<BaseGame> cons;
+		protected BaseGame game;
 
-		SetupItems(Consumer<Game> cons) {
+		SetupItems(Consumer<BaseGame> cons) {
 			this.cons = cons;
 		}
 
@@ -497,7 +497,7 @@ public class SetupGui extends BaseGui {
 		public abstract java.util.List<String> getLore();
 
 		@Override
-		public void accept(Game game) {
+		public void accept(BaseGame game) {
 			cons.accept(this.game = game);
 		}
 	}

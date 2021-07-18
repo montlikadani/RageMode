@@ -8,7 +8,7 @@ import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.managers.RewardManager;
@@ -39,12 +39,12 @@ public final class leave implements ICommand {
 			return false;
 		}
 
-		Game game = pm.getPlayerGame();
+		BaseGame game = pm.getPlayerGame();
 
 		RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, pm);
 		Utils.callEvent(gameLeaveEvent);
 
-		if (!gameLeaveEvent.isCancelled()) {
+		if (game != null && !gameLeaveEvent.isCancelled()) {
 			GameUtils.runCommands(player, game, RewardManager.InGameCommand.CommandType.LEAVE);
 			GameUtils.sendActionMessage(player, game, ConfigValues.MessageAction.ActionMessageType.LEAVE,
 					ConfigValues.MessageAction.ActionMessageType.MessageTypes.ACTIONBAR);

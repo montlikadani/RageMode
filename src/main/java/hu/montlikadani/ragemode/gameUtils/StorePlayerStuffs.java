@@ -11,6 +11,7 @@ public final class StorePlayerStuffs {
 	public double oldHealth = 0d;
 	public int oldFire = 0, oldHunger = 0, oldExpLevel = 0;
 	public float oldExp = 0f;
+	public boolean customNameVisible = true;
 
 	public org.bukkit.entity.Entity oldVehicle;
 	public org.bukkit.scoreboard.Scoreboard currentBoard;

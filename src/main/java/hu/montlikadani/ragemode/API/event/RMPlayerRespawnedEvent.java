@@ -3,7 +3,7 @@ package hu.montlikadani.ragemode.API.event;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameLogic.spawn.IGameSpawn;
 
 /**
@@ -14,7 +14,7 @@ public class RMPlayerRespawnedEvent extends GameEvent {
 	private Player player;
 	private IGameSpawn gameSpawn;
 
-	public RMPlayerRespawnedEvent(Game game, Player player, IGameSpawn gameSpawn) {
+	public RMPlayerRespawnedEvent(BaseGame game, Player player, IGameSpawn gameSpawn) {
 		super(game);
 
 		this.player = player;

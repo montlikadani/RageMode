@@ -15,14 +15,14 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.items.Items;
 import hu.montlikadani.ragemode.utils.Misc;
 import hu.montlikadani.ragemode.utils.SchedulerUtil;
 import hu.montlikadani.ragemode.utils.Utils;
 
-public class RewardManager {
+public final class RewardManager {
 
 	private final RageMode plugin;
 
@@ -91,7 +91,7 @@ public class RewardManager {
 		}
 	}
 
-	public void rewardForWinner(Player winner, Game game) {
+	public void rewardForWinner(Player winner, BaseGame game) {
 		SchedulerUtil.submitSync(() -> {
 			for (RewardCommand reward : endGameWinnerCommands) {
 				if (reward.command.isEmpty()) {
@@ -119,7 +119,7 @@ public class RewardManager {
 		});
 	}
 
-	public void rewardForPlayers(Player player, Game game) {
+	public void rewardForPlayers(Player player, BaseGame game) {
 		SchedulerUtil.submitSync(() -> {
 			for (RewardCommand reward : endGamePlayerCommands) {
 				if (reward.command.isEmpty()) {
@@ -147,7 +147,7 @@ public class RewardManager {
 		});
 	}
 
-	public void performGameCommands(Player player, Game game, InGameCommand.CommandType commandType) {
+	public void performGameCommands(Player player, BaseGame game, InGameCommand.CommandType commandType) {
 		SchedulerUtil.submitSync(() -> {
 			for (InGameCommand command : inGameCommands) {
 				if (command.command.isEmpty()
@@ -160,7 +160,7 @@ public class RewardManager {
 
 					if (command.type == SenderType.CONSOLE) {
 						plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), cmd);
-					} else if (command.type == SenderType.PLAYER) {
+					} else if (command.type == SenderType.PLAYER && player != null) {
 						player.performCommand(cmd);
 					}
 				}
@@ -177,7 +177,7 @@ public class RewardManager {
 					continue;
 				}
 
-				if (bonus.gameItem != null) {
+				if (bonus.gameItem != null && bonus.gameItem.getAmount() > 0) {
 					if (bonus.gameItem.getSlot() >= 0) {
 						player.getInventory().setItem(bonus.gameItem.getSlot(), bonus.gameItem.get());
 					} else {
@@ -212,11 +212,15 @@ public class RewardManager {
 		return points;
 	}
 
-	private String replacePlaceholders(String str, Player player, Game game) {
+	private String replacePlaceholders(String str, Player player, BaseGame game) {
 		str = str.replace("%game%", game.getName());
-		str = str.replace("%player%", player.getName());
-		str = str.replace("%world%", player.getWorld().getName());
-		str = Utils.setPlaceholders(str, player);
+
+		if (player != null) {
+			str = str.replace("%player%", player.getName());
+			str = str.replace("%world%", player.getWorld().getName());
+			str = Utils.setPlaceholders(str, player);
+		}
+
 		return Utils.colors(str);
 	}
 
@@ -326,10 +330,10 @@ public class RewardManager {
 			if (!loreList.isEmpty())
 				plugin.getComplement().setLore(itemMeta, Utils.colorList(loreList));
 
-			if (mat.toString().startsWith("LEATHER_")) {
+			if (mat.toString().startsWith("LEATHER_") && itemMeta instanceof LeatherArmorMeta) {
 				String str = section.getString(num + ".color", "");
 
-				if (!str.isEmpty() && itemMeta instanceof LeatherArmorMeta) {
+				if (!str.isEmpty()) {
 					String[] split = str.split(",", 3);
 
 					if (split.length > 0) {
@@ -403,11 +407,11 @@ public class RewardManager {
 				line = line.substring(1, line.length());
 			}
 
+			this.command = line;
+
 			if (split[0].equalsIgnoreCase("player")) {
 				type = SenderType.PLAYER;
 			}
-
-			this.command = line;
 		}
 
 		public String getCommand() {

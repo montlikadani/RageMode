@@ -16,7 +16,7 @@ import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.events.GameListener;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.spawn.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.spawn.IGameSpawn;
@@ -25,6 +25,10 @@ import hu.montlikadani.ragemode.gameUtils.StorePlayerStuffs;
 import hu.montlikadani.ragemode.utils.Utils;
 import hu.montlikadani.ragemode.utils.stuff.MovementTicker;
 
+/**
+ * Class for storing player's lives, inventory content and some player related
+ * things.
+ */
 public class PlayerManager implements MovementTicker {
 
 	/**
@@ -78,7 +82,7 @@ public class PlayerManager implements MovementTicker {
 	 * @return the {@link Game} where the player is playing currently.
 	 */
 	@Nullable
-	public Game getPlayerGame() {
+	public BaseGame getPlayerGame() {
 		return GameUtils.getGame(gameName);
 	}
 
@@ -139,16 +143,18 @@ public class PlayerManager implements MovementTicker {
 
 	@Override
 	public void tickMovement() {
-		Game game = getPlayerGame();
+		BaseGame game = getPlayerGame();
 
 		if (game == null) {
 			return;
 		}
 
 		Player player = getPlayer();
-		Location loc = player.getLocation();
+		if (player == null) {
+			return;
+		}
 
-		if (loc.getY() < 0) {
+		if (player.getLocation().getY() < 0) {
 			CompletableFuture<Boolean> comp = null;
 			IGameSpawn gameSpawn = game.getSpawn(GameSpawn.class);
 
@@ -158,7 +164,7 @@ public class PlayerManager implements MovementTicker {
 				for (PlayerManager pm : game.getPlayers()) {
 					Player pl = pm.getPlayer();
 
-					if (pl != player && pl.getLocation().getY() > 0) {
+					if (pl != null && pl != player && pl.getLocation().getY() > 0) {
 						comp = Utils.teleport(player, pl.getLocation());
 						break;
 					}
@@ -181,6 +187,8 @@ public class PlayerManager implements MovementTicker {
 		if (game.getStatus() == GameStatus.RUNNING) {
 			// prevent player moving outside of game area
 
+			Location loc = player.getLocation();
+
 			if (!GameAreaManager.inArea(loc)) {
 				Utils.teleport(player, loc.subtract(loc.getDirection().multiply(1)));
 				return;
@@ -188,7 +196,7 @@ public class PlayerManager implements MovementTicker {
 
 			if (!spectator) {
 				// pressure mine exploding
-				GameListener.explodeMine(player, loc);
+				GameListener.explodeMine(loc);
 			}
 		}
 	}
@@ -253,12 +261,12 @@ public class PlayerManager implements MovementTicker {
 			sps.oldExp = player.getExp();
 			sps.oldExpLevel = player.getLevel();
 			sps.oldVehicle = player.getVehicle();
+			sps.customNameVisible = player.isCustomNameVisible();
 		}
 
 		sps.currentBoard = player.getScoreboard();
 		sps.oldLocation = player.getLocation();
 		sps.oldGameMode = player.getGameMode();
-
 		sps.oldInventories = player.getInventory().getContents();
 		sps.oldArmor = player.getInventory().getArmorContents();
 	}
@@ -282,26 +290,23 @@ public class PlayerManager implements MovementTicker {
 			return;
 		}
 
-		if (sps.oldLocation != null) { // Teleport back to the location
+		if (sps.oldLocation != null) { // Teleport back to the last location
 			Utils.teleport(player, sps.oldLocation).whenComplete((done, throwable) -> sps.oldLocation = null);
 		}
 
 		if (spectator || ConfigValues.isSavePlayerData()) {
-			if (sps.oldInventories != null) { // Give him his inventory back.
+			if (sps.oldInventories != null) {
 				player.getInventory().setContents(sps.oldInventories);
 				sps.oldInventories = null;
 			}
 
-			if (sps.oldArmor != null) { // Give him his armor back.
+			if (sps.oldArmor != null) {
 				player.getInventory().setArmorContents(sps.oldArmor);
 				sps.oldArmor = null;
 			}
 		}
 
-		if (sps.oldGameMode != null) { // Give him his gamemode back.
-			player.setGameMode(sps.oldGameMode);
-			sps.oldGameMode = null;
-		}
+		player.setGameMode(sps.oldGameMode);
 
 		if (spectator) {
 			player.setAllowFlight(sps.allowFly);
@@ -312,42 +317,43 @@ public class PlayerManager implements MovementTicker {
 				sps.currentBoard = null;
 			}
 
+			player.setCustomNameVisible(sps.customNameVisible);
+
 			if (ConfigValues.isSavePlayerData()) {
-				if (sps.oldHealth > 0d) { // Give him his health back.
+				if (sps.oldHealth > 0d) {
 					player.setHealth(sps.oldHealth);
 					sps.oldHealth = 0d;
 				}
 
-				if (sps.oldHunger > 0) { // Give him his hunger back.
+				if (sps.oldHunger > 0) {
 					player.setFoodLevel(sps.oldHunger);
 					sps.oldHunger = 0;
 				}
 
-				if (sps.oldEffects != null && !sps.oldEffects.isEmpty()) { // Give him his potion effects back.
+				if (sps.oldEffects != null && !sps.oldEffects.isEmpty()) {
 					player.addPotionEffects(sps.oldEffects);
 					sps.oldEffects.clear();
 				}
 
-				if (sps.oldListName != null) { // Give him his list name back.
+				if (sps.oldListName != null) {
 					plugin.getComplement().setPlayerListName(player, sps.oldListName);
 					sps.oldListName = null;
 				}
 
-				if (sps.oldDisplayName != null) { // Give him his display name back.
+				if (sps.oldDisplayName != null) {
 					plugin.getComplement().setDisplayName(player, sps.oldDisplayName);
 					sps.oldDisplayName = null;
 				}
 
-				if (sps.oldFire > 0) { // Give him his fire back.
+				if (sps.oldFire > 0) {
 					player.setFireTicks(sps.oldFire);
 					sps.oldFire = 0;
 				}
 
-				player.setExp(sps.oldExp); // Give him his exp back.
+				player.setExp(sps.oldExp);
+				player.setLevel(sps.oldExpLevel);
 
-				player.setLevel(sps.oldExpLevel); // Give him his exp level back.
-
-				if (sps.oldVehicle != null) { // Give him his vehicle back.
+				if (sps.oldVehicle != null) {
 					Utils.teleport(sps.oldVehicle.getVehicle(), player.getLocation());
 					sps.oldVehicle = null;
 				}

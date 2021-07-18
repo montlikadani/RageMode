@@ -3,7 +3,7 @@ package hu.montlikadani.ragemode.API.event;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 
 /**
  * Called when a player wins a game.
@@ -12,7 +12,7 @@ public class PlayerWinEvent extends GameEvent {
 
 	private Player winner;
 
-	public PlayerWinEvent(Game game, Player winner) {
+	public PlayerWinEvent(BaseGame game, Player winner) {
 		super(game);
 
 		this.winner = winner;

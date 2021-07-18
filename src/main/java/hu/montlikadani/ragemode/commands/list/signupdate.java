@@ -6,7 +6,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.signs.SignCreator;
 
@@ -30,7 +30,7 @@ public final class signupdate implements ICommand {
 		}
 
 		if (args[1].equalsIgnoreCase("all")) {
-			for (Game game : plugin.getGames()) {
+			for (BaseGame game : plugin.getGames()) {
 				SignCreator.updateAllSigns(game.getName());
 			}
 		} else {

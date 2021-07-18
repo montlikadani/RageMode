@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameLogic.spawn.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.spawn.IGameSpawn;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -32,7 +32,7 @@ public final class spectate implements ICommand {
 			return false;
 		}
 
-		Game game = GameUtils.getGame(args[1]);
+		BaseGame game = GameUtils.getGame(args[1]);
 		if (game == null) {
 			sendMessage(sender, RageMode.getLang().get("invalid-game"));
 			return false;
@@ -60,7 +60,7 @@ public final class spectate implements ICommand {
 			player.setGameMode(GameMode.SPECTATOR);
 
 			ItemHandler leaveItem = Items.getLobbyItem(1);
-			if (leaveItem != null) {
+			if (leaveItem != null && leaveItem.getAmount() > 0) {
 				player.getInventory().setItem(leaveItem.getSlot(), leaveItem.get());
 			}
 

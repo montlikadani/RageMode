@@ -33,13 +33,16 @@ public final class UpdateDownloader {
 			try {
 				URL githubUrl = new URL(
 						"https://raw.githubusercontent.com/montlikadani/RageMode/master/src/main/resources/plugin.yml");
-				BufferedReader br = new BufferedReader(new InputStreamReader(githubUrl.openStream()));
-				String s;
 				String lineWithVersion = "";
-				while ((s = br.readLine()) != null) {
-					if (s.toLowerCase().contains("version")) {
-						lineWithVersion = s;
-						break;
+
+				try (BufferedReader br = new BufferedReader(new InputStreamReader(githubUrl.openStream()))) {
+					String s;
+
+					while ((s = br.readLine()) != null) {
+						if (s.toLowerCase().contains("version")) {
+							lineWithVersion = s;
+							break;
+						}
 					}
 				}
 
@@ -56,8 +59,8 @@ public final class UpdateDownloader {
 				}
 
 				if (sender instanceof Player) {
-					sender.sendMessage(Utils.colors("&aA new update is available for RageMode!&4 Version:&7 " + versionString
-							+ (ConfigValues.isDownloadUpdates() ? ""
+					sender.sendMessage(Utils.colors("&aA new update is available for RageMode!&4 Version:&7 "
+							+ versionString + (ConfigValues.isDownloadUpdates() ? ""
 									: "\n&6Download:&c &nhttps://www.spigotmc.org/resources/69169/")));
 				} else {
 					sender.sendMessage("New version (" + versionString

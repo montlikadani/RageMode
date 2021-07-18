@@ -1,12 +1,10 @@
 package hu.montlikadani.ragemode.gameLogic.spawn;
 
-import java.util.List;
-
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 
 /**
  * Interface to handle game spawns
@@ -14,10 +12,10 @@ import hu.montlikadani.ragemode.gameLogic.Game;
 public interface IGameSpawn {
 
 	/**
-	 * @return the {@link Game} of this spawn
+	 * @return the {@link BaseGame} of this spawn
 	 */
 	@NotNull
-	Game getGame();
+	BaseGame getGame();
 
 	/**
 	 * Check if the game spawns are ready.
@@ -27,12 +25,12 @@ public interface IGameSpawn {
 	boolean isReady();
 
 	/**
-	 * Returns all spawn locations in an unmodifiable list.
+	 * Returns a list of spawn locations in an unmodifiable list.
 	 * 
-	 * @return an unmodifiable list
+	 * @return an unmodifiable list of location
 	 */
 	@NotNull
-	List<Location> getSpawnLocations();
+	java.util.List<@NotNull Location> getSpawnLocations();
 
 	/**
 	 * Adds a new spawn location to the list.

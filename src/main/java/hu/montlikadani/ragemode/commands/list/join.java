@@ -7,7 +7,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
@@ -28,7 +28,7 @@ public final class join implements ICommand {
 			return false;
 		}
 
-		Game game = GameUtils.getGame(args[1]);
+		BaseGame game = GameUtils.getGame(args[1]);
 		if (game == null) {
 			sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", args[1]));
 			return false;

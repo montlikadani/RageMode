@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.database;
+package hu.montlikadani.ragemode.database.connector;
 
 import java.io.File;
 import java.sql.ResultSet;
@@ -7,6 +7,7 @@ import java.sql.Statement;
 
 import org.apache.commons.lang.Validate;
 
+import hu.montlikadani.ragemode.database.DBMethods;
 import hu.montlikadani.ragemode.utils.Debug;
 
 public class SQLConnect extends DBConnector implements DBMethods {

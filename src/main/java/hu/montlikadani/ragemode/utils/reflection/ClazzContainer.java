@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 
 import hu.montlikadani.ragemode.utils.ServerVersion;
 
-public final class NMSContainer {
+public final class ClazzContainer {
 
 	private static Class<?> packetClass, iChatBaseComponent;
 	private static Class<?>[] chatBaseDeclaredClasses;
@@ -12,8 +12,8 @@ public final class NMSContainer {
 
 	static {
 		try {
-			packetClass = getNMSClass("Packet");
-			iChatBaseComponent = getNMSClass("IChatBaseComponent");
+			packetClass = classByName("net.minecraft.network.protocol", "Packet");
+			iChatBaseComponent = classByName("net.minecraft.network.chat", "IChatBaseComponent");
 
 			if ((chatBaseDeclaredClasses = iChatBaseComponent.getDeclaredClasses()).length > 0) {
 				jsonComponentMethod = chatBaseDeclaredClasses[0].getMethod("a", String.class);
@@ -23,8 +23,12 @@ public final class NMSContainer {
 		}
 	}
 
-	public static Class<?> getNMSClass(String name) throws ClassNotFoundException {
-		return Class.forName("net.minecraft.server." + ServerVersion.getArrayVersion()[3] + "." + name);
+	public static Class<?> classByName(String newPackageName, String name) throws ClassNotFoundException {
+		if (ServerVersion.isCurrentLower(ServerVersion.v1_17_R1) || newPackageName == null) {
+			newPackageName = "net.minecraft.server." + ServerVersion.getArrayVersion()[3];
+		}
+
+		return Class.forName(newPackageName + "." + name);
 	}
 
 	public static Class<?> getPacket() {

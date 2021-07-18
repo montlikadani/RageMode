@@ -16,7 +16,7 @@ import org.bukkit.inventory.EquipmentSlot;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.signs.SignData;
@@ -54,6 +54,13 @@ public final class EventListener implements org.bukkit.event.Listener {
 	}
 
 	@EventHandler
+	public void onEntityDeath(org.bukkit.event.entity.EntityDeathEvent event) {
+		if (event.getEntityType() == org.bukkit.entity.EntityType.ARMOR_STAND) {
+			plugin.getHoloHolder().deleteHologram(event.getEntity().getLocation());
+		}
+	}
+
+	@EventHandler
 	public void onSignBreak(BlockBreakEvent event) {
 		if (!ConfigValues.isSignsEnable() || !(event.getBlock().getState() instanceof Sign)) {
 			return;
@@ -75,16 +82,17 @@ public final class EventListener implements org.bukkit.event.Listener {
 
 	@EventHandler
 	public void onInteract(PlayerInteractEvent event) {
-		if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_9_R1) && event.getHand() != EquipmentSlot.HAND
+		if ((ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_9_R1) && event.getHand() != EquipmentSlot.HAND)
 				|| event.getClickedBlock() == null) {
 			return;
 		}
 
 		final Player player = event.getPlayer();
-		final org.bukkit.Location loc = event.getClickedBlock().getLocation();
 
 		if (player.hasPermission("ragemode.admin.area")
 				&& Misc.getItemInHand(player).getType() == ConfigValues.getSelectionItem()) {
+			final org.bukkit.Location loc = event.getClickedBlock().getLocation();
+
 			if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
 				plugin.getSelection().placeLoc1(player.getUniqueId(), loc);
 
@@ -103,7 +111,7 @@ public final class EventListener implements org.bukkit.event.Listener {
 
 		if (ConfigValues.isSignsEnable() && event.getAction() == Action.RIGHT_CLICK_BLOCK
 				&& event.getClickedBlock().getState() instanceof Sign) {
-			SignData data = SignCreator.getSignData(loc);
+			SignData data = SignCreator.getSignData(event.getClickedBlock().getLocation());
 
 			if (data == null) {
 				return;
@@ -114,7 +122,7 @@ public final class EventListener implements org.bukkit.event.Listener {
 				return;
 			}
 
-			Game game = GameUtils.getGame(data.getGameName());
+			BaseGame game = GameUtils.getGame(data.getGameName());
 			if (game == null) {
 				sendMessage(player, RageMode.getLang().get("game.does-not-exist"));
 				return;
@@ -130,7 +138,8 @@ public final class EventListener implements org.bukkit.event.Listener {
 			return;
 		}
 
-		if (!(event.getBlock().getState() instanceof Sign)) {
+		org.bukkit.block.BlockState state = event.getBlock().getState();
+		if (!(state instanceof Sign)) {
 			return; // Probably never
 		}
 
@@ -149,15 +158,12 @@ public final class EventListener implements org.bukkit.event.Listener {
 		}
 
 		String line1 = plugin.getComplement().getLine(event, 1);
-		Game game = GameUtils.getGame(line1);
+		BaseGame game = GameUtils.getGame(line1);
 		if (game == null) {
 			sendMessage(player, RageMode.getLang().get("invalid-game", "%game%", line1));
 			return;
 		}
 
-		Sign sign = (Sign) event.getBlock().getState();
-
-		SignCreator.createNewSign(sign, game.getName());
-		SignCreator.updateSign(sign.getLocation());
+		SignCreator.createNewSign((Sign) state, game.getName()).updateSign();
 	}
 }

@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -48,7 +47,7 @@ public final class points implements ICommand {
 			break;
 		}
 
-		Player target = Bukkit.getPlayer(args[2]);
+		Player target = plugin.getServer().getPlayer(args[2]);
 		if (target == null) {
 			sendMessage(sender, RageMode.getLang().get("commands.points.player-not-found"));
 			return false;

@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -8,7 +7,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.PlayerKickedFromGame;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.signs.SignCreator;
 import hu.montlikadani.ragemode.utils.Utils;
@@ -30,13 +29,13 @@ public final class kick implements ICommand {
 			return false;
 		}
 
-		Player target = Bukkit.getPlayer(args[2]);
+		Player target = plugin.getServer().getPlayer(args[2]);
 		if (target == null) {
 			sendMessage(sender, RageMode.getLang().get("commands.kick.player-not-found"));
 			return false;
 		}
 
-		Game playerGame = GameUtils.getGameByPlayer(target);
+		BaseGame playerGame = GameUtils.getGameByPlayer(target);
 		if (playerGame == null) {
 			sendMessage(sender, RageMode.getLang().get("commands.kick.player-currently-not-playing"));
 			return false;

@@ -47,7 +47,7 @@ public final class ReJoinDelay {
 		PLAYERTIMES.put(p, cal.getTimeInMillis());
 	}
 
-	public static String format(long ticks) {
+	private static String format(long ticks) {
 		long hours = ticks / 1000 / 60 / 60;
 		ticks -= (hours * 1000 * 60 * 60);
 
@@ -87,13 +87,15 @@ public final class ReJoinDelay {
 			return true;
 		}
 
-		if (isValid(player)) {
-			if (j == null || j.trim().isEmpty()) {
+		long time = getTimeByPlayer(player);
+
+		if (time > System.currentTimeMillis()) {
+			if (j == null || j.isEmpty()) {
 				j = "join";
 			}
 
 			Misc.sendMessage(player, RageMode.getLang().get("commands." + j + ".rejoin-delay", "%delay%",
-					format(getTimeByPlayer(player) - System.currentTimeMillis())));
+					format(time - System.currentTimeMillis())));
 			return false;
 		}
 

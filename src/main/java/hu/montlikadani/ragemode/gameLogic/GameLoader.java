@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.RMGameStartEvent;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameLogic.spawn.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.spawn.GameZombieSpawn;
 import hu.montlikadani.ragemode.gameLogic.spawn.IGameSpawn;
@@ -22,13 +23,13 @@ import hu.montlikadani.ragemode.utils.Utils;
 
 public final class GameLoader {
 
-	private Game game;
+	private final BaseGame game;
 
-	public GameLoader(Game game) {
+	public GameLoader(BaseGame game) {
 		this.game = game;
 	}
 
-	public Game getGame() {
+	public BaseGame getGame() {
 		return game;
 	}
 
@@ -48,6 +49,10 @@ public final class GameLoader {
 
 		for (PlayerManager pm : game.getPlayers()) {
 			Player player = pm.getPlayer();
+
+			if (player == null) {
+				continue;
+			}
 
 			GameUtils.addGameItems(player, true);
 
@@ -80,7 +85,7 @@ public final class GameLoader {
 		if (game.getGameType() == hu.montlikadani.ragemode.gameUtils.GameType.APOCALYPSE) {
 			IGameSpawn zombieSpawn = game.getSpawn(GameZombieSpawn.class);
 
-			if (zombieSpawn != null && !zombieSpawn.isReady()) {
+			if (zombieSpawn == null || !zombieSpawn.isReady()) {
 				GameUtils.broadcastToGame(game, RageMode.getLang().get("game.not-set-up"));
 				return false;
 			}

@@ -9,6 +9,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
+import hu.montlikadani.ragemode.signs.SignConfiguration;
 
 public class Configuration {
 
@@ -42,7 +43,6 @@ public class Configuration {
 		if (arenas_file.exists()) {
 			arenas = YamlConfiguration.loadConfiguration(arenas_file);
 			loadFile(arenas, arenas_file);
-			saveFile(arenas, arenas_file);
 		} else {
 			arenas = createFile(arenas_file, "arenas.yml", true);
 		}
@@ -58,7 +58,6 @@ public class Configuration {
 			if (datas_file.exists()) {
 				datas = YamlConfiguration.loadConfiguration(datas_file);
 				loadFile(datas, datas_file);
-				saveFile(datas, datas_file);
 			} else {
 				datas = createFile(datas_file, "datas.yml", true);
 			}
@@ -80,9 +79,7 @@ public class Configuration {
 
 		if (holosFile.exists()) {
 			holosConfig = YamlConfiguration.loadConfiguration(holosFile);
-			holosConfig.createSection("data");
 			loadFile(holosConfig, holosFile);
-			saveFile(holosConfig, holosFile);
 		} else {
 			holosConfig = createFile(holosFile, "holos.yml", true);
 		}
@@ -103,7 +100,8 @@ public class Configuration {
 	}
 
 	public void deleteEmptyFiles() {
-		for (File file : new File[] { holosFile, areas_File, arenas_file, rewards_file, items_file, datas_file }) {
+		for (File file : new File[] { holosFile, areas_File, arenas_file, rewards_file, items_file, datas_file,
+				SignConfiguration.getSignFile() }) {
 			if (file != null && file.exists() && file.length() == 0L) {
 				file.delete();
 			}

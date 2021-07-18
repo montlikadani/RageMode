@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.storage;
+package hu.montlikadani.ragemode.database.impl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,7 +23,7 @@ import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.database.DB;
 import hu.montlikadani.ragemode.database.DBType;
 import hu.montlikadani.ragemode.database.Database;
-import hu.montlikadani.ragemode.database.MySQLConnect;
+import hu.montlikadani.ragemode.database.connector.MySQLConnect;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 import hu.montlikadani.ragemode.runtimePP.RuntimePPManager;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
@@ -32,6 +32,8 @@ import hu.montlikadani.ragemode.utils.ReJoinDelay;
 
 @DB(type = DBType.MYSQL, fileBased = false)
 public class MySqlDB implements Database {
+
+	private final RageMode rm = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 
 	private MySQLConnect connect;
 
@@ -372,24 +374,9 @@ public class MySqlDB implements Database {
 
 		Debug.logConsole("Attempting to connect to mysql...");
 
-		String prefix = ConfigValues.getDatabaseTablePrefix();
-		if (prefix.isEmpty()) {
-			prefix = "rm_";
-		}
-
-		String host = ConfigValues.getHost(), port = ConfigValues.getPort(), database = ConfigValues.getDatabase(),
-				username = ConfigValues.getUsername(), password = ConfigValues.getPassword(),
-				charEncode = ConfigValues.getEncoding();
-
-		boolean serverCertificate = ConfigValues.isCertificate(), useUnicode = ConfigValues.isUnicode(),
-				autoReconnect = ConfigValues.isAutoReconnect(), useSSL = ConfigValues.isUseSSL();
-
-		if (charEncode.isEmpty()) {
-			charEncode = java.nio.charset.StandardCharsets.UTF_8.name();
-		}
-
-		if ((connect = new MySQLConnect(host, port, database, username, password, serverCertificate, useUnicode,
-				charEncode, autoReconnect, useSSL, prefix)).isConnected()) {
+		if ((connect = new MySQLConnect(ConfigValues.getMySqlDatabaseConnectionCommand(),
+				ConfigValues.getMysqlUsername(), ConfigValues.getMysqlPassword(),
+				ConfigValues.getDatabaseTablePrefix())).isConnected()) {
 			Debug.logConsole("Connected to MySQL!");
 		}
 	}
@@ -400,7 +387,7 @@ public class MySqlDB implements Database {
 			connectDatabase();
 		}
 
-		RuntimePPManager.loadPPListFromDatabase();
+		RuntimePPManager.loadPPListFromDatabase(rm.getDatabase());
 		loadPlayerStatistics();
 
 		if (startup) {
@@ -431,15 +418,13 @@ public class MySqlDB implements Database {
 
 			ConfigValues.databaseType = type;
 
-			RageMode plugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
+			rm.getConfig().set("database.type", type);
+			Configuration.saveFile(rm.getConfig(), rm.getConfiguration().getCfgFile());
 
-			plugin.getConfig().set("database.type", type);
-			Configuration.saveFile(plugin.getConfig(), plugin.getConfiguration().getCfgFile());
+			rm.connectDatabase(true);
 
-			plugin.connectDatabase(true);
-
-			RuntimePPManager.getRuntimePPList().forEach(plugin.getDatabase()::addPlayerStatistics);
-			RuntimePPManager.loadPPListFromDatabase();
+			RuntimePPManager.getRuntimePPList().forEach(rm.getDatabase()::addPlayerStatistics);
+			RuntimePPManager.loadPPListFromDatabase(rm.getDatabase());
 			return false;
 		});
 	}

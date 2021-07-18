@@ -10,8 +10,6 @@ import java.util.logging.Level;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,8 +22,13 @@ import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.Language;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.database.Database;
+import hu.montlikadani.ragemode.database.impl.MySqlDB;
+import hu.montlikadani.ragemode.database.impl.SqlDB;
+import hu.montlikadani.ragemode.database.impl.YamlDB;
 import hu.montlikadani.ragemode.events.*;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
+import hu.montlikadani.ragemode.gameLogic.base.PlayerGame;
+import hu.montlikadani.ragemode.gameLogic.base.ZombieGame;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -35,9 +38,6 @@ import hu.montlikadani.ragemode.items.ItemHandler;
 import hu.montlikadani.ragemode.managers.BossbarManager;
 import hu.montlikadani.ragemode.managers.RewardManager;
 import hu.montlikadani.ragemode.signs.SignCreator;
-import hu.montlikadani.ragemode.storage.MySqlDB;
-import hu.montlikadani.ragemode.storage.SqlDB;
-import hu.montlikadani.ragemode.storage.YamlDB;
 import hu.montlikadani.ragemode.utils.Debug;
 import hu.montlikadani.ragemode.utils.ServerVersion;
 import hu.montlikadani.ragemode.utils.UpdateDownloader;
@@ -47,7 +47,7 @@ import hu.montlikadani.ragemode.utils.stuff.Complement1;
 import hu.montlikadani.ragemode.utils.stuff.Complement2;
 import net.milkbowl.vault.economy.Economy;
 
-public final class RageMode extends JavaPlugin {
+public final class RageMode extends org.bukkit.plugin.java.JavaPlugin {
 
 	private Configuration conf;
 	private BossbarManager bossManager;
@@ -63,7 +63,7 @@ public final class RageMode extends JavaPlugin {
 
 	private boolean vault = false, kyoriSupported = false, isPaper = false, isSpigot = false;
 
-	private final List<Game> games = new ArrayList<>();
+	private final List<BaseGame> games = new ArrayList<>();
 
 	private final ItemHandler[] gameItems = new ItemHandler[7];
 	private final ItemHandler[] lobbyItems = new ItemHandler[4];
@@ -163,8 +163,9 @@ public final class RageMode extends JavaPlugin {
 
 		try {
 			Class.forName("net.kyori.adventure.text.Component");
+			org.bukkit.inventory.meta.ItemMeta.class.getDeclaredMethod("displayName");
 			kyoriSupported = true;
-		} catch (ClassNotFoundException e) {
+		} catch (NoSuchMethodException | ClassNotFoundException e) {
 		}
 
 		complement = (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_16_R3) && kyoriSupported)
@@ -200,14 +201,15 @@ public final class RageMode extends JavaPlugin {
 			return false;
 		}
 
-		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+		org.bukkit.plugin.RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager()
+				.getRegistration(Economy.class);
 		return rsp != null && (econ = rsp.getProvider()) != null;
 	}
 
 	public synchronized boolean reload() {
 		HandlerList.unregisterAll(this);
 
-		for (Game game : games) {
+		for (BaseGame game : games) {
 			assert game != null;
 
 			if (game.isRunning()) {
@@ -258,7 +260,11 @@ public final class RageMode extends JavaPlugin {
 				.forEach(l -> getServer().getPluginManager().registerEvents(l, this));
 
 		if (isPaper) {
-			getServer().getPluginManager().registerEvents(new PaperListener(), this);
+			try {
+				Class.forName("io.papermc.paper.event.entity.EntityMoveEvent");
+				getServer().getPluginManager().registerEvents(new PaperListener(), this);
+			} catch (ClassNotFoundException e) {
+			}
 		}
 
 		if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_13_R2)) {
@@ -288,7 +294,18 @@ public final class RageMode extends JavaPlugin {
 					type = GameType.NORMAL;
 				}
 
-				Game game = new Game(name, type);
+				BaseGame game;
+
+				switch (type) {
+				case NORMAL:
+					game = new PlayerGame(name);
+					break;
+				case APOCALYPSE:
+					game = new ZombieGame(name);
+					break;
+				default:
+					continue;
+				}
 
 				// Loads the game locker
 				game.setStatus(section.getBoolean(name + ".lock") ? GameStatus.NOTREADY : GameStatus.READY);
@@ -368,7 +385,7 @@ public final class RageMode extends JavaPlugin {
 		}
 
 		path = "lobbyitems.shopitem";
-		if (c.contains(path) && c.getBoolean(path + ".enabled")) {
+		if (c.getBoolean(path + ".enabled")) {
 			lobbyItems[2] = new ItemHandler().setItem(c.getString(path + ".item", "emerald"))
 					.setDisplayName(c.getString(path + ".name", "&2Shop")).setLore(c.getStringList(path + ".lore"))
 					.setSlot(c.getInt(path + ".slot", 1));
@@ -399,7 +416,7 @@ public final class RageMode extends JavaPlugin {
 	 * @see GameUtils#getGame(String)
 	 */
 	@Nullable
-	public Game getGame(int index) {
+	public BaseGame getGame(int index) {
 		return (index >= games.size() || index < 0) ? null : games.get(index);
 	}
 
@@ -410,7 +427,7 @@ public final class RageMode extends JavaPlugin {
 	 * @param game {@link Game}
 	 * @throws GameRunningException if the given game is currently running
 	 */
-	public void removeGame(Game game) throws GameRunningException {
+	public void removeGame(BaseGame game) throws GameRunningException {
 		removeGame(game.getName());
 	}
 
@@ -467,7 +484,7 @@ public final class RageMode extends JavaPlugin {
 	}
 
 	@NotNull
-	public List<Game> getGames() {
+	public List<BaseGame> getGames() {
 		return games;
 	}
 

@@ -21,8 +21,6 @@ public class ScoreBoard {
 
 	private final Map<UUID, ScoreBoardHolder> scoreboards = new HashMap<>();
 
-	private final Scoreboard scoreboard = org.bukkit.Bukkit.getScoreboardManager().getNewScoreboard();
-
 	private final RageMode plugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(RageMode.class);
 
 	@SuppressWarnings("deprecation")
@@ -30,6 +28,8 @@ public class ScoreBoard {
 		if (player == null) {
 			return;
 		}
+
+		Scoreboard scoreboard = plugin.getServer().getScoreboardManager().getNewScoreboard();
 
 		Objective objective = scoreboard.getObjective("ragescores");
 		if (objective == null) {

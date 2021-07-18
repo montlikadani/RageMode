@@ -16,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
 /**
@@ -56,7 +56,7 @@ public class GameArea {
 
 		World lowLocWorld = area.getLowLoc().getWorld();
 
-		center = new Location(lowLocWorld, x, lowLocWorld.getHighestBlockYAt((int) x, (int) z), z).clone();
+		center = new Location(lowLocWorld, x, lowLocWorld.getHighestBlockYAt((int) x, (int) z), z);
 	}
 
 	/**
@@ -68,10 +68,10 @@ public class GameArea {
 	}
 
 	/**
-	 * @return the {@link Game} instance of this area
+	 * @return the {@link BaseGame} instance of this area
 	 */
 	@Nullable
-	public Game getGame() {
+	public BaseGame getGame() {
 		return GameUtils.getGame(gameName);
 	}
 
@@ -98,7 +98,7 @@ public class GameArea {
 	 */
 	@NotNull
 	public Location getCenter() {
-		return center;
+		return center.clone();
 	}
 
 	/**

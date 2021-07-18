@@ -19,25 +19,27 @@ public class ConfigValues {
 
 	public static String databaseType;
 
-	private static String lang, hubName, databaseTablePrefix, username, password, database, host, port, encoding,
-			sqlFileName, signGameRunning, signGameWaiting, signGameFull, signGameLocked, tabPlayerListName, sbTitle,
-			chatFormat;
+	private static String lang, hubName, databaseTablePrefix, mySqlDatabaseConnectionCommand, mysqlUsername,
+			mysqlPassword, sqlFileName, signGameRunning, signGameWaiting, signGameFull, signGameLocked,
+			tabPlayerListName, sbTitle, chatFormat;
 
 	private static boolean developerMode, checkForUpdates, downloadUpdates, logConsole, savePlayerData, requireEmptyInv,
-			bungee, autoReconnect, useSSL, unicode, certificate, signsEnable, spectatorEnable, chatEnableinLobby,
-			playerLevelAsTimeCounter, playersCanJoinRandomToRunningGames, perJoinPermissions, damagePlayerFall,
-			hidePlayerNameTag, cancelRedstoneActivating, cancelDoorUse, useGrenadeTrails, useArrowTrails,
-			enableChatInGame, kickRandomPlayerIfJoinsVipToFullGame, switchGMForPlayers, disableAllCommandsInGameFreeze,
+			bungee, signsEnable, spectatorEnable, chatEnableinLobby, playerLevelAsTimeCounter,
+			playersCanJoinRandomToRunningGames, perJoinPermissions, damagePlayerFall, hidePlayerNameTag,
+			cancelRedstoneActivating, cancelDoorUse, useGrenadeTrails, useArrowTrails, enableChatInGame,
+			kickRandomPlayerIfJoinsVipToFullGame, switchGMForPlayers, disableAllCommandsInGameFreeze,
 			enableChatAfterEnd, tabEnable, scoreboardEnable, enableChatFormat, restartServer, stopServer,
 			rejoinDelayEnabled, rememberRejoinDelay, freezePlayers, waitForNextSpawnAfterZombiesAreDead,
-			notifySpectatorsToLeave;
+			notifySpectatorsToLeave, allowAllCommandsForOperators, allowAllCommandsForSpecOperators;
 
 	private static int gameFreezeTime, bowKill, axeKill, axeDeath, knifeKill, explosionKill, suicide, grenadeKill,
 			respawnProtectTime, rejoinDelayHour, rejoinDelayMinute, rejoinDelaySecond, delayBeforeFirstZombiesSpawn,
 			delayAfterNextZombiesSpawning, playerLives, timeBetweenMessageSending;
 
-	private static List<String> signTextLines, allowedSpectatorCommands, allowedInGameCommands, scoreboardContent,
-			tabListHeader, tabListFooter;
+	private static List<String> signTextLines, scoreboardContent, tabListHeader, tabListFooter;
+
+	private static List<ShortenedCommand> allowedInGameCommands = new ArrayList<>(),
+			allowedSpectatorCommands = new ArrayList<>();
 
 	private static final List<MessageAction> messageActions = new ArrayList<>();
 
@@ -79,7 +81,8 @@ public class ConfigValues {
 		f.addComment("database.type", "Database types: yaml, mysql, sqlite");
 		f.addComment("database.table-prefix", "The database table name", "This is only for sql databases.");
 		f.addComment("database.SQL", "SQLite database settings");
-		f.addComment("database.MySQL", "MySQL database settings");
+		f.addComment("database.MySQL", "MySQL database connection",
+				"Connection variables and documentation: https://dev.mysql.com/doc/refman/5.7/en/connecting.html");
 		f.addComment("signs", "Sign texts");
 		f.addComment("signs.game", "Sign text when the game running or waiting for players.");
 		f.addComment("signs.list", "Sign text list (max. 4 line)",
@@ -107,6 +110,8 @@ public class ConfigValues {
 		f.addComment("spectator.notify-spectators-to-leave.time-between-message-sending",
 				"Time in seconds between sending notify message.");
 		f.addComment("spectator.allowed-commands", "Which spectator commands will be allowed to use in-game?");
+		f.addComment("spectator.allowed-commands.allow-all-commands-for-operators",
+				"Does all the commands allowed for operator players or not?");
 		f.addComment("lobby", "Lobby settings");
 		f.addComment("lobby.enable-chat-in-lobby", "Should be enable chat in lobby?",
 				"This option will be ignored with \"ragemode.bypass.lobby.lockchat\" permission");
@@ -164,6 +169,8 @@ public class ConfigValues {
 		f.addComment("game.scoreboard", "Displays the score board on the right screen.");
 		f.addComment("game.chat-format", "Chat formatting");
 		f.addComment("game.allowed-commands", "The in game allowed commands, which the player can use in the game.");
+		f.addComment("game.allowed-commands.allow-all-commands-for-operators",
+				"Does all the commands allowed for operator players or not?");
 		f.addComment("game-stop", "Stop the server or restart at the end of the game?");
 		f.addComment("rejoin-delay", "Rejoin delay to add how many times a player can join to games.");
 		f.addComment("rejoin-delay.remember-to-database", "Save the currently running delays to the database.",
@@ -186,17 +193,15 @@ public class ConfigValues {
 		bungee = f.get("bungee.enable", false);
 		hubName = f.get("bungee.hub-name", "lobby");
 		databaseType = f.get("database.type", "yaml");
-		databaseTablePrefix = f.get("database.table-prefix", "ragemode_");
-		autoReconnect = f.get("database.MySQL.auto-reconnect", true);
-		useSSL = f.get("database.MySQL.use-SSL", false);
-		username = f.get("database.MySQL.username", "accountname");
-		password = f.get("database.MySQL.password", "password");
-		database = f.get("database.MySQL.database", "database");
-		host = f.get("database.MySQL.host", "localhost");
-		port = f.get("database.MySQL.port", "3306");
-		unicode = f.get("database.MySQL.use-unicode", true);
-		certificate = f.get("database.MySQL.verify-server-certificate", false);
-		encoding = f.get("database.MySQL.character-encoding", "UTF-8");
+
+		if ((databaseTablePrefix = f.get("database.table-prefix", "ragemode_")).isEmpty()) {
+			databaseTablePrefix = "rm_";
+		}
+
+		mysqlUsername = f.get("database.MySQL.username", "accountname");
+		mysqlPassword = f.get("database.MySQL.password", "password");
+		mySqlDatabaseConnectionCommand = f.get("database.MySQL.server-connection-command",
+				"jdbc:mysql:/localhost:3306/database?verifyServerCertificate=false&maxReconnects=1&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false");
 		sqlFileName = f.get("database.SQL.file-name", "rm.sqlite");
 		signsEnable = f.get("signs.enable", false);
 		signGameRunning = f.get("signs.game.running", "&6&oRunning...");
@@ -267,9 +272,21 @@ public class ConfigValues {
 				"&ePlayers&3 [%current-players%/%max-players%&3]", "%running%"));
 		lobbyTitleBeginTimes = f.getIntList("titles.lobby-waiting.begin-times", Arrays.asList(5, 4, 3, 2, 1));
 		lobbyBeginTimes = f.getIntList("lobby.begin-times", Arrays.asList(30, 20, 10, 5, 4, 3, 2, 1));
-		allowedSpectatorCommands = f.get("spectator.allowed-commands", Arrays.asList("/rm leave", "/ragemode leave"));
-		allowedInGameCommands = f.get("game.allowed-commands",
-				Arrays.asList("/rm leave", "/ragemode leave", "/ragemode stopgame"));
+
+		allowAllCommandsForSpecOperators = f.get("spectator.allowed-commands.allow-all-commands-for-operators", true);
+
+		for (String l : f.get("spectator.allowed-commands.list",
+				Arrays.asList("/rm;ragemode leave", "/ragemode;rm stopgame"))) {
+			allowedSpectatorCommands.add(new ShortenedCommand(l));
+		}
+
+		allowAllCommandsForOperators = f.get("game.allowed-commands.allow-all-commands-for-operators", true);
+
+		for (String line : f.get("game.allowed-commands.list",
+				Arrays.asList("/rm;ragemode leave", "/ragemode;rm stopgame", "/rm;ragemode listplayers",
+						"/rm;ragemode listgames", "/rm;ragemode kick", "stop", "/rm;ragemode stats"))) {
+			allowedInGameCommands.add(new ShortenedCommand(line));
+		}
 
 		try {
 			signBackground = SignBackgrounds.valueOf(f.get("signs.background.type", "none").toUpperCase());
@@ -295,6 +312,58 @@ public class ConfigValues {
 		f.save();
 	}
 
+	public static boolean isCommandAllowed(boolean spectator, String message) {
+		for (ShortenedCommand allowed : spectator ? allowedSpectatorCommands : allowedInGameCommands) {
+			for (String cmd : allowed.getCommandWithAliases()) {
+				if (org.apache.commons.lang.StringUtils.containsIgnoreCase(message, cmd)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	public static final class ShortenedCommand {
+
+		private String[] commandWithAliases;
+
+		public ShortenedCommand(String line) {
+			String[] split = line.split(" ", 2);
+
+			if (split.length < 2) {
+				commandWithAliases = new String[] { line };
+				return;
+			}
+
+			String[] com = line.split(";", 2);
+
+			if (com.length < 2) {
+				commandWithAliases = new String[] { line };
+				return;
+			}
+
+			commandWithAliases = new String[com.length];
+
+			String sub = split[1];
+
+			for (int i = 0; i < com.length; i++) {
+				String aliase = com[i];
+
+				int indexOf = aliase.indexOf(' ');
+				if (indexOf >= 0) {
+					aliase = aliase.substring(0, indexOf);
+				}
+
+				commandWithAliases[i] = (i != 0 ? '/' : "") + aliase + ' ' + sub;
+			}
+		}
+
+		public String[] getCommandWithAliases() {
+			return commandWithAliases;
+		}
+	}
+
 	public static final class TitleSettings {
 
 		private String title = "", subTitle = "";
@@ -302,10 +371,10 @@ public class ConfigValues {
 		private final int[] times = new int[] { 0, 20, 5 };
 
 		public TitleSettings(CommentedConfig c, TitleType type) {
-			title = c.get("titles." + type.toString() + ".title", "");
-			subTitle = c.get("titles." + type.toString() + ".subtitle", "");
+			title = c.get("titles." + type.name + ".title", "");
+			subTitle = c.get("titles." + type.name + ".subtitle", "");
 
-			String[] split = c.get("titles." + type.toString() + ".time", "").split(", ", times.length);
+			String[] split = c.get("titles." + type.name + ".time", "").split(", ", times.length);
 
 			for (int i = 0; i < times.length; i++) {
 				try {
@@ -491,30 +560,6 @@ public class ConfigValues {
 		return selectionItem;
 	}
 
-	public static String getUsername() {
-		return username;
-	}
-
-	public static String getPassword() {
-		return password;
-	}
-
-	public static String getDatabase() {
-		return database;
-	}
-
-	public static String getHost() {
-		return host;
-	}
-
-	public static String getPort() {
-		return port;
-	}
-
-	public static String getEncoding() {
-		return encoding;
-	}
-
 	public static boolean isLogConsole() {
 		return logConsole;
 	}
@@ -537,22 +582,6 @@ public class ConfigValues {
 
 	public static boolean isBungee() {
 		return bungee;
-	}
-
-	public static boolean isAutoReconnect() {
-		return autoReconnect;
-	}
-
-	public static boolean isUseSSL() {
-		return useSSL;
-	}
-
-	public static boolean isUnicode() {
-		return unicode;
-	}
-
-	public static boolean isCertificate() {
-		return certificate;
 	}
 
 	public static String getSqlFileName() {
@@ -767,12 +796,20 @@ public class ConfigValues {
 		return signTextLines;
 	}
 
-	public static List<String> getAllowedSpectatorCommands() {
+	public static List<ShortenedCommand> getAllowedSpectatorCommands() {
 		return allowedSpectatorCommands;
 	}
 
-	public static List<String> getAllowedInGameCommands() {
+	public static List<ShortenedCommand> getAllowedInGameCommands() {
 		return allowedInGameCommands;
+	}
+
+	public static boolean isAllowAllCommandsForOperators() {
+		return allowAllCommandsForOperators;
+	}
+
+	public static boolean isAllowAllCommandsForSpecOperators() {
+		return allowAllCommandsForSpecOperators;
 	}
 
 	public static List<Integer> getGameEndBroadcast() {
@@ -809,5 +846,17 @@ public class ConfigValues {
 
 	public static String getTabPlayerListName() {
 		return tabPlayerListName;
+	}
+
+	public static String getMySqlDatabaseConnectionCommand() {
+		return mySqlDatabaseConnectionCommand;
+	}
+
+	public static String getMysqlUsername() {
+		return mysqlUsername;
+	}
+
+	public static String getMysqlPassword() {
+		return mysqlPassword;
 	}
 }

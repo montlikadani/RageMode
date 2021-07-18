@@ -77,10 +77,6 @@ public class GameSettings {
 	}
 
 	public final void saveGamesSettings() {
-		if (gameName.isEmpty()) {
-			return;
-		}
-
 		final RageMode plugin = JavaPlugin.getPlugin(RageMode.class);
 
 		org.bukkit.configuration.file.FileConfiguration conf = plugin.getConfiguration().getArenasCfg();
@@ -106,6 +102,7 @@ public class GameSettings {
 	 * 
 	 * @return the world object if present, otherwise {@link Optional#empty()}
 	 */
+	@org.jetbrains.annotations.NotNull
 	public final Optional<World> getWorld() {
 		return worldName == null ? Optional.empty() : Optional.ofNullable(Bukkit.getServer().getWorld(worldName));
 	}

@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -10,7 +9,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameLogic.spawn.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.spawn.GameZombieSpawn;
 import hu.montlikadani.ragemode.gameLogic.spawn.IGameSpawn;
@@ -45,9 +44,9 @@ public final class spawn implements ICommand {
 			return false;
 		}
 
-		Game game = GameUtils.getGame(args[1]);
+		BaseGame game = GameUtils.getGame(args[1]);
 		if (game == null) {
-			sendMessage(sender, RageMode.getLang().get("invalid-game"));
+			sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", args[1]));
 			return false;
 		}
 
@@ -152,7 +151,7 @@ public final class spawn implements ICommand {
 			float spawnYaw = (float) aFile.getDouble(sPath + "yaw");
 			float spawnPitch = (float) aFile.getDouble(sPath + "pitch");
 
-			org.bukkit.World world = Bukkit.getWorld(aFile.getString(sPath + "world", ""));
+			org.bukkit.World world = plugin.getServer().getWorld(aFile.getString(sPath + "world", ""));
 			if (world == null) {
 				world = ((Player) sender).getWorld(); // Breh
 			}

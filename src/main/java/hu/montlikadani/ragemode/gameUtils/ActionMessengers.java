@@ -31,7 +31,7 @@ public class ActionMessengers {
 	}
 
 	@NotNull
-	public UUID getUniqueId() {
+	public UUID getPlayerId() {
 		return playerUUID;
 	}
 

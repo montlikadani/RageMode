@@ -7,7 +7,6 @@ import org.bukkit.entity.Player;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
-import hu.montlikadani.ragemode.utils.reflection.Reflections;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
@@ -52,14 +51,12 @@ public final class RmCommand implements CommandExecutor {
 		for (Class<?> s : subCmds) {
 			try {
 				if (!s.isAnnotationPresent(CommandProcessor.class)) {
+					org.bukkit.Bukkit.getServer().getLogger().log(java.util.logging.Level.WARNING,
+							"Class " + s.getSimpleName() + " does not annotate to CommandProcessor!");
 					continue;
 				}
 
-				if (Reflections.getCurrentJavaVersion() >= 9) {
-					cmds.add((ICommand) s.getDeclaredConstructor().newInstance());
-				} else {
-					cmds.add((ICommand) s.newInstance());
-				}
+				cmds.add((ICommand) s.getDeclaredConstructor().newInstance());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

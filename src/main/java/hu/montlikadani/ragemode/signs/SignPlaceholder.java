@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.utils.Utils;
 
@@ -20,7 +20,7 @@ public class SignPlaceholder {
 		return lines;
 	}
 
-	protected List<String> parsePlaceholder(Game game) {
+	protected List<String> parsePlaceholder(BaseGame game) {
 		List<String> variables = new ArrayList<>();
 
 		if (lines == null) {
@@ -42,39 +42,36 @@ public class SignPlaceholder {
 			String line = lines.get(i);
 			line = line.replace("%game%", game.getName());
 
-			if (line.contains("%current-players%")) {
+			if (line.indexOf("%current-players%") >= 0) {
 				line = line.replace("%current-players%",
 						(game.getStatus() == GameStatus.RUNNING || game.getStatus() == GameStatus.WAITING)
 								? Integer.toString(gamePlayersSize)
 								: "0");
 			}
 
-			if (line.contains("%max-players%"))
+			if (line.indexOf("%max-players%") >= 0)
 				line = line.replace("%max-players%", Integer.toString(game.maxPlayers));
 
-			if (line.contains("%running%")) {
-				switch (game.getStatus()) {
-				case WAITING:
-					line = line.replace("%running%",
-							(gamePlayersSize >= game.maxPlayers) ? ConfigValues.getSignGameFull()
-									: ConfigValues.getSignGameWaiting());
-					break;
-				case RUNNING:
-					if (game.isRunning()) {
-						line = line.replace("%running%", ConfigValues.getSignGameRunning());
-					}
-
-					break;
-				case NOTREADY:
-					line = line.replace("%running%", ConfigValues.getSignGameLocked());
-					break;
-				case READY:
-				case STOPPED:
-					line = line.replace("%running%", ConfigValues.getSignGameWaiting());
-					break;
-				default:
-					break;
+			switch (game.getStatus()) {
+			case WAITING:
+				line = line.replace("%running%", (gamePlayersSize >= game.maxPlayers) ? ConfigValues.getSignGameFull()
+						: ConfigValues.getSignGameWaiting());
+				break;
+			case RUNNING:
+				if (game.isRunning()) {
+					line = line.replace("%running%", ConfigValues.getSignGameRunning());
 				}
+
+				break;
+			case NOTREADY:
+				line = line.replace("%running%", ConfigValues.getSignGameLocked());
+				break;
+			case READY:
+			case STOPPED:
+				line = line.replace("%running%", ConfigValues.getSignGameWaiting());
+				break;
+			default:
+				break;
 			}
 
 			variables.add(line = Utils.colors(line));

@@ -63,14 +63,9 @@ public class CommentedConfig extends YamlConfiguration {
 			return;
 		}
 
-		String data = insertComments(saveToString);
-		PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8.name());
-
-		try {
-			writer.write(data);
-		} finally {
+		try (PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8.name())) {
+			writer.write(insertComments(saveToString));
 			writer.flush();
-			writer.close();
 		}
 	}
 
@@ -240,10 +235,6 @@ public class CommentedConfig extends YamlConfiguration {
 
 	public YamlConfiguration getYml() {
 		YamlConfiguration config = new YamlConfiguration();
-
-		if (file == null || !file.exists()) {
-			return config;
-		}
 
 		try (InputStreamReader reader = new InputStreamReader(new FileInputStream(file))) {
 			config.load(reader);

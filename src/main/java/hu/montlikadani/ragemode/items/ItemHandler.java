@@ -113,13 +113,13 @@ public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 	}
 
 	public ItemHandler setAmount(int amount) {
-		this.amount = amount < 1 ? 1 : amount;
+		this.amount = amount;
 		return this;
 	}
 
 	public ItemHandler setDisplayName(String displayName) {
 		if (displayName != null) {
-			this.displayName =  displayName;
+			this.displayName = displayName;
 		}
 
 		return this;
@@ -155,7 +155,7 @@ public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 
 	@Override
 	public ItemStack get() {
-		if (builtItem != null || item == null) {
+		if (amount < 1 || builtItem != null || item == null) {
 			return builtItem;
 		}
 
@@ -185,7 +185,7 @@ public class ItemHandler implements Cloneable, Supplier<ItemStack> {
 
 	@Override
 	public boolean equals(Object obj) {
-		return obj == builtItem || obj == item || this == obj;
+		return obj == item || this == obj || (obj instanceof ItemStack && ((ItemStack) obj).isSimilar(builtItem));
 	}
 
 	@Override

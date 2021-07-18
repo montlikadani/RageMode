@@ -23,7 +23,9 @@ public enum GameItems {
 		this.metaName = metaName;
 		this.killTextPath = killTextPath;
 
-		item = Items.getGameItem(itemIndex);
+		if (itemIndex >= 0) {
+			item = Items.getGameItem(itemIndex);
+		}
 	}
 
 	@NotNull
@@ -36,7 +38,7 @@ public enum GameItems {
 		return killTextPath;
 	}
 
-	@NotNull
+	@org.jetbrains.annotations.Nullable
 	public ItemHandler getItem() {
 		return item;
 	}

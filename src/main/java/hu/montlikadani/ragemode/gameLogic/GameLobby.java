@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.config.Configuration;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 
 public final class GameLobby {
 
@@ -20,10 +21,10 @@ public final class GameLobby {
 	 */
 	public Location location;
 
-	private Game game;
-	private LobbyTimer lobbyTimer;
+	private final BaseGame game;
+	private final LobbyTimer lobbyTimer;
 
-	GameLobby(Game game) {
+	public GameLobby(BaseGame game) {
 		Validate.notNull(game, "Game cannot be null");
 
 		this.game = game;
@@ -92,6 +93,7 @@ public final class GameLobby {
 	 * 
 	 * @return {@link LobbyTimer}
 	 */
+	@org.jetbrains.annotations.NotNull
 	public LobbyTimer getLobbyTimer() {
 		return lobbyTimer;
 	}

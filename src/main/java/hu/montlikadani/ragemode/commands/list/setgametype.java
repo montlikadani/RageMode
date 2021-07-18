@@ -8,7 +8,7 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameType;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 
@@ -27,7 +27,7 @@ public final class setgametype implements ICommand {
 			return false;
 		}
 
-		Game game = GameUtils.getGame(args[1]);
+		BaseGame game = GameUtils.getGame(args[1]);
 		if (game == null) {
 			sendMessage(sender, RageMode.getLang().get("invalid-game", "%game%", args[1]));
 			return false;
@@ -39,12 +39,15 @@ public final class setgametype implements ICommand {
 		}
 
 		GameType type = GameType.getByName(args[2]);
-		game.setGameType(type);
-		type = game.getGameType();
 
-		plugin.getConfiguration().getArenasCfg().set("arenas." + game.getName() + ".gametype",
-				type.toString().toLowerCase());
-		Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
+		if (type != game.getGameType()) {
+			game.setGameType(type);
+			type = game.getGameType();
+
+			plugin.getConfiguration().getArenasCfg().set("arenas." + game.getName() + ".gametype",
+					type.toString().toLowerCase());
+			Configuration.saveFile(plugin.getConfiguration().getArenasCfg(), plugin.getConfiguration().getArenasFile());
+		}
 
 		sendMessage(sender, RageMode.getLang().get("commands.setgametype.set", "%game%", game.getName()));
 		return true;

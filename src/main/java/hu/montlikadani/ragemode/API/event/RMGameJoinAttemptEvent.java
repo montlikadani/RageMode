@@ -4,7 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 
 /**
  * Called when a player attempted to join to a game.
@@ -14,7 +14,7 @@ public class RMGameJoinAttemptEvent extends GameEvent implements Cancellable {
 	private Player player;
 	private boolean cancelled = false;
 
-	public RMGameJoinAttemptEvent(Game game, Player player) {
+	public RMGameJoinAttemptEvent(BaseGame game, Player player) {
 		super(game);
 
 		this.player = player;

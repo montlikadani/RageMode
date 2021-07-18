@@ -5,11 +5,11 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
-import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
@@ -18,6 +18,8 @@ import hu.montlikadani.ragemode.utils.ServerVersion;
 public class BossbarManager {
 
 	private final Map<UUID, BossBar> bossbarTask = new HashMap<>();
+
+	private final JavaPlugin rm = JavaPlugin.getProvidingPlugin(RageMode.class);
 
 	public Map<UUID, BossBar> getBossbarMap() {
 		return bossbarTask;
@@ -42,9 +44,8 @@ public class BossbarManager {
 			style = BarStyle.SOLID;
 		}
 
-		final BossBar boss = Bukkit.createBossBar(message, color, style);
+		final BossBar boss = rm.getServer().createBossBar(message, color, style);
 
-		boss.removePlayer(player);
 		boss.addPlayer(player);
 		boss.setVisible(true);
 
@@ -73,7 +74,7 @@ public class BossbarManager {
 				break;
 			}
 
-			Bukkit.getScheduler().runTaskLater(org.bukkit.plugin.java.JavaPlugin.getProvidingPlugin(RageMode.class), () -> {
+			rm.getServer().getScheduler().runTaskLater(rm, () -> {
 				if (boss.getProgress() <= 0.2D || !GameUtils.isPlayerPlaying(player)) {
 					removeBossbar(player);
 					return;

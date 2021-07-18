@@ -1,13 +1,13 @@
 package hu.montlikadani.ragemode.API.event;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 
 /**
  * Called when a game has been deleted.
  */
 public class RMGameDeleteEvent extends GameEvent {
 
-	public RMGameDeleteEvent(Game game) {
+	public RMGameDeleteEvent(BaseGame game) {
 		super(game);
 	}
 }

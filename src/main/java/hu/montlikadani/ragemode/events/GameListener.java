@@ -2,7 +2,6 @@ package hu.montlikadani.ragemode.events;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -63,10 +62,6 @@ import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-
-import com.google.common.collect.Iterables;
 
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.area.GameAreaManager;
@@ -76,7 +71,7 @@ import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerKilledEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerPreRespawnEvent;
 import hu.montlikadani.ragemode.API.event.RMPlayerRespawnedEvent;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameLogic.GameStatus;
 import hu.montlikadani.ragemode.gameLogic.spawn.GameSpawn;
 import hu.montlikadani.ragemode.gameLogic.spawn.IGameSpawn;
@@ -137,11 +132,6 @@ public final class GameListener implements org.bukkit.event.Listener {
 	public void onGameStop(RMGameStopEvent event) {
 		PRESSUREMINES.forEach(PressureMine::removeMines);
 		PRESSUREMINES.clear();
-
-		Game game = event.getGame();
-		if (game.getGameType() == GameType.APOCALYPSE && !game.getPlayers().isEmpty()) {
-			Iterables.get(game.getPlayers(), 0).getPlayer().getWorld().setTime(game.worldTime);
-		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
@@ -159,7 +149,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 			return;
 		}
 
-		Game game = pm.getPlayerGame();
+		BaseGame game = pm.getPlayerGame();
 		if (game == null) {
 			return;
 		}
@@ -207,7 +197,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 		}
 
 		Player shooter = (Player) proj.getShooter();
-		Game game = GameUtils.getGameByPlayer(shooter);
+		BaseGame game = GameUtils.getGameByPlayer(shooter);
 		if (game == null) {
 			return;
 		}
@@ -236,7 +226,8 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 				for (Entity entity : Utils.getNearbyEntities(flash, 6)) {
 					if (entity instanceof Player) {
-						((Player) entity).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 2));
+						((Player) entity).addPotionEffect(new org.bukkit.potion.PotionEffect(
+								org.bukkit.potion.PotionEffectType.BLINDNESS, 60, 2));
 					}
 				}
 
@@ -263,17 +254,15 @@ public final class GameListener implements org.bukkit.event.Listener {
 				proj.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), 2f, false, false);
 				proj.remove();
 
-				CacheableHitTarget cht = new CacheableHitTarget(proj, GameItems.RAGEARROW);
-				cht.add(10);
-				HIT_TARGETS.put(shooter.getUniqueId(), cht);
+				HIT_TARGETS.put(shooter.getUniqueId(), new CacheableHitTarget(GameItems.RAGEARROW, proj, 10));
 			}
 		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onHit(EntityDamageByEntityEvent event) {
-		Game game = GameUtils.getGame(event.getEntity().getLocation());
-		Game damagerGame = null;
+		BaseGame game = GameUtils.getGame(event.getEntity().getLocation());
+		BaseGame damagerGame = null;
 
 		boolean damagerIsPlayer = event.getDamager() instanceof Player;
 
@@ -304,14 +293,16 @@ public final class GameListener implements org.bukkit.event.Listener {
 			double finalDamage = 0d;
 
 			if (damagerIsPlayer) {
-				if (damagerGame != null) {
-					ItemHandler knife = Items.getGameItem(4);
-
-					if (knife != null && Misc.getItemInHand((Player) event.getDamager()).getType() == knife.getItem()) {
-						finalDamage = knife.getDamage();
-					}
+				if (damagerGame == null) {
+					return;
 				}
-			} else if (event.getDamager() instanceof org.bukkit.entity.Egg) {
+
+				ItemHandler knife = Items.getGameItem(4);
+
+				if (knife != null && Misc.getItemInHand((Player) event.getDamager()).getType() == knife.getItem()) {
+					finalDamage = knife.getDamage();
+				}
+			} else if (event.getDamager() instanceof Egg) {
 				ItemHandler grenade = Items.getGameItem(1);
 
 				if (grenade != null) {
@@ -339,7 +330,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 			Player victim = (Player) event.getEntity();
 
-			Game victimGame = GameUtils.getGameByPlayer(victim);
+			BaseGame victimGame = GameUtils.getGameByPlayer(victim);
 			if (victimGame == null) {
 				return;
 			}
@@ -369,15 +360,13 @@ public final class GameListener implements org.bukkit.event.Listener {
 			GameItems tool = GameItems.UNKNOWN;
 
 			if (damagerIsPlayer) {
-				if (damagerGame != null) {
-					ItemHandler knife = Items.getGameItem(4);
+				ItemHandler knife = Items.getGameItem(4);
 
-					if (knife != null && Misc.getItemInHand((Player) event.getDamager()).getType() == knife.getItem()) {
-						finalDamage = knife.getDamage();
-						tool = GameItems.RAGEKNIFE;
-					}
+				if (knife != null && Misc.getItemInHand((Player) event.getDamager()).getType() == knife.getItem()) {
+					finalDamage = knife.getDamage();
+					tool = GameItems.RAGEKNIFE;
 				}
-			} else if (event.getDamager() instanceof org.bukkit.entity.Egg) {
+			} else if (event.getDamager() instanceof Egg) {
 				ItemHandler grenade = Items.getGameItem(1);
 
 				finalDamage = grenade != null ? grenade.getDamage() : 2.20;
@@ -396,9 +385,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 			event.setDamage(finalDamage);
 
 			if (tool != GameItems.UNKNOWN) {
-				CacheableHitTarget cht = new CacheableHitTarget(victim, tool);
-				cht.add(0);
-				HIT_TARGETS.put(event.getDamager().getUniqueId(), cht);
+				HIT_TARGETS.put(event.getDamager().getUniqueId(), new CacheableHitTarget(tool, victim, 0));
 			}
 		}
 	}
@@ -409,7 +396,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 			return;
 		}
 
-		Game game = GameUtils.getGameByPlayer((Player) event.getEntity());
+		BaseGame game = GameUtils.getGameByPlayer((Player) event.getEntity());
 		if (game == null) {
 			return;
 		}
@@ -432,7 +419,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		Player deceased = event.getEntity();
 
-		Game deceasedGame = GameUtils.getGameByPlayer(deceased);
+		BaseGame deceasedGame = GameUtils.getGameByPlayer(deceased);
 		if (deceasedGame == null || deceasedGame.getStatus() != GameStatus.RUNNING) {
 			return;
 		}
@@ -441,7 +428,8 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 		if (!killerExists || GameUtils.isPlayerPlaying(deceased.getKiller())) {
 			if (deceasedGame.getGameType() != GameType.APOCALYPSE) {
-				CacheableHitTarget cht = HIT_TARGETS.remove(deceased.getUniqueId());
+				CacheableHitTarget cht = HIT_TARGETS
+						.remove((killerExists ? deceased.getKiller() : deceased).getUniqueId());
 
 				if (cht != null) {
 					boolean canSeeDeathMessages = killerExists && !PlayerManager.DEATH_MESSAGES_TOGGLE
@@ -536,7 +524,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 			return;
 		}
 
-		Game game = GameUtils.getGame(entity.getLocation());
+		BaseGame game = GameUtils.getGame(entity.getLocation());
 		if (game == null || game.getGameType() != GameType.APOCALYPSE || game.getStatus() != GameStatus.RUNNING) {
 			return;
 		}
@@ -545,9 +533,10 @@ public final class GameListener implements org.bukkit.event.Listener {
 		event.getDrops().clear();
 
 		Player killer = entity.getKiller();
+		UUID entityUId = entity.getUniqueId();
 
 		for (Map.Entry<UUID, CacheableHitTarget> map : HIT_TARGETS.entrySet()) {
-			if (killer != null || map.getValue().getNearTargets().contains(entity.getUniqueId())) {
+			if (killer != null || map.getValue().getNearTargets().remove(entityUId)) {
 				if (killer == null) {
 					killer = plugin.getServer().getPlayer(map.getKey());
 				}
@@ -555,6 +544,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 				if (killer != null) {
 					RageScores.addPointsToPlayer(killer, entity);
 					Utils.callEvent(new RMPlayerKilledEvent(game, entity, killer));
+					HIT_TARGETS.remove(map.getKey());
 				}
 			}
 		}
@@ -580,7 +570,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 	public void onRespawn(PlayerRespawnEvent e) {
 		final Player player = e.getPlayer();
 
-		Game game = GameUtils.getGameByPlayer(player);
+		BaseGame game = GameUtils.getGameByPlayer(player);
 		if (game == null) {
 			return;
 		}
@@ -615,7 +605,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 					e.setRespawnLocation(gsg.getRandomSpawn());
 
 					ItemHandler leaveItem = Items.getLobbyItem(1);
-					if (leaveItem != null) {
+					if (leaveItem != null && leaveItem.getAmount() > 0) {
 						player.getInventory().setItem(leaveItem.getSlot(), leaveItem.get());
 					}
 
@@ -656,7 +646,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 		Player player = ev.getPlayer();
 
-		Game game = GameUtils.getGameByPlayer(player);
+		BaseGame game = GameUtils.getGameByPlayer(player);
 		if (game == null) {
 			return;
 		}
@@ -670,7 +660,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 		PressureMine pressureMine = PRESSUREMINES.stream().filter(mine -> player.getUniqueId().equals(mine.getOwner()))
 				.findFirst().orElse(new PressureMine(player.getUniqueId()));
 
-		if (pressureMine.addMine(ev.getBlock(), ev.getBlock().getLocation())) {
+		if (pressureMine.addMine(ev.getBlock())) {
 			PRESSUREMINES.add(pressureMine);
 			return;
 		}
@@ -680,8 +670,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockBreak(BlockBreakEvent event) {
-		if (GameUtils.isPlayerPlaying(event.getPlayer())
-				&& !explodeMine(event.getPlayer(), event.getBlock().getLocation())) {
+		if (GameUtils.isPlayerPlaying(event.getPlayer()) && !explodeMine(event.getBlock().getLocation())) {
 			event.setCancelled(true);
 		}
 	}
@@ -713,15 +702,20 @@ public final class GameListener implements org.bukkit.event.Listener {
 			return;
 		}
 
-		if (ConfigValues.isSpectatorEnabled() && pm.isSpectator()
-				&& !ConfigValues.getAllowedSpectatorCommands().contains(event.getMessage().trim().toLowerCase())
-				&& !player.hasPermission("ragemode.bypass.spectatorcommands")) {
-			sendMessage(player, RageMode.getLang().get("game.this-command-is-disabled-in-game"));
-			event.setCancelled(true);
+		if (ConfigValues.isSpectatorEnabled() && pm.isSpectator()) {
+			if (((ConfigValues.isAllowAllCommandsForSpecOperators() && !player.isOp())
+					|| !ConfigValues.isAllowAllCommandsForSpecOperators())
+					&& !ConfigValues.getAllowedSpectatorCommands().isEmpty()
+					&& !ConfigValues.isCommandAllowed(true, event.getMessage())
+					&& !player.hasPermission("ragemode.bypass.spectatorcommands")) {
+				sendMessage(player, RageMode.getLang().get("game.command-disabled-in-game"));
+				event.setCancelled(true);
+			}
+
 			return;
 		}
 
-		Game game = pm.getPlayerGame();
+		BaseGame game = pm.getPlayerGame();
 		if (game == null) {
 			return;
 		}
@@ -732,9 +726,14 @@ public final class GameListener implements org.bukkit.event.Listener {
 			return;
 		}
 
-		if (!ConfigValues.getAllowedInGameCommands().contains(event.getMessage().trim().toLowerCase())
+		if (ConfigValues.isAllowAllCommandsForOperators() && player.isOp()) {
+			return;
+		}
+
+		if (!ConfigValues.getAllowedInGameCommands().isEmpty()
+				&& !ConfigValues.isCommandAllowed(false, event.getMessage())
 				&& !player.hasPermission("ragemode.bypass.disabledcommands")) {
-			sendMessage(player, RageMode.getLang().get("game.this-command-is-disabled-in-game"));
+			sendMessage(player, RageMode.getLang().get("game.command-disabled-in-game"));
 			event.setCancelled(true);
 		}
 	}
@@ -747,7 +746,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 			return;
 		}
 
-		Game game = GameUtils.getGameByPlayer((Player) proj.getShooter());
+		BaseGame game = GameUtils.getGameByPlayer((Player) proj.getShooter());
 		if (game == null) {
 			return;
 		}
@@ -768,7 +767,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 			return;
 		}
 
-		final Game game = GameUtils.getGameByPlayer(player);
+		final BaseGame game = GameUtils.getGameByPlayer(player);
 
 		if (game == null || (game.getStatus() != GameStatus.RUNNING && game.getStatus() != GameStatus.GAMEFREEZE)) {
 			return;
@@ -812,7 +811,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 				return;
 			}
 
-			final Game playerGame = GameUtils.getGameByPlayer(player);
+			final BaseGame playerGame = GameUtils.getGameByPlayer(player);
 
 			// Remove egg when the player game is in freeze room.
 			if (playerGame == null || GameUtils.isGameInFreezeRoom(playerGame)) {
@@ -823,9 +822,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 			grenade.getWorld().createExplosion(loc.getX(), loc.getY(), loc.getZ(), 3f, false, false);
 			grenade.remove(); // get rid of egg so it can't be picked up
 
-			CacheableHitTarget cht = new CacheableHitTarget(grenade, GameItems.GRENADE);
-			cht.add(13);
-			HIT_TARGETS.put(player.getUniqueId(), cht);
+			HIT_TARGETS.put(player.getUniqueId(), new CacheableHitTarget(GameItems.GRENADE, grenade, 13));
 		}, 40);
 	}
 
@@ -838,7 +835,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 			return;
 		}
 
-		final Game playerGame = pm.getPlayerGame();
+		final BaseGame playerGame = pm.getPlayerGame();
 		if (playerGame == null || GameUtils.isGameInFreezeRoom(playerGame)) {
 			return;
 		}
@@ -877,8 +874,8 @@ public final class GameListener implements org.bukkit.event.Listener {
 				item.setVelocity(player.getLocation().getDirection().multiply(combatAxe.getVelocity()));
 			}
 
-			final CombatAxeThread combatAxeThread = new CombatAxeThread(player, item);
-			combatAxeThread.start();
+			final CombatAxeThread combatAxeThread = new CombatAxeThread(item);
+			combatAxeThread.start(player);
 
 			CompletableFuture.supplyAsync(() -> {
 				while (!item.isDead()) {
@@ -960,7 +957,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 			return; // Probably never
 		}
 
-		Game playerGame = GameUtils.getGameByPlayer((Player) e.getPlayer());
+		BaseGame playerGame = GameUtils.getGameByPlayer((Player) e.getPlayer());
 
 		if (playerGame != null && playerGame.getStatus() == GameStatus.RUNNING
 				&& e.getInventory().getType() != InventoryType.PLAYER) {
@@ -989,7 +986,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 			return;
 		}
 
-		Game playerGame = GameUtils.getGameByPlayer(ev.getPlayer());
+		BaseGame playerGame = GameUtils.getGameByPlayer(ev.getPlayer());
 		if (playerGame == null) {
 			return;
 		}
@@ -1050,21 +1047,26 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 		org.bukkit.inventory.Inventory clicked = event.getClickedInventory();
 
-		if (clicked != null && clicked.getType() == InventoryType.PLAYER) {
-			if (event.getClick() == ClickType.LEFT || event.getClick() == ClickType.MIDDLE
-					|| event.getClick() == ClickType.RIGHT) {
+		if (clicked != null && !(clicked.getHolder() instanceof IShop)) {
+			if (clicked.getType() == InventoryType.PLAYER && (event.getClick() == ClickType.LEFT
+					|| event.getClick() == ClickType.RIGHT || event.getClick() == ClickType.SHIFT_LEFT
+					|| event.getClick() == ClickType.MIDDLE || event.getClick() == ClickType.SHIFT_RIGHT)) {
 				ItemHandler leaveItem = Items.getLobbyItem(1);
 
-				if (leaveItem != null && leaveItem.get().isSimilar(event.getCurrentItem())) {
-					event.setCancelled(true);
+				if (leaveItem != null && leaveItem.getAmount() > 0
+						&& leaveItem.get().isSimilar(event.getCurrentItem())) {
+					event.setCancelled(true); // Cancel before clearing player's inventory
 					GameUtils.leavePlayer(pm, null);
+					return;
 				}
 			}
 
+			// Cancel all inventory type interaction/click
+			event.setCancelled(true);
 			return;
 		}
 
-		Game playerGame = pm.getPlayerGame();
+		BaseGame playerGame = pm.getPlayerGame();
 
 		if (playerGame != null && playerGame.getStatus() == GameStatus.WAITING
 				&& !(event.getInventory().getHolder() instanceof IShop)) {
@@ -1092,14 +1094,14 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 	@EventHandler
 	public void onPlayerTeleport(PlayerTeleportEvent ev) {
-		Game playerGame = GameUtils.getGameByPlayer(ev.getPlayer());
+		BaseGame playerGame = GameUtils.getGameByPlayer(ev.getPlayer());
 
 		if (playerGame == null || playerGame.getStatus() != GameStatus.RUNNING) {
 			return;
 		}
 
 		// The player teleported outside of area
-		if (ev.getTo() != null && !GameAreaManager.inArea(ev.getTo())) {
+		if (!GameAreaManager.inArea(ev.getTo())) {
 			ev.setCancelled(true);
 		}
 	}
@@ -1110,17 +1112,13 @@ public final class GameListener implements org.bukkit.event.Listener {
 			return;
 		}
 
-		Location to = event.getTo();
-		if (to == null) {
-			return;
-		}
-
-		Game game = GameUtils.getGameByPlayer(event.getPlayer());
+		BaseGame game = GameUtils.getGameByPlayer(event.getPlayer());
 		if (game == null || !GameUtils.isGameInFreezeRoom(game)) {
 			return;
 		}
 
 		Location from = event.getFrom();
+		Location to = event.getTo();
 
 		double x = Math.floor(from.getX()), y = Math.floor(from.getY()), z = Math.floor(from.getZ());
 
@@ -1135,10 +1133,10 @@ public final class GameListener implements org.bukkit.event.Listener {
 
 	@EventHandler
 	public void onExplode(ExplosionPrimeEvent e) {
-		explodeMine(null, e.getEntity().getLocation());
+		explodeMine(e.getEntity().getLocation());
 	}
 
-	public static boolean explodeMine(Player player, Location currentLoc) {
+	public static boolean explodeMine(Location currentLoc) {
 		final org.bukkit.World world = currentLoc.getWorld();
 		if (world == null) {
 			return false;
@@ -1151,57 +1149,30 @@ public final class GameListener implements org.bukkit.event.Listener {
 			return false;
 		}
 
-		final Game game = GameUtils.getGame(currentLoc);
-		if (game == null) {
+		if (GameUtils.getGame(currentLoc) == null) {
 			return false;
 		}
 
 		SchedulerUtil.submitSync(() -> {
-			Collection<Entity> nears = Utils.getNearbyEntities(world, currentLoc, 10);
+			java.util.Collection<Entity> nears = Utils.getNearbyEntities(world, currentLoc, 10);
 
 			world.createExplosion(currentLoc.getX(), currentLoc.getY() + 1, currentLoc.getZ(), 4f, false, false);
 			block.setType(Material.AIR);
 
-			for (final Entity near : nears) {
-				final UUID uuid = near.getUniqueId();
+			for (Entity near : nears) {
+				for (PressureMine mines : PRESSUREMINES) {
+					if (mines.getMines().contains(currentLoc)) {
+						CacheableHitTarget hitTarget = HIT_TARGETS.get(mines.getOwner());
 
-				for (CacheableHitTarget cht : HIT_TARGETS.values()) {
-					cht.getNearTargets().remove(uuid);
-				}
-
-				if (game.getGameType() == GameType.APOCALYPSE) {
-					for (PressureMine mines : PRESSUREMINES) {
-						if (mines.getMines().contains(currentLoc)) {
-							CacheableHitTarget hitTarget = HIT_TARGETS.get(mines.getOwner());
-
-							if (hitTarget != null) {
-								hitTarget.getNearTargets().add(uuid);
-							}
-
-							break;
+						if (hitTarget != null) {
+							hitTarget.getNearTargets().add(near.getUniqueId());
+						} else {
+							HIT_TARGETS.put(mines.getOwner(), new CacheableHitTarget(GameItems.PRESSUREMINE, near, 0));
 						}
-					}
 
-					continue;
-				}
-
-				if (player != null) {
-					CacheableHitTarget hitTarget = HIT_TARGETS.get(player.getUniqueId());
-
-					if (hitTarget != null) {
-						hitTarget.getNearTargets().add(uuid);
-					}
-				} else if (near instanceof Player) {
-					CacheableHitTarget hitTarget = HIT_TARGETS.get(uuid);
-
-					if (hitTarget != null) {
-						hitTarget.getNearTargets().add(uuid);
+						break;
 					}
 				}
-
-				CacheableHitTarget cht = new CacheableHitTarget(near, GameItems.PRESSUREMINE);
-				cht.add(0);
-				HIT_TARGETS.put(uuid, cht);
 			}
 
 			for (PressureMine mines : PRESSUREMINES) {
@@ -1221,7 +1192,7 @@ public final class GameListener implements org.bukkit.event.Listener {
 		final Player shooter = (Player) proj.getShooter();
 
 		ItemHandler grenade = Items.getGameItem(1);
-		if (grenade != null && grenade.getVelocity() > 0D && isEgg) {
+		if (isEgg && grenade != null && grenade.getVelocity() > 0D) {
 			proj.setVelocity(shooter.getLocation().getDirection().multiply(grenade.getVelocity()));
 		}
 

@@ -1,4 +1,4 @@
-package hu.montlikadani.ragemode.database;
+package hu.montlikadani.ragemode.database.connector;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

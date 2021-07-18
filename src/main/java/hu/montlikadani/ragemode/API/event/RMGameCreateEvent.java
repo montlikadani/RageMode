@@ -1,6 +1,6 @@
 package hu.montlikadani.ragemode.API.event;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 
 /**
  * Called when a game has been created.
@@ -10,7 +10,7 @@ public class RMGameCreateEvent extends GameEvent {
 	private int maxPlayers;
 	private int minPlayers;
 
-	public RMGameCreateEvent(Game game, int maxPlayers, int minPlayers) {
+	public RMGameCreateEvent(BaseGame game, int maxPlayers, int minPlayers) {
 		super(game);
 
 		this.maxPlayers = maxPlayers;

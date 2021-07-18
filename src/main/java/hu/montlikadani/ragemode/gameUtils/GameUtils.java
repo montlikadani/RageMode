@@ -5,18 +5,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,11 +22,10 @@ import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.API.event.RMGameJoinAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameLeaveAttemptEvent;
 import hu.montlikadani.ragemode.API.event.RMGameStopEvent;
-import hu.montlikadani.ragemode.config.Configuration;
 import hu.montlikadani.ragemode.config.configconstants.ConfigValues;
 import hu.montlikadani.ragemode.gameLogic.*;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameLogic.spawn.GameSpawn;
-import hu.montlikadani.ragemode.gameLogic.spawn.GameZombieSpawn;
 import hu.montlikadani.ragemode.gameLogic.spawn.IGameSpawn;
 import hu.montlikadani.ragemode.gameUtils.modules.TitleSender;
 import hu.montlikadani.ragemode.items.*;
@@ -71,10 +66,10 @@ public final class GameUtils {
 	 * Broadcast the given message to the currently playing players for the given
 	 * game.
 	 * 
-	 * @param game    {@link Game}
+	 * @param game    {@link BaseGame}
 	 * @param message The message
 	 */
-	public static void broadcastToGame(@NotNull Game game, @NotNull String message) {
+	public static void broadcastToGame(@NotNull BaseGame game, @NotNull String message) {
 		if (game == null || message == null || message.trim().isEmpty()) {
 			return;
 		}
@@ -105,13 +100,13 @@ public final class GameUtils {
 			return false;
 		}
 
-		if (!name.matches("^[a-zA-Z0-9\\_\\-]+$")) {
-			sendMessage(player, RageMode.getLang().get("setup.addgame.special-chars"));
+		if (name.length() > 40) {
+			sendMessage(player, RageMode.getLang().get("setup.addgame.name-greater"));
 			return false;
 		}
 
-		if (name.length() > 40) {
-			sendMessage(player, RageMode.getLang().get("setup.addgame.name-greater"));
+		if (!name.matches("^[a-zA-Z0-9\\_\\-]+$")) {
+			sendMessage(player, RageMode.getLang().get("setup.addgame.special-chars"));
 			return false;
 		}
 
@@ -126,7 +121,7 @@ public final class GameUtils {
 	public static int getOverallMaxPlayers() {
 		int max = 0;
 
-		for (Game game : RM.getGames()) {
+		for (BaseGame game : RM.getGames()) {
 			max += game.maxPlayers;
 		}
 
@@ -138,15 +133,15 @@ public final class GameUtils {
 	 * 
 	 * @see #getGameByPlayer(Player)
 	 * @param uuid {@link UUID}
-	 * @return {@link Game} if player is in game, otherwise null
+	 * @return {@link BaseGame} if player is in game, otherwise null
 	 */
 	@Nullable
-	public static Game getGameByPlayer(@NotNull UUID uuid) {
+	public static BaseGame getGameByPlayer(@NotNull UUID uuid) {
 		if (uuid == null) {
 			return null;
 		}
 
-		for (Game game : RM.getGames()) {
+		for (BaseGame game : RM.getGames()) {
 			if (game.getPlayerManager(uuid).isPresent()) {
 				return game;
 			}
@@ -159,15 +154,15 @@ public final class GameUtils {
 	 * Get the game by player.
 	 * 
 	 * @param player {@link Player}
-	 * @return {@link Game} if player is in game, otherwise null
+	 * @return {@link BaseGame} if player is in game, otherwise null
 	 */
 	@Nullable
-	public static Game getGameByPlayer(@NotNull Player player) {
+	public static BaseGame getGameByPlayer(@NotNull Player player) {
 		if (player == null) {
 			return null;
 		}
 
-		for (Game game : RM.getGames()) {
+		for (BaseGame game : RM.getGames()) {
 			if (game.isPlayerInList(player)) {
 				return game;
 			}
@@ -199,8 +194,8 @@ public final class GameUtils {
 			return null;
 		}
 
-		for (Game game : RM.getGames()) {
-			Optional<PlayerManager> opt = game.getPlayerManager(player);
+		for (BaseGame game : RM.getGames()) {
+			Optional<PlayerManager> opt = game.getPlayerManager(player.getUniqueId());
 
 			if (opt.isPresent()) {
 				return opt.get();
@@ -228,12 +223,12 @@ public final class GameUtils {
 	 * @return {@link Game} if the given game name is exists.
 	 */
 	@Nullable
-	public static Game getGame(@NotNull String name) {
+	public static BaseGame getGame(@NotNull String name) {
 		if (name == null || name.isEmpty()) {
 			return null;
 		}
 
-		for (Game game : RM.getGames()) {
+		for (BaseGame game : RM.getGames()) {
 			if (name.equalsIgnoreCase(game.getName())) {
 				return game;
 			}
@@ -246,17 +241,19 @@ public final class GameUtils {
 	 * Gets the game by area location.
 	 * 
 	 * @param loc the location
-	 * @return {@link Game}
+	 * @return {@link BaseGame}
 	 */
 	@Nullable
-	public static Game getGame(@NotNull Location loc) {
+	public static BaseGame getGame(@NotNull Location loc) {
 		if (loc == null) {
 			return null;
 		}
 
 		for (GameArea ga : GameAreaManager.getAreasByLocation(loc)) {
-			if (isGameExist(ga.getGameName())) {
-				return ga.getGame();
+			BaseGame game = ga.getGame();
+
+			if (game != null) {
+				return game;
 			}
 		}
 
@@ -276,10 +273,11 @@ public final class GameUtils {
 		}
 
 		ItemHandler flash = Items.getGameItem(5);
-		Game gamePlayer = getGameByPlayer(player);
+		BaseGame gamePlayer = getGameByPlayer(player);
 
 		for (ItemHandler ih : RM.getGameItems()) {
-			if (gamePlayer != null && gamePlayer.getGameType() == GameType.APOCALYPSE && ih.equals(flash)) {
+			if (ih.getAmount() < 1
+					|| (gamePlayer != null && gamePlayer.getGameType() == GameType.APOCALYPSE && ih.equals(flash))) {
 				continue; // flash do not affect entities
 			}
 
@@ -292,75 +290,13 @@ public final class GameUtils {
 	}
 
 	/**
-	 * Saves the given player data to a yaml file
-	 * <p>
-	 * This prevents losing the player data when the server has stopped randomly.
-	 * 
-	 * @param player {@link Player}
-	 */
-	public static void savePlayerData(@NotNull Player player) {
-		if (ConfigValues.isBungee()) {
-			return;
-		}
-
-		PlayerManager pm = getPlayerManager(player);
-		if (pm != null) {
-			pm.storePlayerTools();
-		}
-
-		Configuration conf = RM.getConfiguration();
-
-		if (conf.getDatasFile() != null && conf.getDatasFile().exists()) {
-			FileConfiguration data = conf.getDatasCfg();
-			String path = "datas." + player.getName() + ".";
-
-			data.set(path + "location", player.getLocation());
-			data.set(path + "contents", player.getInventory().getContents());
-			data.set(path + "armor-contents", player.getInventory().getArmorContents());
-			data.set(path + "health", player.getHealth());
-			data.set(path + "food", player.getFoodLevel());
-
-			java.util.Collection<PotionEffect> activePotions = player.getActivePotionEffects();
-			if (!activePotions.isEmpty())
-				data.set(path + "potion-effects", activePotions);
-
-			data.set(path + "game-mode", player.getGameMode().name());
-
-			String dName = RM.getComplement().getDisplayName(player);
-			if (!dName.equals(player.getName()))
-				data.set(path + "display-name", dName);
-
-			if (!(dName = RM.getComplement().getPlayerListName(player)).equals(player.getName()))
-				data.set(path + "list-name", dName);
-
-			if (player.getFireTicks() > 0)
-				data.set(path + "fire-ticks", player.getFireTicks());
-
-			if (player.getExp() > 0d)
-				data.set(path + "exp", player.getExp());
-
-			if (player.getLevel() > 0)
-				data.set(path + "level", player.getLevel());
-
-			org.bukkit.entity.Entity vehicle = player.getVehicle();
-			if (vehicle != null) {
-				data.set(path + "vehicle", vehicle.getType());
-				data.set(path + "vehicle", vehicle.getLocation());
-			}
-
-			Configuration.saveFile(data, conf.getDatasFile());
-			Configuration.loadFile(data, conf.getDatasFile());
-		}
-	}
-
-	/**
 	 * Attempts to join the given player to the game. If the game is running and the
 	 * player is not playing, it will be joined as spectator if enabled.
 	 * 
 	 * @param player {@link Player}
-	 * @param game   {@link Game}
+	 * @param game   {@link BaseGame}
 	 */
-	public static void joinPlayer(@NotNull Player player, @NotNull Game game) {
+	public static void joinPlayer(@NotNull Player player, @NotNull BaseGame game) {
 		if (game == null) {
 			return;
 		}
@@ -383,11 +319,11 @@ public final class GameUtils {
 					Utils.teleport(player, spawn.getRandomSpawn()).thenAccept(success -> {
 						ItemHandler leaveItem = Items.getLobbyItem(1);
 
-						if (leaveItem != null && leaveItem.getSlot() >= 0) {
+						if (leaveItem != null && leaveItem.getAmount() > 0 && leaveItem.getSlot() >= 0) {
 							player.getInventory().setItem(leaveItem.getSlot(), leaveItem.get());
 						}
 
-						player.setGameMode(org.bukkit.GameMode.SPECTATOR);
+						player.setGameMode(GameMode.SPECTATOR);
 					});
 				}
 			}
@@ -440,26 +376,7 @@ public final class GameUtils {
 			return;
 		}
 
-		if (!ConfigValues.isSavePlayerData()) {
-			// We still need to store some data
-			game.getPlayerManager(player).ifPresent(pl -> {
-				StorePlayerStuffs sp = pl.getStorePlayer();
-				sp.oldLocation = player.getLocation();
-				sp.oldGameMode = player.getGameMode();
-				sp.currentBoard = player.getScoreboard();
-			});
-
-			player.setGameMode(GameMode.SURVIVAL);
-		} else {
-			savePlayerData(player);
-		}
-		clearPlayerTools(player);
-
 		GameAreaManager.removeEntitiesFromGame(game);
-
-		if (game.getGameType() == GameType.APOCALYPSE) {
-			game.worldTime = player.getWorld().getFullTime();
-		}
 
 		Utils.teleport(player, game.getGameLobby().location).thenAccept(success -> {
 			game.setStatus(GameStatus.WAITING);
@@ -488,7 +405,7 @@ public final class GameUtils {
 			ItemHandler forceStarter = Items.getLobbyItem(0), hideMsgs = Items.getLobbyItem(3);
 
 			for (ItemHandler item : RM.getLobbyItems()) {
-				if (item == null || item.getSlot() < 0
+				if (item == null || item.getAmount() < 1 || item.getSlot() < 0
 						|| (item.equals(forceStarter) && !player.hasPermission("ragemode.admin.item.forcestart"))) {
 					continue;
 				}
@@ -524,10 +441,10 @@ public final class GameUtils {
 	 * Attempts to leave the player from the game.
 	 * 
 	 * @param pm   {@link PlayerManager}
-	 * @param game {@link Game}, or null if the game should be retrieved from player
-	 *             directly
+	 * @param game {@link BaseGame}, or null if the game should be retrieved from
+	 *             player directly
 	 */
-	public static void leavePlayer(@NotNull PlayerManager pm, @Nullable Game game) {
+	public static void leavePlayer(@NotNull PlayerManager pm, @Nullable BaseGame game) {
 		if (pm == null) {
 			return;
 		}
@@ -546,9 +463,11 @@ public final class GameUtils {
 			RMGameLeaveAttemptEvent gameLeaveEvent = new RMGameLeaveAttemptEvent(game, pm);
 			Utils.callEvent(gameLeaveEvent);
 
-			if (!gameLeaveEvent.isCancelled()) {
-				game.removePlayer(pm);
+			if (gameLeaveEvent.isCancelled()) {
+				return;
 			}
+
+			game.removePlayer(pm);
 		}
 
 		SignCreator.updateAllSigns(game.getName());
@@ -558,11 +477,11 @@ public final class GameUtils {
 	 * Forces the starting of the given game without waiting for timer. The game
 	 * will not start if there are no players joined to the game and returns false.
 	 * 
-	 * @param game {@link Game}
+	 * @param game {@link BaseGame}
 	 * @return true if enough players are in the game or the game type is in
 	 *         {@link GameType#APOCALYPSE}, otherwise false
 	 */
-	public static boolean forceStart(@NotNull Game game) {
+	public static boolean forceStart(@NotNull BaseGame game) {
 		if (game == null || game.getPlayers().isEmpty() || (game.getGameType() != GameType.APOCALYPSE
 				&& !ConfigValues.isDeveloperMode() && game.getPlayers().size() == 1)) {
 			return false;
@@ -575,9 +494,9 @@ public final class GameUtils {
 	/**
 	 * Kicks all players from the game.
 	 * 
-	 * @param game {@link Game}
+	 * @param game {@link BaseGame}
 	 */
-	public static void kickAllPlayers(@NotNull Game game) {
+	public static void kickAllPlayers(@NotNull BaseGame game) {
 		if (game != null) {
 			game.getPlayers().forEach(pm -> kickPlayer(pm.getPlayer(), game));
 		}
@@ -596,9 +515,9 @@ public final class GameUtils {
 	 * Kicks the given player from the game.
 	 * 
 	 * @param player {@link Player}
-	 * @param game   {@link Game}
+	 * @param game   {@link BaseGame}
 	 */
-	public static void kickPlayer(@NotNull Player player, @Nullable Game game) {
+	public static void kickPlayer(@NotNull Player player, @Nullable BaseGame game) {
 		PlayerManager pm = getPlayerManager(player);
 
 		if (pm == null) {
@@ -624,118 +543,13 @@ public final class GameUtils {
 	}
 
 	/**
-	 * Clears the given player inventory entirely and removes some other player
-	 * related components.
-	 * 
-	 * @param player {@link Player}
-	 */
-	public static void clearPlayerTools(@NotNull Player player) {
-		player.getInventory().clear();
-		player.updateInventory();
-
-		player.setGameMode(GameMode.SURVIVAL);
-		player.setFlying(false);
-		player.setSprinting(false);
-		player.setAllowFlight(false);
-		player.setFlying(false);
-		player.setSneaking(false);
-		player.setScoreboard(RM.getServer().getScoreboardManager().getMainScoreboard());
-		player.setHealth(20);
-		player.setFoodLevel(20);
-		player.setFireTicks(0);
-		player.setExp(0);
-		player.setLevel(0);
-
-		if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_16_R2)) {
-			player.setArrowsInBody(0);
-		}
-
-		player.leaveVehicle();
-
-		for (PotionEffect potion : player.getActivePotionEffects()) {
-			player.removePotionEffect(potion.getType());
-		}
-
-		RM.getComplement().setDisplayName(player, player.getName());
-		RM.getComplement().setPlayerListName(player, player.getName());
-	}
-
-	@SuppressWarnings("deprecation")
-	public static void spawnZombies(@NotNull Game game, int amount) {
-		if (game == null || amount < 1 || game.getStatus() != GameStatus.RUNNING
-				|| game.getGameType() != GameType.APOCALYPSE) {
-			return;
-		}
-
-		IGameSpawn spawn = game.randomSpawnForZombies ? game.getSpawn(GameSpawn.class)
-				: game.getSpawn(GameZombieSpawn.class);
-		if (spawn == null || !spawn.haveAnySpawn()) {
-			return;
-		}
-
-		game.getWorld().ifPresent(world -> {
-			final GameArea gameArea = game.randomSpawnForZombies ? GameAreaManager.getAreaByGame(game) : null;
-
-			SchedulerUtil.submitSync(() -> {
-				world.setTime(14000L); // Force night
-
-				ThreadLocalRandom random = ThreadLocalRandom.current();
-
-				for (int i = 0; i <= amount; i++) {
-					Location location = null;
-
-					if (game.randomSpawnForZombies) {
-						// Spawn zombies around the center of game area
-						if (gameArea != null) {
-							Location centerArea = gameArea.getCenter();
-
-							double angle = Math.toRadians(random.nextDouble() * 360);
-							double x = centerArea.getX() + (random.nextDouble() * 3 * Math.cos(angle));
-							double z = centerArea.getZ() + (random.nextDouble() * 3 * Math.sin(angle));
-
-							location = new Location(world, x, centerArea.getY(), z);
-						}
-					} else {
-						location = spawn.getRandomSpawn().clone();
-					}
-
-					// Suppose the area is not exist
-					if (location == null) {
-						location = spawn.getRandomSpawn().clone().add(15, 0, 15);
-					}
-
-					// TODO we need something to do not spawn zombies in-blocks such as in bushes
-					// (leaves)
-
-					Zombie zombie = (Zombie) world.spawnEntity(location, org.bukkit.entity.EntityType.ZOMBIE);
-
-					if (RM.isPaper() && ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_16_R3)) {
-						zombie.setCanBreakDoors(false);
-					}
-
-					// Do not spawn too much baby zombie
-					if (ServerVersion.isCurrentEqualOrHigher(ServerVersion.v1_16_R2)) {
-						if (!zombie.isAdult() && random.nextInt(0, 10) < 2) {
-							zombie.setAdult();
-						}
-					} else if (zombie.isBaby() && random.nextInt(0, 10) < 2) {
-						zombie.setBaby(false);
-					}
-				}
-
-				return 1;
-			});
-		});
-	}
-
-	/**
 	 * Performs specific commands in game, when the player doing something in game.
 	 * 
-	 * @see #runCommands(Player, Game, InGameCommand.CommandType)
-	 * @param game        {@link Game}
+	 * @see #runCommands(Player, BaseGame, InGameCommand.CommandType)
+	 * @param game        {@link BaseGame}
 	 * @param commandType {@link InGameCommand.CommandType}
 	 */
-	public static void runCommandsForAll(@NotNull Game game, @NotNull InGameCommand.CommandType commandType) {
+	public static void runCommandsForAll(@NotNull BaseGame game, @NotNull InGameCommand.CommandType commandType) {
 		if (game.isRunning() && RM.getRewardManager().isEnabled()) {
 			for (PlayerManager pl : game.getPlayers()) {
 				RM.getRewardManager().performGameCommands(pl.getPlayer(), game, commandType);
@@ -747,10 +561,10 @@ public final class GameUtils {
 	 * Performs specific commands in game, when the player doing something in game.
 	 * 
 	 * @param player      {@link Player}
-	 * @param game        {@link Game}
+	 * @param game        {@link BaseGame}
 	 * @param commandType {@link InGameCommand.CommandType}
 	 */
-	public static void runCommands(@NotNull Player player, @NotNull Game game,
+	public static void runCommands(@NotNull Player player, @NotNull BaseGame game,
 			@NotNull InGameCommand.CommandType commandType) {
 		if (game.isRunning() && RM.getRewardManager().isEnabled()) {
 			RM.getRewardManager().performGameCommands(player, game, commandType);
@@ -766,11 +580,11 @@ public final class GameUtils {
 	 * returns. If the message type is disabled per configuration, returns.
 	 * 
 	 * @param player      {@link Player}
-	 * @param game        {@link Game}
+	 * @param game        {@link BaseGame}
 	 * @param type        {@link ConfigValues.MessageAction.ActionMessageType}
 	 * @param messageType {@link ConfigValues.MessageAction.ActionMessageType.MessageTypes}
 	 */
-	public static void sendActionMessage(@NotNull Player player, @NotNull Game game,
+	public static void sendActionMessage(@NotNull Player player, @NotNull BaseGame game,
 			@NotNull ConfigValues.MessageAction.ActionMessageType type,
 			ConfigValues.MessageAction.ActionMessageType.MessageTypes messageType) {
 		if (player == null || !game.isRunning())
@@ -850,9 +664,9 @@ public final class GameUtils {
 	 * Force stops the given game by ignoring the additional conditions/timers from
 	 * scheduling.
 	 * 
-	 * @param game {@link Game}
+	 * @param game {@link BaseGame}
 	 */
-	public static void forceStopGame(@NotNull Game game) {
+	public static void forceStopGame(@NotNull BaseGame game) {
 		Validate.notNull(game, "Game can't be null");
 
 		if (!game.isRunning()) {
@@ -880,10 +694,10 @@ public final class GameUtils {
 	/**
 	 * Performs the game stopping process synchronously if the game is running.
 	 * 
-	 * @see #stopGame(Game, boolean)
-	 * @param game {@link Game}
+	 * @see #stopGame(BaseGame, boolean)
+	 * @param game {@link BaseGame}
 	 */
-	public static void stopGame(@NotNull Game game) {
+	public static void stopGame(@NotNull BaseGame game) {
 		if (game != null) {
 			SchedulerUtil.submitSync(() -> {
 				stopGame(game, true);
@@ -897,10 +711,10 @@ public final class GameUtils {
 	 * highest points and announcing to a title message. If there are no winner
 	 * player valid, players will be removed from the game with some rewards.
 	 * 
-	 * @param game      {@link Game}
+	 * @param game      {@link BaseGame}
 	 * @param useFreeze if true using game freeze
 	 */
-	public static void stopGame(@NotNull final Game game, boolean useFreeze) {
+	public static void stopGame(@NotNull final BaseGame game, boolean useFreeze) {
 		if (game == null || !game.isRunning()) {
 			return;
 		}
@@ -929,6 +743,11 @@ public final class GameUtils {
 
 				for (PlayerManager pm : game.getPlayers()) {
 					Player player = pm.getPlayer();
+
+					if (player == null) {
+						continue;
+					}
+
 					game.removePlayerSynced(player);
 
 					if (winner == null) {
@@ -988,7 +807,7 @@ public final class GameUtils {
 		}
 	}
 
-	private static void finishStopping(Game game, Player winner, boolean serverStop) {
+	private static void finishStopping(BaseGame game, Player winner, boolean serverStop) {
 		WAITING_GAMES.remove(game.getName());
 
 		if (!game.isRunning()) {
@@ -999,7 +818,7 @@ public final class GameUtils {
 
 		// Lets try to load the stats if empty
 		if (RuntimePPManager.getRuntimePPList().isEmpty()) {
-			RuntimePPManager.loadPPListFromDatabase();
+			RuntimePPManager.loadPPListFromDatabase(RM.getDatabase());
 		}
 
 		for (PlayerManager pm : new HashSet<>(game.getPlayers())) {
@@ -1008,7 +827,9 @@ public final class GameUtils {
 			RageScores.getPlayerPoints(pm.getUniqueId()).ifPresent(pP -> {
 				RuntimePPManager.updatePlayerEntry(pP);
 
-				RM.getHoloHolder().updateHologramsName(player);
+				if (player != null) {
+					RM.getHoloHolder().updateHologramsName(player);
+				}
 
 				// Avoid calling database connection for each player
 				// Database should save at stop
@@ -1024,15 +845,17 @@ public final class GameUtils {
 				}
 			}
 
-			runCommands(player, game, RewardManager.InGameCommand.CommandType.STOP);
-			sendActionMessage(player, game, ConfigValues.MessageAction.ActionMessageType.STOP,
-					ConfigValues.MessageAction.ActionMessageType.MessageTypes.BOSSBAR);
-			sendActionMessage(player, game, ConfigValues.MessageAction.ActionMessageType.STOP,
-					ConfigValues.MessageAction.ActionMessageType.MessageTypes.ACTIONBAR);
+			if (player != null) {
+				runCommands(player, game, RewardManager.InGameCommand.CommandType.STOP);
+				sendActionMessage(player, game, ConfigValues.MessageAction.ActionMessageType.STOP,
+						ConfigValues.MessageAction.ActionMessageType.MessageTypes.BOSSBAR);
+				sendActionMessage(player, game, ConfigValues.MessageAction.ActionMessageType.STOP,
+						ConfigValues.MessageAction.ActionMessageType.MessageTypes.ACTIONBAR);
+			}
 
 			RageScores.getPlayerPointsMap().remove(pm.getUniqueId());
 
-			if (game.removePlayer(pm)) {
+			if (game.removePlayer(pm) && player != null) {
 				sendMessage(player, RageMode.getLang().get("game.stopped", "%game%", game.getName()));
 
 				if (RM.getRewardManager().isEnabled()) {
@@ -1069,7 +892,7 @@ public final class GameUtils {
 	public static void stopAllGames() {
 		Debug.logConsole("Searching games to stop...");
 
-		for (Game game : RM.getGames()) {
+		for (BaseGame game : RM.getGames()) {
 			if (game.getStatus() == GameStatus.RUNNING && game.isRunning()) {
 				Debug.logConsole("Stopping " + game.getName() + " ...");
 
@@ -1132,7 +955,7 @@ public final class GameUtils {
 	private static boolean isGameItem(@NotNull ItemStack item) {
 		if (item != null) {
 			for (ItemHandler ih : RM.getGameItems()) {
-				if (ih != null && ih.get().isSimilar(item)) {
+				if (ih != null && item.isSimilar(ih.get())) {
 					return true;
 				}
 			}
@@ -1148,7 +971,7 @@ public final class GameUtils {
 	 * @return true if player is in
 	 */
 	public static boolean isPlayerInFreezeRoom(@NotNull Player player) {
-		Game gamePlayer = getGameByPlayer(player);
+		BaseGame gamePlayer = getGameByPlayer(player);
 		return gamePlayer != null && isGameInFreezeRoom(gamePlayer);
 	}
 
@@ -1156,10 +979,10 @@ public final class GameUtils {
 	 * Checks if the specified game is in the freeze room. This also checks the game
 	 * status if it equal to {@link GameStatus#GAMEFREEZE}
 	 * 
-	 * @param game {@link Game}
+	 * @param game {@link BaseGame}
 	 * @return true if the game is in freeze status
 	 */
-	public static boolean isGameInFreezeRoom(@NotNull Game game) {
+	public static boolean isGameInFreezeRoom(@NotNull BaseGame game) {
 		return game.getStatus() == GameStatus.GAMEFREEZE && WAITING_GAMES.getOrDefault(game.getName(), false);
 	}
 }

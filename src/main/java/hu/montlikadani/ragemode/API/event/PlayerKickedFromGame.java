@@ -4,7 +4,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 
 /**
  * Called when a player kicked from a game.
@@ -14,7 +14,7 @@ public class PlayerKickedFromGame extends GameEvent {
 	private CommandSender requestedBy;
 	private Player target;
 
-	public PlayerKickedFromGame(Game game, CommandSender requestedBy, Player target) {
+	public PlayerKickedFromGame(BaseGame game, CommandSender requestedBy, Player target) {
 		super(game);
 
 		this.requestedBy = requestedBy;

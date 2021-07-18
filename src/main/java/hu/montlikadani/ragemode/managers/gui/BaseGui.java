@@ -12,7 +12,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.server.PluginDisableEvent;
 
 import hu.montlikadani.ragemode.RageMode;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.managers.gui.type.SetupGui;
 
@@ -32,7 +32,7 @@ public abstract class BaseGui implements org.bukkit.event.Listener {
 		return activeInventories;
 	}
 
-	public final GuiViewer openGui(HumanEntity source, Game sourceGame) {
+	public final GuiViewer openGui(HumanEntity source, BaseGame sourceGame) {
 		InventoryGuiHandler igh = sourceGame == null ? load(source) : load(sourceGame);
 
 		GuiViewer guiViewer = igh.getViewers().stream().filter(gv -> gv.getSource() == source).findFirst()
@@ -51,7 +51,7 @@ public abstract class BaseGui implements org.bukkit.event.Listener {
 		return guiViewer;
 	}
 
-	public abstract InventoryGuiHandler load(Game game);
+	public abstract InventoryGuiHandler load(BaseGame game);
 
 	public abstract InventoryGuiHandler load(HumanEntity human);
 
@@ -111,7 +111,7 @@ public abstract class BaseGui implements org.bukkit.event.Listener {
 				continue;
 			}
 
-			Game sourceGame = GameUtils.getGame(invGui.getSourceGameName());
+			BaseGame sourceGame = GameUtils.getGame(invGui.getSourceGameName());
 			if (sourceGame != null && sourceGame.isRunning()) {
 				continue;
 			}

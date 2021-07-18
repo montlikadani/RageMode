@@ -4,7 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 
 /**
  * Called when a player attempt to respawn before teleporting.
@@ -14,7 +14,7 @@ public class RMPlayerPreRespawnEvent extends GameEvent implements Cancellable {
 	private Player player;
 	private boolean cancel = false;
 
-	public RMPlayerPreRespawnEvent(Game game, Player player) {
+	public RMPlayerPreRespawnEvent(BaseGame game, Player player) {
 		super(game);
 
 		this.player = player;

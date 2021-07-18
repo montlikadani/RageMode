@@ -4,7 +4,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import hu.montlikadani.ragemode.events.GameListener;
 import hu.montlikadani.ragemode.gameUtils.CacheableHitTarget;
@@ -12,20 +11,16 @@ import hu.montlikadani.ragemode.items.GameItems;
 
 public class CombatAxeThread {
 
-	private Player player;
-	private Item item;
+	private final Item item;
 
 	private boolean running;
 
-	public CombatAxeThread(Player player, Item item) {
-		this.player = player;
+	public CombatAxeThread(Item item) {
 		this.item = item;
 	}
 
-	public void start() {
+	public void start(Player player) {
 		running = true;
-
-		final JavaPlugin plugin = JavaPlugin.getProvidingPlugin(hu.montlikadani.ragemode.RageMode.class);
 
 		new Thread(() -> {
 			while (running) {
@@ -34,9 +29,8 @@ public class CombatAxeThread {
 					return;
 				}
 
-				// To prevent async catch
-				plugin.getServer().getScheduler().runTask(plugin, () -> {
-					for (Entity entity : item.getNearbyEntities(0.4D, 0.5D, 0.4D)) {
+				hu.montlikadani.ragemode.utils.SchedulerUtil.submitSync(() -> {
+					for (Entity entity : hu.montlikadani.ragemode.utils.Utils.getNearbyEntities(item, 0.4D)) {
 						if (!running) {
 							break;
 						}
@@ -44,22 +38,22 @@ public class CombatAxeThread {
 						if (entity instanceof Player) {
 							final Player victim = (Player) entity;
 
-							if (victim == player) {
-								continue;
+							if (victim != player) {
+								victim.damage(25D, player);
+
+								GameListener.HIT_TARGETS.put(victim.getUniqueId(),
+										new CacheableHitTarget(GameItems.COMBATAXE, victim, 0));
 							}
-
-							victim.damage(25D, player);
-
-							CacheableHitTarget cht = new CacheableHitTarget(victim, GameItems.COMBATAXE);
-							cht.add(0);
-							GameListener.HIT_TARGETS.put(victim.getUniqueId(), cht);
 						} else if (entity instanceof LivingEntity) {
 							((LivingEntity) entity).damage(25D, player);
 						}
 
 						item.remove();
 						stop();
+						break;
 					}
+
+					return 1;
 				});
 
 				if (item.isOnGround()) {

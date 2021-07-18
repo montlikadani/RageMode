@@ -1,6 +1,5 @@
 package hu.montlikadani.ragemode.commands.list;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -28,7 +27,7 @@ public final class resetplayerstats implements ICommand {
 				return false;
 			}
 
-			Player target = Bukkit.getPlayer(args[1]);
+			Player target = plugin.getServer().getPlayer(args[1]);
 			if (target == null) {
 				sendMessage(sender, RageMode.getLang().get("commands.stats.player-not-found"));
 				return false;

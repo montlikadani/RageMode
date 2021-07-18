@@ -1,7 +1,6 @@
 package hu.montlikadani.ragemode.events;
 
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import hu.montlikadani.ragemode.RageMode;
@@ -15,7 +14,7 @@ public final class BungeeListener implements org.bukkit.event.Listener {
 		this.plugin = plugin;
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
 	public void onJoin(PlayerJoinEvent event) {
 		if (!plugin.getGames().isEmpty()) {
 			GameUtils.joinPlayer(event.getPlayer(), plugin.getGames().get(0));

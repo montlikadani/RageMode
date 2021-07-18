@@ -3,7 +3,7 @@ package hu.montlikadani.ragemode.API.event;
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;
 
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.managers.PlayerManager;
 
 /**
@@ -14,7 +14,7 @@ public class RMGameLeaveAttemptEvent extends GameEvent implements Cancellable {
 	private PlayerManager playerManager;
 	private boolean cancelled = false;
 
-	public RMGameLeaveAttemptEvent(Game game, PlayerManager playerManager) {
+	public RMGameLeaveAttemptEvent(BaseGame game, PlayerManager playerManager) {
 		super(game);
 
 		this.playerManager = playerManager;

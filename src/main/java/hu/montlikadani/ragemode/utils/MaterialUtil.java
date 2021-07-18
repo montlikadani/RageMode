@@ -44,6 +44,9 @@ public final class MaterialUtil {
 					getMat("COMPARATOR"))
 			.build();
 
+	private MaterialUtil() {
+	}
+
 	public static boolean isWallSign(Material mat) {
 		return WALL_SIGNS.contains(mat);
 	}

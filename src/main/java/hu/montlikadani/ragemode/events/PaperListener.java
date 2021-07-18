@@ -32,7 +32,7 @@ public final class PaperListener implements org.bukkit.event.Listener {
 					m: for (PressureMine mines : GameListener.PRESSUREMINES) {
 						for (Location mineLoc : mines.getMines()) {
 							if (mineLoc.getBlock().getType() == event.getTo().getBlock().getType()) {
-								GameListener.explodeMine(org.bukkit.Bukkit.getPlayer(mines.getOwner()), event.getTo());
+								GameListener.explodeMine(event.getTo());
 								break m;
 							}
 						}

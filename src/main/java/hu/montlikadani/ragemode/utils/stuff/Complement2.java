@@ -39,8 +39,7 @@ public final class Complement2 implements Complement {
 
 	@Override
 	public String getPlayerListName(Player player) {
-		Component listName = player.playerListName();
-		return listName == null ? "" : serialize(listName);
+		return serialize(player.playerListName());
 	}
 
 	@Override
@@ -71,8 +70,7 @@ public final class Complement2 implements Complement {
 
 	@Override
 	public String getLine(Sign sign, int line) {
-		Component comp = sign.line(line);
-		return comp == null ? "" : serialize(comp);
+		return serialize(sign.line(line));
 	}
 
 	@Override
@@ -116,11 +114,7 @@ public final class Complement2 implements Complement {
 	public List<String> getLore(ItemMeta meta) {
 		List<String> lore = new ArrayList<>();
 
-		if (meta == null) {
-			return lore;
-		}
-
-		if (meta.hasLore()) {
+		if (meta != null && meta.hasLore()) {
 			for (Component comp : meta.lore()) {
 				lore.add(serialize(comp));
 			}

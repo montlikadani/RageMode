@@ -5,7 +5,7 @@ import org.bukkit.command.CommandSender;
 import hu.montlikadani.ragemode.RageMode;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 
 import static hu.montlikadani.ragemode.utils.Misc.sendMessage;
 
@@ -27,7 +27,7 @@ public final class listgames implements ICommand {
 		sendMessage(sender, RageMode.getLang().get("commands.listgames.listing-games", "%games%", size));
 
 		for (int i = 0; i < size; i++) {
-			Game game = plugin.getGames().get(i);
+			BaseGame game = plugin.getGames().get(i);
 			assert game != null;
 
 			sendMessage(sender,

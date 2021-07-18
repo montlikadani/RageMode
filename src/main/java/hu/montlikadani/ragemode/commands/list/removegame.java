@@ -8,7 +8,7 @@ import hu.montlikadani.ragemode.area.GameAreaManager;
 import hu.montlikadani.ragemode.commands.ICommand;
 import hu.montlikadani.ragemode.commands.annotations.CommandProcessor;
 import hu.montlikadani.ragemode.config.Configuration;
-import hu.montlikadani.ragemode.gameLogic.Game;
+import hu.montlikadani.ragemode.gameLogic.base.BaseGame;
 import hu.montlikadani.ragemode.gameUtils.GameUtils;
 import hu.montlikadani.ragemode.utils.Utils;
 
@@ -30,7 +30,7 @@ public final class removegame implements ICommand {
 			return true;
 		}
 
-		Game game = GameUtils.getGame(args[1]);
+		BaseGame game = GameUtils.getGame(args[1]);
 		if (game == null) {
 			sendMessage(sender, RageMode.getLang().get("setup.removed-non-existent-game"));
 			return false;

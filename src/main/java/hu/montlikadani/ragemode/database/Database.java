@@ -3,8 +3,12 @@ package hu.montlikadani.ragemode.database;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.collect.ImmutableList;
 
+import hu.montlikadani.ragemode.database.connector.DBConnector;
 import hu.montlikadani.ragemode.scores.PlayerPoints;
 
 /**
@@ -17,6 +21,7 @@ public interface Database {
 	 * @return the current database type of this inherited class. If annotation is
 	 *         not present returns {@link DBType#YAML} as default
 	 */
+	@NotNull
 	default DBType getDatabaseType() {
 		return DBType.YAML;
 	}
@@ -27,6 +32,7 @@ public interface Database {
 	 * 
 	 * @return the current database of {@link DBConnector}
 	 */
+	@Nullable
 	DBConnector getDatabase();
 
 	/**
@@ -55,7 +61,8 @@ public interface Database {
 	 * @param type the new type of database
 	 * @return true if it success
 	 */
-	CompletableFuture<Boolean> convertDatabase(String type);
+	@NotNull
+	CompletableFuture<@NotNull Boolean> convertDatabase(@NotNull String type);
 
 	/**
 	 * Attempts to load all player statistic from the database.
@@ -72,7 +79,7 @@ public interface Database {
 	 * 
 	 * @param points {@link PlayerPoints}
 	 */
-	void addPlayerStatistics(PlayerPoints points);
+	void addPlayerStatistics(@NotNull PlayerPoints points);
 
 	/**
 	 * Add points to the given player database.
@@ -80,16 +87,16 @@ public interface Database {
 	 * @param points the amount of points
 	 * @param uuid   player uuid
 	 */
-	void addPoints(int points, UUID uuid);
+	void addPoints(int points, @NotNull UUID uuid);
 
 	/**
-	 * Attempts to retrieve all of players statistic from database. This does not
-	 * loads the saved player statistic, only retrieves the uuid and trying to
-	 * instantiate a new object if not exists, but not includes into database.
+	 * Attempts to retrieve all of players statistic from the current database
+	 * asynchronously. If the connection failed, will returns an empty list.
 	 * 
 	 * @return returns a an ImmutableList of all PlayerPoints that are stored
 	 */
-	ImmutableList<PlayerPoints> getAllPlayerStatistics();
+	@NotNull
+	ImmutableList<@NotNull PlayerPoints> getAllPlayerStatistics();
 
 	/**
 	 * Retrieves the all player statistic from the database by the given uuid.
@@ -99,7 +106,8 @@ public interface Database {
 	 * @param uuid Player uuid
 	 * @return {@link PlayerPoints}
 	 */
-	PlayerPoints getPlayerStatsFromData(UUID uuid);
+	@Nullable
+	PlayerPoints getPlayerStatsFromData(@NotNull UUID uuid);
 
 	/**
 	 * Restores all data of the given player to 0
@@ -107,7 +115,7 @@ public interface Database {
 	 * @param uuid UUID of player
 	 * @return true if the class inited and player found in database
 	 */
-	boolean resetPlayerStatistic(UUID uuid);
+	boolean resetPlayerStatistic(@NotNull UUID uuid);
 
 	/**
 	 * Attempts to load all players data.
