@@ -1,0 +1,24 @@
+name: RageMode
+main: hu.montlikadani.ragemode.RageMode
+version: 1.0.0
+description: A mini shooter game plugin
+api-version: 1.13
+folia-supported: true
+
+softdepend:
+- PlaceholderAPI
+- Vault
+- Multiverse-Core
+- HeadDatabase
+- ItemsAdder
+- Oraxen
+- ExecutableItems
+- SCore # Needed for ExecutableItems
+
+# DO NOT EDIT ANYTHING ABOVE THIS LINE!
+
+commands:
+  ragemode:
+    description: Main command for RageMode plugin
+    usage: <command>
+    aliases: [rm]
