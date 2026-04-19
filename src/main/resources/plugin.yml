@@ -1,6 +1,6 @@
 name: RageMode
 main: hu.montlikadani.ragemode.RageMode
-version: 1.0.0
+version: 1.0.2
 description: A mini shooter game plugin
 api-version: 1.13
 folia-supported: true
@@ -8,6 +8,7 @@ folia-supported: true
 softdepend:
 - PlaceholderAPI
 - Vault
+- ExcellentEconomy
 - Multiverse-Core
 - HeadDatabase
 - ItemsAdder
