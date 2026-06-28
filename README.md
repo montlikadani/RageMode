@@ -8,4 +8,8 @@
   <a href="https://www.patreon.com/posts/156570268" target="_blank">
     <img width="431" height="69" alt="Patreon" src="https://github.com/user-attachments/assets/1db055e5-a958-4e46-a223-fca974a00421" />
   </a>
+
+  <a href="https://www.paypal.com/ncp/payment/XPARYG5GXCVA8" target="_blank">
+    <img width="401" height="79" alt="Paypal" src="https://github.com/user-attachments/assets/dc7da0bd-baef-4ca6-8e4b-27b6014f964a" />
+  </a>
 </div>
