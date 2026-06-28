@@ -10,6 +10,6 @@
   </a>
 
   <a href="https://www.paypal.com/ncp/payment/XPARYG5GXCVA8" target="_blank">
-    <img width="401" height="79" alt="Paypal" src="https://github.com/user-attachments/assets/dc7da0bd-baef-4ca6-8e4b-27b6014f964a" />
+    <img width="401" height="69" alt="Paypal" src="https://github.com/user-attachments/assets/dc7da0bd-baef-4ca6-8e4b-27b6014f964a" />
   </a>
 </div>
