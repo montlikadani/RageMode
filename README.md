@@ -1,6 +1,7 @@
 <div align="center">
   <a href="https://mdswork.gitbook.io/ragemode-docs" target="_blank">
-    <img width="1274" height="457" alt="RageMode banner" src="https://github.com/user-attachments/assets/82758783-c6b5-4ee9-a3b1-8ed5d68e739d" /><br/>
+    <img width="1274" height="700" alt="RageMode banner" src="https://github.com/user-attachments/assets/53f66f37-31d8-4b4a-9ac9-0f9946ae11e5" /><br/>
+
   </a>
 
   <a href="https://builtbybit.com/resources/102447" target="_blank">
