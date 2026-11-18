@@ -1,7 +1,7 @@
 name: RageMode
 main: hu.montlikadani.ragemode.RageMode
-version: 1.1.2
-description: A mini shooter game plugin
+version: 1.1.5
+description: A Call of Duty inspired shooter minigame plugin
 api-version: 1.13
 folia-supported: true
 
@@ -17,9 +17,3 @@ softdepend:
 - SCore # Needed for ExecutableItems
 
 # DO NOT EDIT ANYTHING ABOVE THIS LINE!
-
-commands:
-  ragemode:
-    description: Main command for RageMode plugin
-    usage: <command>
-    aliases: [rm]
